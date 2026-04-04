@@ -326,15 +326,57 @@ Optional local server (only if `file://` causes security issues in browser):
 
 - `npm run start` (requires Node.js 18+) → open `http://localhost:4173/yourfile.html`
 
+## Design Pipeline (7 Phases)
+
+执行 7 阶段顺序流程：
+
+| Phase | 名称 | 类型 | 说明 |
+|:-----:|------|:----:|------|
+| P0 | 设计上下文 | ● 强制 | 确认设计风格、色彩、字体方向 |
+| P1 | 需求+模板 | ● 强制 | 确认场景、时长、听众、选择模板 |
+| P2 | 输出方案 | ◐ 条件 | 确认内容结构、视觉方向 |
+| P3 | 设计评审 | ● 强制 | `/critique` 评审 + 优化方向 |
+| P4 | 生成初稿 | ● 强制 | 生成 HTML 文件 |
+| P5 | 优化迭代 | ● 强制 | 根据 slide 数量执行对应 skills |
+| P6 | 最终检查 | ◐ 条件 | 溢出检测 + 截图验证 + 交付确认 |
+
+**执行规则**：
+- **● 标记**：必须完成，不可跳过
+- **◐ 标记**：上下文已存在时可跳过
+- **Gate 是 BLOCKER**：每阶段必须向用户展示输出，获得确认后才能进入下一阶段
+
+### Gate 速查表
+
+| Gate | 阶段 | 必须向用户确认的内容 |
+|:----:|------|---------------------|
+| 0 | 设计上下文 | 设计风格/色彩/字体方向 |
+| 1 | 需求+模板 | 场景、时长、听众、模板选择 |
+| 2 | 方案 | 内容结构、视觉方向 |
+| 3 | 设计评审 | `/critique` 报告 + 优化方向确认 |
+| 4 | 生成初稿 | HTML 文件路径 |
+| 5 | 优化迭代 | 执行的 skills 列表和结果 |
+| 6 | 最终检查 | Phase 6 检查报告 + 用户交付确认 |
+
+**Phase 5 Tier 详情**：见 `references/pipeline-phases.md`
+
 ## Resource Map
 
-- `examples/`: ready-made visual starting points
-- `references/design-principles.md`: colors, typography, anti-patterns
-- `references/layout-patterns.md`: repeatable reveal.js layout patterns
-- `references/motion-delight.md`: motion timing and delight ideas
-- `references/technical-specs.md`: reveal.js setup and CSS constraints
-- `scripts/overflow-detect.js`: browser-side overflow inspection
-- `scripts/auto-fix-css.js`: browser-side CSS auto-fix helper
+- `examples/`: 5 个模板（editorial-serif, dark-tech, minimal-spatial, vibrant-gradient, nature-fresh）
+- `references/design-principles.md`: 颜色、字体、反模式
+- `references/layout-patterns.md`: 布局代码示例、溢出处理
+- `references/motion-delight.md`: 动画时序、缓动曲线
+- `references/technical-specs.md`: CDN 配置、CSS 约束
+- `references/pipeline-phases.md`: Phase 5 Tier 详情、Phase 6 完整执行步骤
+- `scripts/overflow-detect.js`: 浏览器溢出检测
+- `scripts/auto-fix-css.js`: CSS 自动修复
+- `scripts/setup.sh`: 环境检查脚本
+
+## PDF 导出
+
+1. 在 Chrome 中打开 HTML 文件
+2. 访问 `yourfile.html?print-pdf`
+3. `Cmd + P` 打印
+4. 选择"另存为 PDF"
 
 ## Success Criteria
 
@@ -353,3 +395,4 @@ Completion checks (must pass before done):
 3. Technical check: reveal.js structure and initialization are valid
 4. Readability check: no dense bullet walls and no critical overflow
 5. Delivery check: handoff includes run/export instructions and validation status
+6. Pipeline check: Gate 0-3 confirmed with user before Phase 4
