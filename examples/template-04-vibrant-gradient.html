@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>活力渐变风格演示文稿</title>
+
+  <!-- Reveal.js 核心 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/theme/black.css">
+
+  <!-- Google Fonts: 现代圆润字体 -->
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <style>
+    /* ============================================
+       CSS 变量 - 活力渐变配色
+       渐变背景 + 高饱和强调
+       Phase 6: 强调色饱和度 ≤15% chroma
+       ============================================ */
+    :root {
+      /* 主色 - 渐变紫橙 */
+      --primary-1: oklch(70% 0.18 320);
+      --primary-2: oklch(75% 0.15 50);
+
+      /* 背景渐变 */
+      --bg-start: oklch(12% 0.03 280);
+      --bg-end: oklch(15% 0.04 220);
+
+      /* 文字 */
+      --text: oklch(98% 0.01 250);
+      --text-muted: oklch(70% 0.02 250);
+
+      /* 强调色 - 霓虹感 (饱和度 ≤15% chroma per Phase 6) */
+      --accent-pink: oklch(75% 0.15 350);
+      --accent-cyan: oklch(80% 0.15 200);
+      --accent-yellow: oklch(85% 0.15 90);
+
+      /* 玻璃效果 */
+      --glass-bg: oklch(25% 0.02 280 / 0.6);
+      --glass-border: oklch(40% 0.03 280 / 0.3);
+
+      /* 字体 */
+      --font-display: 'Outfit', 'Noto Sans SC', sans-serif;
+      --font-body: 'Plus Jakarta Sans', 'Noto Sans SC', sans-serif;
+
+      /* Easing */
+      --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+      --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+      --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ============================================
+       基础重置
+       ============================================ */
+    .reveal {
+      font-family: var(--font-body);
+      font-size: 30px;
+      color: var(--text);
+      background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%);
+    }
+
+    .reveal .slides {
+      text-align: left;
+    }
+
+    .reveal section {
+      padding: 80px 100px;
+      height: 100%;
+      box-sizing: border-box;
+    }
+
+    /* ============================================
+       标题样式 - 圆润粗体
+       ============================================ */
+    .reveal h1, .reveal h2, .reveal h3 {
+      font-family: var(--font-display);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      color: var(--text);
+    }
+
+    .reveal h1 {
+      font-size: 3.5em;
+      font-weight: 600;
+    }
+
+    .reveal h2 {
+      font-size: 2em;
+      margin-bottom: 0.8em;
+    }
+
+    .reveal h3 {
+      font-size: 1.2em;
+      font-weight: 600;
+    }
+
+    .reveal p {
+      font-size: 1em;
+      line-height: 1.7;
+      margin-bottom: 0.8em;
+      color: var(--text-muted);
+    }
+
+    /* ============================================
+       强调文字 - 使用纯色而非渐变 (Phase 6)
+       ============================================ */
+    .accent-text {
+      color: var(--accent-pink);
+    }
+
+    .accent-text-cyan {
+      color: var(--accent-cyan);
+    }
+
+    /* ============================================
+       玻璃卡片
+       ============================================ */
+    .glass-card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      padding: 2em;
+    }
+
+    .glass-card.accent-border {
+      border-top: 3px solid var(--accent-pink);
+    }
+
+    /* ============================================
+       特性卡片网格
+       ============================================ */
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1em;
+      margin-top: 2em;
+    }
+
+    .feature-card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      padding: 1.5em;
+      transition: transform 300ms var(--ease-out-quint),
+                  border-color 300ms var(--ease-out-quint);
+    }
+
+    .feature-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--accent-cyan);
+    }
+
+    .feature-card .icon {
+      font-size: 1.8em;
+      margin-bottom: 0.5em;
+    }
+
+    .feature-card h3 {
+      font-size: 1em;
+      margin-bottom: 0.3em;
+    }
+
+    .feature-card p {
+      font-size: 0.8em;
+      margin: 0;
+      color: var(--text-muted);
+    }
+
+    /* ============================================
+       大数字强调
+       ============================================ */
+    .stat-row {
+      display: flex;
+      gap: 3em;
+      margin-top: 2em;
+      min-width: 0;
+    }
+
+    .stat-item {
+      text-align: center;
+      min-width: 0;
+    }
+
+    .stat-value {
+      font-family: var(--font-display);
+      font-size: 3em;
+      font-weight: 700;
+      line-height: 1;
+      color: var(--accent-pink);
+    }
+
+    .stat-label {
+      font-size: 0.75em;
+      color: var(--text-muted);
+      margin-top: 0.5em;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    /* ============================================
+       标题页
+       ============================================ */
+    .title-slide {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-start;
+      min-width: 0;
+    }
+
+    .title-slide .badge {
+      font-family: var(--font-body);
+      font-size: 0.7em;
+      font-weight: 500;
+      padding: 0.5em 1em;
+      border-radius: 100px;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      color: var(--accent-cyan);
+      margin-bottom: 1.5em;
+    }
+
+    .title-slide h1 {
+      font-size: 3.2em;
+      margin-bottom: 0.3em;
+    }
+
+    .title-slide .subtitle {
+      font-size: 1.4em;
+      font-weight: 300;
+      color: var(--text-muted);
+      margin-bottom: 2em;
+    }
+
+    .title-slide .cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5em;
+      font-family: var(--font-body);
+      font-size: 0.9em;
+      font-weight: 500;
+      padding: 0.8em 1.5em;
+      border-radius: 100px;
+      background: var(--accent-pink);
+      color: white;
+      text-decoration: none;
+    }
+
+    /* ============================================
+       引用
+       ============================================ */
+    .glow-quote {
+      position: relative;
+      font-family: var(--font-display);
+      font-size: 1.8em;
+      font-weight: 500;
+      color: var(--text);
+      text-align: center;
+      padding: 2em;
+      margin: 2em 0;
+    }
+
+    .glow-quote::before {
+      content: '"';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 4em;
+      color: var(--accent-pink);
+      opacity: 0.3;
+      line-height: 1;
+    }
+
+    /* ============================================
+       时间线
+       ============================================ */
+    .timeline {
+      position: relative;
+      padding-left: 2em;
+      margin-top: 2em;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0.5em;
+      bottom: 0;
+      width: 2px;
+      background: linear-gradient(180deg, var(--accent-pink) 0%, var(--accent-cyan) 100%);
+    }
+
+    .timeline-item {
+      position: relative;
+      padding-bottom: 1.5em;
+    }
+
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: -2em;
+      top: 0.5em;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--accent-pink);
+      transform: translateX(-4px);
+    }
+
+    .timeline-item h3 {
+      font-size: 1em;
+      margin-bottom: 0.3em;
+    }
+
+    .timeline-item p {
+      font-size: 0.85em;
+      margin: 0;
+    }
+
+    /* ============================================
+       Fragment 动画 - bounce (Phase 5: 100-500ms)
+       ============================================ */
+    .reveal .fragment {
+      transition-duration: 400ms;
+      transition-timing-function: var(--ease-bounce);
+    }
+
+    .reveal .fragment.bounce-in {
+      opacity: 0;
+      transform: scale(0.8);
+    }
+
+    .reveal .fragment.bounce-in.visible {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .reveal .fragment.fade-up {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+
+    .reveal .fragment.fade-up.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ============================================
+       进度条 & 导航
+       ============================================ */
+    .reveal .progress {
+      background: linear-gradient(90deg, var(--accent-pink) 0%, var(--accent-cyan) 100%);
+      height: 3px;
+    }
+
+    .reveal .controls {
+      color: var(--accent-cyan);
+    }
+
+    /* ============================================
+       Reduced Motion (Phase 6: prefers-reduced-motion)
+       ============================================ */
+    @media (prefers-reduced-motion: reduce) {
+      .reveal .fragment,
+      .reveal .fragment.visible {
+        opacity: 1;
+        transform: none;
+        transition-duration: 200ms;
+        transition-timing-function: var(--ease-smooth);
+      }
+      .reveal .slides section {
+        transform: none;
+      }
+      .feature-card:hover {
+        transform: none;
+      }
+      .glow-quote::before {
+        animation: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+      <!-- Slide 1: 标题页 -->
+      <section class="title-slide" data-background="linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%)">
+        <span class="badge fragment bounce-in">
+          <i class="fas fa-sparkles"></i> New Release
+        </span>
+        <h1 class="fragment fade-up" style="transition-delay: 100ms;">
+          重新定义<br>
+          <span class="accent-text">创意表达</span>
+        </h1>
+        <p class="subtitle fragment fade-up" style="transition-delay: 200ms;">
+          让每一个想法，都被看见
+        </p>
+        <a href="#" class="cta fragment fade-up" style="transition-delay: 300ms;">
+          <i class="fas fa-play"></i> 立即体验
+        </a>
+      </section>
+
+      <!-- Slide 2: 数据 -->
+      <section data-background="linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%)">
+        <h2 class="fragment fade-up">全球用户的共同选择</h2>
+        <div class="stat-row">
+          <div class="stat-item fragment bounce-in" style="transition-delay: 100ms;">
+            <div class="stat-value">2M+</div>
+            <div class="stat-label">活跃用户</div>
+          </div>
+          <div class="stat-item fragment bounce-in" style="transition-delay: 200ms;">
+            <div class="stat-value">50+</div>
+            <div class="stat-label">国家地区</div>
+          </div>
+          <div class="stat-item fragment bounce-in" style="transition-delay: 300ms;">
+            <div class="stat-value">4.9</div>
+            <div class="stat-label">应用评分</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 3: 特性 -->
+      <section data-background="linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%)">
+        <h2 class="fragment fade-up">核心特性</h2>
+        <div class="feature-grid">
+          <div class="feature-card fragment bounce-in" style="transition-delay: 100ms;">
+            <div class="icon" style="color: var(--accent-pink);">
+              <i class="fas fa-wand-magic-sparkles"></i>
+            </div>
+            <h3>AI 智能创作</h3>
+            <p>输入文字，即可生成精美图像</p>
+          </div>
+          <div class="feature-card fragment bounce-in" style="transition-delay: 200ms;">
+            <div class="icon" style="color: var(--accent-cyan);">
+              <i class="fas fa-layer-group"></i>
+            </div>
+            <h3>无限图层</h3>
+            <p>专业级编辑能力，无限创意空间</p>
+          </div>
+          <div class="feature-card fragment bounce-in" style="transition-delay: 300ms;">
+            <div class="icon" style="color: var(--accent-yellow);">
+              <i class="fas fa-bolt"></i>
+            </div>
+            <h3>实时协作</h3>
+            <p>多人同时编辑，灵感同步碰撞</p>
+          </div>
+          <div class="feature-card fragment bounce-in" style="transition-delay: 400ms;">
+            <div class="icon" style="color: var(--accent-pink);">
+              <i class="fas fa-mobile-screen"></i>
+            </div>
+            <h3>跨平台同步</h3>
+            <p>一处编辑，处处可见</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 4: 引言 -->
+      <section data-background="linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%)">
+        <div class="glow-quote fragment fade-up">
+          创造力是天赋，<br>
+          但表达需要工具。
+        </div>
+        <p class="fragment fade-up" style="transition-delay: 200ms; text-align: center; color: var(--text-muted);">
+          — 产品愿景
+        </p>
+      </section>
+
+      <!-- Slide 5: 发展历程 -->
+      <section data-background="linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%)">
+        <h2 class="fragment fade-up">发展历程</h2>
+        <div class="timeline">
+          <div class="timeline-item fragment fade-up" style="transition-delay: 100ms;">
+            <h3>2024 Q1 — 产品立项</h3>
+            <p>从零开始，组建核心团队</p>
+          </div>
+          <div class="timeline-item fragment fade-up" style="transition-delay: 200ms;">
+            <h3>2024 Q3 — 内测发布</h3>
+            <p>首批 1000 名用户体验</p>
+          </div>
+          <div class="timeline-item fragment fade-up" style="transition-delay: 300ms;">
+            <h3>2025 Q1 — 正式上线</h3>
+            <p>全球发布，获得市场认可</p>
+          </div>
+          <div class="timeline-item fragment fade-up" style="transition-delay: 400ms;">
+            <h3>2026 — 全新进化</h3>
+            <p>AI 创作能力全面升级</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 6: 结束 -->
+      <section class="title-slide" data-background="linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%)">
+        <h2 class="fragment fade-up" style="font-size: 2.5em;">
+          准备好<br>
+          <span class="accent-text">开始创作</span>了吗？
+        </h2>
+        <p class="fragment fade-up" style="transition-delay: 150ms; color: var(--text-muted);">
+          www.product-name.com
+        </p>
+      </section>
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.js"></script>
+  <script>
+    Reveal.initialize({
+      width: 1280,
+      height: 720,
+      margin: 0.04,
+      minScale: 0.8,
+      maxScale: 1.2,
+      hash: true,
+      slideNumber: false,
+      progress: true,
+      center: false,
+      controls: true,
+      controlsTutorial: false,
+      transition: 'convex',
+      transitionSpeed: 'default',
+      backgroundTransition: 'fade',
+      fragmentInclusivity: 'include',
+    });
+  </script>
+</body>
+</html>

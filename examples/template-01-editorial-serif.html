@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>社论衬线风格演示文稿</title>
+
+  <!-- Reveal.js 核心 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/theme/white.css">
+
+  <!-- Google Fonts: 衬线字体 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..700;1,6..72,300..700&family=Source+Sans+3:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
+
+  <style>
+    /* ============================================
+       CSS 变量 - 社论衬线配色
+       暖色调：赭石/棕/米白
+       ============================================ */
+    :root {
+      /* 主色 - 暖赭 */
+      --primary: oklch(55% 0.12 50);
+      --primary-light: oklch(80% 0.08 50);
+      --primary-dark: oklch(35% 0.10 50);
+
+      /* 背景 - 米白 */
+      --bg: oklch(98% 0.01 80);
+      --bg-subtle: oklch(94% 0.02 80);
+      --bg-dark: oklch(88% 0.02 80);
+
+      /* 文字 - 暖灰色调 */
+      --text: oklch(25% 0.02 50);
+      --text-muted: oklch(50% 0.015 50);
+
+      /* 强调色 - 深棕 */
+      --accent: oklch(45% 0.15 35);
+      --accent-light: oklch(65% 0.10 35);
+
+      /* 60-30-10 配色 */
+      --surface: var(--bg);
+      --content: var(--text);
+      --highlight: var(--accent);
+
+      /* 字体 */
+      --font-serif: 'Newsreader', 'Noto Serif SC', Georgia, serif;
+      font-display: swap;
+      --font-sans: 'Source Sans 3', 'Noto Sans SC', -apple-system, sans-serif;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+
+      /* 字体大小比例 (1.25 ratio) */
+      --text-xs: 0.64rem;
+      --text-sm: 0.8rem;
+      --text-base: 1rem;
+      --text-lg: 1.25rem;
+      --text-xl: 1.563rem;
+      --text-2xl: 1.953rem;
+      --text-3xl: 2.441rem;
+      --text-4xl: 3.052rem;
+
+      /* Easing */
+      --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+      --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    /* ============================================
+       基础重置
+       ============================================ */
+    .reveal {
+      font-family: var(--font-sans);
+      font-size: 32px;
+      color: var(--text);
+      background: var(--bg);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    .reveal .slides {
+      text-align: left;
+    }
+
+    .reveal section {
+      padding: 80px 100px;
+      height: 100%;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+
+    /* ============================================
+       标题样式 - 衬线字体
+       ============================================ */
+    .reveal h1, .reveal h2, .reveal h3 {
+      font-family: var(--font-serif);
+      color: var(--text);
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+    }
+
+    .reveal h1 {
+      font-size: 3.2em;
+      font-weight: 700;
+      margin-bottom: 0.3em;
+    }
+
+    .reveal h2 {
+      font-size: 2em;
+      margin-bottom: 0.5em;
+    }
+
+    .reveal h3 {
+      font-size: 1.3em;
+      font-weight: 600;
+    }
+
+    .reveal p {
+      font-family: var(--font-sans);
+      font-size: 1em;
+      line-height: 1.7;
+      color: var(--text);
+      margin-bottom: 0.8em;
+    }
+
+    /* 引用块 */
+    .reveal blockquote {
+      font-family: var(--font-serif);
+      font-size: 1.4em;
+      font-style: italic;
+      border-left: 4px solid var(--accent);
+      margin: 1.5em 0;
+      background: var(--bg-subtle);
+      padding: 1em 1.5em;
+      border-radius: 0 4px 4px 0;
+    }
+
+    .reveal blockquote p {
+      margin: 0;
+      font-size: 1em;
+    }
+
+    .reveal blockquote cite {
+      display: block;
+      font-size: 0.7em;
+      font-style: normal;
+      color: var(--text-muted);
+      margin-top: 0.5em;
+    }
+
+    /* ============================================
+       列表样式
+       ============================================ */
+    .reveal ul, .reveal ol {
+      font-family: var(--font-sans);
+      line-height: 1.6;
+    }
+
+    .reveal li {
+      margin-bottom: 0.3em;
+    }
+
+    /* 装饰性列表标记 */
+    .reveal .decorated-list li::before {
+      content: '—';
+      color: var(--accent);
+      margin-right: 0.5em;
+    }
+
+    /* ============================================
+       卡片布局 - 社论风格
+       ============================================ */
+    .editorial-card {
+      background: var(--bg-subtle);
+      border-radius: 2px;
+      padding: 0.8em 1em;
+      border-left: 3px solid var(--accent);
+    }
+
+    .editorial-card {
+      background: var(--bg-subtle);
+      border-radius: 2px;
+      padding: 1em 1.5em;
+      border-left: 3px solid var(--accent);
+    }
+
+    .editorial-card h4 {
+      font-size: 0.85em;
+      margin-bottom: 0.3em;
+    }
+
+    .editorial-card p {
+      font-size: 0.75em;
+      line-height: 1.4;
+      margin: 0;
+    }
+
+    /* ============================================
+       标题页特殊样式
+       ============================================ */
+    .title-slide {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .title-slide h1 {
+      font-size: 3.5em;
+      font-weight: 700;
+      margin-bottom: 0.2em;
+    }
+
+    .title-slide .subtitle {
+      font-family: var(--font-sans);
+      font-size: 1.4em;
+      font-weight: 300;
+      color: var(--text-muted);
+      margin-bottom: 2em;
+    }
+
+    .title-slide .meta {
+      font-size: 0.9em;
+      color: var(--text-muted);
+      border-top: 1px solid var(--bg-dark);
+      padding-top: 1.5em;
+      margin-top: 1em;
+    }
+
+    /* ============================================
+       Fragment 动画
+       ============================================ */
+    .reveal .fragment {
+      transition-timing-function: var(--ease-out-quart);
+      transition-duration: 400ms;
+      transition-property: opacity, transform;
+    }
+
+    .reveal .fragment.fade-up {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    .reveal .fragment.fade-up.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ============================================
+       装饰元素 - 细线
+       ============================================ */
+    .divider {
+      width: 60px;
+      height: 2px;
+      background: var(--accent);
+      margin: 1.5em 0;
+    }
+
+    /* Focus states for accessibility */
+    .reveal .controls button:focus-visible,
+    .reveal .progress-bar:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    .section-number {
+      font-family: var(--font-serif);
+      font-size: 4em;
+      font-weight: 700;
+      color: var(--bg-dark);
+      line-height: 1;
+      margin-bottom: 0.2em;
+      min-width: 0;
+    }
+
+    /* ============================================
+       代码块
+       ============================================ */
+    .reveal pre {
+      font-size: 0.75em;
+      box-shadow: none;
+      border-radius: 2px;
+    }
+
+    .reveal pre code {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      padding: 1em 1.5em;
+      background: var(--text);
+      color: var(--bg);
+      border-radius: 2px;
+    }
+
+    /* ============================================
+       进度条 & 导航
+       ============================================ */
+    .reveal .progress {
+      color: var(--accent);
+      height: 3px;
+    }
+
+    .reveal .controls {
+      color: var(--accent);
+    }
+
+    /* ============================================
+       Reduced Motion
+       ============================================ */
+    @media (prefers-reduced-motion: reduce) {
+      .reveal .fragment,
+      .fade-in,
+      .slide-up {
+        opacity: 1 !important;
+        transform: none !important;
+        transition: none !important;
+      }
+    }
+
+    /* 标题页入场动画 */
+
+    /* ============================================
+       两列布局
+       ============================================ */
+    .two-columns {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 2em;
+      align-items: start;
+    }
+
+    .two-columns h3 {
+      margin-bottom: 0.8em;
+    }
+
+    .viewpoint-card {
+      background: var(--bg-subtle);
+      border-radius: 2px;
+      padding: 1.2em 1.5em;
+      border-top: 3px solid var(--accent);
+    }
+
+    .viewpoint-card ul {
+      list-style: none;
+      padding: 0;
+      margin: 0.8em 0 0 0;
+    }
+
+    .viewpoint-card li {
+      font-size: 0.9em;
+      line-height: 1.8;
+      color: var(--text);
+      padding-left: 1em;
+      position: relative;
+    }
+
+    .viewpoint-card li::before {
+      content: '—';
+      color: var(--accent-light);
+      position: absolute;
+      left: 0;
+    }
+
+    /* 案例条目 - 带编号 */
+    .case-item {
+      display: flex;
+      align-items: stretch;
+      gap: 1em;
+    }
+
+    .case-num {
+      font-family: var(--font-serif);
+      font-size: 1.4em;
+      font-weight: 700;
+      color: var(--accent);
+      min-width: 2em;
+      min-width: 0;
+      padding-top: 0.2em;
+    }
+
+    .case-item .editorial-card {
+      flex: 1;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+      <!-- Slide 1: 标题页 -->
+      <section class="title-slide" data-background="var(--bg)">
+        <p class="section-number">01</p>
+        <h1 class="fragment fade-up" style="transition-delay: 0ms;">
+          设计的理性与感性
+        </h1>
+        <p class="subtitle fragment fade-up" style="transition-delay: 150ms;">
+          探索数字产品中的美学逻辑
+        </p>
+        <div class="divider fragment fade-up" style="transition-delay: 300ms;"></div>
+        <div class="meta fragment fade-up" style="transition-delay: 450ms;">
+          <p>张明远 · 2026年春季</p>
+        </div>
+      </section>
+
+      <!-- Slide 2: 引言 -->
+      <section data-background="var(--bg)">
+        <h2 class="fragment fade-up" style="transition-delay: 0ms;">设计的双重性</h2>
+        <div class="divider fragment fade-up" style="transition-delay: 100ms;"></div>
+        <blockquote class="fragment fade-up" style="transition-delay: 200ms;">
+          <p>「设计不只是让事物看起来美观，而是让事物发挥作用。」</p>
+          <cite>— Dieter Rams</cite>
+        </blockquote>
+        <p class="fragment fade-up" style="transition-delay: 400ms; color: var(--text-muted); font-size: 0.9em;">
+          这句话揭示了设计的本质：功能与美学的统一。
+        </p>
+      </section>
+
+      <!-- Slide 3: 两个观点 -->
+      <section data-background="var(--bg)">
+        <h2 class="fragment fade-up">理性与感性的交汇</h2>
+        <div class="two-columns" style="margin-top: 1.5em;">
+          <div class="fragment fade-up" style="transition-delay: 100ms;">
+            <h3 style="color: var(--accent);">理性的维度</h3>
+            <ul style="font-size: 0.9em;">
+              <li>系统性的思考方式</li>
+              <li>可量化的评估标准</li>
+              <li>用户研究数据支撑</li>
+              <li>设计规范的建立</li>
+            </ul>
+          </div>
+          <div class="fragment fade-up" style="transition-delay: 250ms;">
+            <h3 style="color: var(--primary-dark);">感性的维度</h3>
+            <ul style="font-size: 0.9em;">
+              <li>直觉与审美的判断</li>
+              <li>情感共鸣的创造</li>
+              <li>叙事与故事的构建</li>
+              <li>意想不到的惊喜</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 4: 案例 -->
+      <section data-background="var(--bg)">
+        <h2 class="fragment fade-up">案例研究</h2>
+        <div style="display: flex; flex-direction: column; gap: 0.8em; margin-top: 1em;">
+          <div class="editorial-card fragment fade-up" style="transition-delay: 100ms;">
+            <h4>Apple Human Interface</h4>
+            <p>通过一致的视觉语言和微交互，建立起用户与设备之间的情感连接。</p>
+          </div>
+          <div class="editorial-card fragment fade-up" style="transition-delay: 200ms;">
+            <h4>Dieter Rams 的十诫</h4>
+            <p>好的设计是尽可能少的设计——less, but better。</p>
+          </div>
+          <div class="editorial-card fragment fade-up" style="transition-delay: 300ms;">
+            <h4>Braun 的功能主义</h4>
+            <p>形式追随功能，但功能本身也可以是美的。</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 5: 总结 -->
+      <section data-background="var(--bg)">
+        <h2 class="fragment fade-up">核心观点</h2>
+        <div class="divider fragment fade-up" style="transition-delay: 100ms;"></div>
+        <ul style="list-style: none; padding: 0; margin-top: 1em;">
+          <li class="fragment fade-up" style="transition-delay: 200ms; margin-bottom: 1em;">
+            <strong style="color: var(--accent);">01</strong>
+            &nbsp;&nbsp;设计是沟通——用视觉语言传达信息与情感
+          </li>
+          <li class="fragment fade-up" style="transition-delay: 350ms; margin-bottom: 1em;">
+            <strong style="color: var(--accent);">02</strong>
+            &nbsp;&nbsp;约束是创意——限制往往激发更纯粹的解决方案
+          </li>
+          <li class="fragment fade-up" style="transition-delay: 500ms; margin-bottom: 1em;">
+            <strong style="color: var(--accent);">03</strong>
+            &nbsp;&nbsp;细节是魔鬼——每一个像素都值得认真对待
+          </li>
+        </ul>
+      </section>
+
+      <!-- Slide 6: 结束页 -->
+      <section class="title-slide" data-background="var(--bg)">
+        <div class="divider" style="margin-bottom: 2em;"></div>
+        <h1 class="fragment fade-up" style="font-size: 2.5em;">
+          谢谢聆听
+        </h1>
+        <p class="subtitle fragment fade-up" style="transition-delay: 150ms;">
+          期待交流与讨论
+        </p>
+        <p class="fragment fade-up" style="transition-delay: 300ms; color: var(--text-muted); font-size: 0.8em;">
+          演示文稿使用 Reveal.js 制作
+        </p>
+      </section>
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.js"></script>
+  <script>
+    Reveal.initialize({
+      width: 1280,
+      height: 720,
+      margin: 0.04,
+      minScale: 0.8,
+      maxScale: 1.2,
+      hash: true,
+      slideNumber: 'c/t',
+      progress: true,
+      center: false,
+      controls: true,
+      controlsTutorial: false,
+      transition: 'fade',
+      transitionSpeed: 'default',
+      backgroundTransition: 'fade',
+    });
+  </script>
+</body>
+</html>

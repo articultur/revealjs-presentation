@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>深色科技风格演示文稿</title>
+
+  <!-- Reveal.js 核心 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/theme/black.css">
+
+  <!-- Google Fonts: 技术字体 -->
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Highlight.js -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+
+  <style>
+    /* ============================================
+       CSS 变量 - 深色科技配色
+       深色背景 + 亮蓝/青色强调
+       ============================================ */
+    :root {
+      /* 主色 - 电光蓝 (chroma ≤ 15% per 60-30-10 rule) */
+      --primary: oklch(75% 0.14 230);
+      --primary-light: oklch(85% 0.10 230);
+      --primary-dark: oklch(55% 0.16 230);
+
+      /* 背景 - 深色 */
+      --bg: oklch(15% 0.02 250);
+      --bg-subtle: oklch(20% 0.02 250);
+      --bg-elevated: oklch(25% 0.02 250);
+
+      /* 文字 */
+      --text: oklch(95% 0.01 250);
+      --text-muted: oklch(65% 0.03 250);
+      --text-dim: oklch(45% 0.02 250);
+
+      /* 强调色 - 青色 */
+      --accent: oklch(80% 0.15 175);
+      --accent-secondary: oklch(70% 0.12 280);
+
+      /* 功能色 */
+      --success: oklch(75% 0.15 145);
+      --warning: oklch(80% 0.15 85);
+      --error: oklch(70% 0.18 25);
+
+      /* 网格线 */
+      --grid-line: oklch(30% 0.01 250);
+
+      /* 字体 */
+      --font-mono: 'JetBrains Mono', 'SF Mono', monospace;
+      --font-sans: 'Inter', 'Noto Sans SC', -apple-system, sans-serif;
+
+      /* Easing */
+      --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+      --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    /* ============================================
+       基础重置
+       ============================================ */
+    .reveal {
+      font-family: var(--font-sans);
+      font-size: 30px;
+      color: var(--text);
+      background: var(--bg);
+    }
+
+    .reveal .slides {
+      text-align: left;
+    }
+
+    .reveal section {
+      padding: 60px 80px;
+      height: 100%;
+      box-sizing: border-box;
+      background: var(--bg);
+    }
+
+    /* 网格背景 */
+    .reveal section::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image:
+        linear-gradient(var(--grid-line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+      background-size: 40px 40px;
+      opacity: 0.15;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .reveal section > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ============================================
+       标题样式 - 无衬线粗体
+       ============================================ */
+    .reveal h1, .reveal h2, .reveal h3, .reveal h4 {
+      font-family: var(--font-sans);
+      color: var(--text);
+      font-weight: 600;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+    }
+
+    .reveal h1 {
+      font-size: 2.8em;
+      font-weight: 700;
+    }
+
+    .reveal h2 {
+      font-size: 1.8em;
+      margin-bottom: 0.6em;
+    }
+
+    .reveal h3 {
+      font-size: 1.2em;
+      font-weight: 500;
+    }
+
+    .reveal p {
+      font-size: 1em;
+      line-height: 1.6;
+      margin-bottom: 0.8em;
+    }
+
+    /* ============================================
+       代码样式
+       ============================================ */
+    .reveal pre {
+      font-size: 0.7em;
+      box-shadow: none;
+      margin: 1em 0;
+    }
+
+    .reveal pre code {
+      font-family: var(--font-mono);
+      padding: 1em 1.5em;
+      background: var(--bg-subtle);
+      border: 1px solid var(--grid-line);
+      border-radius: 4px;
+      line-height: 1.5;
+    }
+
+    .code-label {
+      font-family: var(--font-mono);
+      font-size: 0.65em;
+      color: var(--accent);
+      background: var(--bg-subtle);
+      padding: 0.3em 0.6em;
+      border-radius: 2px 2px 0 0;
+      border: 1px solid var(--grid-line);
+      border-bottom: none;
+      display: inline-block;
+      margin-bottom: -1px;
+    }
+
+    /* ============================================
+       关键字高亮
+       ============================================ */
+    .keyword { color: var(--accent); }
+    .function { color: var(--primary-light); }
+    .string { color: var(--success); }
+    .comment { color: var(--text-dim); font-style: italic; }
+    .number { color: var(--warning); }
+
+    /* ============================================
+       功能标签
+       ============================================ */
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3em;
+      font-family: var(--font-mono);
+      font-size: 0.7em;
+      padding: 0.3em 0.7em;
+      border-radius: 3px;
+      background: var(--bg-subtle);
+      border: 1px solid var(--grid-line);
+      color: var(--text);
+      min-width: 0;
+    }
+
+    .tag.primary {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: var(--bg);
+    }
+
+    .tag.accent {
+      background: transparent;
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* ============================================
+       指标卡片
+       ============================================ */
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1em;
+      margin: 1.5em 0;
+    }
+
+    .metric-card {
+      background: var(--bg-subtle);
+      border: 1px solid var(--grid-line);
+      border-radius: 6px;
+      padding: 1.2em;
+      text-align: center;
+    }
+
+    .metric-value {
+      font-family: var(--font-mono);
+      font-size: 2.5em;
+      font-weight: 600;
+      color: var(--primary-light);
+      line-height: 1;
+    }
+
+    .metric-label {
+      font-size: 0.75em;
+      color: var(--text-muted);
+      margin-top: 0.5em;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* ============================================
+       流程步骤
+       ============================================ */
+    .flow-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5em;
+      flex-wrap: wrap;
+      margin: 1.5em 0;
+    }
+
+    .flow-step {
+      font-family: var(--font-mono);
+      font-size: 0.75em;
+      padding: 0.6em 1em;
+      background: var(--bg-subtle);
+      border: 1px solid var(--grid-line);
+      border-radius: 4px;
+      color: var(--text);
+      flex-shrink: 0;
+      min-width: 0;
+    }
+
+    .flow-step.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: var(--bg);
+    }
+
+    .flow-arrow {
+      color: var(--text-dim);
+      font-size: 1.2em;
+    }
+
+    /* ============================================
+       架构图
+       ============================================ */
+    .arch-diagram {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5em;
+      align-items: center;
+      margin: 1.5em 0;
+    }
+
+    .arch-layer {
+      display: flex;
+      gap: 0.5em;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .arch-node {
+      font-family: var(--font-mono);
+      font-size: 0.7em;
+      padding: 0.5em 1.2em;
+      border-radius: 4px;
+      background: var(--bg-subtle);
+      border: 1px solid var(--grid-line);
+      color: var(--text);
+      min-width: 0;
+    }
+
+    .arch-node.highlight {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: var(--bg);
+    }
+
+    .arch-connector {
+      color: var(--text-dim);
+      font-size: 1.5em;
+      line-height: 0.5;
+    }
+
+    /* ============================================
+       标题页
+       ============================================ */
+    .title-slide {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    .title-slide .badge-row {
+      display: flex;
+      gap: 0.5em;
+      margin-bottom: 1.5em;
+    }
+
+    .title-slide h1 {
+      font-size: 3em;
+      margin-bottom: 0.3em;
+    }
+
+    .title-slide .subtitle {
+      font-size: 1.3em;
+      font-weight: 400;
+      color: var(--text-muted);
+      margin-bottom: 2em;
+    }
+
+    .title-slide .meta {
+      font-family: var(--font-mono);
+      font-size: 0.8em;
+      color: var(--text-dim);
+    }
+
+    /* ============================================
+       Fragment 动画 - slide 风格 (duration 300-400ms per guidelines)
+       ============================================ */
+    .reveal .fragment {
+      transition-timing-function: var(--ease-out-expo);
+      transition-duration: 350ms;
+    }
+
+    .reveal .fragment.slide-left {
+      opacity: 0;
+      transform: translateX(-30px);
+    }
+
+    .reveal .fragment.slide-left.visible {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .reveal .fragment.scale-up {
+      opacity: 0;
+      transform: scale(0.9);
+    }
+
+    .reveal .fragment.scale-up.visible {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    /* ============================================
+       进度条
+       ============================================ */
+    .reveal .progress {
+      color: var(--primary);
+      height: 2px;
+    }
+
+    .reveal .controls {
+      color: var(--primary);
+    }
+
+    /* ============================================
+       Reduced Motion
+       ============================================ */
+    @media (prefers-reduced-motion: reduce) {
+      .reveal .fragment {
+        opacity: 1;
+        transform: none;
+        transition: opacity 200ms ease-out;
+      }
+    }
+
+    /* ============================================
+       两列布局
+       ============================================ */
+    .two-col {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 2em;
+    }
+
+    .feature-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .feature-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.8em;
+      margin-bottom: 1em;
+      font-size: 0.9em;
+    }
+
+    .feature-list .icon {
+      color: var(--accent);
+      flex-shrink: 0;
+      margin-top: 0.2em;
+    }
+  </style>
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+      <!-- Slide 1: 标题页 -->
+      <section class="title-slide" data-background="var(--bg)">
+        <div class="badge-row fragment scale-up">
+          <span class="tag primary">
+            <i class="fas fa-bolt"></i> v2.0
+          </span>
+          <span class="tag accent">
+            <i class="fas fa-rocket"></i> 技术演讲
+          </span>
+        </div>
+        <h1 class="fragment slide-left" style="transition-delay: 100ms;">
+          构建下一代<br>边缘计算平台
+        </h1>
+        <p class="subtitle fragment slide-left" style="transition-delay: 200ms;">
+          高性能 · 低延迟 · 全球部署
+        </p>
+        <div class="meta fragment slide-left" style="transition-delay: 300ms;">
+          技术架构组 · 李明 · 2026.03
+        </div>
+      </section>
+
+      <!-- Slide 2: 性能指标 -->
+      <section data-background="var(--bg)">
+        <h2 class="fragment slide-left">性能突破</h2>
+        <div class="metrics">
+          <div class="metric-card fragment scale-up" style="transition-delay: 100ms;">
+            <div class="metric-value">12ms</div>
+            <div class="metric-label">平均延迟</div>
+          </div>
+          <div class="metric-card fragment scale-up" style="transition-delay: 200ms;">
+            <div class="metric-value">99.9%</div>
+            <div class="metric-label">可用性</div>
+          </div>
+          <div class="metric-card fragment scale-up" style="transition-delay: 300ms;">
+            <div class="metric-value">150+</div>
+            <div class="metric-label">边缘节点</div>
+          </div>
+        </div>
+        <div class="flow-row fragment slide-left" style="transition-delay: 400ms;">
+          <span class="flow-step">请求入口</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step">负载均衡</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step active">边缘计算</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step">CDN</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step">响应</span>
+        </div>
+      </section>
+
+      <!-- Slide 3: 架构 -->
+      <section data-background="var(--bg)">
+        <h2 class="fragment slide-left">系统架构</h2>
+        <div class="arch-diagram">
+          <div class="arch-layer fragment scale-up" style="transition-delay: 100ms;">
+            <span class="arch-node highlight">API Gateway</span>
+          </div>
+          <div class="arch-connector fragment" style="transition-delay: 150ms;">↓</div>
+          <div class="arch-layer fragment scale-up" style="transition-delay: 200ms;">
+            <span class="arch-node">Auth</span>
+            <span class="arch-node">Router</span>
+            <span class="arch-node">Cache</span>
+            <span class="arch-node">Queue</span>
+          </div>
+          <div class="arch-connector fragment" style="transition-delay: 250ms;">↓</div>
+          <div class="arch-layer fragment scale-up" style="transition-delay: 300ms;">
+            <span class="arch-node">边缘函数</span>
+            <span class="arch-node">边缘存储</span>
+            <span class="arch-node">边缘数据库</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 4: 核心特性 -->
+      <section data-background="var(--bg)">
+        <h2 class="fragment slide-left">核心特性</h2>
+        <div class="two-col" style="margin-top: 1.5em;">
+          <ul class="feature-list fragment slide-left" style="transition-delay: 100ms;">
+            <li>
+              <i class="fas fa-check-circle icon"></i>
+              <div>
+                <strong>全球低延迟</strong><br>
+                <span style="color: var(--text-muted); font-size: 0.85em;">300+ 节点覆盖 50+ 地区</span>
+              </div>
+            </li>
+            <li>
+              <i class="fas fa-check-circle icon"></i>
+              <div>
+                <strong>原生 TypeScript</strong><br>
+                <span style="color: var(--text-muted); font-size: 0.85em;">完整的类型推断和 IDE 支持</span>
+              </div>
+            </li>
+            <li>
+              <i class="fas fa-check-circle icon"></i>
+              <div>
+                <strong>V8 隔离执行</strong><br>
+                <span style="color: var(--text-muted); font-size: 0.85em;">安全隔离，毫秒级冷启动</span>
+              </div>
+            </li>
+          </ul>
+          <ul class="feature-list fragment slide-left" style="transition-delay: 250ms;">
+            <li>
+              <i class="fas fa-check-circle icon"></i>
+              <div>
+                <strong>边缘持久化</strong><br>
+                <span style="color: var(--text-muted); font-size: 0.85em;">KV、Blob、Postgres 全覆盖</span>
+              </div>
+            </li>
+            <li>
+              <i class="fas fa-check-circle icon"></i>
+              <div>
+                <strong>流式响应</strong><br>
+                <span style="color: var(--text-muted); font-size: 0.85em;">Server-Sent Events 原生支持</span>
+              </div>
+            </li>
+            <li>
+              <i class="fas fa-check-circle icon"></i>
+              <div>
+                <strong>本地开发</strong><br>
+                <span style="color: var(--text-muted); font-size: 0.85em;">模拟生产环境，即刻反馈</span>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Slide 5: 代码示例 -->
+      <section data-background="var(--bg)">
+        <h2 class="fragment slide-left">快速开始</h2>
+        <div class="code-label fragment" style="transition-delay: 50ms;">edge-function.ts</div>
+        <pre class="fragment slide-left" style="transition-delay: 100ms;"><code class="typescript" data-trim data-line-numbers>
+<span class="keyword">import</span> { Hono } <span class="keyword">from</span> <span class="string">'hono'</span>;
+<span class="keyword">import</span> { cors } <span class="keyword">from</span> <span class="string">'hono/cors'</span>;
+
+<span class="keyword">const</span> app = <span class="keyword">new</span> <span class="function">Hono</span>();
+
+app.<span class="function">use</span>(<span class="string">'/*'</span>, <span class="function">cors</span>());
+
+app.<span class="function">get</span>(<span class="string">'/api/status'</span>, (c) => {
+  <span class="keyword">return</span> c.<span class="function">json</span>({
+    <span class="string">"status"</span>: <span class="string">"healthy"</span>,
+    <span class="string">"region"</span>: c.<span class="function">req</span>.geo?.region,
+    <span class="string">"timestamp"</span>: Date.<span class="function">now</span>()
+  });
+});
+
+<span class="keyword">export default</span> app.<span class="function">fetch</span>;
+</code></pre>
+      </section>
+
+      <!-- Slide 6: 结束 -->
+      <section class="title-slide" data-background="var(--bg)">
+        <h2 class="fragment slide-left" style="font-size: 2em;">
+          开始使用
+        </h2>
+        <div class="flow-row fragment slide-left" style="transition-delay: 150ms; justify-content: flex-start;">
+          <span class="tag primary">
+            <i class="fas fa-terminal"></i> npm install @edge/runtime
+          </span>
+        </div>
+        <p class="fragment slide-left" style="transition-delay: 300ms; color: var(--text-muted); margin-top: 2em;">
+          文档：docs.edge-platform.dev<br>
+          示例：github.com/edge/examples
+        </p>
+      </section>
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script>
+    Reveal.initialize({
+      width: 1280,
+      height: 720,
+      margin: 0.04,
+      minScale: 0.8,
+      maxScale: 1.2,
+      hash: true,
+      slideNumber: 'c/t',
+      progress: true,
+      center: false,
+      controls: true,
+      controlsTutorial: false,
+      transition: 'slide',
+      transitionSpeed: 'default',
+      backgroundTransition: 'fade',
+    }).then(() => {
+      hljs.highlightAll();
+    });
+  </script>
+</body>
+</html>

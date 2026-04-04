@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>极简空间风格演示文稿</title>
+
+  <!-- Reveal.js 核心 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/theme/white.css">
+
+  <!-- Google Fonts: 极简字体 -->
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* ============================================
+       CSS 变量 - 极简空间配色
+       黑白灰 + 单色强调
+       ============================================ */
+    :root {
+      /* 主色 - 纯黑 */
+      --primary: oklch(15% 0 0);
+      --primary-light: oklch(45% 0 0);
+      --primary-medium: oklch(65% 0 0);
+
+      /* 背景 - 纯白 */
+      --bg: oklch(100% 0 0);
+      --bg-subtle: oklch(98% 0 0);
+      --bg-dark: oklch(95% 0 0);
+
+/* 文字 - 带微色相提升可读性 */
+      --text: oklch(15% 0.01 250);
+      --text-muted: oklch(50% 0.02 250);
+      --text-light: oklch(70% 0.02 250);
+
+      /* 强调色 - 单一深红 (chroma ≤ 15%) */
+      --accent: oklch(50% 0.12 25);
+
+      /* 边框 */
+      --border: oklch(88% 0.01 250);
+      --border-strong: oklch(82% 0.02 250);
+
+      /* 字体 */
+      --font-sans: 'Instrument Sans', 'Noto Sans SC', -apple-system, sans-serif;
+
+      /* Easing - 精确曲线 */
+      --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* ============================================
+       基础重置 - 极简
+       ============================================ */
+    .reveal {
+      font-family: var(--font-sans);
+      font-size: 30px;
+      color: var(--text);
+      background: var(--bg);
+    }
+
+    .reveal .slides {
+      text-align: left;
+    }
+
+    .reveal section {
+      padding: 100px 120px;
+      height: 100%;
+      box-sizing: border-box;
+    }
+
+    /* ============================================
+       标题样式 - 超大字号
+       ============================================ */
+    .reveal h1, .reveal h2, .reveal h3 {
+      font-family: var(--font-sans);
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 1.05;
+      color: var(--text);
+    }
+
+    .reveal h1 {
+      font-size: 4em;
+    }
+
+    .reveal h2 {
+      font-size: 2.2em;
+      font-weight: 600;
+    }
+
+    .reveal h3 {
+      font-size: 1.25em;
+      font-weight: 600;
+    }
+
+    .reveal p {
+      font-size: 1em;
+      line-height: 1.6;
+      color: var(--text-muted);
+      margin-bottom: 0;
+    }
+
+    /* ============================================
+       大量留白
+       ============================================ */
+    .spacious {
+      margin-top: 3em;
+    }
+
+    .spacious-lg {
+      margin-top: 5em;
+    }
+
+    /* ============================================
+       标题页 - 左上角对齐
+       ============================================ */
+    .title-slide {
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      padding: 60px 80px;
+    }
+
+    .title-slide .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.65em;
+      color: var(--text-light);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .title-slide h1 {
+      align-self: center;
+      max-width: 700px;
+    }
+
+    .title-slide .meta {
+      font-size: 0.75em;
+      color: var(--text-muted);
+    }
+
+    /* ============================================
+       网格布局 - 4pt 系统
+       ============================================ */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 2em;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 2em;
+    }
+
+    .grid-item {
+      background: var(--bg-subtle);
+      padding: 2em;
+      border: 1px solid var(--border);
+    }
+
+.grid-item h3 {
+      font-size: 1.1em;
+      margin-bottom: 0.5em;
+    }
+
+    .grid-item p {
+      font-size: 0.9em;
+    }
+
+    /* ============================================
+       大数字强调
+       ============================================ */
+    .big-number {
+      font-family: var(--font-sans);
+      font-size: 8em;
+      font-weight: 700;
+      line-height: 1;
+      color: var(--text);
+      letter-spacing: -0.05em;
+    }
+
+    .big-number-label {
+      font-size: 0.75em;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-top: 1em;
+    }
+
+    /* ============================================
+       引用 - 极简风格
+       ============================================ */
+    .minimal-quote {
+      font-size: 1.6em;
+      font-weight: 500;
+      color: var(--text);
+      line-height: 1.4;
+      border-left: 3px solid var(--accent);
+      padding-left: 1.5em;
+      margin: 2em 0;
+    }
+
+    /* ============================================
+       列表 - 超简洁
+       ============================================ */
+    .simple-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .simple-list li {
+      font-size: 1em;
+      padding: 1em 0;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 1em;
+    }
+
+    .simple-list li:last-child {
+      border-bottom: none;
+    }
+
+    .simple-list .num {
+      font-family: var(--font-sans);
+      font-size: 0.7em;
+      font-weight: 600;
+      color: var(--text-light);
+      width: 2em;
+    }
+
+    /* ============================================
+       卡片 - 超简洁
+       ============================================ */
+    .minimal-card {
+      background: var(--bg-subtle);
+      border: 1px solid var(--border);
+      padding: 2em;
+    }
+
+    .minimal-card h3 {
+      font-size: 1em;
+      margin-bottom: 0.5em;
+    }
+
+    .minimal-card p {
+      font-size: 0.85em;
+      margin: 0;
+    }
+
+    /* ============================================
+       Fragment 动画 - zoom
+       ============================================ */
+    .reveal .fragment {
+      transition-timing-function: var(--ease-out-expo);
+    }
+
+    .reveal .fragment.zoom-in {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+
+    .reveal .fragment.zoom-in.visible {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    /* ============================================
+       进度条 - 极简
+       ============================================ */
+    .reveal .progress {
+      color: var(--accent);
+      height: 2px;
+    }
+
+    .reveal .controls {
+      color: var(--text-light);
+    }
+
+    /* ============================================
+       Reduced Motion
+       ============================================ */
+    @media (prefers-reduced-motion: reduce) {
+      .reveal .fragment {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    /* ============================================
+       两列 - 超宽间距
+       ============================================ */
+    .two-col {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 8px;
+      margin-top: 2em;
+    }
+  </style>
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+      <!-- Slide 1: 标题页 -->
+      <section class="title-slide" data-background="var(--bg)">
+        <div class="top-bar">
+          <span>Product Presentation</span>
+          <span>2026</span>
+        </div>
+        <h1 class="fragment zoom-in" style="transition-delay: 0ms;">
+          设计,<br>
+          即是选择
+        </h1>
+        <p class="meta fragment zoom-in" style="transition-delay: 150ms;">
+          极简主义产品设计语言
+        </p>
+      </section>
+
+      <!-- Slide 2: 核心数字 -->
+      <section data-background="var(--bg)">
+        <h2 class="fragment zoom-in">设计的价值</h2>
+        <div class="spacious">
+          <div class="big-number fragment zoom-in" style="transition-delay: 100ms;">89%</div>
+          <p class="big-number-label fragment zoom-in" style="transition-delay: 200ms;">
+            用户更愿意为设计优质的产品支付溢价
+          </p>
+        </div>
+      </section>
+
+      <!-- Slide 3: 三列特性 -->
+      <section data-background="var(--bg)">
+        <h2 class="fragment zoom-in">设计原则</h2>
+        <div class="grid-3">
+          <div class="grid-item fragment zoom-in" style="transition-delay: 120ms;">
+            <h3>留白</h3>
+            <p>空间不是浪费，是呼吸。每一个空白都在说话。</p>
+          </div>
+          <div class="grid-item fragment zoom-in" style="transition-delay: 240ms;">
+            <h3>层级</h3>
+            <p>清晰的视觉层级，让信息自然流动。</p>
+          </div>
+          <div class="grid-item fragment zoom-in" style="transition-delay: 360ms;">
+            <h3>克制</h3>
+            <p>做减法比做加法更难，也更见功力。</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 4: 引言 -->
+      <section data-background="var(--bg)">
+        <div class="spacious-lg">
+          <p class="minimal-quote fragment zoom-in">
+            " Perfection is achieved not when there is nothing more to add, but when there is nothing left to take away. "
+          </p>
+          <p class="fragment zoom-in" style="transition-delay: 200ms; margin-top: 2em; font-size: 0.85em;">
+            — Antoine de Saint-Exupéry
+          </p>
+        </div>
+      </section>
+
+      <!-- Slide 5: 列表 -->
+      <section data-background="var(--bg)">
+        <h2 class="fragment zoom-in">产品特性</h2>
+        <ul class="simple-list" style="margin-top: 2em;">
+          <li class="fragment zoom-in" style="transition-delay: 0ms;">
+            <span class="num">01</span>
+            <span>超轻量设计 — 总资源小于 50KB</span>
+          </li>
+          <li class="fragment zoom-in" style="transition-delay: 120ms;">
+            <span class="num">02</span>
+            <span>自然语言界面 — 无需学习即可使用</span>
+          </li>
+          <li class="fragment zoom-in" style="transition-delay: 240ms;">
+            <span class="num">03</span>
+            <span>隐私优先 — 数据全程本地处理</span>
+          </li>
+          <li class="fragment zoom-in" style="transition-delay: 360ms;">
+            <span class="num">04</span>
+            <span>跨平台同步 — iOS、Android、Web 一致体验</span>
+          </li>
+        </ul>
+      </section>
+
+      <!-- Slide 6: 两列对比 -->
+      <section data-background="var(--bg)">
+        <h2 class="fragment zoom-in">对比</h2>
+        <div class="two-col">
+          <div class="minimal-card fragment zoom-in" style="transition-delay: 120ms;">
+            <h3 style="color: var(--text-muted);">传统方案</h3>
+            <p style="margin-top: 1em; font-size: 0.9em;">
+              复杂的设置选项<br>
+              繁多的功能堆积<br>
+              频繁的版本更新<br>
+              昂贵的学习成本
+            </p>
+          </div>
+          <div class="minimal-card fragment zoom-in" style="transition-delay: 240ms;">
+            <h3 style="color: var(--accent);">我们的方案</h3>
+            <p style="margin-top: 1em; font-size: 0.9em;">
+              零配置，开箱即用<br>
+              专注核心，足够就好<br>
+              稳定可靠，无需担忧<br>
+              直觉操作，上手即会
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 7: 结束 -->
+      <section class="title-slide" data-background="var(--bg)">
+        <div></div>
+        <h2 class="fragment zoom-in" style="font-size: 2.5em;">
+          简单，是终极的复杂
+        </h2>
+        <p class="meta fragment zoom-in" style="transition-delay: 150ms;">
+          感谢关注
+        </p>
+      </section>
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.js"></script>
+  <script>
+    Reveal.initialize({
+      width: 1280,
+      height: 720,
+      margin: 0.06,
+      minScale: 0.8,
+      maxScale: 1.2,
+      hash: true,
+      slideNumber: false,
+      progress: true,
+      center: false,
+      controls: true,
+      controlsTutorial: false,
+      transition: 'zoom',
+      transitionSpeed: 'default',
+      backgroundTransition: 'fade',
+    });
+  </script>
+</body>
+</html>
