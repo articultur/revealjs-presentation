@@ -359,13 +359,14 @@ if __name__ == "__main__":
 
 ## 超框案例记录
 
+> 以下案例来自真实项目经验。案例中引用的文件名仅作记录用途，实际文件可能不存在于当前仓库。
+
 ### 案例 1：9 项列表超框
 
 | 项目 | 内容 |
 |------|------|
-| 文件 | `claude-code-skills-lessons.html` 第 3 页 |
-| 问题 | "9 种 Skills 类型"页面，9 项列表垂直堆叠导致超框 |
-| 原因 | 单列承载 9 项内容，每项 2 行文字，总高度超出 720px |
+| 问题 | 9 项列表垂直堆叠导致超框 |
+| 原因 | 单列承载 9 项内容，每项 2 行文字，总高度超出可用区域 |
 | 解决方案 | 改双列布局（5+4），缩小字体和间距 |
 
 ```html
@@ -385,8 +386,7 @@ if __name__ == "__main__":
 
 | 项目 | 内容 |
 |------|------|
-| 文件 | `claude-code-skills-lessons.html` 第 8 页 |
-| 问题 | `[references/api.md] → [详细函数签名和用法]` 超框 |
+| 问题 | `A → B` 流程步骤文字过长导致超框 |
 | 原因 | flow-step 内的中文文字过长，又设置了 `white-space: nowrap` |
 | 解决方案 | 缩短文字、使用更短的描述 |
 
@@ -404,8 +404,7 @@ if __name__ == "__main__":
 
 | 项目 | 内容 |
 |------|------|
-| 文件 | `memory-system-architecture-v4.html` |
-| 问题 | 架构图第二行 6 个 skill 元素超框 |
+| 问题 | 架构图一行 6+ 个元素超框 |
 | 原因 | 固定 `flex-wrap: nowrap` 导致无法换行 |
 | 解决方案 | 启用 `flex-wrap: wrap`，并减小字体到 0.65em |
 
@@ -422,11 +421,10 @@ if __name__ == "__main__":
 }
 ```
 
-### 案例 4：流程图单行 9 元素
+### 案例 4：流程图单行 9+ 元素
 
 | 项目 | 内容 |
 |------|------|
-| 文件 | `agent-skill-design.html` "数据流"页面 |
 | 问题 | 9 步流程图单行排列完全超出可视区域 |
 | 原因 | 忽略了"单行 ≤ 5 元素"原则 |
 | 解决方案 | 拆成两行，每行 4-5 元素 |
@@ -437,6 +435,101 @@ if __name__ == "__main__":
 [Step1] → [Step2] → [Step3] → [Step4]
 [Step5] → [Step6] → [Step7] → [Step8] → [Step9]
 ```
+
+### 案例 5：4 要素列表截断
+
+| 项目 | 内容 |
+|------|------|
+| 问题 | "4 要素"页面，第 4 项被截断 |
+| 原因 | 4 项列表每项有图标+标题+描述，总高度超出 |
+| 解决方案 | 缩短描述文字、减小 margin 和 padding |
+
+```html
+<!-- 修复前：描述文字较长 -->
+<div class="apple-list-item">
+  <strong>避免模糊词</strong>
+  <span>不写 "helps with"、"provides guidance"</span>
+</div>
+
+<!-- 修复后：缩短文字 + 减小间距 -->
+<div class="apple-list-item" style="margin: 0.4em 0;">
+  <strong>避免模糊词</strong>
+  <span>不写 helps with、provides</span>
+</div>
+```
+
+### 案例 6：代码块截断
+
+| 项目 | 内容 |
+|------|------|
+| 问题 | "高级技巧"页面代码块只显示半行 |
+| 原因 | 代码块 + 3 个卡片 + 标题+描述，总高度超出 |
+| 解决方案 | 去掉 `<pre><code>` 包裹，改用纯文本展示 |
+
+```html
+<!-- 修复前：代码块 -->
+<pre><code class="json" style="font-size: 0.6em;">
+{"pre_tool_use": [{"matcher": ".*", ...}]}
+</code></pre>
+
+<!-- 修复后：纯文本行 -->
+<div class="apple-card" style="padding: 0.5em 0.8em;">
+  <p style="font-size: 0.6em; color: gray; font-family: monospace;">
+    {"pre_tool_use": [{"matcher": ".*", ...}]}
+  </p>
+</div>
+```
+
+### 案例 7：6 项检查清单只显示 3 项
+
+| 项目 | 内容 |
+|------|------|
+| 问题 | "快速检查清单"6 项只显示 3 项 |
+| 原因 | 6 项列表每项有图标+文字，双列布局仍然溢出 |
+| 解决方案 | 改用更紧凑的卡片样式，减小 gap 和 padding |
+
+```html
+<!-- 修复前：列表项样式 -->
+<div class="apple-list-item" style="margin: 0; padding: 0.4em 0;">
+  <i class="fas fa-check-circle"></i>
+  <div class="item-content">
+    <strong>description 包含具体触发短语</strong>
+  </div>
+</div>
+
+<!-- 修复后：紧凑卡片样式 -->
+<div class="apple-card" style="padding: 0.5em 0.8em; display: flex; align-items: center; gap: 0.5em;">
+  <i class="fas fa-check-circle" style="flex-shrink: 0;"></i>
+  <span style="font-size: 0.8em; color: white;">description 包含具体触发短语</span>
+</div>
+```
+
+### 案例 8：编辑拆分时信息丢失
+
+| 项目 | 内容 |
+|------|------|
+| 问题 | 将 9 种 Skill 类型拆分为 2 页时，遗漏了"基础设施运维"项，只剩 8 项 |
+| 原因 | 编辑时只关注布局，忽略了对原始内容的逐项核对 |
+| 解决方案 | **拆分内容前：先列出所有原始项的清单，每复制一项就打一个标记** |
+
+```markdown
+## 拆分前 checklist
+- [x] 库与 API 参考
+- [x] 产品验证
+- [x] 数据获取与分析
+- [x] 业务流程自动化
+- [x] 代码脚手架
+- [x] 代码质量审查
+- [x] CI/CD 与部署
+- [x] 运维手册
+- [x] 基础设施运维  ← 这个最容易漏
+
+拆分后检查：
+- Slide 2a: 4 项 ✓
+- Slide 2b: 5 项 ✓
+```
+
+---
 
 ## 内容密度限制
 
@@ -504,105 +597,6 @@ reveal.js 演示区域固定为 **1280 × 720px**，实际可用高度约 **650p
 - 4 项列表：每项 ~35px × 4 = 140px ✓
 - 2×2 卡片：每卡 ~80px × 2 行 = 160px ✓
 - 3 列卡片：每卡 ~100px = 100px ✓
-```
-
-## 超框案例记录（续）
-
-### 案例 5：4 要素列表截断
-
-| 项目 | 内容 |
-|------|------|
-| 文件 | `how-to-write-good-skills-apple-dark.html` 第 4 页 |
-| 问题 | "好 Description 的四要素"页面，第 4 项被截断 |
-| 原因 | 4 项列表每项有图标+标题+描述，总高度超出 |
-| 解决方案 | 缩短描述文字、减小 margin 和 padding |
-
-```html
-<!-- 修复前：描述文字较长 -->
-<div class="apple-list-item">
-  <strong>避免模糊词</strong>
-  <span>不写 "helps with"、"provides guidance"</span>
-</div>
-
-<!-- 修复后：缩短文字 + 减小间距 -->
-<div class="apple-list-item" style="margin: 0.4em 0;">
-  <strong>避免模糊词</strong>
-  <span>不写 helps with、provides</span>
-</div>
-```
-
-### 案例 6：代码块截断
-
-| 项目 | 内容 |
-|------|------|
-| 文件 | `how-to-write-good-skills-apple-dark.html` 第 12 页 |
-| 问题 | "高级技巧"页面代码块只显示半行 |
-| 原因 | 代码块 + 3 个卡片 + 标题+描述，总高度超出 |
-| 解决方案 | 去掉 `<pre><code>` 包裹，改用纯文本展示 |
-
-```html
-<!-- 修复前：代码块 -->
-<pre><code class="json" style="font-size: 0.6em;">
-{"pre_tool_use": [{"matcher": ".*", ...}]}
-</code></pre>
-
-<!-- 修复后：纯文本行 -->
-<div class="apple-card" style="padding: 0.5em 0.8em;">
-  <p style="font-size: 0.6em; color: gray; font-family: monospace;">
-    {"pre_tool_use": [{"matcher": ".*", ...}]}
-  </p>
-</div>
-```
-
-### 案例 7：6 项检查清单只显示 3 项
-
-| 项目 | 内容 |
-|------|------|
-| 文件 | `how-to-write-good-skills-apple-dark.html` 第 14 页 |
-| 问题 | "快速检查清单"6 项只显示 3 项 |
-| 原因 | 6 项列表每项有图标+文字，双列布局仍然溢出 |
-| 解决方案 | 改用更紧凑的卡片样式，减小 gap 和 padding |
-
-```html
-<!-- 修复前：列表项样式 -->
-<div class="apple-list-item" style="margin: 0; padding: 0.4em 0;">
-  <i class="fas fa-check-circle"></i>
-  <div class="item-content">
-    <strong>description 包含具体触发短语</strong>
-  </div>
-</div>
-
-<!-- 修复后：紧凑卡片样式 -->
-<div class="apple-card" style="padding: 0.5em 0.8em; display: flex; align-items: center; gap: 0.5em;">
-  <i class="fas fa-check-circle" style="flex-shrink: 0;"></i>
-  <span style="font-size: 0.8em; color: white;">description 包含具体触发短语</span>
-</div>
-```
-
-### 案例 8：编辑拆分时信息丢失
-
-| 项目 | 内容 |
-|------|------|
-| 文件 | `如何写好-Agent-Skill.html` Slide 2 |
-| 问题 | 将 9 种 Skill 类型拆分为 2 页时，遗漏了"基础设施运维"项，只剩 8 项 |
-| 原因 | 编辑时只关注布局，忽略了对原始内容的逐项核对 |
-| 解决方案 | **拆分内容前：先列出所有原始项的清单，每复制一项就打一个标记** |
-
-```markdown
-## 拆分前 checklist
-- [x] 库与 API 参考
-- [x] 产品验证
-- [x] 数据获取与分析
-- [x] 业务流程自动化
-- [x] 代码脚手架
-- [x] 代码质量审查
-- [x] CI/CD 与部署
-- [x] 运维手册
-- [x] 基础设施运维  ← 这个最容易漏
-
-拆分后检查：
-- Slide 2a: 4 项 ✓
-- Slide 2b: 5 项 ✓
 ```
 
 ## 快速检查清单

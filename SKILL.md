@@ -295,16 +295,24 @@ Validation requires only a browser. No installation needed.
 2. Step through every slide with arrow keys
 3. Check for overflow, awkward scale, and animation issues
 
-Browser console validation (paste into DevTools `F12`):
+Automated browser validation (headless Playwright):
 
-- `scripts/overflow-detect.js`: inspect overflow — paste file contents into console
-- `scripts/auto-fix-css.js`: apply common CSS fixes — paste file contents into console
+```bash
+node scripts/validate.js <HTML文件>      # 检测溢出并截图
+node scripts/validate.js <HTML文件> --fix  # 检测 + 自动修复 + 重新验证
+```
+
+手动验证（备用）：
+1. 双击 HTML 文件在浏览器中打开
+2. 用方向键逐页检查
+3. 检查溢出、比例失调、动画问题
 
 If you did not validate in a browser, say so explicitly in the final response.
 
 Decision points during validation:
 
-- If overflow exists: run `scripts/overflow-detect.js`, then apply targeted CSS fixes or use `scripts/auto-fix-css.js`
+- If overflow exists: run `node scripts/validate.js <file> --fix` to attempt auto-fix
+- If auto-fix fails: apply targeted CSS fixes manually
 - If animation harms readability: reduce stagger/transition intensity and re-check with reduced motion
 - If visual quality drops after fitting content: split the slide instead of shrinking all typography
 

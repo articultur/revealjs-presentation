@@ -49,7 +49,7 @@
     }
   });
 
-  // ========== A3: word-break（长文本溢出，使用 overflow-wrap）==========
+  // ========== A3: word-break（长文本溢出，使用 overflow-wrap: anywhere）==========
   document.querySelectorAll('p,h1,h2,h3,li,td,span').forEach(el => {
     if (el.scrollWidth > el.clientWidth + 1) {
       const computed = window.getComputedStyle(el);

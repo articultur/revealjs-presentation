@@ -211,15 +211,7 @@ background: linear-gradient(135deg, #0c0c0c 0%, #2d3436 100%);
 <!-- bounce 和 elastic 感觉过时且廉价 -->
 ```
 
-### Reveal.js 过渡效果
-
-| 效果 | 特点 | 适用场景 |
-|------|------|---------|
-| `fade` | 渐变过渡，推荐默认 | 通用 |
-| `slide` | 滑动切换 | 内容切换 |
-| `convex` | 凸出切换 | 轻松活泼 |
-| `concave` | 凹陷切换 | 强调深度 |
-| `zoom` | 缩放过渡 | 重点强调 |
+详情见 `references/motion-delight.md` 的"页面过渡"章节。
 
 ---
 

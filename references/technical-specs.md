@@ -85,15 +85,7 @@ Reveal.initialize({
 });
 ```
 
-### 过渡效果对比
-
-| 效果 | 特点 | 适用场景 |
-|------|------|---------|
-| `fade` | 渐变过渡，推荐默认 | 通用，推荐 |
-| `slide` | 滑动切换 | 内容切换 |
-| `convex` | 凸出切换 | 轻松活泼 |
-| `concave` | 凹陷切换 | 强调深度 |
-| `zoom` | 缩放过渡 | 重点强调 |
+详情见 `references/motion-delight.md` 的"页面过渡"章节。
 
 ### 自动播放配置
 
@@ -114,6 +106,29 @@ document.addEventListener('click', function(e) {
 ```
 
 ## CSS 约束规则
+
+### 颜色系统（推荐 OKLCH）
+
+**使用 OKLCH 而非 HEX**，OKLCH 是感知均匀的颜色空间，lightness 的等步长看起来相等。
+
+```css
+/* OKLCH: lightness (0-100%), chroma (0-0.4+), hue (0-360) */
+:root {
+  --primary: oklch(60% 0.15 250);       /* 蓝色 */
+  --primary-light: oklch(85% 0.08 250); /* 同一色相，更浅 */
+  --accent: oklch(65% 0.2 30);         /* 橙色强调 */
+  --bg: oklch(15% 0.01 250);           /* 深色背景 */
+  --bg-subtle: oklch(20% 0.02 250);   /* 次要背景 */
+  --text: oklch(95% 0.01 250);        /* 浅色文字 */
+  --text-muted: oklch(70% 0.02 250);  /* 次要文字 */
+}
+
+/* 不使用纯灰或纯黑——添加微量色调 */
+.ok-gray: oklch(95% 0.01 250);  /* 冷色调蓝灰 */
+.ok-gray-dark: oklch(15% 0.01 250);
+```
+
+> 注意：OKLCH 在 Safari 15.4+、Chrome 111+、Firefox 113+ 支持。如需兼容旧版浏览器，回退到 HEX 或 HSLA。
 
 ### 基础约束（必须）
 
