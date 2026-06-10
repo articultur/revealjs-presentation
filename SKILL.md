@@ -108,6 +108,7 @@ Impeccable 提供 7 个参考文件和 20 个设计命令（`/audit`、`/polish`
 
 从选定模板开始，保留其视觉系统：
 
+- **内置 PPTX 导出按钮**：在 `</body>` 前添加 PptxGenJS CDN + `scripts/export-pptx-client.js` 的内联代码，让用户可以在浏览器中一键导出可编辑 PPTX
 - 使用 CSS 变量管理颜色、间距、字体
 - 使用 `clamp()` 流体字号（参照 `references/technical-specs.md`）
 - 每页 1 个视觉重心，版面从版面池选择
@@ -212,7 +213,13 @@ node scripts/validate.js <file> --fix  # 检测 + 自动修复 + 重新验证
 
 ### PPTX 导出（可编辑）
 
-生成可在 PowerPoint 中编辑、增删、修改的 .pptx 文件：
+生成可在 PowerPoint 中编辑、增删、修改的 .pptx 文件。
+
+**方式一：浏览器一键导出**（推荐，自动内置）
+
+生成的 HTML 文件左下角包含 PPTX 导出按钮，点击即可下载可编辑 PPTX。无需安装任何依赖。
+
+**方式二：命令行导出**
 
 ```bash
 node scripts/export-pptx.js <file>                    # 同目录生成 .pptx
@@ -227,7 +234,7 @@ node scripts/export-pptx.js <file> -o output.pptx     # 指定输出路径
 - 多列布局自动识别并还原
 - 自动添加页码
 
-依赖：`npm install pptxgenjs cheerio`
+命令行依赖：`npm install pptxgenjs cheerio`
 
 ### PDF 导出
 
@@ -304,4 +311,5 @@ decktape reveal file.html output.pdf
 - **`scripts/bootstrap.sh`** — 安装开发依赖
 - **`scripts/overflow-detect.js`** — 浏览器控制台溢出扫描
 - **`scripts/auto-fix-css.js`** — 浏览器控制台 CSS 自动修复
-- **`scripts/export-pptx.js`** — 导出可编辑 PPTX（需要 pptxgenjs + cheerio）
+- **`scripts/export-pptx.js`** — 命令行 PPTX 导出（需要 pptxgenjs + cheerio）
+- **`scripts/export-pptx-client.js`** — 浏览器端 PPTX 导出按钮（嵌入 HTML 中使用）
