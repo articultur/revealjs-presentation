@@ -12,9 +12,64 @@ echo "=== revealjs-presentation: first-time setup ==="
 echo ""
 
 # -------------------------------------------------------
-# Step 1: Check impeccable skill
+# Step 1: Check Node.js
 # -------------------------------------------------------
-echo "[1/2] Checking impeccable skill..."
+echo "[1/3] Checking Node.js..."
+
+if command -v node >/dev/null 2>&1; then
+  NODE_MAJOR="$(node -p "process.versions.node.split('.')[0]")"
+  if [[ "$NODE_MAJOR" -lt 18 ]]; then
+    echo "    WARN Node.js 18+ recommended, current: $(node -v)"
+    echo "         Some features (CLI export, validation) may not work"
+  else
+    echo "    OK  Node.js $(node -v)"
+  fi
+else
+  echo "    WARN Node.js not found. Browser-based features still work."
+  echo "         Install Node.js 18+ for CLI export and validation."
+fi
+
+# -------------------------------------------------------
+# Step 2: Install npm dependencies
+# -------------------------------------------------------
+echo "[2/3] Checking npm dependencies..."
+
+if [[ -f package.json ]] && command -v npm >/dev/null 2>&1; then
+  # 检查是否需要安装
+  NEEDS_INSTALL=0
+
+  # 检查关键依赖
+  if [[ ! -d node_modules/pptxgenjs ]]; then
+    NEEDS_INSTALL=1
+    echo "    ... pptxgenjs (PPTX 导出) 未安装"
+  fi
+  if [[ ! -d node_modules/cheerio ]]; then
+    NEEDS_INSTALL=1
+    echo "    ... cheerio (HTML 解析) 未安装"
+  fi
+
+  if [[ $NEEDS_INSTALL -eq 1 ]]; then
+    echo "    Installing dependencies..."
+    if npm install --production 2>&1; then
+      echo "    OK  npm dependencies installed"
+    else
+      echo "    FAIL npm install failed. Run manually: npm install"
+      ERRORS=$((ERRORS + 1))
+    fi
+  else
+    echo "    OK  all npm dependencies present"
+  fi
+elif [[ ! -f package.json ]]; then
+  echo "    WARN package.json not found, skipping npm install"
+else
+  echo "    WARN npm not available, skipping dependency install"
+  echo "         Browser-based PPTX export still works (uses CDN)"
+fi
+
+# -------------------------------------------------------
+# Step 3: Check impeccable skill
+# -------------------------------------------------------
+echo "[3/3] Checking impeccable skill..."
 
 IMPECCABLE_FOUND=0
 SEARCH_PATHS=(
@@ -67,21 +122,6 @@ if [[ $IMPECCABLE_FOUND -eq 0 ]]; then
 fi
 
 # -------------------------------------------------------
-# Step 2: Verify skill structure
-# -------------------------------------------------------
-echo "[2/2] Checking skill structure..."
-
-STRUCT_OK=1
-for f in SKILL.md examples references scripts; do
-  if [[ ! -e "$ROOT_DIR/$f" ]]; then
-    echo "    FAIL missing: $f"
-    STRUCT_OK=0
-    ERRORS=$((ERRORS + 1))
-  fi
-done
-[[ $STRUCT_OK -eq 1 ]] && echo "    OK  skill files present"
-
-# -------------------------------------------------------
 # Result
 # -------------------------------------------------------
 echo ""
@@ -95,11 +135,14 @@ if [[ $ERRORS -eq 0 ]]; then
   echo "     > 做一个有设计感的 PPT，主题是 X，受众是 Y，页数 8 页，输出 reveal.js"
   echo "  4. Save the generated .html file and open it in any browser"
   echo ""
-  echo "  Export to PDF: open yourfile.html?print-pdf in Chrome → print to PDF"
+  echo "  Export options:"
+  echo "    Browser: open HTML → click 📥 PPTX button (bottom-left)"
+  echo "    CLI:      node scripts/export-pptx.js your-slides.html"
+  echo "    PDF:      open yourfile.html?print-pdf in Chrome → print to PDF"
   echo ""
 else
   echo "=== Setup finished with $ERRORS issue(s). See above for instructions. ==="
   echo ""
-  echo "Once impeccable is installed, re-run:  bash scripts/setup.sh"
+  echo "Once issues are resolved, re-run:  bash scripts/setup.sh"
   echo ""
 fi
