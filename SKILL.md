@@ -208,13 +208,46 @@ node scripts/validate.js <file> --fix  # 检测 + 自动修复 + 重新验证
 
 如果未执行验证，在最终回复中明确说明。
 
+## 导出
+
+### PPTX 导出（可编辑）
+
+生成可在 PowerPoint 中编辑、增删、修改的 .pptx 文件：
+
+```bash
+node scripts/export-pptx.js <file>                    # 同目录生成 .pptx
+node scripts/export-pptx.js <file> -o output.pptx     # 指定输出路径
+```
+
+特性：
+- 每个标题、段落、列表项都是独立文本框，可自由编辑
+- 保留文字颜色、字体、粗体、斜体等格式
+- 保留幻灯片背景（纯色和渐变）
+- 保留 speaker notes
+- 多列布局自动识别并还原
+- 自动添加页码
+
+依赖：`npm install pptxgenjs cheerio`
+
+### PDF 导出
+
+**方法一：浏览器内置**（推荐）
+1. Chrome 打开 `file.html?print-pdf`
+2. `Ctrl+P` / `Cmd+P` → 打印为 PDF
+
+**方法二：Decktape**（命令行自动化）
+```bash
+npm install -g decktape
+decktape reveal file.html output.pdf
+```
+
 ## 交付
 
 始终提供：
 
 - 一个可运行的 HTML 文件（无需安装）
 - 使用说明：浏览器打开，方向键导航，`S` 查看演讲者备注，`F` 全屏
-- PDF 导出：Chrome 打开 `file.html?print-pdf` → 打印为 PDF
+- PDF 导出：见上方"导出"章节
 - 是否执行了验证的明确说明
 
 新手模式额外说明：
@@ -271,3 +304,4 @@ node scripts/validate.js <file> --fix  # 检测 + 自动修复 + 重新验证
 - **`scripts/bootstrap.sh`** — 安装开发依赖
 - **`scripts/overflow-detect.js`** — 浏览器控制台溢出扫描
 - **`scripts/auto-fix-css.js`** — 浏览器控制台 CSS 自动修复
+- **`scripts/export-pptx.js`** — 导出可编辑 PPTX（需要 pptxgenjs + cheerio）

@@ -2,3 +2,5 @@
 node_modules/
 .playwright-mcp/
 .omc/
+*.pptx
+*.pdf
