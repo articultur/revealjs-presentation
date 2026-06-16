@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Intentional Overflow Fixture</title>
+  <style>
+    body { margin: 0; }
+    .reveal .slides > section {
+      width: 1280px;
+      height: 720px;
+      position: relative;
+      overflow: hidden;
+    }
+    .overflow-box {
+      position: absolute;
+      left: 1180px;
+      top: 80px;
+      width: 320px;
+      height: 80px;
+      background: #8a6a4a;
+    }
+  </style>
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+      <section>
+        <h1>Overflow fixture</h1>
+        <div class="overflow-box">This element must overflow the 1280px viewport.</div>
+      </section>
+    </div>
+  </div>
+</body>
+</html>

@@ -16,11 +16,6 @@ echo "[doctor] Running environment checks..."
 
 # --- Runtime (optional) ---
 if command -v node >/dev/null 2>&1 && command -v npm >/dev/null 2>&1; then
-  if [[ ! -d node_modules/reveal.js ]]; then
-    echo "[doctor] WARN: reveal.js not installed locally (run npm run bootstrap for local dev server)"
-    echo "[doctor]       Note: generated HTML loads reveal.js from CDN — no local install needed for basic use"
-    WARN=$((WARN+1))
-  fi
   if [[ ! -d node_modules/http-server ]]; then
     echo "[doctor] WARN: http-server not installed (run npm run bootstrap to enable npm run start)"
     WARN=$((WARN+1))
@@ -32,6 +27,10 @@ fi
 # --- impeccable skill ---
 IMPECCABLE_FOUND=0
 SEARCH_PATHS=(
+  "$ROOT_DIR/.agents/skills/impeccable"
+  "$ROOT_DIR/.claude/skills/impeccable"
+  "$HOME/.agents/skills/impeccable"
+  "$HOME/.claude/skills/impeccable"
   "$HOME/.claude/skills/frontend-design"
   "$HOME/.agents/skills/frontend-design"
   "$ROOT_DIR/.claude/skills/frontend-design"
@@ -42,7 +41,7 @@ SEARCH_PATHS=(
 for p in "${SEARCH_PATHS[@]}"; do
   if [[ -f "$p/SKILL.md" ]]; then
     IMPECCABLE_FOUND=1
-    echo "[doctor] OK: impeccable frontend-design skill found at $p"
+    echo "[doctor] OK: impeccable skill found at $p"
     break
   fi
 done

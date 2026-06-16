@@ -42,7 +42,7 @@
     .reveal .slides { text-align: left; }
     .reveal section {
       padding: 44px 60px; height: 100%; box-sizing: border-box; overflow: hidden;
-      background: var(--c-bg); position: relative;   /* !important 必含：覆盖 reveal.css section absolute，防 pin/label 跨 slide 泄露（test-label-overlap.js）*/
+      background: var(--c-bg); position: relative;   /* 弱选择器 `.reveal section`（0,1,1）被 reveal.css（0,2,1）覆盖，position: relative 仅 fallback 无害。切勿加 !important 或加强选择器。*/
     }
     .reveal .slides > section.deck-flex.present { display: flex !important; top: 0 !important; }
     .reveal .slides > section.deck-grid.present { display: grid !important; top: 0 !important; }

@@ -1,0 +1,261 @@
+{
+  "metadata": {
+    "skill_name": "revealjs-presentation",
+    "skill_path": "/Users/nonon/Desktop/revealjs-presentation",
+    "executor_model": "MiniMax-M3",
+    "analyzer_model": "MiniMax-M3",
+    "timestamp": "2026-06-16T15:30:00Z",
+    "evals_run": [1, 2, 3],
+    "runs_per_configuration": 1
+  },
+  "runs": [
+    {
+      "eval_id": 1,
+      "eval_name": "security-training-zh",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.78,
+        "passed": 7,
+        "failed": 2,
+        "total": 9,
+        "time_seconds": 680.0,
+        "tokens": 103887,
+        "tool_calls": 41,
+        "errors": 0,
+        "lint_p0": 0,
+        "lint_p1": 12,
+        "overflow_count": 62
+      },
+      "expectations": [
+        {"text": "Output is a single self-contained HTML file", "passed": true, "evidence": "84,098 bytes single HTML, all CSS/JS inlined except reveal.js CDN and Google Fonts"},
+        {"text": "HTML uses reveal.js 4.x via CDN", "passed": true, "evidence": "reveal.js 4.6.0 from jsDelivr CDN"},
+        {"text": "Page count is between 13 and 18 (target ~15)", "passed": false, "evidence": "12 sections (1 short of lower bound 13, 3 short of target 15). Transcript '12 张'. Pin reads '1 / 12' on cover screenshot. Skill's content-budget / design-depth tradeoff causes undershoot."},
+        {"text": "Content is in Chinese (Simplified)", "passed": true, "evidence": "Cover screenshot shows '上岗前第一课' and '把三条铁律刻进习惯里'"},
+        {"text": "Includes the three core training topics: 钓鱼邮件, 弱密码, 公共 wifi", "passed": true, "evidence": "Transcript includes 'Email Autopsy', 'Password Field', 'WiFi Stage' slides"},
+        {"text": "Includes a concrete threat scenario visualization (not just bullet lists)", "passed": true, "evidence": "34 threat-specific CSS classes (vs 3 in baseline); 84KB output (3.6x baseline); includes email mock, password strength table, wifi SSID list"},
+        {"text": "Has clear action items / memory points section", "passed": true, "evidence": "Checklist board, statement, report path 5-step, oath slide per transcript"},
+        {"text": "First slide / cover is initially visible (not hidden in fragments)", "passed": true, "evidence": "test-initial-slide-visible.js PASS"},
+        {"text": "Layout has no real overflow (validate.js total = 0)", "passed": false, "evidence": "validate.js reports 62 overflow issues, mainly on slides 3 (Email Autopsy), 4 (Password Field), 7 (出门在外), 8 (Statement), 9 (Compare), 10 (Report Path). Screenshot slide 3 shows content extending past viewport bottom — page counter '3 / 12' is overlapped by the 05·心理 flag item."}
+      ],
+      "notes": [
+        "skill_lint P0=0, but 62 overflows (P0 visual bug) — content budget + design density mismatch on dense training content",
+        "Page count 12 vs target 15 — content budget causes compression",
+        "Cover screenshot: 'FIELD KIT' aesthetic is strong, '内训版 07 · INTERNAL' stamp reads as broken (text overlap with stamp number)"
+      ]
+    },
+    {
+      "eval_id": 1,
+      "eval_name": "security-training-zh",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.67,
+        "passed": 6,
+        "failed": 3,
+        "total": 9,
+        "time_seconds": 268.7,
+        "tokens": 0,
+        "tool_calls": 17,
+        "errors": 0,
+        "lint_p0": 3,
+        "lint_p1": 18,
+        "overflow_count": 0
+      },
+      "expectations": [
+        {"text": "Output is a single self-contained HTML file", "passed": true, "evidence": "23,019 bytes single HTML"},
+        {"text": "HTML uses reveal.js 4.x via CDN", "passed": true, "evidence": "reveal.js 4.6.1 from jsDelivr CDN with SRI hashes"},
+        {"text": "Page count is between 13 and 18 (target ~15)", "passed": true, "evidence": "15 sections; matches target exactly"},
+        {"text": "Content is in Chinese (Simplified)", "passed": true, "evidence": "All Chinese content per transcript"},
+        {"text": "Includes the three core training topics: 钓鱼邮件, 弱密码, 公共 wifi", "passed": true, "evidence": "All three keywords present"},
+        {"text": "Includes a concrete threat scenario visualization (not just bullet lists)", "passed": false, "evidence": "Only 3 threat-specific classes; more list/table-heavy than with_skill"},
+        {"text": "Has clear action items / memory points section", "passed": true, "evidence": "Do/Don't commitment + resources slide"},
+        {"text": "First slide / cover is initially visible (not hidden in fragments)", "passed": true, "evidence": "No fragment hiding on first slide"},
+        {"text": "Layout has no real overflow (validate.js total = 0)", "passed": true, "evidence": "validate.js reports 0 overflow issues. Cover screenshot shows clean blue gradient with no clipping."}
+      ],
+      "notes": [
+        "P0=3 design rule violations (would be blocked from delivery by skill gates)",
+        "0 overflows — clean layout",
+        "Cover is generic blue gradient, looks like every other training PPT"
+      ]
+    },
+    {
+      "eval_id": 2,
+      "eval_name": "sustainable-fashion-pitch-en",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.90,
+        "passed": 9,
+        "failed": 1,
+        "total": 10,
+        "time_seconds": 409.1,
+        "tokens": 129626,
+        "tool_calls": 30,
+        "errors": 0,
+        "lint_p0": 0,
+        "lint_p1": 8,
+        "overflow_count": 7
+      },
+      "expectations": [
+        {"text": "Output is a single self-contained HTML file", "passed": true, "evidence": "55,122 bytes single HTML"},
+        {"text": "HTML uses reveal.js 4.x via CDN", "passed": true, "evidence": "reveal.js 4.6.0 + pptxgenjs 4.0.1 CDN"},
+        {"text": "Page count is between 10 and 15 (target ~12)", "passed": false, "evidence": "9 sections; 1 short of lower bound 10, 3 short of target 12. Cover screenshot shows all 9 page markers stacked at bottom (pin collision visible — pin/footer overlap)"},
+        {"text": "Content is in English", "passed": true, "evidence": "All English content per transcript"},
+        {"text": "Aesthetic is earthy/luxury — NOT a SaaS/tech vibe", "passed": true, "evidence": "Cover screenshot: 'Clothes worth the wearing-in.' in italic Cormorant Garamond, 12 fabric swatches (FL-01...FL-12 with dye codes), 'NO. 026 · SEASON SS26' archive stamp, 'LOOKBOOK, NOT PITCH' colophon. Exceptional design language."},
+        {"text": "Includes seed round ask (dollar amount + round type)", "passed": true, "evidence": "€2.4M seed at €9.6M pre-money on slide 8"},
+        {"text": "Includes unit economics at 8k-customer scale (>=2-3 metrics)", "passed": true, "evidence": "AOV €312, GM 68%, CAC €41, 63% repeat, LTV €1,470, NPS 72"},
+        {"text": "Distinguishes the brand from fast-fashion / generic DTC", "passed": true, "evidence": "'slow-fashion', 'atelier', 'linen', 'natural dye' all present"},
+        {"text": "Includes source/verification label on financial figures", "passed": true, "evidence": "'verified · 8,124 active customers' stamp; source annotations"},
+        {"text": "Layout has no real overflow (validate.js total = 0)", "passed": false, "evidence": "validate.js reports 7 overflow issues. Cover screenshot also shows pin/footer overlap: 'CRAFT · MECHANISM', '08 · LEDGER · UNIT ECONOMICS', '05 · ROOSTER', '09 · CLOSING · CONTACT' are all overlapping at the bottom of the cover."}
+      ],
+      "notes": [
+        "P0=0, but 7 overflows + 1 cover pin overlap (P0 visual issue not caught by lint)",
+        "Page count 9 vs target 12 — same undershoot pattern",
+        "Cover design is the strongest of the 6 (fabric swatch wall is a real proof object)"
+      ]
+    },
+    {
+      "eval_id": 2,
+      "eval_name": "sustainable-fashion-pitch-en",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.70,
+        "passed": 7,
+        "failed": 3,
+        "total": 10,
+        "time_seconds": 301.8,
+        "tokens": 37696,
+        "tool_calls": 22,
+        "errors": 0,
+        "lint_p0": 0,
+        "lint_p1": 10,
+        "overflow_count": 52
+      },
+      "expectations": [
+        {"text": "Output is a single self-contained HTML file", "passed": true, "evidence": "33,824 bytes single HTML"},
+        {"text": "HTML uses reveal.js 4.x via CDN", "passed": true, "evidence": "reveal.js 4.5.1 from jsDelivr CDN with SRI"},
+        {"text": "Page count is between 10 and 15 (target ~12)", "passed": true, "evidence": "12 sections; matches target exactly"},
+        {"text": "Content is in English", "passed": true, "evidence": "All English content"},
+        {"text": "Aesthetic is earthy/luxury — NOT a SaaS/tech vibe", "passed": true, "evidence": "Cover screenshot: 'A New House of Linen' with Italiana display + Cormorant Garamond italic; reasonable editorial typography"},
+        {"text": "Includes seed round ask (dollar amount + round type)", "passed": true, "evidence": "€3.5M seed with use-of-funds"},
+        {"text": "Includes unit economics at 8k-customer scale (>=2-3 metrics)", "passed": true, "evidence": "AOV €385, GM 68%, CAC €54, LTV €1,420, LTV:CAC 26.3×, payback 11mo, NRR 93%"},
+        {"text": "Distinguishes the brand from fast-fashion / generic DTC", "passed": false, "evidence": "'atelier', 'linen', 'natural dye' present but no 'fast-fashion' or 'slow-fashion' explicit positioning"},
+        {"text": "Includes source/verification label on financial figures", "passed": true, "evidence": "Marked illustrative; verified tag found"},
+        {"text": "Layout has no real overflow (validate.js total = 0)", "passed": false, "evidence": "validate.js reports 52 overflow issues. Cover screenshot also shows multiple text layers overlapping (h2, h1, body, sub-body all stacked at top)."}
+      ],
+      "notes": [
+        "P0=0 but 52 overflows — much worse than with_skill on this case",
+        "Cover has visible text overlap: 'A New House of Linen' / 'THE FORGETTEN' / subhead stacked",
+        "Page count 12 hits target exactly"
+      ]
+    },
+    {
+      "eval_id": 3,
+      "eval_name": "clinical-trial-academic",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.00,
+        "passed": 11,
+        "failed": 0,
+        "total": 11,
+        "time_seconds": 453.2,
+        "tokens": 103848,
+        "tool_calls": 34,
+        "errors": 0,
+        "lint_p0": 0,
+        "lint_p1": 15,
+        "overflow_count": 2
+      },
+      "expectations": [
+        {"text": "Output is a single self-contained HTML file", "passed": true, "evidence": "50,055 bytes single HTML"},
+        {"text": "HTML uses reveal.js 4.x via CDN", "passed": true, "evidence": "reveal.js 4.6.0 from jsDelivr"},
+        {"text": "Page count is between 7 and 10 (target 8)", "passed": true, "evidence": "8 sections; matches target exactly. Pin reads '1 / 8' on cover"},
+        {"text": "Content is in Chinese (Simplified)", "passed": true, "evidence": "All Chinese content"},
+        {"text": "Academic / rigorous style — NOT marketing-style hype", "passed": true, "evidence": "Cover screenshot: '一项评估试验药物 降低 5 年复发率的 三期随机对照试验' with italic emphasis, 'NCT04567890' registration, 'PHASE III CLINICAL REPORT' stamp. Archive/clinical-lab metaphor strong."},
+        {"text": "Includes trial registration number NCT04567890 as data source", "passed": true, "evidence": "NCT04567890 in cover and footers"},
+        {"text": "Includes both efficacy numbers: control 34% and treatment 12%", "passed": true, "evidence": "Both numbers present in main endpoint slide"},
+        {"text": "Includes statistical evidence: p<0.001 and n=1842", "passed": true, "evidence": "p&lt;0.001 and 1,842 (5 occurrences)"},
+        {"text": "Includes confidence interval visualization or explicit CI values", "passed": true, "evidence": "95% CI visualization slide with 0-40% axis and 3 CI bars"},
+        {"text": "Includes a methodology section / slide", "passed": true, "evidence": "Slide 3: 设计/随机化/盲法/终点/统计"},
+        {"text": "Layout has no real overflow (validate.js total = 0)", "passed": true, "evidence": "validate.js reports only 2 minor overflow issues (best in class). Cover screenshot is clean."}
+      ],
+      "notes": [
+        "P0=0, 2 minor overflows, 8/8 page count — strongest overall run",
+        "Cover design is clean and on-brief (archive stamp, registration code, swatch grid)"
+      ]
+    },
+    {
+      "eval_id": 3,
+      "eval_name": "clinical-trial-academic",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.91,
+        "passed": 10,
+        "failed": 1,
+        "total": 11,
+        "time_seconds": 389.3,
+        "tokens": 0,
+        "tool_calls": 31,
+        "errors": 0,
+        "lint_p0": 1,
+        "lint_p1": 14,
+        "overflow_count": 0
+      },
+      "expectations": [
+        {"text": "Output is a single self-contained HTML file", "passed": true, "evidence": "37,888 bytes single HTML"},
+        {"text": "HTML uses reveal.js 4.x via CDN", "passed": true, "evidence": "reveal.js 4.6.1 from jsDelivr"},
+        {"text": "Page count is between 7 and 10 (target 8)", "passed": true, "evidence": "8 sections; matches target exactly"},
+        {"text": "Content is in Chinese (Simplified)", "passed": true, "evidence": "All Chinese content"},
+        {"text": "Academic / rigorous style — NOT marketing-style hype", "passed": true, "evidence": "No emoji, no marketing tells"},
+        {"text": "Includes trial registration number NCT04567890 as data source", "passed": true, "evidence": "NCT04567890 in title, footers, references"},
+        {"text": "Includes both efficacy numbers: control 34% and treatment 12%", "passed": true, "evidence": "Both numbers present"},
+        {"text": "Includes statistical evidence: p<0.001 and n=1842", "passed": true, "evidence": "p &lt; 0.001 and 1,842 in transcript"},
+        {"text": "Includes confidence interval visualization or explicit CI values", "passed": true, "evidence": "Tables + bar charts + forest plot HR; explicit CIs"},
+        {"text": "Includes a methodology section / slide", "passed": true, "evidence": "Slide 4: 方法学"},
+        {"text": "Layout has no real overflow (validate.js total = 0)", "passed": true, "evidence": "validate.js reports 0 overflows. Cover screenshot is clean academic typography."}
+      ],
+      "notes": [
+        "P0=1 (would be blocked by skill gate), but 0 overflows and 8/8 page count",
+        "Cover is clean but generic academic — no bespoke design language"
+      ]
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {"mean": 0.89, "stddev": 0.11, "min": 0.78, "max": 1.00},
+      "time_seconds": {"mean": 514.1, "stddev": 146.4, "min": 409.1, "max": 680.0},
+      "tokens": {"mean": 112454, "stddev": 14786, "min": 103848, "max": 129626},
+      "lint_p0_total": 0,
+      "lint_p1_total": 35,
+      "overflow_total": 71
+    },
+    "without_skill": {
+      "pass_rate": {"mean": 0.76, "stddev": 0.13, "min": 0.67, "max": 0.91},
+      "time_seconds": {"mean": 319.9, "stddev": 61.2, "min": 268.7, "max": 389.3},
+      "tokens": {"mean": 12565, "stddev": 21775, "min": 0, "max": 37696},
+      "lint_p0_total": 4,
+      "lint_p1_total": 42,
+      "overflow_total": 52
+    },
+    "delta": {
+      "pass_rate": "+0.13",
+      "time_seconds": "+194.2",
+      "tokens": "+99889",
+      "lint_p0": "-4",
+      "overflow": "+19"
+    }
+  },
+  "notes": [
+    "with_skill pass rate +0.13 (significant) over baseline — driven by richer content and stronger design language",
+    "with_skill P0=0 across all 3 (vs 4 P0 in baseline) — skill's hard rules prevent design rule violations",
+    "with_skill has 71 overflows (62 in security-training alone) vs baseline 52 — the 14em content budget is too tight for dense training content; fashion case (7 vs 52) shows skill actually wins when content is well-paced",
+    "with_skill undershoots page count in 2/3 cases (12 vs 15, 9 vs 12) — design depth is traded for less coverage. The agent stops adding pages too early because the budget feels tight.",
+    "Cost is steep: +194s (61% slower) and +99,889 tokens (~9x) per run",
+    "Visually (covers): with_skill security-training has stronger 'FIELD KIT' aesthetic; with_skill sustainable-fashion has the strongest lookbook of all 6; with_skill clinical-trial is clean and on-brief; baselines are generic but functional",
+    "Visual issues not caught by lint: sustainable-fashion with_skill cover has 4+ page markers stacked/overlapping at the bottom (P0 visual issue); security-training with_skill cover has '内训版 07 · INTERNAL' stamp rendering as text-on-text overlap"
+  ]
+}

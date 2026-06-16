@@ -25,9 +25,14 @@
  *
  * Fix guidance when this fails:
  *   - Leaked pins (tagged [LEAK]) mean a non-present section's pin is
- *     visible on the current slide. Ensure the pin's offsetParent is its
- *     own <section> (give the section `position: relative !important`) so
- *     it hides with the section via reveal's display:none on .past/.future.
+ *     visible on the current slide. Reveal.css already sets sections to
+ *     `position: absolute` — verify this has not been overridden to
+ *     `position: static` by custom CSS. If the section's positioning is
+ *     intact, the pin's `position: absolute` resolves to the section
+ *     automatically and hides with it via reveal's opacity toggle.
+ *     Do NOT add `position: relative` to sections — this will break
+ *     reveal's slide stacking and cause all but the first slide to
+ *     appear blank (v15.2 regression: slide 3 top=1397).
  *   - Same-slide overlaps mean two labels were placed at colliding
  *     coordinates — move one (e.g. `.pin.right { right:64px; left:auto }`).
  */

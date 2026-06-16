@@ -1,0 +1,76 @@
+{
+  "version": 1,
+  "contract": "Every seed template must preserve a distinct domain-native grammar. The test suite reads this file as the canonical machine-readable source for cover classes, cover-scoped objects, full-deck role markers, and forbidden fallback objects. Templates 06-15 are design-grammar references documented in design-polish.md but not yet implemented as seed HTML.",
+  "templates": {
+    "examples/template-01-editorial-serif.html": {
+      "domain": "archive / editorial research",
+      "designGrammar": "archive desk, evidence wall, plate reading, quote judgment",
+      "coverClass": "archive-cover",
+      "coverObjects": ["poster-wall", "paper", "stamp", "rule"],
+      "deckObjects": ["archive-cover", "folio-grid", "plate-grid", "quote-page", "closing"],
+      "roleMarkers": {
+        "cover": "archive-cover",
+        "proof": "folio-grid",
+        "mechanism": "plate-grid",
+        "close": "closing"
+      },
+      "forbidden": []
+    },
+    "examples/template-02-dark-tech.html": {
+      "domain": "control room / technical operations",
+      "designGrammar": "live ops console, radar proof, telemetry signal, incident simulation",
+      "coverClass": "control-cover",
+      "coverObjects": ["ops-copy", "terminal", "control-radar", "radar-blip"],
+      "deckObjects": ["control-cover", "ops-map", "signal-page", "incident", "status-grid"],
+      "roleMarkers": {
+        "cover": "control-cover",
+        "proof": "ops-map",
+        "mechanism": "signal-page",
+        "close": "status-grid"
+      },
+      "forbidden": []
+    },
+    "examples/template-03-minimal-spatial.html": {
+      "domain": "architecture / spatial product narrative",
+      "designGrammar": "architectural plate, title block, dimension chains, measured floor plan, section cut",
+      "coverClass": "spatial-cover",
+      "coverObjects": ["blueprint-sheet", "plan-drawing", "dimension-chain", "plate-notes", "title-block", "north-mark"],
+      "deckObjects": ["section-cut", "cutaway", "matrix", "void-page", "route"],
+      "roleMarkers": {
+        "cover": "spatial-cover",
+        "proof": "section-cut",
+        "mechanism": "matrix",
+        "close": "void-page"
+      },
+      "forbidden": ["block a", "block b", "block c"]
+    },
+    "examples/template-04-vibrant-gradient.html": {
+      "domain": "brand launch / live community keynote",
+      "designGrammar": "live keynote stage, giant screen, countdown ticker, audience floor, camera frame, product drop",
+      "coverClass": "launch-cover",
+      "coverObjects": ["stage-scene", "live-ticker", "main-screen", "product-drop", "audience-floor", "camera-frame"],
+      "deckObjects": ["impact", "metric", "chat", "bubble-stack", "drop", "totem-grid"],
+      "roleMarkers": {
+        "cover": "launch-cover",
+        "proof": "impact",
+        "mechanism": "chat",
+        "close": "launch-close"
+      },
+      "forbidden": []
+    },
+    "examples/template-05-nature-fresh.html": {
+      "domain": "field notebook / workshop learning",
+      "designGrammar": "physical field desk, notebook spread, pinned route map, sample tags, specimen envelope",
+      "coverClass": "field-cover",
+      "coverObjects": ["field-desk", "notebook-spread", "route-map", "sample-tag", "specimen-envelope", "twine-line"],
+      "deckObjects": ["lesson-map", "journal", "workshop", "harvest"],
+      "roleMarkers": {
+        "cover": "field-cover",
+        "proof": "lesson-map",
+        "mechanism": "journal",
+        "close": "harvest"
+      },
+      "forbidden": ["sample-tray"]
+    }
+  }
+}

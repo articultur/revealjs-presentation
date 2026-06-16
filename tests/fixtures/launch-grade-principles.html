@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>Launch-grade principles reference</title>
+<style>
+:root {
+  --c-bg: #f7f1ff;
+  --c-fg: #17151f;
+  --c-fg-2: rgba(23, 21, 31, 0.68);
+  --c-fg-3: rgba(23, 21, 31, 0.34);
+  --c-accent: #ff4f8b;
+  --c-border: rgba(23, 21, 31, 0.18);
+}
+.reveal { color: var(--c-fg); background: var(--c-bg); font-size: 30px; }
+.reveal section { height: 100%; overflow: hidden; padding: 60px 80px; box-sizing: border-box; }
+.reveal .slides > section.deck-flex.present { display: flex !important; top: 0 !important; }
+.reveal .slides > section.deck-grid.present { display: grid !important; top: 0 !important; }
+.deck-flex { display: flex; }
+.deck-grid { display: grid; }
+.brand-opener { background: var(--c-accent); color: white; align-items: end; }
+.statement-wall { place-items: center; }
+.key-metrics { grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.interaction-proof { grid-template-columns: 0.9fr 1.1fr; gap: 48px; }
+.ecosystem-map { grid-template-columns: repeat(4, 1fr); gap: 18px; }
+.finale { background: #121426; color: white; place-items: center; }
+h1, h2 { letter-spacing: 0; }
+.pin { position: absolute; left: 40px; bottom: 32px; color: var(--c-fg-3); }
+</style>
+</head>
+<body>
+<div class="reveal"><div class="slides">
+<section class="deck-flex brand-opener" data-archetype="brand-opener">
+  <h1>Nova Stage</h1><p>Public launch opening reference</p><span class="pin">01 / opener</span>
+</section>
+<section class="deck-grid statement-wall" data-archetype="statement-wall">
+  <h2>把一个产品时刻做成可记住的现场画面。</h2><span class="pin">02 / statement</span>
+</section>
+<section class="deck-grid key-metrics" data-archetype="key-metrics">
+  <div><b>4.8M</b><p>active users</p></div><div><b>92%</b><p>retention</p></div><div><b>18</b><p>markets</p></div><span class="pin">03 / metrics</span>
+</section>
+<section class="deck-grid interaction-proof" data-archetype="interaction-proof">
+  <div><h2>Live comment stream</h2><p>观众行为被做成 proof object。</p></div><div><p>+1 这就是我要的功能</p><p>马上转给团队</p></div><span class="pin">04 / interaction</span>
+</section>
+<section class="deck-grid ecosystem-map" data-archetype="ecosystem-map">
+  <div>Creator</div><div>Community</div><div>Commerce</div><div>Platform</div><span class="pin">05 / ecosystem</span>
+</section>
+<section class="deck-grid finale" data-archetype="finale">
+  <h2>Launch with proof.</h2><span class="pin">06 / finale</span>
+</section>
+</div></div>
+</body>
+</html>

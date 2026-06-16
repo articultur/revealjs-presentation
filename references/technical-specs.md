@@ -12,17 +12,18 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/theme/black.css">
 
 <!-- ============================================
-     Font Awesome 图标（可选，推荐）
+     图标系统：使用 inline SVG，不引入 Font Awesome
+     图标库参考：references/icon-system.md
      ============================================ -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<!-- 不引入 Font Awesome CDN，用 inline SVG 替代 -->
 
 <!-- ============================================
      Google Fonts 中文字体（中文演示必须）
      ============================================ -->
 <!-- Sans -->
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@200;300;400;500;600&display=swap" rel="stylesheet">
 <!-- Serif -->
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;600&display=swap" rel="stylesheet">
 
 <!-- ============================================
      Highlight.js 代码高亮（可选）
@@ -150,6 +151,113 @@ document.addEventListener('click', function(e) {
 }
 ```
 
+### 流体字号规范（clamp）
+
+使用 `clamp(最小, 首选, 最大)` 让字号在内容密集时自动缩小，避免固定字号导致溢出。
+
+**核心原则**：clamp 的**最小值是不可再缩的红线**。当内容触发最小值仍放不下时，说明排版方案错了，必须拆页或换版面。
+
+> **禁止使用 `vw`/`vh` 单位**：Reveal.js 通过 `transform: scale()` 缩放固定 1280×720 画布。`vw`/`vh` 基于视口计算，不受 transform 影响，会导致大屏元素过大溢出、小屏元素过小不可读。**所有 `clamp()` 必须使用 `em` 单位**。
+
+#### clamp() 在固定画布上的行为
+
+Reveal.js 的渲染模型是一个**固定尺寸的虚拟画布**（1280×720），然后通过 `transform: scale()` 缩放到实际视口大小。这意味着：
+
+```
+实际渲染流程：
+  HTML 内容 → 在 1280×720 画布上渲染 → transform: scale() 缩放到视口
+
+em 单位：相对于根字体大小（.reveal { font-size: 32px }）
+  → 在画布坐标系内计算 → 受 transform: scale() 影响 → 行为正确
+
+vw/vh 单位：相对于视口大小
+  → 在视口坐标系内计算 → 不受 transform: scale() 影响 → 行为错误
+```
+
+**`clamp()` 在这个模型中的作用**：
+
+`clamp(1.8em, 2.8em, 3.2em)` 中的三个值都是 `em`，它们在画布坐标系内计算。clamp 的效果是：当相邻元素空间紧张时，字号会缩小到最小值；空间充裕时，字号会放大到首选值或最大值。
+
+**但注意**：在 Reveal.js 中，画布尺寸始终是 1280×720——它不会因为视口大小改变而改变。因此：
+
+| 场景 | clamp 是否生效 | 原因 |
+|------|:--:|------|
+| 窗口从 1920px 缩到 1024px | 否 | 画布始终 1280×720，只是 scale 值变小 |
+| 窗口从 1024px 放到 1920px | 否 | 同上，scale 值变大 |
+| 某页内容多、另一页内容少 | **是** | 不同页面如果用了不同的 clamp 值，各页独立计算 |
+| 用 CSS 改变根字号时 | **是** | 如 `@media (max-width: 1024px) { .reveal { font-size: 24px; } }` |
+
+**结论**：clamp() 在 Reveal.js 中的作用是**防溢出**（为内容多的页面提供更小的字号下限），而不是**响应式**（不随视口大小变化）。真正的视口适配由 `@media` 改变 `.reveal { font-size }` 实现。
+
+#### 推荐流体字号（仅 em 单位）
+
+```css
+.reveal h1 {
+  font-size: clamp(1.8em, 2.8em, 3.2em);
+}
+.reveal h2 {
+  font-size: clamp(1.2em, 1.6em, 2em);
+}
+.reveal h3 {
+  font-size: clamp(0.9em, 1.1em, 1.3em);
+}
+.reveal p {
+  font-size: clamp(0.75em, 0.9em, 1em);
+}
+.reveal li {
+  font-size: clamp(0.75em, 0.85em, 0.95em);
+}
+```
+
+#### 不可再缩的最小字号
+
+| 元素 | 最小字号 | 触底后的动作 |
+|------|---------|------------|
+| h1 | **1.8em** | 拆页或换版面 |
+| h2 | **1.2em** | 拆页 |
+| h3 | **0.9em** | 压缩标题字数 |
+| 正文 p | **0.75em** | 删减内容或拆页 |
+| 列表项 | **0.75em** | 减少项数到 ≤3 |
+| 数据卡标题 | **0.8em** | 缩短标签文字 |
+
+#### 溢出救助决策树
+
+当检测到溢出或内容过满时，**严格按以下优先级处理**：
+
+```
+1. 缩减内容（首选）
+   - 删减次要描述，只保留标题
+   - 合并相似项
+   - 用更短的文字
+
+2. 紧凑化间距（次选）
+   - padding: 1.5em → 1em
+   - gap: 1.5em → 0.8em
+   - margin: 1em → 0.5em
+
+3. 换版面（如果紧凑化不够）
+   - 3 列 → 2 列
+   - 单列 9 项 → 双列 5+4
+   - 混合布局 → 纯列表
+
+4. 拆页（最终手段）
+   - 拆成"概览页 + 详情页"
+   - 或按章节拆分
+```
+
+**硬规则**：
+
+- ⛔ **禁止**缩小字号到最小值以下
+- ⛔ **禁止**一页塞超过合理上限的内容
+- ✅ **宁可多 2 页清晰的幻灯片，不要 1 页看不清的幻灯片**
+
+| 场景 | ❌ 错误做法 | ✅ 正确做法 |
+|------|-----------|-----------|
+| 9 项列表放不下 | 缩小字体到 0.6em | 拆成 2 页（5+4），保持 0.85em |
+| 6 列卡片溢出 | 缩小卡片到看不见 | 改成 2×3 网格，或拆 2 页 |
+| 代码块+标题+3 张卡 | 全部缩小 | 去掉卡片，代码独占一页 |
+| 流程图 9 步单行 | 字体缩到极小 | 拆成 2 行（4+5），或拆 2 页 |
+
 ### 流程图、架构图约束
 
 ```css
@@ -220,23 +328,33 @@ document.addEventListener('click', function(e) {
 
 | 类型 | 推荐单位 | 说明 |
 |------|---------|------|
-| 字体 | em / rem | 随父元素缩放 |
-| 间距 | em / vh / vw | 保持比例 |
+| 字体 | em | 随父元素缩放，与 Reveal.js scale 协调 |
+| 间距 | em | 保持比例，随画布缩放 |
 | 图片 | % | 相对于容器 |
-| 容器 | vh | 相对于视口 |
+| 容器 | em / % | 不使用 vh/vw（见下方说明） |
 
-### 视口安全值
+### 为什么禁止 vw/vh 单位
+
+Reveal.js 的工作原理是在固定尺寸画布（默认 1280×720）上渲染内容，然后用 `transform: scale()` 缩放整个画布以适配视口。
+
+```
+视口 1920px → scale(1.0) → 画布 1280px 内容正常显示
+视口 800px  → scale(0.625) → 画布 1280px 内容缩小显示
+```
+
+`vw` 和 `vh` 基于视口尺寸计算，**不受 transform: scale() 影响**：
+- 在 1920px 视口上：`6vw = 115px`（过大，可能溢出）
+- 在 800px 视口上：`6vw = 48px`（过小，不可读）
+- 而 `3em` 在两种视口下都随画布等比缩放，保持一致
+
+**规则**：所有字号、间距、尺寸一律使用 `em`、`%`、`px`（相对画布坐标）。`clamp()` 的中间值也必须是 `em`。
+
+### 内容区安全高度
 
 ```css
-/* 视口高度计算 */
-.reveal section {
-  height: 100vh;             /* 使用视口高度 */
-  max-height: 720px;         /* 最大不超过设计稿高度 */
-}
-
-/* 内容区安全高度 */
+/* 内容区安全高度——用 em 而非 vh */
 .content-safe {
-  max-height: calc(100vh - 120px); /* 减去顶部和底部内边距 */
+  max-height: calc(100% - 4em); /* 减去顶部和底部内边距 */
   overflow-y: auto;
 }
 ```
@@ -398,3 +516,279 @@ Reveal.js 4.6.0 内置支持的语言包括：
 ```
 
 可用主题列表：https://cdnjs.com/libraries/highlight.js
+
+---
+
+## Reveal.js 插件（CDN 加载）
+
+以下插件可通过 CDN 加载，无需本地安装。按需在 HTML 中引入。
+
+### 插件一览
+
+| 插件 | 功能 | CDN | 推荐场景 |
+|------|------|-----|---------|
+| **Chalkboard** | 在幻灯片上画笔批注 | jsDelivr | 教学、互动演示 |
+| **Notes** | 独立演讲者窗口 | Reveal 内置 | 正式演讲 |
+| **Zoom** | Alt+点击放大细节 | Reveal 内置 | 数据图表、代码演示 |
+| **Math** | KaTeX 数学公式渲染 | CDN | 学术报告 |
+| **Search** | Ctrl+Shift+F 搜索内容 | Reveal 内置 | 长文档、培训材料 |
+| **Animate** | GSAP 动画集成 | jsDelivr | 高级动画需求 |
+
+### Notes（演讲者窗口）— 推荐
+
+为每个 slide 添加 `<aside class="notes">` 内容，按 `S` 键打开独立演讲者窗口。
+
+```html
+<!-- Reveal.js 4.x 内置，无需额外引入 -->
+<script>
+Reveal.initialize({
+  // ... 其他配置
+  plugins: [ RevealNotes ]
+});
+</script>
+
+<!-- CDN 引入（如需） -->
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/plugin/notes/notes.js"></script>
+```
+
+使用：
+
+```html
+<section>
+  <h2>市场分析</h2>
+  <p>公开内容...</p>
+  <aside class="notes">
+    演讲者备注：强调第三季度的增长曲线，这里可以暂停让观众消化数据。
+    切换时间约 2 分钟。
+  </aside>
+</section>
+```
+
+### Zoom（细节放大）
+
+按住 Alt + 点击任意元素放大查看，再点击恢复。
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/plugin/zoom/zoom.js"></script>
+
+<script>
+Reveal.initialize({
+  plugins: [ RevealZoom ]
+});
+</script>
+```
+
+### Chalkboard（画笔批注）
+
+在幻灯片上实时画笔标注。教学场景强烈推荐。
+
+```html
+<!-- 引入 -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js-plugins@4.2.5/chalkboard/style.css">
+<script src="https://cdn.jsdelivr.net/npm/reveal.js-plugins@4.2.5/chalkboard/plugin.js"></script>
+
+<!-- 配置 -->
+<script>
+Reveal.initialize({
+  plugins: [ RevealChalkboard ],
+  chalkboard: {
+    boardmarkerWidth: 3,
+    chalkWidth: 5,
+    src: null,          // 预绘制的画笔数据
+    readOnly: false,    // true = 只能查看不能画
+    toggleChalkboardButton: { left: "60px", bottom: "30px" },
+    toggleNotesButton: { left: "100px", bottom: "30px" },
+    transition: 800,
+    theme: "chalkboard" // 或 "whiteboard"
+  }
+});
+</script>
+```
+
+快捷键：
+- `B`：切换黑板/白板
+- `C`：切换画笔颜色
+- `DEL`：清除当前页画笔
+- `Esc`：退出画笔模式
+
+### Math（数学公式）
+
+使用 KaTeX 渲染 LaTeX 数学公式，适合学术和工程演示。
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/plugin/math/math.js"></script>
+
+<script>
+Reveal.initialize({
+  plugins: [ RevealMath.KaTeX ],
+  math: {
+    katexOptions: {
+      macros: { "\\R": "\\mathbb{R}" }
+    }
+  }
+});
+</script>
+```
+
+使用：
+
+```html
+<section>
+  <h2>公式推导</h2>
+  <p>欧拉公式：</p>
+  <p>$$e^{i\pi} + 1 = 0$$</p>
+  <p style="font-size:0.8em; color:var(--text-muted);">
+    行内公式：$E = mc^2$
+  </p>
+</section>
+```
+
+### Search（内容搜索）
+
+按 `Ctrl+Shift+F` 搜索幻灯片内容，长文档必备。
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/plugin/search/search.js"></script>
+
+<script>
+Reveal.initialize({
+  plugins: [ RevealSearch ]
+});
+</script>
+```
+
+### 插件组合推荐
+
+根据场景选择插件组合：
+
+| 场景 | 推荐插件组合 |
+|------|-------------|
+| 技术演讲 | Notes + Zoom + Math |
+| 教学互动 | Notes + Chalkboard + Zoom |
+| 产品发布 | Notes + Zoom |
+| 学术报告 | Notes + Math + Search |
+| 培训材料 | Notes + Chalkboard + Search |
+
+### 完整插件引入模板
+
+```html
+<!-- Reveal.js 核心 -->
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.js"></script>
+
+<!-- 按需引入插件（取消注释需要的） -->
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/plugin/notes/notes.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/plugin/zoom/zoom.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/plugin/search/search.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/plugin/math/math.js"></script>
+<!-- Chalkboard 需要额外 CSS -->
+<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js-plugins@4.2.5/chalkboard/style.css"> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/reveal.js-plugins@4.2.5/chalkboard/plugin.js"></script> -->
+
+<script>
+Reveal.initialize({
+  width: 1280,
+  height: 720,
+  margin: 0.04,
+  hash: true,
+  slideNumber: 'c/t',
+  transition: 'fade',
+
+  // 注册引入的插件
+  plugins: [
+    RevealNotes,
+    RevealZoom,
+    RevealSearch,
+    RevealMath.KaTeX,
+    // RevealChalkboard,
+  ]
+});
+</script>
+```
+
+---
+
+## 三端适配指南（借鉴 /adapt）
+
+> 演示文稿不是只在一个场景下使用。投影仪、笔记本、手机分享是三种完全不同的体验——不是缩放像素，而是重新思考内容呈现。
+
+### 三种场景对比
+
+| 维度 | 投影仪 | 笔记本/屏幕共享 | 手机/聊天分享 |
+|------|--------|---------------|-------------|
+| **观看距离** | 2-5m | 40-60cm | 20-30cm |
+| **分辨率** | 1280×720（常见） | 1920×1080+ | 375×812 |
+| **交互方式** | 无（演讲者控制） | 方向键/点击 | 触摸滚动 |
+| **注意力** | 跟着演讲者走 | 可能分心 | 快速扫视 |
+| **关键需求** | 高对比、大字号 | 均衡呈现 | 自包含、可独立理解 |
+
+### 投影仪适配（默认场景）
+
+这是主场景，现有模板已为此优化。关键检查点：
+
+```css
+/* 投影仪安全的字号下限——仅 em 单位 */
+h1 { font-size: clamp(2em, 3em, 3.5em); }   /* 最小 2em */
+h2 { font-size: clamp(1.4em, 1.7em, 2em); } /* 最小 1.4em */
+p  { font-size: clamp(0.8em, 0.95em, 1em); } /* 最小 0.8em */
+```
+
+**投影安全检查**：
+- [ ] 正文在 3m 距离可辨读（最小 16px 等效）
+- [ ] 标题在 5m 距离清晰可见（最小 32px 等效）
+- [ ] 对比度足够（深色背景文字 ≥ WCAG AA）
+- [ ] 图片和图表在低分辨率下不模糊
+- [ ] 无依赖鼠标 hover 的关键信息
+
+### 笔记本/屏幕共享适配
+
+观众在自己的电脑上看，可能窗口不全屏。需要处理：
+
+```css
+/* Reveal.js 响应式宽度 */
+.reveal { width: 100%; height: 100%; }
+
+/* 不全屏时的字号安全网——仅 em 单位 */
+@media (max-width: 1024px) {
+  h1 { font-size: clamp(1.8em, 2.2em, 2.5em); }
+  h2 { font-size: clamp(1.2em, 1.4em, 1.6em); }
+  p  { font-size: clamp(0.75em, 0.85em, 0.9em); }
+}
+```
+
+**屏幕共享检查**：
+- [ ] 窗口缩到 1024px 宽时内容不溢出
+- [ ] 侧边栏/聊天窗口遮挡时核心内容仍可见
+- [ ] Fragment 顺序合理（逐个展示胜过一次全部出现）
+
+### 手机/聊天分享适配
+
+演示结束后发到群里，观众用手机看。这需要特殊处理：
+
+```css
+/* 移动端打印/分享模式 */
+@media (max-width: 768px) {
+  .reveal .slides section {
+    /* 允许滚动查看完整内容 */
+    overflow-y: auto;
+    padding: 2em 1.5em;
+  }
+  /* 简化动画为即时显示 */
+  .fragment { opacity: 1 !important; transform: none !important; }
+}
+```
+
+**手机分享建议**：
+- 提供 `?print-pdf` 版本作为"阅读模式"（一页纵向展示）
+- 每页信息自包含——手机观众不记得前 3 页说了什么
+- Speaker notes 中的关键信息考虑内联到正文中
+- 使用 PDF 导出而非 HTML 文件分享（手机浏览器兼容性差）
+
+### 按场景选择导出格式
+
+| 分享方式 | 推荐格式 | 方法 |
+|---------|---------|------|
+| 投影仪演示 | HTML | 双击打开，全屏（F） |
+| 屏幕共享 | HTML | 浏览器打开，不全屏也安全 |
+| 发给同事编辑 | PPTX | HTML 内置按钮导出 |
+| 发到群里阅读 | PDF | `?print-pdf` → 打印为 PDF |
+| 嵌入文档/网站 | PDF | 同上 |

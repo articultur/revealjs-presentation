@@ -34,6 +34,10 @@ npm install
 # --- impeccable skill (auto-install) ---
 IMPECCABLE_FOUND=0
 SEARCH_PATHS=(
+  "$ROOT_DIR/.agents/skills/impeccable"
+  "$ROOT_DIR/.claude/skills/impeccable"
+  "$HOME/.agents/skills/impeccable"
+  "$HOME/.claude/skills/impeccable"
   "$HOME/.claude/skills/frontend-design"
   "$HOME/.agents/skills/frontend-design"
   "$ROOT_DIR/.claude/skills/frontend-design"

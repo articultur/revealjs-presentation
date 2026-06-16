@@ -1,148 +1,114 @@
 #!/usr/bin/env bash
-# setup.sh — one-time initialization for new users of revealjs-presentation skill
-# Run this once after placing the skill in your AI tool's skills directory.
+# setup.sh — 快速环境检查（不安装任何东西）
+# 如需安装所有可选依赖，运行：bash scripts/install-all.sh
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
-ERRORS=0
-
 echo ""
-echo "=== revealjs-presentation: first-time setup ==="
+echo "=== revealjs-presentation: 环境检查 ==="
 echo ""
 
 # -------------------------------------------------------
-# Step 1: Check Node.js
+# Step 1: 项目结构
 # -------------------------------------------------------
-echo "[1/3] Checking Node.js..."
+echo "[1/4] 检查项目结构..."
+
+ALL_OK=1
+for f in SKILL.md; do
+  if [[ -f "$f" ]]; then
+    echo "    ✅ $f"
+  else
+    echo "    ❌ 缺少 $f"
+    ALL_OK=0
+  fi
+done
+for d in examples references scripts; do
+  if [[ -d "$d" ]]; then
+    echo "    ✅ $d/"
+  else
+    echo "    ❌ 缺少 $d/"
+    ALL_OK=0
+  fi
+done
+
+# -------------------------------------------------------
+# Step 2: Node.js（可选）
+# -------------------------------------------------------
+echo ""
+echo "[2/4] 检查 Node.js..."
 
 if command -v node >/dev/null 2>&1; then
   NODE_MAJOR="$(node -p "process.versions.node.split('.')[0]")"
   if [[ "$NODE_MAJOR" -lt 18 ]]; then
-    echo "    WARN Node.js 18+ recommended, current: $(node -v)"
-    echo "         Some features (CLI export, validation) may not work"
+    echo "    ⚠️  Node.js $(node -v) — 建议 18+"
   else
-    echo "    OK  Node.js $(node -v)"
+    echo "    ✅ Node.js $(node -v)"
   fi
 else
-  echo "    WARN Node.js not found. Browser-based features still work."
-  echo "         Install Node.js 18+ for CLI export and validation."
+  echo "    ℹ️  Node.js 未安装（不影响使用 — HTML 双击即可打开）"
 fi
 
 # -------------------------------------------------------
-# Step 2: Install npm dependencies
+# Step 3: npm 依赖（可选）
 # -------------------------------------------------------
-echo "[2/3] Checking npm dependencies..."
+echo ""
+echo "[3/4] 检查 npm 依赖..."
 
-if [[ -f package.json ]] && command -v npm >/dev/null 2>&1; then
-  # 检查是否需要安装
-  NEEDS_INSTALL=0
-
-  # 检查关键依赖
-  if [[ ! -d node_modules/pptxgenjs ]]; then
-    NEEDS_INSTALL=1
-    echo "    ... pptxgenjs (PPTX 导出) 未安装"
-  fi
-  if [[ ! -d node_modules/cheerio ]]; then
-    NEEDS_INSTALL=1
-    echo "    ... cheerio (HTML 解析) 未安装"
-  fi
-
-  if [[ $NEEDS_INSTALL -eq 1 ]]; then
-    echo "    Installing dependencies..."
-    if npm install --production 2>&1; then
-      echo "    OK  npm dependencies installed"
-    else
-      echo "    FAIL npm install failed. Run manually: npm install"
-      ERRORS=$((ERRORS + 1))
-    fi
+if command -v npm >/dev/null 2>&1 && [[ -f package.json ]]; then
+  if [[ -d node_modules/pptxgenjs ]] && [[ -d node_modules/cheerio ]]; then
+    echo "    ✅ pptxgenjs + cheerio（CLI PPTX 导出就绪）"
   else
-    echo "    OK  all npm dependencies present"
+    echo "    ⚠️  npm 依赖未安装（CLI PPTX 导出不可用）"
+    echo "       安装：npm install"
   fi
-elif [[ ! -f package.json ]]; then
-  echo "    WARN package.json not found, skipping npm install"
 else
-  echo "    WARN npm not available, skipping dependency install"
-  echo "         Browser-based PPTX export still works (uses CDN)"
+  echo "    ℹ️  跳过（不需要 CLI 工具则忽略）"
 fi
 
 # -------------------------------------------------------
-# Step 3: Check impeccable skill
+# Step 4: impeccable（可选）
 # -------------------------------------------------------
-echo "[3/3] Checking impeccable skill..."
+echo ""
+echo "[4/4] 检查 impeccable 设计技能..."
 
 IMPECCABLE_FOUND=0
 SEARCH_PATHS=(
+  "$ROOT_DIR/.agents/skills/impeccable"
+  "$ROOT_DIR/.claude/skills/impeccable"
+  "$HOME/.agents/skills/impeccable"
+  "$HOME/.claude/skills/impeccable"
   "$HOME/.claude/skills/frontend-design"
   "$HOME/.agents/skills/frontend-design"
   "$ROOT_DIR/.claude/skills/frontend-design"
   "$ROOT_DIR/.agents/skills/frontend-design"
-  "$ROOT_DIR/../.claude/skills/frontend-design"
-  "$ROOT_DIR/../.agents/skills/frontend-design"
 )
 for p in "${SEARCH_PATHS[@]}"; do
   if [[ -f "$p/SKILL.md" ]]; then
     IMPECCABLE_FOUND=1
-    echo "    OK  impeccable already installed ($p)"
+    echo "    ✅ impeccable 已安装 ($p)"
     break
   fi
 done
 
 if [[ $IMPECCABLE_FOUND -eq 0 ]]; then
-  if command -v npx >/dev/null 2>&1; then
-    echo "    ... impeccable not found. Installing via npx skills CLI..."
-    if npx skills add pbakaus/impeccable 2>&1; then
-      echo "    OK  impeccable installed"
-    else
-      echo "    FAIL npx install failed. Install manually:"
-      echo ""
-      echo "         Option A (if you have Node.js):"
-      echo "           npx skills add pbakaus/impeccable"
-      echo ""
-      echo "         Option B (no Node.js):"
-      echo "           1. Go to https://impeccable.style/"
-      echo "           2. Download the ZIP for your AI tool"
-      echo "           3. Extract to ~/.claude/skills/ or ~/.agents/skills/"
-      echo ""
-      ERRORS=$((ERRORS + 1))
-    fi
-  else
-    echo "    WARN npx not available — install impeccable manually:"
-    echo ""
-    echo "         Option A (install Node.js first, then):"
-    echo "           npx skills add pbakaus/impeccable"
-    echo ""
-    echo "         Option B (no Node.js required):"
-    echo "           1. Go to https://impeccable.style/"
-    echo "           2. Download the ZIP for your AI tool"
-    echo "           3. Extract to ~/.claude/skills/ or ~/.agents/skills/"
-    echo ""
-    ERRORS=$((ERRORS + 1))
-  fi
+  echo "    ℹ️  impeccable 未安装（不影响基本功能）"
+  echo "       安装：npx skills add pbakaus/impeccable"
 fi
 
 # -------------------------------------------------------
 # Result
 # -------------------------------------------------------
 echo ""
-if [[ $ERRORS -eq 0 ]]; then
-  echo "=== Setup complete. You are ready to use this skill. ==="
-  echo ""
-  echo "Next steps:"
-  echo "  1. Open your AI assistant chat"
-  echo "  2. Verify impeccable: type /audit — it should respond with a command description"
-  echo "  3. Generate your first deck:"
-  echo "     > 做一个有设计感的 PPT，主题是 X，受众是 Y，页数 8 页，输出 reveal.js"
-  echo "  4. Save the generated .html file and open it in any browser"
-  echo ""
-  echo "  Export options:"
-  echo "    Browser: open HTML → click 📥 PPTX button (bottom-left)"
-  echo "    CLI:      node scripts/export-pptx.js your-slides.html"
-  echo "    PDF:      open yourfile.html?print-pdf in Chrome → print to PDF"
-  echo ""
+if [[ $ALL_OK -eq 1 ]]; then
+  echo "=== ✅ 项目结构完整，可以正常使用 ==="
 else
-  echo "=== Setup finished with $ERRORS issue(s). See above for instructions. ==="
-  echo ""
-  echo "Once issues are resolved, re-run:  bash scripts/setup.sh"
-  echo ""
+  echo "=== ⚠️  项目结构不完整，请检查上方标记 ❌ 的项目 ==="
 fi
+
+echo ""
+echo "提示："
+echo "  • 生成 HTML 无需安装任何东西 — CDN 自动加载"
+echo "  • 安装全部可选工具：bash scripts/install-all.sh"
+echo "  • 本地预览：npm run start → http://localhost:4173"
+echo ""

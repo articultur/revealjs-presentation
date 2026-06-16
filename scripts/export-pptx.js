@@ -98,7 +98,26 @@ function extractCssVars(html) {
       }
     }
   }
+  applyCssVarAliases(vars);
   return vars;
+}
+
+function applyCssVarAliases(vars) {
+  const aliases = {
+    '--bg': '--c-bg',
+    '--text': '--c-fg',
+    '--text-muted': '--c-fg-2',
+    '--text-subtle': '--c-fg-3',
+    '--accent': '--c-accent',
+    '--divider': '--c-border',
+    '--font-display': '--f-display',
+    '--font-body': '--f-body',
+    '--font-mono': '--f-mono',
+  };
+  for (const [legacy, canonical] of Object.entries(aliases)) {
+    if (!vars[legacy] && vars[canonical]) vars[legacy] = vars[canonical];
+    if (!vars[canonical] && vars[legacy]) vars[canonical] = vars[legacy];
+  }
 }
 
 /**

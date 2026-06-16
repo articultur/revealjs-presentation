@@ -9,7 +9,8 @@
  * - dryRun (默认 false): true 时只报告不修改
  */
 
-(function autoFixCSS(dryRun = false) {
+(function installAutoFixCSS(global) {
+  function autoFixCSS(dryRun = false) {
   let fixed = 0;
   const dryRunPrefix = dryRun ? '[DRY-RUN] ' : '';
 
@@ -72,7 +73,14 @@
   }
 
   return { fixed, dryRun };
-})();
+  }
+
+  global.autoFixCSS = autoFixCSS;
+
+  if (!global.__REVEALJS_VALIDATE_DISABLE_AUTO_RUN__) {
+    global.__lastAutoFixCSS = autoFixCSS();
+  }
+})(typeof window !== 'undefined' ? window : globalThis);
 
 // 使用示例：
 // autoFixCSS()        // 执行修复

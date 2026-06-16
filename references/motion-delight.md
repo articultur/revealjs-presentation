@@ -284,7 +284,7 @@ document.addEventListener('keydown', function(e) {
 <!-- 总结页的视觉惊喜 -->
 <section data-background="linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%)">
   <div class="celebration">
-    <i class="fas fa-check-circle" style="font-size: 5em; color: #fff; animation: pulse 2s ease-in-out infinite;"></i>
+    <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="animation: pulse 2s ease-in-out infinite;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
     <h2 style="color: #fff; margin-top: 0.5em;">演讲结束</h2>
     <p style="color: rgba(255,255,255,0.85);">感谢参与</p>
   </div>
@@ -375,3 +375,283 @@ document.addEventListener('keydown', function(e) {
 - [impeccable delight](https://github.com/pbakaus/impeccable)
 - [CSS Easing Explorer](https://easings.net/)
 - [MDN: prefers-reduced-motion](https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-motion)
+
+---
+
+## 高级动画模式
+
+> 以下动画模式适用于需要更强视觉冲击力的演示场景。每个模式都兼容 `prefers-reduced-motion`。
+
+### 数字滚动动画
+
+适合展示关键数据指标。数字从 0 滚动到目标值，配合缓动曲线产生专业感。
+
+```html
+<section>
+  <h2 style="text-align:center; font-size:1.2em; margin-bottom:0.5em;">关键成果</h2>
+  <div style="display:flex; justify-content:center; gap:3em; text-align:center;">
+    <div>
+      <div class="counter" data-target="97" style="font-size:3.5em; font-weight:600; color:var(--accent);">0</div>
+      <div style="font-size:0.8em; color:var(--text-muted); margin-top:0.3em;">满意度 %</div>
+    </div>
+    <div>
+      <div class="counter" data-target="2400" style="font-size:3.5em; font-weight:600; color:var(--accent);">0</div>
+      <div style="font-size:0.8em; color:var(--text-muted); margin-top:0.3em;">活跃用户</div>
+    </div>
+  </div>
+</section>
+
+<script>
+// 数字滚动动画（slidechanged 事件触发）
+Reveal.on('slidechanged', function(event) {
+  var counters = event.currentSlide.querySelectorAll('.counter');
+  counters.forEach(function(el) {
+    var target = parseInt(el.getAttribute('data-target'));
+    var duration = 1200;
+    var start = performance.now();
+    function tick(now) {
+      var progress = Math.min((now - start) / duration, 1);
+      // ease-out-quart
+      var ease = 1 - Math.pow(1 - progress, 4);
+      el.textContent = Math.round(target * ease);
+      if (progress < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  });
+});
+</script>
+```
+
+### 文字逐字揭示
+
+标题文字逐字出现，制造悬念和节奏感。适合开场页和章节过渡页。
+
+```html
+<style>
+.char-reveal span {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 400ms var(--ease-out-quart, cubic-bezier(0.25,1,0.5,1)),
+              transform 400ms var(--ease-out-quart, cubic-bezier(0.25,1,0.5,1));
+}
+.char-reveal.visible span {
+  opacity: 1;
+  transform: translateY(0);
+}
+</style>
+
+<section>
+  <h1 class="char-reveal" style="font-size:2.5em;">
+    <!-- JS 会自动将文字拆分为单字 span -->
+    改变从这里开始
+  </h1>
+</section>
+
+<script>
+// 拆分文字为单字 span，并为每个字设置延迟
+document.querySelectorAll('.char-reveal').forEach(function(el) {
+  var text = el.textContent.trim();
+  el.innerHTML = '';
+  text.split('').forEach(function(char, i) {
+    var span = document.createElement('span');
+    span.textContent = char === ' ' ? ' ' : char;
+    span.style.transitionDelay = (i * 60) + 'ms';
+    el.appendChild(span);
+  });
+});
+
+// slidechanged 时触发动画
+Reveal.on('slidechanged', function(event) {
+  event.currentSlide.querySelectorAll('.char-reveal').forEach(function(el) {
+    el.classList.remove('visible');
+    requestAnimationFrame(function() {
+      requestAnimationFrame(function() {
+        el.classList.add('visible');
+      });
+    });
+  });
+});
+</script>
+```
+
+### clip-path 图片揭示
+
+图片以裁剪动画方式展开，比简单的淡入更有戏剧效果。
+
+```html
+<style>
+.clip-reveal {
+  clip-path: inset(0 100% 0 0);
+  transition: clip-path 800ms cubic-bezier(0.25, 1, 0.5, 1);
+}
+.clip-reveal.visible {
+  clip-path: inset(0 0 0 0);
+}
+</style>
+
+<section>
+  <div style="display:flex; gap:2em; align-items:center;">
+    <div style="flex:1;">
+      <h2>产品亮点</h2>
+      <p>描述文字...</p>
+    </div>
+    <div style="flex:1;">
+      <img class="clip-reveal" src="https://picsum.photos/600/400"
+           alt="产品图片"
+           style="width:100%; border-radius:8px;">
+    </div>
+  </div>
+</section>
+
+<script>
+Reveal.on('slidechanged', function(event) {
+  event.currentSlide.querySelectorAll('.clip-reveal').forEach(function(el) {
+    el.classList.remove('visible');
+    requestAnimationFrame(function() {
+      requestAnimationFrame(function() {
+        el.classList.add('visible');
+      });
+    });
+  });
+});
+</script>
+```
+
+**clip-path 变体**：
+
+| 效果 | clip-path 值（初始 → 结束） |
+|------|---------------------------|
+| 从左到右 | `inset(0 100% 0 0)` → `inset(0 0 0 0)` |
+| 从中间展开 | `inset(0 50% 0 50%)` → `inset(0 0 0 0)` |
+| 圆形扩散 | `circle(0%)` → `circle(75%)` |
+| 菱形展开 | `polygon(50% 50%, 50% 50%, 50% 50%, 50% 50%)` → `polygon(0 0, 100% 0, 100% 100%, 0 100%)` |
+
+### 3D 透视过渡
+
+利用 CSS perspective 和 transform 实现 3D 翻转效果，适合关键转折页。
+
+```html
+<style>
+.flip-in {
+  perspective: 1000px;
+}
+.flip-in .flip-card {
+  transform: rotateY(-90deg);
+  transition: transform 600ms cubic-bezier(0.25, 1, 0.5, 1);
+  transform-origin: left center;
+}
+.flip-in.visible .flip-card {
+  transform: rotateY(0deg);
+}
+</style>
+
+<section class="flip-in">
+  <div class="flip-card" style="background:var(--bg-subtle); padding:2em; border-radius:8px;">
+    <h2 style="font-size:2em; margin-bottom:0.3em;">核心观点</h2>
+    <p style="color:var(--text-muted);">这段内容会以 3D 翻转效果出现</p>
+  </div>
+</section>
+```
+
+### SVG 路径描边动画
+
+SVG 图标的描边逐步绘制，适合流程图、架构图中的连线。
+
+```html
+<style>
+.draw-path {
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  transition: stroke-dashoffset 1500ms cubic-bezier(0.25, 1, 0.5, 1);
+}
+.draw-path.visible {
+  stroke-dashoffset: 0;
+}
+</style>
+
+<section>
+  <div style="text-align:center;">
+    <svg width="400" height="100" viewBox="0 0 400 100">
+      <path class="draw-path" d="M 20 50 C 100 10, 150 90, 200 50 S 300 10, 380 50"
+            fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>
+    </svg>
+    <p style="margin-top:1em; font-size:0.8em; color:var(--text-muted);">路径动画示例</p>
+  </div>
+</section>
+
+<script>
+Reveal.on('slidechanged', function(event) {
+  event.currentSlide.querySelectorAll('.draw-path').forEach(function(el) {
+    // 设置正确的 dasharray 值
+    var length = el.getTotalLength ? el.getTotalLength() : 1000;
+    el.style.strokeDasharray = length;
+    el.style.strokeDashoffset = length;
+    el.classList.remove('visible');
+    requestAnimationFrame(function() {
+      requestAnimationFrame(function() {
+        el.style.strokeDashoffset = '0';
+        el.classList.add('visible');
+      });
+    });
+  });
+});
+</script>
+```
+
+### 视差层叠效果
+
+多层元素以不同速度移动，创造深度感。适合标题页和章节分隔页。
+
+```html
+<style>
+.parallax-layer {
+  transition: transform 600ms cubic-bezier(0.25, 1, 0.5, 1);
+}
+</style>
+
+<section style="overflow:hidden;">
+  <!-- 背景装饰层（慢速移动） -->
+  <div class="parallax-layer" data-speed="0.3"
+       style="position:absolute; top:-10%; right:-5%;
+              width:300px; height:300px; border-radius:50%;
+              background:var(--accent); opacity:0.1;">
+  </div>
+  <!-- 中间装饰层（中速移动） -->
+  <div class="parallax-layer" data-speed="0.6"
+       style="position:absolute; bottom:5%; left:10%;
+              width:150px; height:150px; border-radius:12px;
+              background:var(--accent); opacity:0.08;
+              transform:rotate(15deg);">
+  </div>
+  <!-- 内容层（正常速度） -->
+  <div style="position:relative; z-index:1;">
+    <h1 style="font-size:2.5em;">章节标题</h1>
+    <p style="color:var(--text-muted);">视差层叠效果演示</p>
+  </div>
+</section>
+
+<script>
+// 视差效果：鼠标移动时不同层不同速度
+document.addEventListener('mousemove', function(e) {
+  var x = (e.clientX / window.innerWidth - 0.5) * 2;
+  var y = (e.clientY / window.innerHeight - 0.5) * 2;
+  document.querySelectorAll('.parallax-layer').forEach(function(el) {
+    var speed = parseFloat(el.getAttribute('data-speed')) || 0.5;
+    el.style.transform = 'translate(' + (x * speed * 20) + 'px, ' + (y * speed * 20) + 'px)';
+  });
+});
+</script>
+```
+
+### 高级动画快速检查清单
+
+使用高级动画时额外检查：
+
+- [ ] 每个 slide 最多使用 **1 种**高级动画（不要叠加）
+- [ ] 高级动画时长 **≤1200ms**（再长观众会等）
+- [ ] 数字滚动在 **1200ms** 内完成
+- [ ] 文字逐字延迟 **≤60ms/字**（中文）/ **≤40ms/字**（英文）
+- [ ] `prefers-reduced-motion` 下降级为简单淡入
+- [ ] 动画不影响文字可读性（模糊、遮挡等）
+- [ ] 全部高级动画不超过 **2-3 个 slide**（其余用基础 fragment）

@@ -62,7 +62,13 @@ const DUOTONE_GRADIENT_PAIRS = [
 ];
 
 /** 禁止的字体（AI 生成设计指纹） */
-const BANNED_FONTS = ['inter', 'roboto', 'arial', 'open sans'];
+const BANNED_FONTS = [
+  'inter', 'roboto', 'arial', 'open sans',
+  'fraunces', 'newsreader', 'crimson pro', 'playfair display',
+  'syne', 'space mono', 'space grotesk',
+  'dm serif', 'plus jakarta sans', 'instrument sans',
+  'instrument serif',
+];
 
 /** 占位文本模式 */
 const PLACEHOLDER_PATTERNS = [
@@ -176,6 +182,101 @@ function isAllCaps(text) {
  */
 function stripTags(html) {
   return html.replace(/<[^>]+>/g, '').trim();
+}
+
+/**
+ * 压缩文本空白，便于主题词匹配
+ */
+function normalizeText(text) {
+  return text.replace(/\s+/g, ' ').trim();
+}
+
+/**
+ * 提取所有指定标签内容
+ */
+function extractTagTexts(html, tagNames) {
+  const tags = tagNames.join('|');
+  const re = new RegExp(`<(${tags})\\b[^>]*>([\\s\\S]*?)<\\/\\1>`, 'gi');
+  const texts = [];
+  let m;
+  while ((m = re.exec(html)) !== null) {
+    texts.push({
+      tag: m[1].toLowerCase(),
+      text: normalizeText(stripTags(m[2])),
+      raw: m[0],
+      index: m.index,
+    });
+  }
+  return texts.filter(item => item.text);
+}
+
+/**
+ * 提取带 font-size 的内联文本，用于识别主视觉/大字号文本
+ */
+function extractLargeInlineTexts(html, minEm = 1.2) {
+  const re = /<([a-z][\w:-]*)\b([^>]*)style="([^"]*font-size\s*:[^"]*)"[^>]*>([\s\S]*?)<\/\1>/gi;
+  const texts = [];
+  let m;
+  while ((m = re.exec(html)) !== null) {
+    const style = m[3];
+    const emMatch = style.match(/font-size\s*:\s*(\d+(?:\.\d+)?)em/i);
+    const pxMatch = style.match(/font-size\s*:\s*(\d+(?:\.\d+)?)px/i);
+    const isLarge =
+      (emMatch && parseFloat(emMatch[1]) >= minEm) ||
+      (pxMatch && parseFloat(pxMatch[1]) >= 34);
+    if (isLarge) {
+      const text = normalizeText(stripTags(m[4]));
+      if (text) {
+        texts.push({ tag: m[1].toLowerCase(), text, raw: m[0], index: m.index });
+      }
+    }
+  }
+  return texts;
+}
+
+function cjkChars(text) {
+  return (text.match(/[\u3400-\u9fff]/g) || []).join('');
+}
+
+function cjkBigrams(text) {
+  const compact = cjkChars(text);
+  const tokens = [];
+  for (let i = 0; i < compact.length - 1; i++) {
+    tokens.push(compact.slice(i, i + 2));
+  }
+  return [...new Set(tokens)];
+}
+
+function textContainsClaim(text, claim) {
+  const normalized = normalizeText(text);
+  if (!claim) return false;
+  if (normalized.includes(claim)) return true;
+
+  const tokens = cjkBigrams(claim);
+  if (tokens.length === 0) return false;
+  // 2 字主题词要求完整出现；4 字以上主题词允许用相邻核心词共同表达。
+  if (cjkChars(claim).length <= 2) return tokens.some(token => normalized.includes(token));
+  return tokens.length >= 2 && tokens.every(token => normalized.includes(token));
+}
+
+function extractPinTopic(pinText) {
+  const afterSlash = pinText.includes('/') ? pinText.split('/').slice(1).join('/') : pinText;
+  return normalizeText(afterSlash)
+    .replace(/\b(?:cover|chapter|slide|benchmark|keynote|ppt|q[1-4])\b/gi, '')
+    .replace(/\b\d{2,4}(?:[.-]\d{1,2})*\b/g, '')
+    .replace(/[·|:：#-]+/g, ' ')
+    .trim();
+}
+
+function isMeaningfulPinTopic(topic) {
+  const cjk = cjkChars(topic);
+  if (cjk.length < 4) return false;
+  const generic = new Set([
+    '封面', '目录', '结束', '收尾', '续', '命题', '起源', '背景',
+    '对比', '档案', '架构', '开源', '创始人', '编年史',
+    '价格对比', '编年史续',
+  ]);
+  return !generic.has(cjk);
 }
 
 /**
@@ -314,41 +415,26 @@ function checkAllCapsTracking(html) {
 }
 
 /**
- * P0-4: 大标题无负 letter-spacing
+ * P0-4: 大标题使用负 letter-spacing
  */
 function checkHeadingTracking(html) {
   const styleBlocks = extractStyleBlocks(html);
   const allCss = styleBlocks.map(b => b.content).join('\n');
 
-  // 检查 h1, h2 规则是否有负 letter-spacing
-  ['h1', 'h2'].forEach(tag => {
-    const headingRuleRe = new RegExp(
-      `(?:^|\\s|,})(${tag}(?:\\s|\\.|\\:|\\+|>|~|,)[^{}]*|${tag}\\s*)\\{([^}]*)\\}`,
-      'gim'
-    );
-    let foundHeadingRule = false;
-    let hasNegTracking = false;
-    let m;
-
-    while ((m = headingRuleRe.exec(allCss)) !== null) {
-      foundHeadingRule = true;
-      const body = m[2];
-      const trackingMatch = body.match(/letter-spacing\s*:\s*([^;]+)/i);
-      if (trackingMatch) {
-        const val = parseFloat(trackingMatch[1]);
-        if (val < 0 || trackingMatch[1].trim().startsWith('-')) {
-          hasNegTracking = true;
-        }
-      }
-    }
-
-    if (foundHeadingRule && !hasNegTracking) {
-      addResult('p0', 'HEADING_NO_NEG_TRACKING',
-        `<${tag}> 定义了样式但缺少负 letter-spacing`,
+  const ruleRe = /([^{}]+)\{([^}]*)\}/g;
+  let m;
+  while ((m = ruleRe.exec(allCss)) !== null) {
+    const selector = m[1].trim();
+    if (!/\bh[12]\b/i.test(selector)) continue;
+    const body = m[2];
+    const trackingMatch = body.match(/letter-spacing\s*:\s*([^;]+)/i);
+    if (trackingMatch && trackingMatch[1].trim().startsWith('-')) {
+      addResult('p0', 'HEADING_NEG_TRACKING',
+        `大标题选择器使用了负 letter-spacing`,
         null,
-        `建议: letter-spacing: -0.01em ~ -0.02em`);
+        `${selector} { letter-spacing: ${trackingMatch[1].trim()} }`);
     }
-  });
+  }
 }
 
 /**
@@ -382,6 +468,8 @@ function checkAccentOverflow(html) {
   sections.forEach((sec, i) => {
     // 统计 var(--accent) 出现次数（包括 inline style 和 HTML 内容）
     const accentCount = (sec.fullMatch.match(/var\(--accent(?:-light|-dark)?\)/gi) || []).length;
+    // 统计 OKLCH 相对色（oklch(from var(--accent) ...)）
+    const oklchAccentCount = (sec.fullMatch.match(/oklch\s*\(\s*from\s+var\(--accent/gi) || []).length;
     // 也检查 accent 色值直接使用
     const accentHexRe = /--accent(?:-light|-dark)?:\s*([^;]+)/gi;
     const cssBlocks = extractStyleBlocks(html);
@@ -406,7 +494,7 @@ function checkAccentOverflow(html) {
       });
     });
 
-    const totalAccentUses = accentCount + directAccentCount;
+    const totalAccentUses = accentCount + oklchAccentCount + directAccentCount;
     if (totalAccentUses > 3) {
       addResult('p0', 'ACCENT_OVERFLOW',
         `Slide ${i + 1}: accent 使用 ${totalAccentUses} 次（上限 3 次）`,
@@ -441,6 +529,101 @@ function checkCardAntiPattern(html) {
         `选择器: ${selector}`);
     }
   }
+}
+
+/**
+ * P1-10: Ghost card（1px border + 16px+ radius + box-shadow）
+ * impeccable Codex 绝对禁令
+ */
+function checkGhostCards(html) {
+  const allCss = extractStyleBlocks(html).map(b => b.content).join('\n');
+  const ruleRe = /([^{}]+)\{([^}]*)\}/g;
+  let m;
+
+  while ((m = ruleRe.exec(allCss)) !== null) {
+    const selector = m[1].trim();
+    const body = m[2];
+
+    const hasThinBorder = /border\s*:\s*1px\s+solid/i.test(body);
+    const radiusMatch = body.match(/border-radius\s*:\s*(\d+(?:\.\d+)?)(px|em|rem)/i);
+    const hasLargeRadius = radiusMatch && parseFloat(radiusMatch[1]) >= 16;
+    const hasShadow = /box-shadow\s*:/i.test(body);
+
+    if (hasThinBorder && hasLargeRadius && hasShadow) {
+      addResult('p1', 'GHOST_CARD',
+        `Ghost card 模式：1px border + border-radius ≥16px + box-shadow（impeccable 禁令）`,
+        null,
+        `选择器: ${selector}。改为实色背景或移除 shadow`);
+    }
+  }
+}
+
+/**
+ * P1-11: Over-rounding（border-radius ≥32px）
+ * impeccable Codex 绝对禁令
+ */
+function checkOverRounding(html) {
+  const allCss = extractStyleBlocks(html).map(b => b.content).join('\n');
+  const inlineStyles = extractInlineStyles(html);
+
+  const checkSource = (css, source) => {
+    const radiusRe = /border-radius\s*:\s*(\d+(?:\.\d+)?)(px|em|rem)/gi;
+    let m;
+    while ((m = radiusRe.exec(css)) !== null) {
+      if (parseFloat(m[1]) >= 32) {
+        addResult('p1', 'OVER_ROUNDING',
+          `border-radius ${m[1]}${m[2]} 过大（impeccable 禁令，上限 24px）`,
+          null, source);
+      }
+    }
+  };
+
+  checkSource(allCss, '<style> block');
+  inlineStyles.forEach(s => {
+    checkSource(s.value, `inline style`);
+  });
+}
+
+/**
+ * P1-12: Side-stripe border（>1px 左/右边框做强调）
+ * impeccable 绝对禁令
+ */
+function checkSideStripeBorder(html) {
+  const allCss = extractStyleBlocks(html).map(b => b.content).join('\n');
+  const ruleRe = /([^{}]+)\{([^}]*)\}/g;
+  let m;
+
+  while ((m = ruleRe.exec(allCss)) !== null) {
+    const selector = m[1].trim();
+    const body = m[2];
+
+    // 检查 border-left/right > 1px 且带颜色
+    const sideBorderMatch = body.match(/border-(left|right)\s*:\s*(\d+)px\s+solid\s+([^;]+)/i);
+    if (sideBorderMatch && parseInt(sideBorderMatch[2]) > 1) {
+      // 如果颜色是 accent 或非中性色
+      const color = sideBorderMatch[3];
+      if (/var\(--c-(?!bg|border|rule|grid|fg)/i.test(color) || /#[0-9a-fA-F]{3,8}/.test(color)) {
+        addResult('p1', 'SIDE_STRIPE_BORDER',
+          `Side-stripe border: border-${sideBorderMatch[1]} ${sideBorderMatch[2]}px solid（impeccable 禁令）`,
+          null,
+          `选择器: ${selector}。用背景色差异代替边框强调`);
+      }
+    }
+  }
+
+  // 也检查内联 style
+  const inlineStyles = extractInlineStyles(html);
+  inlineStyles.forEach(s => {
+    const sideMatch = s.value.match(/border-(left|right)\s*:\s*(\d+)px\s+solid\s+([^;]+)/i);
+    if (sideMatch && parseInt(sideMatch[2]) > 1) {
+      const color = sideMatch[3];
+      if (/var\(--c-(?!bg|border|rule|grid|fg)/i.test(color) || /#[0-9a-fA-F]{3,8}/.test(color)) {
+        addResult('p1', 'SIDE_STRIPE_BORDER',
+          `内联 side-stripe: border-${sideMatch[1]} ${sideMatch[2]}px solid（impeccable 禁令）`,
+          getLineNumber(html, s.index));
+      }
+    }
+  });
 }
 
 // ─── P1 检查 ────────────────────────────────────────────────
@@ -505,7 +688,7 @@ function checkPureBlackWhite(html) {
 }
 
 /**
- * P1-3: 字重超过 3 档
+ * P1-3: 字重超过 4 档
  * 只统计 CSS 中实际使用的 font-weight 声明（不解析 Google Fonts URL，
  * 因为 URL 中包含可变字体的多轴参数，容易误判）
  */
@@ -525,11 +708,11 @@ function checkFontWeightDiscipline(html) {
     if (fwMatch) weights.add(fwMatch[1]);
   });
 
-  if (weights.size > 3) {
+  if (weights.size > 4) {
     addResult('p1', 'TOO_MANY_WEIGHTS',
-      `使用了 ${weights.size} 种字重: ${[...weights].sort().join(', ')}（建议 ≤3 档）`,
+      `使用了 ${weights.size} 种字重: ${[...weights].sort().join(', ')}（建议 ≤4 档）`,
       null,
-      `推荐: 400 (Read) + 500 (Emphasize) + 600 (Announce)`);
+      `推荐: 300/400 (Read) + 500 (Emphasize) + 600 (Announce)`);
   }
 }
 
@@ -664,18 +847,735 @@ function checkReducedMotion(html) {
 }
 
 /**
+ * P1: 禁止 text-shadow
+ */
+function checkTextShadow(html) {
+  const allCss = extractStyleBlocks(html).map(b => b.content).join('\n');
+  if (/text-shadow\s*:/.test(allCss)) {
+    const line = getLineNumber(html, allCss.indexOf('text-shadow'));
+    addResult('p1', 'TEXT_SHADOW',
+      `发现 text-shadow 使用（演示文稿中文字已足够大，不需要阴影）`,
+      line);
+  }
+  // inline styles
+  const inlineInHtml = extractInlineStyles(html);
+  inlineInHtml.forEach(s => {
+    if (/text-shadow\s*:/.test(s.value)) {
+      addResult('p1', 'TEXT_SHADOW',
+        `inline style 中使用了 text-shadow`,
+        getLineNumber(html, s.index));
+    }
+  });
+}
+
+/**
+ * P0: 捏造数据模式检测
+ */
+function checkFakeData(html) {
+  const sections = extractSections(html);
+  sections.forEach((sec, i) => {
+    const text = sec.fullMatch.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
+    FAKE_DATA_PATTERNS.forEach(pattern => {
+      if (pattern.test(text)) {
+        addResult('p0', 'FAKE_DATA',
+          `Slide ${i + 1}: 可能包含捏造数据指标（"${pattern.source}"）`,
+          getLineNumber(html, sec.index));
+      }
+    });
+  });
+}
+
+/**
+ * P1: Hero-metric 反模式（大数字 + 小标签 + 渐变背景组合）
+ */
+function checkHeroMetric(html) {
+  const sections = extractSections(html);
+  sections.forEach((sec, i) => {
+    const content = sec.fullMatch;
+    const hasBigNumber = /font-size\s*:[^;]*[3-9]em/i.test(content) || /font-size\s*:[^;]*clamp\([^)]*[3-9]em/i.test(content);
+    const hasSmallLabel = /font-size\s*:[^;]*(?:0\.[4-7]em|small|xs)/i.test(content);
+    const hasGradientBg = /background\s*:\s*linear-gradient/i.test(content) || /background-image\s*:\s*linear-gradient/i.test(content);
+    if (hasBigNumber && hasSmallLabel && hasGradientBg) {
+      addResult('p1', 'HERO_METRIC',
+        `Slide ${i + 1}: 大数字 + 小标签 + 渐变背景组合（hero-metric 反模式）`,
+        getLineNumber(html, sec.index));
+    }
+  });
+}
+
+/**
  * P2-4: 缺少 OKLCH 颜色系统
  */
 function checkColorSystem(html) {
   const allCss = extractStyleBlocks(html).map(b => b.content).join('\n');
   const hasOklch = /oklch\s*\(/i.test(allCss);
-  const hasCssVars = /--primary\s*:|--bg\s*:|--text\s*:|--accent\s*:/.test(allCss);
+  const hasCssVars = /--primary\s*:|--bg\s*:|--text\s*:|--accent\s*:|--c-bg\s*:|--c-fg\s*:|--c-accent\s*:/.test(allCss);
 
   if (!hasOklch && !hasCssVars) {
     addResult('p2', 'NO_COLOR_SYSTEM',
       `未检测到 OKLCH 或 CSS 变量颜色系统`,
       null,
       `推荐使用 OKLCH 定义 :root 颜色变量`);
+  }
+}
+
+/**
+ * P1-7: Font Awesome CDN 引用（建议迁移到 inline SVG）
+ */
+function checkFontAwesome(html) {
+  if (/font-awesome|fontawesome|cdnjs\.cloudflare\.com\/ajax\/libs\/font-awesome/i.test(html)) {
+    addResult('p1', 'FONT_AWESOME_CDN',
+      `检测到 Font Awesome CDN 引用，建议迁移到 inline SVG 图标`,
+      getLineNumber(html, html.search(/font-awesome|fontawesome/i)),
+      `参考 references/icon-system.md 的迁移指南，可减少 ~100KB 加载`);
+  }
+}
+
+/**
+ * P2-6: SVG 图标描边宽度不合规（推荐 1.6px）
+ */
+function checkIconStrokeWidth(html) {
+  const svgRe = /<svg[^>]*>[\s\S]*?<\/svg>/gi;
+  let m;
+  while ((m = svgRe.exec(html)) !== null) {
+    const svg = m[0];
+    // 跳过非图标 SVG（流程图、数据图、地图、雷达图等语义图形）
+    if (isSemanticSvg(svg)) continue;
+    const swMatch = svg.match(/stroke-width=["']?([0-9.]+)/);
+    if (swMatch) {
+      const sw = parseFloat(swMatch[1]);
+      // 检查是否在 1.4-2.0 范围外（允许一定容差）
+      if (sw < 1.4 || sw > 2.0) {
+        addResult('p2', 'ICON_STROKE_WIDTH',
+          `SVG 图标 stroke-width=${sw}，推荐 1.6（范围 1.4-2.0）`,
+          getLineNumber(html, m.index),
+          svg.substring(0, 80));
+      }
+    }
+  }
+}
+
+/**
+ * P2-7: SVG 图标使用硬编码颜色（应使用 currentColor）
+ */
+function checkIconHardcodedColor(html) {
+  const svgRe = /<svg[^>]*>[\s\S]*?<\/svg>/gi;
+  let m;
+  let found = 0;
+  while ((m = svgRe.exec(html)) !== null) {
+    if (found >= 3) break; // 最多报告 3 个
+    const svg = m[0];
+    // 跳过非图标 SVG（流程图、数据图、地图、雷达图等语义图形）
+    if (isSemanticSvg(svg)) continue;
+    // 检查 stroke 使用了硬编码颜色（非 currentColor/none/var()）
+    const strokeMatch = svg.match(/stroke=["']([^"']+)["']/g);
+    if (strokeMatch) {
+      for (const sm of strokeMatch) {
+        const val = sm.match(/stroke=["']([^"']+)["']/)[1];
+        if (val !== 'currentColor' && val !== 'none' && !val.startsWith('var(')) {
+          addResult('p2', 'ICON_HARDCODED_COLOR',
+            `SVG 图标 stroke 使用硬编码颜色 "${val}"，应改为 currentColor`,
+            getLineNumber(html, m.index),
+            svg.substring(0, 80));
+          found++;
+          break;
+        }
+      }
+    }
+  }
+}
+
+function isSemanticSvg(svg) {
+  if (/width="[34][02]"/.test(svg) || /width="200"/.test(svg)) return true;
+  if (/\b(?:flow-svg|slope|chart|map|radar|diagram|mechanism|network)\b/i.test(svg)) return true;
+  if (/aria-label="[^"]*(?:chart|map|radar|flow|diagram|mechanism|slope|network|architecture|system)[^"]*"/i.test(svg)) return true;
+
+  const viewBox = svg.match(/viewBox=["']\s*[-0-9.]+\s+[-0-9.]+\s+([0-9.]+)\s+([0-9.]+)\s*["']/i);
+  if (viewBox) {
+    const width = parseFloat(viewBox[1]);
+    const height = parseFloat(viewBox[2]);
+    if (width >= 96 || height >= 96) return true;
+  }
+
+  return false;
+}
+
+/**
+ * P1-8: 溢出防护缺失（overflow prevention）
+ */
+function checkOverflowPrevention(html) {
+  const styleBlocks = extractStyleBlocks(html);
+  const allCss = styleBlocks.map(b => b.content).join('\n');
+
+  // 检查 .reveal section 是否有 overflow: hidden
+  const hasOverflowHidden = /\.reveal\s+(?:section|\.slides\s+>?\s*section)\s*\{[^}]*(?:overflow\s*:\s*hidden|overflow:hidden)/is.test(allCss);
+  if (!hasOverflowHidden) {
+    addResult('p1', 'NO_OVERFLOW_HIDDEN',
+      `.reveal section 缺少 overflow: hidden，内容可能溢出 slide 边界`,
+      null,
+      `在 .reveal section {} 中添加 overflow: hidden;`);
+  }
+
+  // 检查是否有 word-break/overflow-wrap 防护
+  const hasWordBreak = /word-break\s*:\s*break-word/.test(allCss) || /overflow-wrap\s*:\s*break-word/.test(allCss);
+  if (!hasWordBreak) {
+    addResult('p2', 'NO_WORD_BREAK',
+      `缺少 word-break: break-word 防护，长文本可能撑破容器`,
+      null,
+      `添加：h1, h2, h3, h4, p, li, span, div { word-break: break-word; overflow-wrap: break-word; }`);
+  }
+}
+
+/**
+ * P0-8: vw/vh 单位（Reveal.js 中禁止使用）
+ */
+function checkViewportUnits(html) {
+  const styleBlocks = extractStyleBlocks(html);
+  const allCss = styleBlocks.map(b => b.content).join('\n');
+  const violations = [];
+
+  // 检查 <style> 中的 vw/vh
+  const vwInStyleRe = /([0-9.]+)\s*(v[wh])\b/gi;
+  let m;
+  while ((m = vwInStyleRe.exec(allCss)) !== null) {
+    // 排除注释中的
+    const before = allCss.substring(Math.max(0, m.index - 30), m.index);
+    if (/\/\*/.test(before) && !/\*\//.test(before)) continue;
+    violations.push({ value: m[0], line: null, source: '<style>' });
+  }
+
+  // 检查内联 style 中的 vw/vh
+  const inlineStyles = extractInlineStyles(html);
+  inlineStyles.forEach(s => {
+    const vwMatches = s.value.match(/([0-9.]+)\s*(v[wh])\b/gi);
+    if (vwMatches) {
+      violations.push({
+        value: vwMatches.join(', '),
+        line: getLineNumber(html, s.index),
+        source: `inline style`
+      });
+    }
+  });
+
+  // 检查 clamp() 中间值是否有 vw/vh（仅检查内联 style，避免与 <style> 重复）
+  const clampRe = /clamp\s*\([^)]+\)/gi;
+  const inlineOnly = inlineStyles.map(s => s.value).join('\n');
+  while ((m = clampRe.exec(inlineOnly)) !== null) {
+    if (/v[wh]\b/i.test(m[0])) {
+      violations.push({
+        value: m[0],
+        line: null,
+        source: 'clamp() 中包含 vw/vh'
+      });
+    }
+  }
+
+  if (violations.length > 0) {
+    violations.slice(0, 5).forEach(v => {
+      addResult('p0', 'VIEWPORT_UNITS',
+        `使用了 vw/vh 单位: ${v.value}（${v.source}）`,
+        v.line,
+        `Reveal.js 用 transform:scale() 缩放，vw/vh 不受影响。改用 em 单位。`);
+    });
+  }
+}
+
+/**
+ * P0-9: Font Awesome 图标使用（应改为 inline SVG）
+ */
+function checkFontAwesomeUsage(html) {
+  // 检查 <i class="fas/fa-..." 和 <i class="... fa-xxx">
+  const faIconRe = /class="[^"]*\b(fa[slrbdtk]?\s+fa-[\w-]+|fa-[\w-]+)[^"]*"/gi;
+  let m;
+  let count = 0;
+  while ((m = faIconRe.exec(html)) !== null) {
+    if (count >= 5) break;
+    addResult('p0', 'FONTAWESOME_ICON',
+      `使用了 Font Awesome 图标类: ${m[1]}`,
+      getLineNumber(html, m.index),
+      `替换为 inline SVG，参考 references/icon-system.md`);
+    count++;
+  }
+}
+
+/**
+ * P1-9: 内容密度检查
+ */
+function checkContentDensity(html) {
+  const sections = extractSections(html);
+  // 排除嵌套的子 section（垂直 slide 的父 section）
+  const topLevelSections = sections.filter((sec, i) => {
+    // 如果这个 section 的内容包含其他 <section>，它是嵌套父级，跳过
+    return !/<section[\s>]/i.test(sec.content.trim().substring(0, 50));
+  });
+
+  topLevelSections.forEach((sec, i) => {
+    const content = sec.content;
+
+    // 检查列表项数量：单个垂直列表 <=5；多列对比页允许总数略高但不应超过 8。
+    const listBlocks = content.match(/<[uo]l[\s\S]*?<\/[uo]l>/gi) || [];
+    const counts = listBlocks.map(block => (block.match(/<li[\s>]/gi) || []).length);
+    const maxListItems = counts.length ? Math.max(...counts) : 0;
+    const totalListItems = counts.reduce((sum, count) => sum + count, 0);
+    if (maxListItems > 5 || totalListItems > 8) {
+      addResult('p1', 'DENSE_LIST',
+        `Slide ${i + 1}: 列表有 ${totalListItems} 项（单列表上限 5 项，多列总上限 8 项）`,
+        getLineNumber(html, sec.index),
+        `拆成 2 页，或缩减单列表/整页列表数量`);
+    }
+
+    // 检查卡片数量（grid/flex 子项带 padding 的 div）
+    const cardDivs = content.match(/<div[^>]*style="[^"]*padding[^"]*"[^>]*>\s*<(h[1-6]|p|svg)/gi) || [];
+    if (cardDivs.length > 4) {
+      addResult('p1', 'DENSE_CARDS',
+        `Slide ${i + 1}: 卡片/面板 ${cardDivs.length} 个（上限 4 个）`,
+        getLineNumber(html, sec.index));
+    }
+
+    // 检查代码块行数
+    const codeBlock = content.match(/<code[^>]*>([\s\S]*?)<\/code>/gi);
+    if (codeBlock) {
+      codeBlock.forEach(block => {
+        const lines = block.split('\n').length - 1;
+        if (lines > 8) {
+          addResult('p1', 'DENSE_CODE',
+            `Slide ${i + 1}: 代码块 ${lines} 行（上限 8 行）`,
+            getLineNumber(html, sec.index),
+            `缩减代码或拆成 2 页`);
+        }
+      });
+    }
+  });
+}
+
+/**
+ * P2-8: 背景层次检查（规则 11: ≥80% 页面有背景层次）
+ */
+function checkBackgroundTexture(html) {
+  const allCss = extractStyleBlocks(html).map(b => b.content).join('\n');
+  const hasColorField = /--c-bg\s*:|--bg\s*:/.test(allCss) &&
+    /background\s*:\s*var\(--(?:c-)?bg\)/i.test(allCss);
+
+  const hasGlobalTexture =
+    /\.reveal\s+section\s*::?(after|before)\s*\{[^}]*(?:background-image|radial-gradient|linear-gradient|repeating-linear)/is.test(allCss);
+  const hasNoiseTexture = /feTurbulence|fractalNoise/i.test(allCss) || /data:image\/svg/i.test(allCss);
+
+  if (!hasColorField && !hasGlobalTexture && !hasNoiseTexture) {
+    addResult('p2', 'NO_BACKGROUND_TEXTURE',
+      `未检测到颜色场背景或全局背景层次`,
+      null,
+      `至少定义 --c-bg/--bg 并将 reveal 背景绑定到该 token；纹理仅用于签名页`);
+  }
+}
+
+/**
+ * P2-9: 签名时刻检查（规则 12: ≥1 个签名时刻）
+ */
+function checkSignatureMoment(html) {
+  const allCss = extractStyleBlocks(html).map(b => b.content).join('\n');
+  const signatures = [];
+
+  if (/data-background-color="var\(--accent/i.test(html)) {
+    signatures.push('全出血色块页');
+  }
+
+  const inlineStyles = extractInlineStyles(html);
+  inlineStyles.forEach(s => {
+    const emMatch = s.value.match(/font-size\s*:[^;]*?(\d+(?:\.\d+)?)\s*em/i);
+    if (emMatch && parseFloat(emMatch[1]) >= 4 && !signatures.includes('超大数字/引言')) {
+      signatures.push('超大数字/引言');
+    }
+    const clampMatch = s.value.match(/clamp\([^,]+,\s*[^,]+,\s*(\d+(?:\.\d+)?)\s*em\)/i);
+    if (clampMatch && parseFloat(clampMatch[1]) >= 4 && !signatures.includes('超大数字/引言')) {
+      signatures.push('超大数字/引言');
+    }
+  });
+
+  if (/grid-template-columns\s*:[^;]*?(?:2fr\s+3fr|3fr\s+5fr|35%|65%|40%|60%|0\.\d+fr\s+1\.\d+fr|1\.\d+fr\s+0\.\d+fr)/i.test(html)) {
+    signatures.push('非对称分割');
+  }
+
+  const bigFontMatches = allCss.match(/font-size\s*:[^;]*?(\d+(?:\.\d+)?)\s*em/gi) || [];
+  bigFontMatches.forEach(m => {
+    const val = m.match(/(\d+(?:\.\d+)?)\s*em/);
+    if (val && parseFloat(val[1]) >= 4 && !signatures.includes('超大引言')) {
+      signatures.push('超大引言');
+    }
+  });
+
+  if (signatures.length === 0) {
+    addResult('p2', 'NO_SIGNATURE_MOMENT',
+      `未检测到签名时刻（每份演示需要 ≥1 个）`,
+      null,
+      `参考 design-polish.md 的 5 种配方：超大引言、非对称分割、单数字聚焦、全出血色块、图文对角`);
+  }
+}
+
+/**
+ * P2-10: 布局多样性检查（相邻 slide 不应有相同结构）
+ */
+function checkLayoutDiversity(html) {
+  const sections = extractSections(html);
+
+  const fingerprints = sections.map(sec => {
+    const content = `${sec.attrs}\n${sec.content}`;
+    const features = [];
+    if (/<h[12]/i.test(content)) features.push('heading');
+    if (/<ul[\s>]/i.test(content) || /<ol[\s>]/i.test(content)) features.push('list');
+    if (/<pre[\s>]/i.test(content)) features.push('code');
+    if (/grid-template-columns|class="[^"]*(?:deck-grid|grid|totems|pipeline|flywheel|lane|swimlane|node-grid|material-board|lookbook|kinetic-stage|beat-grid|cue|chart-wall|dash|case-grid|issue-grid)/i.test(content)) features.push('grid');
+    if (/display\s*:\s*flex|class="[^"]*(?:deck-flex|two-col|engine|community-map|profile|flow-board|editor|terminal|diff)/i.test(content)) features.push('flex');
+    if (/class="[^"]*danmaku/i.test(content)) features.push('interaction');
+    if (/class="[^"]*ecosystem/i.test(content)) features.push('ecosystem');
+    if (/class="[^"]*engine/i.test(content)) features.push('split-engine');
+    if (/class="[^"]*feature-list/i.test(content)) features.push('flist');
+    if (/class="[^"]*card/i.test(content)) features.push('card');
+    if (/class="[^"]*stat/i.test(content)) features.push('stat');
+    if (/class="[^"]*timeline/i.test(content)) features.push('timeline');
+    if (/class="[^"]*(?:material-board|swatch)/i.test(content)) features.push('material-board');
+    if (/class="[^"]*(?:ritual|steps)/i.test(content)) features.push('ritual');
+    if (/class="[^"]*lookbook/i.test(content)) features.push('lookbook');
+    if (/class="[^"]*(?:kinetic-stage|track|dot)/i.test(content)) features.push('kinetic');
+    if (/class="[^"]*beat-grid/i.test(content)) features.push('beat-grid');
+    if (/class="[^"]*cue/i.test(content)) features.push('cue-page');
+    if (/class="[^"]*(?:beat-card|scene|frame-line|film-strip)/i.test(content)) features.push('storyboard');
+    if (/class="[^"]*(?:flow-board|swimlane|node-grid)/i.test(content)) features.push('diagram');
+    if (/class="[^"]*(?:chart-wall|slope|metric|heatmap|bars)/i.test(content)) features.push('dataviz');
+    if (/class="[^"]*(?:editor|code-shell|terminal)/i.test(content)) features.push('code-view');
+    if (/data-background-color/i.test(sec.attrs)) features.push('bleed');
+    if (/class="[^"]*title-slide/i.test(sec.attrs)) features.push('title');
+    return features.sort().join('+');
+  });
+
+  for (let i = 0; i < fingerprints.length - 2; i++) {
+    if (fingerprints[i] && fingerprints[i] === fingerprints[i + 1] && fingerprints[i] === fingerprints[i + 2]) {
+      addResult('p2', 'REPETITIVE_LAYOUT',
+        `Slide ${i + 1}-${i + 3} 布局结构相同: "${fingerprints[i]}"`,
+        null,
+        `建议在连续页面间插入不同布局（引言页、色块页、数据页等）`);
+      break;
+    }
+  }
+}
+
+/**
+ * P2-11: 微细节多样性检查（规则 15: ≥3 种微细节润色）
+ */
+function checkMicroDetails(html) {
+  const allCss = extractStyleBlocks(html).map(b => b.content).join('\n');
+  const inlineStyles = extractInlineStyles(html);
+  const detailTypes = [];
+
+  // eyebrow/kicker: uppercase + letter-spacing ≥0.08em
+  let hasEyebrow = false;
+  inlineStyles.forEach(s => {
+    if (/text-transform\s*:\s*uppercase/i.test(s.value) && /letter-spacing\s*:\s*0\.[089]/i.test(s.value)) {
+      hasEyebrow = true;
+    }
+  });
+  if (/text-transform\s*:\s*uppercase[\s\S]{0,120}letter-spacing\s*:\s*0\.(?:0[89]|1\d?|2\d)em/i.test(allCss) ||
+      /letter-spacing\s*:\s*0\.(?:0[89]|1\d?|2\d)em[\s\S]{0,120}text-transform\s*:\s*uppercase/i.test(allCss)) {
+    hasEyebrow = true;
+  }
+  if (hasEyebrow) detailTypes.push('eyebrow/kicker');
+
+  // divider: height 1-3px + background
+  let hasDivider = false;
+  inlineStyles.forEach(s => {
+    if (/height\s*:\s*[123]px/i.test(s.value) && /background/i.test(s.value)) {
+      hasDivider = true;
+    }
+  });
+  if (/height\s*:\s*[123]px[\s\S]{0,80}background/i.test(allCss)) {
+    hasDivider = true;
+  }
+  if (hasDivider) detailTypes.push('分隔线');
+
+  // capsule tag: border-radius 100px+
+  let hasCapsule = false;
+  inlineStyles.forEach(s => {
+    if (/border-radius\s*:\s*(100px|9999px|999px)/i.test(s.value)) hasCapsule = true;
+  });
+  if (/border-radius\s*:\s*(100px|9999px|999px)/i.test(allCss)) hasCapsule = true;
+  if (hasCapsule) detailTypes.push('胶囊标签');
+
+  // numbered labels: "01", "02" pattern in text
+  if (/>0[1-9]</.test(html) || />\s*0[1-9]\s*\//.test(html)) detailTypes.push('编号标签');
+
+  // source citation
+  if (/来源|Source|数据来源/i.test(html)) detailTypes.push('来源标注');
+
+  // code/terminal label
+  if (/class="[^"]*terminal-bar/i.test(html) || /\.ts"|\.js"|\.py"/i.test(html)) {
+    detailTypes.push('代码/终端标签');
+  }
+
+  if (detailTypes.length < 3) {
+    addResult('p2', 'FEW_MICRO_DETAILS',
+      `仅检测到 ${detailTypes.length} 种微细节（建议 ≥3 种）`,
+      null,
+      `已有: ${detailTypes.join('、') || '无'}。可添加: 分隔线、eyebrow 标签、胶囊标签、编号标签、来源标注`);
+  }
+}
+
+/**
+ * P2-12: 间距节奏检查（规则 14: 间距有 3 级节奏）
+ */
+function checkSpacingRhythm(html) {
+  const inlineStyles = extractInlineStyles(html);
+
+  const marginValues = new Set();
+  inlineStyles.forEach(s => {
+    const mbMatches = s.value.match(/margin-(?:bottom|top)\s*:\s*([^;]+)/gi) || [];
+    mbMatches.forEach(m => {
+      const val = m.replace(/margin-(?:bottom|top)\s*:\s*/i, '').trim();
+      marginValues.add(val);
+    });
+  });
+
+  if (marginValues.size > 0 && marginValues.size < 3) {
+    addResult('p2', 'FLAT_SPACING',
+      `间距变化不足: 仅 ${marginValues.size} 种 margin 值（建议 ≥3 种）`,
+      null,
+      `当前值: ${[...marginValues].join(', ')}。建议: 紧(0.3em) + 中(1em) + 松(2em)`);
+  }
+}
+
+/**
+ * P2-13: 模板 DNA 装饰检查
+ */
+function checkTemplateDNA(html) {
+  const allCss = extractStyleBlocks(html).map(b => b.content).join('\n');
+  const decorations = [];
+
+  if (/terminal-bar/i.test(html) || /\.terminal-bar/i.test(allCss)) decorations.push('终端栏 (dark-tech)');
+  if (/cursor-blink|@keyframes\s+blink/i.test(allCss)) decorations.push('光标闪烁 (dark-tech)');
+  if (/status-dot/i.test(allCss)) decorations.push('状态指示灯 (dark-tech)');
+
+  if (/chapter-num/i.test(allCss)) decorations.push('章节号 (editorial)');
+  if (/editorial-divider/i.test(allCss)) decorations.push('社论分隔线 (editorial)');
+
+  if (/axis-label/i.test(allCss)) decorations.push('坐标轴标注 (minimal)');
+
+  if (/glow-orb/i.test(allCss) || /filter\s*:\s*blur/i.test(allCss)) decorations.push('光晕效果 (vibrant)');
+
+  if (/soft-card/i.test(allCss)) decorations.push('柔和卡片 (nature)');
+  if (/leaf-deco/i.test(allCss)) decorations.push('叶形装饰 (nature)');
+  if (/--f-display\s*:|--font-display\s*:/i.test(allCss) &&
+      /--c-accent\s*:|--accent\s*:/i.test(allCss) &&
+      (/\.pin\b/i.test(allCss) || /class="[^"]*\bpin\b/i.test(html))) {
+    decorations.push('模板字体/色彩/Pin DNA');
+  }
+
+  if (decorations.length === 0) {
+    addResult('p2', 'NO_TEMPLATE_DNA',
+      `未检测到模板专属装饰元素`,
+      null,
+      `参考 design-polish.md 模板专属装饰，为选择的模板添加 DNA 元素`);
+  }
+}
+
+/**
+ * P1: 文案字数密度检查（纯文字 ≤120 字/页）
+ * 统计中文汉字 + 英文单词数
+ */
+function checkWordCountDensity(html) {
+  const sections = extractSections(html);
+  const topLevelSections = sections.filter(sec =>
+    !/<section[\s>]/i.test(sec.content.trim().substring(0, 50))
+  );
+
+  topLevelSections.forEach((sec, i) => {
+    const text = stripTags(sec.content).replace(/\s+/g, ' ').trim();
+    // 中文字符数
+    const cjkCount = (text.match(/[一-鿿　-〿＀-￯]/g) || []).length;
+    // 英文单词数
+    const enWords = (text.match(/[a-zA-Z]+(?:[-'][a-zA-Z]+)*/g) || []).length;
+    // 混合估算：1 中文字 ≈ 1 单位，1 英文词 ≈ 1.5 单位
+    const total = cjkCount + Math.round(enWords * 1.5);
+    if (total > 120) {
+      addResult('p1', 'WORD_COUNT_DENSITY',
+        `Slide ${i + 1}: 文案约 ${total} 单位（上限 ≤120）`,
+        getLineNumber(html, sec.index),
+        `CJK ${cjkCount} 字 + EN ${enWords} 词。缩减文案或拆页`);
+    }
+  });
+}
+
+/**
+ * P2: em-dash overuse（每页 >2 个 em-dash/双连字符是 AI 文案节奏 tell）
+ * 来源：taste-skill v2 + impeccable detect em-dash-overuse
+ */
+function checkEmDashOveruse(html) {
+  const sections = extractSections(html);
+  const topLevelSections = sections.filter(sec =>
+    !/<section[\s>]/i.test(sec.content.trim().substring(0, 50))
+  );
+
+  topLevelSections.forEach((sec, i) => {
+    // 只统计正文标签（p/h）内的 em-dash，排除 span.num 等装饰性破折号
+    const bodyTexts = extractTagTexts(sec.content, ['p', 'blockquote']);
+    const text = bodyTexts.map(t => t.text).join(' ');
+    const emDashCount = (text.match(/—/g) || []).length;
+    if (emDashCount > 2) {
+      addResult('p2', 'EM_DASH_OVERUSE',
+        `Slide ${i + 1}: 正文 ${emDashCount} 个 em-dash（建议 ≤2，AI 文案节奏 tell）`,
+        getLineNumber(html, sec.index),
+        `用逗号、冒号、句号或括号替代多余破折号`);
+    }
+  });
+}
+
+/**
+ * P1: Pin 主题词必须进入主视觉层级
+ *
+ * 失败模式：页脚写“价格屠夫 / 发版节奏 / 行业冲击”，但主标题或主视觉
+ * 只写时间、英文概念或普通说明，导致用户必须看页脚才知道本页论点。
+ */
+function checkPinMainClaimHierarchy(html) {
+  const sections = extractSections(html);
+  const topLevelSections = sections.filter(sec =>
+    !/<section[\s>]/i.test(sec.content.trim().substring(0, 50))
+  );
+
+  topLevelSections.forEach((sec, i) => {
+    const pinMatch = sec.content.match(/<[^>]*class="[^"]*\bpin\b[^"]*"[^>]*>([\s\S]*?)<\/[^>]+>/i);
+    if (!pinMatch) return;
+
+    const pinText = normalizeText(stripTags(pinMatch[1]));
+    const topic = extractPinTopic(pinText);
+    if (!isMeaningfulPinTopic(topic)) return;
+
+    const headingTexts = extractTagTexts(sec.content, ['h1', 'h2', 'h3']);
+    const largeTexts = extractLargeInlineTexts(sec.content, 1.2);
+    const mainVisualTexts = [...headingTexts, ...largeTexts]
+      .map(item => item.text)
+      .filter(text => !text.includes(pinText));
+
+    const hasMainClaim = mainVisualTexts.some(text => textContainsClaim(text, topic));
+    if (!hasMainClaim) {
+      const bodyWithoutPin = sec.content.replace(pinMatch[0], '');
+      const bodyText = normalizeText(stripTags(bodyWithoutPin));
+      const appearsOnlyInBody = textContainsClaim(bodyText, topic);
+      addResult('p1', 'PIN_TOPIC_NOT_IN_MAIN_VISUAL',
+        `Slide ${i + 1}: pin 主题「${topic}」没有进入主标题/主视觉层级`,
+        getLineNumber(html, sec.index),
+        appearsOnlyInBody
+          ? `主题词只出现在普通正文中；应升级到 h1/h2/色块/主数字/quote`
+          : `当前主视觉候选: ${mainVisualTexts.slice(0, 3).join(' / ') || '无'}`);
+    }
+  });
+}
+
+/**
+ * P2: Pin 不应比主标题更像主题
+ */
+function checkPinVisualRole(html) {
+  const sections = extractSections(html);
+  const topLevelSections = sections.filter(sec =>
+    !/<section[\s>]/i.test(sec.content.trim().substring(0, 50))
+  );
+
+  topLevelSections.forEach((sec, i) => {
+    const pinMatch = sec.content.match(/<[^>]*class="[^"]*\bpin\b[^"]*"[^>]*>([\s\S]*?)<\/[^>]+>/i);
+    if (!pinMatch) return;
+
+    const topic = extractPinTopic(normalizeText(stripTags(pinMatch[1])));
+    if (!isMeaningfulPinTopic(topic)) return;
+
+    const pinTag = pinMatch[0];
+    const pinUsesAccent = /color\s*:\s*var\(--c-accent|color\s*:\s*var\(--accent|#[0-9a-fA-F]{3,8}/i.test(pinTag);
+    const pinLarge = /font-size\s*:\s*(?:[1-9](?:\.\d+)?em|[3-9]\dpx)/i.test(pinTag);
+    if (pinUsesAccent || pinLarge) {
+      addResult('p2', 'PIN_TOO_PROMINENT',
+        `Slide ${i + 1}: pin 使用了过强的视觉层级`,
+        getLineNumber(html, sec.index),
+        `pin 只做索引，应使用低层级颜色/小字号；主题「${topic}」应在主视觉中表达`);
+    }
+  });
+}
+
+/**
+ * P2: Fragment 数量检查（每页 ≤6 个 fragment）
+ */
+function checkFragmentCount(html) {
+  const sections = extractSections(html);
+  const topLevelSections = sections.filter(sec =>
+    !/<section[\s>]/i.test(sec.content.trim().substring(0, 50))
+  );
+
+  topLevelSections.forEach((sec, i) => {
+    const fragmentCount = (sec.content.match(/class="[^"]*fragment[^"]*"/gi) || []).length;
+    if (fragmentCount > 6) {
+      addResult('p2', 'TOO_MANY_FRAGMENTS',
+        `Slide ${i + 1}: ${fragmentCount} 个 fragment（建议 ≤6）`,
+        getLineNumber(html, sec.index),
+        `过多 fragment 影响演示节奏，考虑拆页或减少动画步骤`);
+    }
+  });
+}
+
+/**
+ * P2: 背景覆盖率检查（规则 11: ≥80% 页面有背景层次）
+ * 统计有背景纹理/层次装饰的页面占比
+ */
+function checkBackgroundCoverage(html) {
+  const sections = extractSections(html);
+  const topLevelSections = sections.filter(sec =>
+    !/<section[\s>]/i.test(sec.content.trim().substring(0, 50))
+  );
+
+  if (topLevelSections.length < 3) return;
+
+  const allCss = extractStyleBlocks(html).map(b => b.content).join('\n');
+  const hasColorField = /--c-bg\s*:|--bg\s*:/.test(allCss) &&
+    /background\s*:\s*var\(--(?:c-)?bg\)/i.test(allCss);
+  if (hasColorField) return;
+
+  const hasGlobalTexture =
+    /\.reveal\s+section\s*::?(after|before)\s*\{[^}]*(?:background-image|radial-gradient|linear-gradient|repeating-linear)/is.test(allCss);
+
+  let decoratedCount = 0;
+  topLevelSections.forEach(sec => {
+    const content = sec.fullMatch;
+    let hasDecoration = false;
+
+    // 全局纹理覆盖（排除 title-slide 等 ::after display:none）
+    if (hasGlobalTexture && !/class="[^"]*title-slide/.test(sec.attrs)) {
+      hasDecoration = true;
+    }
+
+    // data-background-color（非默认 bg 色）
+    if (/data-background-color/i.test(sec.attrs) && !/data-background-color="var\(--bg\)"/i.test(sec.attrs)) {
+      hasDecoration = true;
+    }
+
+    // data-background 渐变/图片
+    if (/data-background="[^"]*(?:gradient|http|\.jpg|\.png|\.svg)/i.test(sec.attrs)) {
+      hasDecoration = true;
+    }
+
+    // inline background gradient
+    if (/background\s*:\s*linear-gradient/i.test(content) ||
+        /background-image\s*:\s*linear-gradient/i.test(content)) {
+      hasDecoration = true;
+    }
+
+    // 装饰性 absolute 元素（terminal-bar、status-dot、装饰几何）
+    if (/terminal-bar|status-dot|glow-orb|leaf-deco|class="[^"]*deco/i.test(content)) {
+      hasDecoration = true;
+    }
+
+    if (hasDecoration) decoratedCount++;
+  });
+
+  const ratio = decoratedCount / topLevelSections.length;
+  if (ratio < 0.8) {
+    const pct = Math.round(ratio * 100);
+    addResult('p2', 'LOW_BG_COVERAGE',
+      `背景覆盖率 ${pct}%（${decoratedCount}/${topLevelSections.length} 页），建议 ≥80%`,
+      null,
+      `增加微妙纹理、渐变叠加或装饰几何。参考 design-polish.md 背景层次系统`);
   }
 }
 
@@ -691,6 +1591,9 @@ checkHeadingTracking(html);
 checkPlaceholderText(html);
 checkAccentOverflow(html);
 checkCardAntiPattern(html);
+checkViewportUnits(html);
+checkFontAwesomeUsage(html);
+checkFakeData(html);
 
 // P1（应该 pass）
 checkBannedFonts(html);
@@ -698,12 +1601,34 @@ checkPureBlackWhite(html);
 checkFontWeightDiscipline(html);
 checkDuotoneGradient(html);
 checkGradientText(html);
+checkFontAwesome(html);
+checkOverflowPrevention(html);
+checkContentDensity(html);
+checkGhostCards(html);
+checkOverRounding(html);
+checkSideStripeBorder(html);
+checkTextShadow(html);
+checkHeroMetric(html);
+checkWordCountDensity(html);
+checkPinMainClaimHierarchy(html);
 
 // P2（锦上添花）
 checkEverythingCentered(html);
 checkGlassmorphismOveruse(html);
 checkReducedMotion(html);
 checkColorSystem(html);
+checkIconStrokeWidth(html);
+checkIconHardcodedColor(html);
+checkBackgroundTexture(html);
+checkSignatureMoment(html);
+checkLayoutDiversity(html);
+checkMicroDetails(html);
+checkSpacingRhythm(html);
+checkTemplateDNA(html);
+checkFragmentCount(html);
+checkBackgroundCoverage(html);
+checkPinVisualRole(html);
+checkEmDashOveruse(html);
 
 // ─── 输出报告 ───────────────────────────────────────────────
 

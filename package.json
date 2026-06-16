@@ -1,17 +1,27 @@
 {
   "name": "revealjs-presentation",
-  "version": "14.5.0",
+  "version": "15.0.0",
   "description": "Reveal.js 演示文稿生成技能 — 含可编辑 PPTX 导出",
   "private": true,
   "scripts": {
     "setup": "bash scripts/setup.sh",
-    "start": "http-server -p 4173 -c-1",
+    "bootstrap": "bash scripts/install-all.sh",
+    "install-all": "bash scripts/install-all.sh",
+    "start": "npx http-server -p 4173 -c-1",
     "lint": "node scripts/lint-design.js",
     "export-pptx": "node scripts/export-pptx.js",
-    "validate": "node scripts/validate.js"
+    "visual-qa": "node scripts/visual-qa.js",
+    "validate": "node scripts/validate.js",
+    "test:validate-overflow": "node scripts/test-validate-overflow.js",
+    "test:reference-contract": "node scripts/test-reference-contract.js",
+    "test:launch-grade-contract": "node scripts/test-launch-grade-contract.js",
+    "test:lint-main-claim": "node scripts/test-lint-main-claim.js",
+    "test:initial-slide-visible": "node scripts/test-initial-slide-visible.js",
+    "doctor": "bash scripts/doctor.sh"
   },
   "dependencies": {
     "cheerio": "^1.2.0",
+    "playwright": "^1.61.0",
     "pptxgenjs": "^4.0.1"
   }
 }

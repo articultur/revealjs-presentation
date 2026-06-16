@@ -8,10 +8,32 @@
  * 输出说明：
  * - 红色边框 + VP_* : 视口溢出（元素超出可视区域）
  * - 绿色边框 + CHILD_Ovf : 子元素撑破父容器（Flex/Grid）
- * - 粉红色边框 + CONTENT_* : 内容溢出（文字/元素超出容器）
+ * - 红色边框 + CONTENT_* : 内容溢出（文字/元素超出容器，与视口溢出共线）
  */
 
-(function comprehensiveOverflowScan() {
+(function installOverflowScanner(global) {
+  function classText(el) {
+    if (!el || el.className == null) return '';
+    if (typeof el.className === 'string') return el.className;
+    if (typeof el.className.baseVal === 'string') return el.className.baseVal;
+    return String(el.className || '');
+  }
+
+  function firstClass(cls) {
+    return (cls || '').trim().split(/\s+/)[0] || '';
+  }
+
+  function isDecorativeIgnored(el) {
+    const ignored = el.closest('[data-qa-ignore="decorative"]');
+    if (!ignored) return false;
+    const text = (ignored.textContent || '').trim();
+    return text.length === 0;
+  }
+
+  function comprehensiveOverflowScan(options = {}) {
+  const sectionNodes = options.sections
+    ? Array.from(options.sections)
+    : Array.from(document.querySelectorAll(options.visibleOnly ? '.reveal section.present' : 'section'));
   const vp = { width: window.innerWidth, height: window.innerHeight };
   const results = { viewport: [], container: [], content: [], total: 0 };
 
@@ -21,30 +43,44 @@
   });
 
   // ========== 1. 视口溢出 + 内容溢出 ==========
-  document.querySelectorAll('section').forEach((sec, si) => {
+  sectionNodes.forEach((sec, si) => {
+    const slideIndex = Number.isInteger(options.slideOffset) ? options.slideOffset : si;
     sec.querySelectorAll('*').forEach(el => {
+      if (isDecorativeIgnored(el)) return;
       const rect = el.getBoundingClientRect();
+      const sectionRect = sec.getBoundingClientRect();
       const computed = window.getComputedStyle(el);
+      if (computed.display === 'contents' || (rect.width === 0 && rect.height === 0)) return;
+      const boundary = el === sec
+        ? { top: 0, right: vp.width, bottom: vp.height, left: 0 }
+        : sectionRect;
       const issues = [];
 
-      // 视口边界检测（-2px buffer 减少亚像素误报）
-      if (rect.top < -2) issues.push({ type: 'VP_TOP', val: Math.round(-rect.top) });
-      if (rect.bottom > vp.height + 2) issues.push({ type: 'VP_BOTTOM', val: Math.round(rect.bottom - vp.height) });
-      if (rect.left < -2) issues.push({ type: 'VP_LEFT', val: Math.round(-rect.left) });
-      if (rect.right > vp.width + 2) issues.push({ type: 'VP_RIGHT', val: Math.round(rect.right - vp.width) });
+      // 边界检测：section 对视口，section 内元素对当前 slide 边界。
+      if (rect.top < boundary.top - 2) issues.push({ type: 'VP_TOP', val: Math.round(boundary.top - rect.top) });
+      if (rect.bottom > boundary.bottom + 2) issues.push({ type: 'VP_BOTTOM', val: Math.round(rect.bottom - boundary.bottom) });
+      if (rect.left < boundary.left - 2) issues.push({ type: 'VP_LEFT', val: Math.round(boundary.left - rect.left) });
+      if (rect.right > boundary.right + 2) issues.push({ type: 'VP_RIGHT', val: Math.round(rect.right - boundary.right) });
 
       // 内容溢出检测（排除自身有 overflow 的元素）
       const hasExplicitOverflow = ['auto', 'scroll'].includes(computed.overflowX) ||
                                   ['auto', 'scroll'].includes(computed.overflowY);
+      const inlineStyle = el.getAttribute('style') || '';
+      const hasWidthConstraint = el.tagName === 'SECTION' ||
+        /(?:^|;)\s*(?:width|max-width)\s*:/i.test(inlineStyle) ||
+        ['hidden', 'clip'].includes(computed.overflowX);
+      const hasHeightConstraint = el.tagName === 'SECTION' ||
+        /(?:^|;)\s*(?:height|max-height)\s*:/i.test(inlineStyle) ||
+        ['hidden', 'clip'].includes(computed.overflowY);
       // 文本级元素（H1-H6, P, LI 等）的多行文本会自然撑开高度，不是问题
       const isTextElement = ['H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'P', 'LI', 'TD', 'SPAN', 'A', 'LABEL'].includes(el.tagName);
-      if (!hasExplicitOverflow && !isTextElement) {
+      if (!hasExplicitOverflow && !isTextElement && (hasWidthConstraint || hasHeightConstraint)) {
         // 排除代码块等预期有溢出的元素
         const isPreOrCode = el.tagName === 'PRE' || el.tagName === 'CODE';
-        if (el.scrollWidth > el.clientWidth + 2 && !isPreOrCode) {
+        if (hasWidthConstraint && el.scrollWidth > el.clientWidth + 2 && !isPreOrCode) {
           issues.push({ type: 'CONTENT_W', val: Math.round(el.scrollWidth - el.clientWidth) });
         }
-        if (el.scrollHeight > el.clientHeight + 2) {
+        if (hasHeightConstraint && el.scrollHeight > el.clientHeight + 2) {
           issues.push({ type: 'CONTENT_H', val: Math.round(el.scrollHeight - el.clientHeight) });
         }
       }
@@ -54,10 +90,25 @@
         el.style.outlineOffset = '2px';
         results.total++;
         issues.forEach(iss => {
-          results.viewport.push({
+        results.viewport.push({
             slide: si,
+            slideIndex,
             tag: el.tagName,
-            cls: el.className || '',
+            cls: classText(el),
+            style: (el.getAttribute('style') || '').slice(0, 160),
+            text: (el.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 80),
+            rect: {
+              top: Math.round(rect.top),
+              right: Math.round(rect.right),
+              bottom: Math.round(rect.bottom),
+              left: Math.round(rect.left),
+            },
+            boundary: {
+              top: Math.round(boundary.top),
+              right: Math.round(boundary.right),
+              bottom: Math.round(boundary.bottom),
+              left: Math.round(boundary.left),
+            },
             ...iss
           });
         });
@@ -77,9 +128,11 @@
 
     Array.from(children).forEach(child => {
       if (child.tagName === 'SCRIPT' || child.tagName === 'STYLE') return;
+      if (isDecorativeIgnored(child)) return;
 
       const childRect = child.getBoundingClientRect();
       const childComputed = window.getComputedStyle(child);
+      if (childComputed.display === 'contents' || (childRect.width === 0 && childRect.height === 0)) return;
 
       const overflowX = childRect.right - containerRect.right;
       const overflowY = childRect.bottom - containerRect.bottom;
@@ -92,8 +145,8 @@
           child.style.outlineOffset = '2px';
           results.container.push({
             tag: child.tagName,
-            cls: child.className || '',
-            parent: `${container.tagName}${container.className ? '.' + container.className.split(' ')[0] : ''}`,
+            cls: classText(child),
+            parent: `${container.tagName}${firstClass(classText(container)) ? '.' + firstClass(classText(container)) : ''}`,
             overflowX: Math.round(overflowX),
             overflowY: Math.round(overflowY)
           });
@@ -106,7 +159,7 @@
     });
   }
 
-  document.querySelectorAll('.reveal section').forEach(sec => {
+  sectionNodes.forEach(sec => {
     checkContainerOverflow(sec);
   });
 
@@ -118,7 +171,7 @@
     console.log('%c视口/内容溢出:', 'font-weight: bold; color: #ff0000;');
     results.viewport.forEach(item => {
       console.log(
-        `  Slide ${item.slide} | ${item.tag}${item.cls ? '.' + item.cls.split(' ')[0] : ''} | ${item.type}: ${item.val}px`
+        `  Slide ${item.slideIndex ?? item.slide} | ${item.tag}${firstClass(item.cls) ? '.' + firstClass(item.cls) : ''} | ${item.type}: ${item.val}px`
       );
     });
   }
@@ -127,7 +180,7 @@
     console.log('%c容器溢出 (Flex/Grid):', 'font-weight: bold; color: #00aa00;');
     results.container.forEach(item => {
       console.log(
-        `  ${item.tag}${item.cls ? '.' + item.cls.split(' ')[0] : ''} -> ${item.parent} | X: ${item.overflowX}px Y: ${item.overflowY}px`
+        `  ${item.tag}${firstClass(item.cls) ? '.' + firstClass(item.cls) : ''} -> ${item.parent} | X: ${item.overflowX}px Y: ${item.overflowY}px`
       );
     });
   }
@@ -139,4 +192,11 @@
   }
 
   return results;
-})();
+  }
+
+  global.comprehensiveOverflowScan = comprehensiveOverflowScan;
+
+  if (!global.__REVEALJS_VALIDATE_DISABLE_AUTO_RUN__) {
+    global.__lastOverflowScan = comprehensiveOverflowScan();
+  }
+})(typeof window !== 'undefined' ? window : globalThis);

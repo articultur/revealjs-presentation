@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Public Ready Patterns Fixture</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.css">
+  <style>
+    :root {
+      --c-bg: oklch(96% 0.012 82);
+      --c-fg: oklch(21% 0.025 74);
+      --c-fg-2: oklch(40% 0.026 74);
+      --c-fg-3: oklch(57% 0.021 74);
+      --c-accent: oklch(54% 0.12 32);
+      --c-line: oklch(from var(--c-fg) l c h / 0.16);
+      --bg: var(--c-bg);
+      --text: var(--c-fg);
+      --text-muted: var(--c-fg-3);
+      --accent: var(--c-accent);
+      --f-display: system-ui, sans-serif;
+      --r-main-font: system-ui, sans-serif;
+      --r-heading-font: system-ui, sans-serif;
+      --r-background-color: var(--c-bg);
+      --r-main-color: var(--c-fg);
+      --r-heading-color: var(--c-fg);
+    }
+
+    .reveal section {
+      box-sizing: border-box;
+      overflow: hidden;
+      padding: 46px 64px;
+      text-align: left;
+    }
+
+    * {
+      overflow-wrap: break-word;
+      word-break: break-word;
+    }
+
+    .slide-grid {
+      display: grid;
+      grid-template-columns: 0.82fr 1.18fr;
+      gap: 48px;
+      align-items: center;
+      height: 100%;
+    }
+
+    .kicker {
+      margin: 0 0 10px;
+      font-size: 0.48em;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      color: var(--c-accent);
+      text-transform: uppercase;
+    }
+
+    .title {
+      margin: 0;
+      font-size: 1.55em;
+      line-height: 1.08;
+      font-weight: 600;
+      letter-spacing: 0;
+    }
+
+    .lead {
+      margin: 18px 0 0;
+      font-size: 0.67em;
+      line-height: 1.62;
+      color: var(--c-fg-2);
+      max-width: 28em;
+    }
+
+    .source {
+      margin-top: 14px;
+      font-size: 0.46em;
+      color: var(--c-fg-3);
+    }
+
+    .data-panel {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+      padding: 22px;
+      background: oklch(from var(--c-fg) l c h / 0.055);
+      border-radius: 8px;
+    }
+
+    .metric-row {
+      display: grid;
+      grid-template-columns: 5.5em 1fr 3.2em;
+      gap: 14px;
+      align-items: center;
+      font-size: 0.56em;
+    }
+
+    .metric-track {
+      height: 18px;
+      background: oklch(from var(--c-fg) l c h / 0.11);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .metric-fill {
+      height: 100%;
+      background: var(--c-accent);
+      border-radius: 4px;
+    }
+
+    .metric-fill.soft {
+      background: oklch(from var(--c-accent) l c h / 0.62);
+    }
+
+    .sparkline {
+      width: 100%;
+      height: 92px;
+      color: var(--c-accent);
+    }
+
+    .framework-pattern {
+      display: grid;
+      grid-template-columns: 0.95fr 1.05fr;
+      gap: 36px;
+      align-items: center;
+      height: 100%;
+    }
+
+    .framework-stage {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .node {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      min-height: 48px;
+      padding: 11px 16px;
+      border-radius: 8px;
+      background: oklch(from var(--c-accent) l c h / 0.07);
+      border: 1.4px solid oklch(from var(--c-accent) l c h / 0.22);
+      font-size: 0.56em;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .node.active {
+      background: var(--c-accent);
+      color: var(--c-bg);
+      border-color: var(--c-accent);
+    }
+
+    .node small {
+      font-size: 0.74em;
+      font-weight: 500;
+      color: inherit;
+      opacity: 0.78;
+    }
+
+    .flow-line {
+      height: 22px;
+      color: var(--c-fg-3);
+      margin-left: 18px;
+    }
+
+    .framework-map {
+      position: relative;
+      height: 322px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      align-items: center;
+      justify-items: center;
+    }
+
+    .map-line {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      color: var(--c-fg-3);
+    }
+
+    .map-node {
+      position: relative;
+      z-index: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 138px;
+      min-height: 46px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      background: var(--c-bg);
+      border: 1.4px solid var(--c-line);
+      font-size: 0.5em;
+      font-weight: 600;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .map-node.primary {
+      background: var(--c-accent);
+      color: var(--c-bg);
+      border-color: var(--c-accent);
+    }
+
+    .icon-text-pattern {
+      height: 100%;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .icon-item {
+      display: grid;
+      grid-template-rows: auto auto 1fr;
+      gap: 12px;
+      padding: 20px;
+      background: oklch(from var(--c-fg) l c h / 0.055);
+      border-radius: 8px;
+      min-width: 0;
+    }
+
+    .icon-box {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 46px;
+      height: 46px;
+      border-radius: 8px;
+      color: var(--c-accent);
+      background: oklch(from var(--c-accent) l c h / 0.12);
+    }
+
+    .icon-item h3 {
+      margin: 0;
+      font-size: 0.66em;
+      line-height: 1.2;
+      font-weight: 600;
+      letter-spacing: 0;
+    }
+
+    .icon-item p {
+      margin: 0;
+      font-size: 0.48em;
+      line-height: 1.55;
+      color: var(--c-fg-2);
+    }
+
+    .micro-rule {
+      width: 54px;
+      height: 2px;
+      background: var(--c-accent);
+      margin: 18px 0 0;
+    }
+
+    .pin {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35em;
+      padding: 0.24em 0.58em;
+      border-radius: 20px;
+      background: oklch(from var(--c-accent) l c h / 0.1);
+      color: var(--c-accent);
+      font-size: 0.44em;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+      <section class="data-pattern">
+        <div class="slide-grid" style="grid-template-columns:40% 60%;">
+          <div>
+            <p class="kicker" style="text-transform:uppercase;letter-spacing:0.12em;margin-bottom:10px;">Data Pattern</p>
+            <h2 class="title">数据页需要同时可信、可读、可编辑</h2>
+            <p class="lead">用少量指标讲清变化方向，数值直接标注在图形附近；真实数据必须带来源，示意数据必须显式说明。</p>
+            <div class="micro-rule" style="height:2px;background:var(--c-accent);margin-top:18px;"></div>
+            <p class="source" style="margin-top:14px;">数据来源：2026 Q1 客户调研报告 · N=2,400</p>
+          </div>
+          <div class="data-panel">
+            <div class="metric-row">
+              <span>发现问题</span>
+              <div class="metric-track"><div class="metric-fill" style="width:68%;"></div></div>
+              <strong>68%</strong>
+            </div>
+            <div class="metric-row">
+              <span>完成修复</span>
+              <div class="metric-track"><div class="metric-fill soft" style="width:51%;"></div></div>
+              <strong>51%</strong>
+            </div>
+            <div class="metric-row">
+              <span>复核通过</span>
+              <div class="metric-track"><div class="metric-fill soft" style="width:43%;"></div></div>
+              <strong>43%</strong>
+            </div>
+            <svg class="sparkline" viewBox="0 0 360 92" fill="none" aria-label="趋势线">
+              <path d="M6 76 C48 70, 76 58, 112 62 S180 36, 222 42 S286 28, 354 18"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M6 76 C48 70, 76 58, 112 62 S180 36, 222 42 S286 28, 354 18 L354 92 L6 92 Z"
+                    fill="oklch(from var(--c-accent) l c h / 0.12)"/>
+            </svg>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="framework-pattern" style="grid-template-columns:45% 55%;">
+          <div>
+            <p class="kicker">Framework Pattern</p>
+            <h2 class="title">框架图先压低认知负荷，再表达关系</h2>
+            <p class="lead">节点保持 7 个以内，先用流程骨架解释阶段，再用右侧关系图说明模块依赖；避免 Mermaid 默认样式直接进入最终稿。</p>
+            <span class="pin">01 / Framework</span>
+            <div class="framework-stage">
+              <div class="node active"><span>输入约束</span><small>Brief</small></div>
+              <svg class="flow-line" viewBox="0 0 120 22" fill="none">
+                <path d="M18 2 V20" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+                <path d="M13 15 L18 20 L23 15" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <div class="node"><span>结构拆解</span><small>Model</small></div>
+              <svg class="flow-line" viewBox="0 0 120 22" fill="none">
+                <path d="M18 2 V20" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+                <path d="M13 15 L18 20 L23 15" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <div class="node"><span>视觉落地</span><small>Deck</small></div>
+            </div>
+          </div>
+          <div class="framework-map">
+            <svg class="map-line" viewBox="0 0 420 322" fill="none">
+              <path d="M210 66 C210 112 110 114 110 158" stroke="currentColor" stroke-width="1.4" opacity="0.42"/>
+              <path d="M210 66 C210 112 310 114 310 158" stroke="currentColor" stroke-width="1.4" opacity="0.42"/>
+              <path d="M110 204 C110 244 210 244 210 276" stroke="currentColor" stroke-width="1.4" opacity="0.42"/>
+              <path d="M310 204 C310 244 210 244 210 276" stroke="currentColor" stroke-width="1.4" opacity="0.42"/>
+            </svg>
+            <div class="map-node primary" style="grid-column:2;grid-row:1;">演讲主张</div>
+            <div class="map-node" style="grid-column:1;grid-row:2;">证据链</div>
+            <div class="map-node" style="grid-column:3;grid-row:2;">视觉语言</div>
+            <div class="map-node" style="grid-column:2;grid-row:3;">交付页面</div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <p class="kicker">Icon Text Pattern</p>
+        <h2 class="title" style="margin-bottom:24px;">图标密集页保持解释力，而不是堆装饰</h2>
+        <div class="icon-text-pattern">
+          <div class="icon-item">
+            <span class="icon-box">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5"/><path d="M4 19h16"/><path d="M8 15l3-3 3 2 5-6"/></svg>
+            </span>
+            <h3>图标只承担识别</h3>
+            <p>图标用 currentColor 跟随主题；每张卡片只放一个焦点。</p>
+          </div>
+          <div class="icon-item">
+            <span class="icon-box">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"/><path d="M5 9h14"/><path d="M7 15h10"/></svg>
+            </span>
+            <h3>文字密度受控</h3>
+            <p>短标题、两行说明、稳定高度，避免重排和遮挡。</p>
+          </div>
+          <div class="icon-item">
+            <span class="icon-box">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7l-8 10-4-4-4 5"/><path d="M14 7h6v6"/></svg>
+            </span>
+            <h3>强调只用一次</h3>
+            <p>一页只让一个元素用 accent，其余靠层级和间距建立节奏。</p>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.js"></script>
+  <script>
+    Reveal.initialize({
+      hash: false,
+      controls: false,
+      progress: false,
+      width: 1280,
+      height: 720,
+      margin: 0.04,
+      transition: 'none'
+    });
+  </script>
+</body>
+</html>
