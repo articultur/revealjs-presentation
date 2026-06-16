@@ -1,0 +1,63 @@
+{
+  "skill_name": "revealjs-presentation",
+  "evals": [
+    {
+      "id": 1,
+      "name": "security-training-zh",
+      "prompt": "帮我做个新员工信息安全意识培训的演示文稿，15 页左右，受众是刚入职的应届毕业生，核心目标是让他们真正记住并执行：别点钓鱼邮件、别用弱密码、别在公共 wifi 处理敏感数据。要能直接拿来在企业内训会上讲，中文。",
+      "expected_output": "单个自包含 HTML，~15 页，信息安全培训主题，中文，应有清晰的威胁场景可视化（不是 bullet 堆砌）、记忆点/行动项、培训风格设计语法",
+      "files": [],
+      "expectations": [
+        "Output is a single self-contained HTML file",
+        "HTML uses reveal.js 4.x via CDN",
+        "Page count is between 13 and 18 (target ~15)",
+        "Content is in Chinese (Simplified)",
+        "Includes the three core training topics: 钓鱼邮件, 弱密码, 公共 wifi",
+        "Includes a concrete threat scenario visualization (not just bullet lists) — e.g. fake login page mock, password strength meter, wifi sniffing diagram",
+        "Has clear action items / memory points ('记住' or '行动' section)",
+        "First slide / cover is initially visible (not all content hidden in fragments)",
+        "Includes a Theme-to-Design Router statement (design language documentation) somewhere in the design",
+        "Passes basic design rules: no purple→blue gradient as hero, no Tailwind indigo accent, no emoji icons, no ghost cards with side-stripe borders"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "sustainable-fashion-pitch-en",
+      "prompt": "We're pitching our sustainable fashion brand to a group of impact investors next week. I need roughly 12 slides. The brand is earthy luxury — linen, natural dyes, slow-fashion ethos — emphatically not fast-fashion or a generic DTC brand. The deck should feel like a lookbook a Vogue buyer would respect, not a SaaS pitch. Include our seed round ask and the unit economics at current 8k-customer scale.",
+      "expected_output": "Single self-contained HTML, ~12 slides, English, sustainable fashion investor pitch, earthy-luxury aesthetic (not SaaS/tech), lookbook feel, includes seed ask + unit economics with data sourcing",
+      "files": [],
+      "expectations": [
+        "Output is a single self-contained HTML file",
+        "HTML uses reveal.js 4.x via CDN",
+        "Page count is between 10 and 15 (target ~12)",
+        "Content is in English",
+        "Aesthetic is earthy/luxury (warm earth tones, serif typography or refined sans, generous whitespace) — NOT a SaaS/tech vibe",
+        "Includes seed round ask (a dollar amount + round type)",
+        "Includes unit economics at the 8k-customer scale (CAC, LTV, AOV, gross margin, payback, etc. — at least 2-3 metrics)",
+        "Distinguishes the brand from fast-fashion / generic DTC (e.g., mention linen/natural dyes/slow-fashion ethos)",
+        "Includes source/verification label on financial figures (verified / user-provided / illustrative)",
+        "Passes basic design rules: no purple→blue gradient as hero, no Tailwind indigo accent, no emoji icons, no ghost cards with side-stripe borders"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "clinical-trial-academic",
+      "prompt": "把这个研究结论做成 8 页 slides，给学术评审委员会看：我们的三期临床试验（NCT04567890，注册于 ClinicalTrials.gov）显示，新药把 5 年复发率从对照组的 34% 降到治疗组的 12%（p<0.001，n=1842）。要严谨，必须包含方法学简述、数据来源标注、置信区间。学术风格，不要营销感。",
+      "expected_output": "单个自包含 HTML，8 页，临床数据展示，必须含数据来源标注（NCT 编号/verified）、置信区间可视化、方法学、学术严谨风格（非营销），中文",
+      "files": [],
+      "expectations": [
+        "Output is a single self-contained HTML file",
+        "HTML uses reveal.js 4.x via CDN",
+        "Page count is between 7 and 10 (target 8)",
+        "Content is in Chinese (Simplified)",
+        "Academic / rigorous style — NOT marketing-style hype (no 'amazing', 'breakthrough', etc. without qualification)",
+        "Includes trial registration number NCT04567890 as data source",
+        "Includes both efficacy numbers: control 34% and treatment 12%",
+        "Includes statistical evidence: p<0.001 and n=1842",
+        "Includes confidence interval visualization or explicit CI values",
+        "Includes a methodology section / slide (study design, primary endpoint, statistical test, etc.)",
+        "Includes source/verification label on numerical claims (verified / user-provided / illustrative)"
+      ]
+    }
+  ]
+}
