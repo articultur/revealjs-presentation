@@ -59,9 +59,9 @@ CDN 加载 reveal.js + Google Fonts，用户**无需安装任何东西**。
 | P1 | 需求+设计语法 | ● | 场景/时长/听众 + Theme-to-Design Router 六行说明 |
 | P2 | 输出方案 | ◐ | 内容结构、视觉方向 |
 | P3 | 设计评审 | ● | 反模式检查 + 优化方向 |
-| P4 | 生成初稿 | ● | HTML + **lint + validate 双卡点**（lint P0=0 **且** validate.js total=0 才能继续） |
+| P4 | 生成初稿 | ● | HTML + **三门禁**（`grade-gate.js` 全绿 = lint P0=0 **且** validate.js total=0 **且** test-label-overlap.js exit 0，机器判 verdict，不可手动放行） |
 | P5 | 优化迭代 | ● | 按规模执行对应 sub-skills |
-| P6 | 最终检查 | ◐ | 溢出检测 + 截图复核 + 交付 |
+| P6 | 最终检查 | ◐ | `visual-qa.js --annotate-overflow` 逐页截图（含红框标注溢出页）+ 人工复核 + 交付 |
 
 ● 必须完成　◐ 可跳过　/　刷新已有演示：跳过 P1，从 P3 开始评审
 
@@ -80,7 +80,7 @@ CDN 加载 reveal.js + Google Fonts，用户**无需安装任何东西**。
 - **不引入 Tailwind 或任何 CSS 框架**
 - **禁止 `vw`/`vh` 单位**：Reveal 用 `transform: scale()` 缩放，vw/vh 不受 transform 影响 → 大屏溢出/小屏不可读。所有字号用 `em`/`px`
 - **Reveal 配置**：`{ width: 1280, height: 720, margin: 0.04, hash: true, slideNumber: 'c/t', transition: 'fade' }`
-- **交付前必须过三门禁**：`lint-design.js` P0=0 **且** `validate.js` total=0 **且** `test-label-overlap.js` 退出码 0，缺一不可。三者覆盖不同缺陷域——`lint` 抓设计规则违规（accent 滥用、AI 字体指纹），`validate` 是 Playwright **真实渲染**溢出检测（视口溢出/内容重叠），`test-label-overlap` 抓 pin/stamp 标签**跨 slide 泄露**（section 非 positioned 时 absolute pin 相对 BODY，全叠视口左下角）+ 互相重叠。**P4 生成后必须立刻跑这三个**，任一漏跑 = 视觉 bug 到用户手里（iteration-1 实测 security-training 漏跑 validate 交付 62 处溢出）。validate 报错优先 `--fix`，仍 >0 回 §2 拆页/降文字，**不要用缩字号硬塞**。
+- **交付前必须过三门禁**：`node scripts/grade-gate.js <file>` 全绿（内含 `lint-design.js` P0=0 **且** `validate.js` total=0 **且** `test-label-overlap.js` 退出码 0），缺一不可。`grade-gate.js` 输出机器可读 JSON verdict——**禁止人工"觉得 minor"放行**（iteration-1 临床 deck 的 kicker "Chapter 05 · Safety" 被 validate 抓到 VP_TOP 6px，但人工 grader 判 "only 2 minor issues" → passed → 用户肉眼看到文字截断）。三者覆盖不同缺陷域——`lint` 抓设计规则违规（accent 滥用、AI 字体指纹），`validate` 是 Playwright **真实渲染**溢出检测（视口溢出/内容重叠），`test-label-overlap` 抓 pin/stamp 标签**跨 slide 泄露**（section 非 positioned 时 absolute pin 相对 BODY，全叠视口左下角）+ 互相重叠。**P4 生成后必须立刻跑 grade-gate.js**，任一红灯 = 回 §2 拆页/降文字，**不要用缩字号硬塞**。
 - **切勿破坏 reveal 的 section 堆叠/隐藏**：section 的 `position` 必须由 reveal.css 控制（`.reveal .slides>section{position:absolute}` + 非 present 用 opacity:0/display:none 隐藏）。生成 HTML 时**不要**给 section 强制 `position: relative`——哪怕无 !important，只要选择器强到 `.reveal .slides > section`（特异性 0,2,1 = reveal.css），模板 `<style>` 后于 `<link>` 加载 → 同特异性后赢 → 覆盖 reveal 的 absolute → section 进文档流垂直堆叠 → overflow:hidden 截断 → 除首页外全空白（v15.2 实测 slide 3 top=1397，已回滚）。pin 的 `position:absolute` 自动相对最近 positioned 祖先（reveal 的 absolute section），无需额外干预；若 section 退回 static（非 positioned），pin 会相对 BODY 全叠视口左下角 = test-label-overlap 报泄露。
 
 ### 2. 内容预算（生成 section 前先算）
@@ -306,31 +306,36 @@ Proof object：必须可视化证明 ____，不能只写成 bullet。
 ## 验证
 
 ```bash
-node scripts/lint-design.js <file>               # P0/P1/P2 设计规则 + impeccable 禁令
-node scripts/lint-design.js <file> --verbose      # 含 P2 建议 + 精致度
-node scripts/validate.js <file>                    # Playwright 溢出检测 + 截图
-node scripts/validate.js <file> --fix              # 检测 + 自动修复 + 重检
-node scripts/test-pin-collision.js <file>          # Pin/水印与正文重叠检测
-node scripts/test-label-overlap.js <file>          # 标签互相重叠 + 跨 slide 泄露检测（pin 定位上下文失效）
-node scripts/visual-qa.js <file> --out /private/tmp/<deck>-visual
-node scripts/visual-qa.js <file> --show-fragments --out /private/tmp/<deck>-visual-all
-node scripts/test-initial-slide-visible.js         # fragment 首屏门禁
-node scripts/test-launch-grade-contract.js          # 发布会级 skill 规则 + golden reference
+node scripts/grade-gate.js <file>                      # 三门禁合一（lint + validate + label-overlap），机器判 verdict
+node scripts/grade-gate.js --json <file>               # JSON 输出（供 eval 框架消费）
+node scripts/lint-design.js <file>                     # P0/P1/P2 设计规则 + impeccable 禁令
+node scripts/lint-design.js <file> --verbose            # 含 P2 建议 + 精致度
+node scripts/validate.js <file>                         # Playwright 溢出检测 + 截图
+node scripts/validate.js <file> --fix                   # 检测 + 自动修复 + 重检
+node scripts/test-pin-collision.js <file>               # Pin/水印与正文重叠检测
+node scripts/test-label-overlap.js <file>               # 标签互相重叠 + 跨 slide 泄露检测（pin 定位上下文失效）
+node scripts/visual-qa.js <file> --out /tmp/<deck>-visual
+node scripts/visual-qa.js <file> --show-fragments --annotate-overflow --out /tmp/<deck>-visual-all
+node scripts/test-initial-slide-visible.js              # fragment 首屏门禁
+node scripts/test-launch-grade-contract.js              # 发布会级 skill 规则 + golden reference
 ```
 
 **阻断含义**（任一触发都不能交付）：
 
 | 脚本 | 阻断条件 |
 |------|----------|
+| `grade-gate.js` | 退出码 1 = 三门禁任一红灯（机器判，不可人工放行） |
 | `lint-design.js` | 退出码 1 = 存在 P0 违规 |
 | `validate.js` | 输出 `total > 0` = 真实布局溢出 |
 | `test-pin-collision.js` | 退出码 1 = Pin 与正文重叠 |
 | `test-label-overlap.js` | 退出码 1 = 标签跨 slide 泄露（section 非 positioned → pin 相对 BODY 全叠视口）或互相重叠 |
-| `visual-qa.js` 截图 | 残影/裁切/按钮污染/主标题弱化 = 回 P5 修 |
+| `visual-qa.js --annotate-overflow` 截图 | 红框标注页 = 溢出需修；残影/裁切/按钮污染/主标题弱化 = 回 P5 修 |
 
 **可选 AI-tell 复查**：`node .agents/skills/impeccable/scripts/detect.mjs --json <file>` 补 lint 盲区（side-tab、em-dash overuse）。⚠️ detect 为 web 设计，演示场景部分命中是**假阳性**——`numbered-section-markers`（章节索引是合理用法）、`dark-glow`（雷达/舞台光束是主题 voice）通常忽略；只关注 side-tab、em-dash overuse 等真问题。
 
-**P4 后必跑（三门禁，任一不满足回 P5 重生成）**：`lint-design.js`（P0 必须 0）**和** `validate.js`（total 必须 0）**和** `test-label-overlap.js`（退出码 0）。三者覆盖不同缺陷域——lint 抓设计规则，validate 抓真实渲染溢出，test-label-overlap 抓标签泄露/重叠（前两者都看不到的盲区），**不可互相替代**。**P6 必跑**：完整 `visual-qa.js` 初始 + `--show-fragments` 两组截图，逐页人工审阅。完整 P4/P6 检查表：`references/pipeline-phases.md`。
+**P4 后必跑（三门禁，任一不满足回 P5 重生成）**：`node scripts/grade-gate.js <file>`（内含 lint P0=0 + validate total=0 + label-overlap exit 0），**机器判 verdict，禁止人工"minor"放行**。三者覆盖不同缺陷域——lint 抓设计规则，validate 抓真实渲染溢出，test-label-overlap 抓标签泄露/重叠（前两者都看不到的盲区），**不可互相替代**。**P6 必跑**：`visual-qa.js --annotate-overflow --show-fragments`，溢出页自动红框标注 → 逐页人工审阅。完整 P4/P6 检查表：`references/pipeline-phases.md`。
+
+**评估/基准测试框架集成**：eval runner 在 grading 阶段必须用 `grade-gate.js --json` 作为客观断言——`passed: true` 仅当三个 gate 全部 `passed: true`。禁止 grader 用"best in class / only minor issues"等主观判断覆盖机器 verdict（参见 iteration-1 clinical-trial 案例：overflow_count=2 → grader 判 pass → kicker 截断漏到用户）。
 
 如果未执行验证，在最终回复中**明确说明**。
 

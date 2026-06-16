@@ -4,3 +4,15 @@ node_modules/
 .omc/
 *.pptx
 *.pdf
+*.skill
+
+# local user settings
+.claude/settings.local.json
+
+# validate.js / visual-qa runtime artifacts
+examples/*-overflow*.png
+
+# eval run artifacts (keep only benchmark files at workspace root)
+revealjs-presentation-workspace/*/screenshots/
+revealjs-presentation-workspace/*/skill-snapshot/
+revealjs-presentation-workspace/*/*/

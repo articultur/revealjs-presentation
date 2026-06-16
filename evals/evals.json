@@ -1,5 +1,9 @@
 {
   "skill_name": "revealjs-presentation",
+  "grading_rules": {
+    "objective_gates": "For the layout/overflow assertion in each eval, run `node scripts/grade-gate.js --json <file>` and use its `passed` field as the objective verdict. Do NOT override with human judgment like 'only 2 minor issues' or 'best in class'. A gate failure (passed: false) means the assertion FAILS regardless of how minor the issues seem. Rationale: iteration-1 clinical-trial had overflow_count=2 (VP_TOP kicker clipping 'Chapter 05 · Safety') but the human grader marked 'Layout has no real overflow' as passed=true — the user saw truncated text.",
+    "visual_qa": "For visual QA screenshots, use `visual-qa.js --annotate-overflow --show-fragments`. Review annotated screenshots (slide-NN-annotated.png) for red-outlined overflow elements — these are issues the human eye might miss on clean screenshots. Do not review only the cover slide; check at least every content-heavy slide."
+  },
   "evals": [
     {
       "id": 1,
@@ -17,7 +21,8 @@
         "Has clear action items / memory points ('记住' or '行动' section)",
         "First slide / cover is initially visible (not all content hidden in fragments)",
         "Includes a Theme-to-Design Router statement (design language documentation) somewhere in the design",
-        "Passes basic design rules: no purple→blue gradient as hero, no Tailwind indigo accent, no emoji icons, no ghost cards with side-stripe borders"
+        "Passes basic design rules: no purple→blue gradient as hero, no Tailwind indigo accent, no emoji icons, no ghost cards with side-stripe borders",
+        "grade-gate.js exit 0 = all three delivery gates pass (lint P0=0, validate total=0, label-overlap exit 0). OBJECTIVE MACHINE VERDICT — human grader must NOT override with 'only minor issues' or 'best in class' judgment. Each gate passes only when its objective threshold is met."
       ]
     },
     {
@@ -36,7 +41,8 @@
         "Includes unit economics at the 8k-customer scale (CAC, LTV, AOV, gross margin, payback, etc. — at least 2-3 metrics)",
         "Distinguishes the brand from fast-fashion / generic DTC (e.g., mention linen/natural dyes/slow-fashion ethos)",
         "Includes source/verification label on financial figures (verified / user-provided / illustrative)",
-        "Passes basic design rules: no purple→blue gradient as hero, no Tailwind indigo accent, no emoji icons, no ghost cards with side-stripe borders"
+        "Passes basic design rules: no purple→blue gradient as hero, no Tailwind indigo accent, no emoji icons, no ghost cards with side-stripe borders",
+        "grade-gate.js exit 0 = all three delivery gates pass (lint P0=0, validate total=0, label-overlap exit 0). OBJECTIVE MACHINE VERDICT — human grader must NOT override with 'only minor issues' or 'best in class' judgment. Each gate passes only when its objective threshold is met."
       ]
     },
     {
@@ -56,7 +62,8 @@
         "Includes statistical evidence: p<0.001 and n=1842",
         "Includes confidence interval visualization or explicit CI values",
         "Includes a methodology section / slide (study design, primary endpoint, statistical test, etc.)",
-        "Includes source/verification label on numerical claims (verified / user-provided / illustrative)"
+        "Includes source/verification label on numerical claims (verified / user-provided / illustrative)",
+        "grade-gate.js exit 0 = all three delivery gates pass (lint P0=0, validate total=0, label-overlap exit 0). OBJECTIVE MACHINE VERDICT — human grader must NOT override with 'only minor issues' or 'best in class' judgment. Each gate passes only when its objective threshold is met."
       ]
     }
   ]
