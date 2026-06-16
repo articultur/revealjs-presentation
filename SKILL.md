@@ -1,6 +1,6 @@
 ---
 name: revealjs-presentation
-version: 15.1
+version: 15.2
 description: |
   Generate visually distinctive reveal.js presentations (single self-contained HTML, no install needed). Use this skill whenever the user mentions PPT, slides, presentation, 幻灯片, 课件, 汇报, 演讲, keynote, pitch deck, or asks to turn a topic/outline/document/数据 into slides — also when they say 做报告, 写课件, 培训材料, 方案介绍, 年终总结, 答辩, 述职, 产品发布, 技术分享, 营销方案, 路演, OKR/复盘汇报, or hint at presenting information visually. Also use when refreshing or polishing an existing reveal.js HTML, exporting to PPTX/PDF, fixing layout overflow or pin-overlap in slides, setting up the presentation tool, or generating decks in a specific visual style (editorial archive, dark-tech cockpit, architectural plate, live keynote, field notebook, or one of the 5 seed templates). Even if the user does not explicitly say "slides", invoke this skill if their ask is to communicate a structured argument visually to an audience.
 ---
@@ -80,7 +80,8 @@ CDN 加载 reveal.js + Google Fonts，用户**无需安装任何东西**。
 - **不引入 Tailwind 或任何 CSS 框架**
 - **禁止 `vw`/`vh` 单位**：Reveal 用 `transform: scale()` 缩放，vw/vh 不受 transform 影响 → 大屏溢出/小屏不可读。所有字号用 `em`/`px`
 - **Reveal 配置**：`{ width: 1280, height: 720, margin: 0.04, hash: true, slideNumber: 'c/t', transition: 'fade' }`
-- **交付前必须过双门禁**：`lint-design.js` P0=0 **且** `validate.js` total=0，缺一不可。`lint-design.js` 抓设计规则违规（accent 滥用、AI 字体指纹等），`validate.js` 是 Playwright **真实渲染**的溢出检测——lint 抓不到的视觉问题（内容溢出视口、文字重叠、卡片掉出画布）只有它抓得到。**P4 生成后必须立刻跑这两个脚本**，validate 漏跑 = 视觉 bug 直接到用户手里（iteration-1 实测：security-training 因漏跑 validate.js 交付了 62 处溢出）。validate 报错时优先 `--fix` 自动修复，修复后仍 >0 则回 §2 内容预算按优先级拆页/降文字，**不要用缩字号硬塞**。
+- **交付前必须过三门禁**：`lint-design.js` P0=0 **且** `validate.js` total=0 **且** `test-label-overlap.js` 退出码 0，缺一不可。三者覆盖不同缺陷域——`lint` 抓设计规则违规（accent 滥用、AI 字体指纹），`validate` 是 Playwright **真实渲染**溢出检测（lint 抓不到的视口溢出/内容重叠），`test-label-overlap` 抓 pin/stamp 标签**泄露与互相重叠**（前两者都看不到的盲区）。**P4 生成后必须立刻跑这三个**，任一漏跑 = 视觉 bug 直接到用户手里（iteration-1 实测：security-training 漏跑 validate 交付 62 处溢出；9/9 文件 label 泄露重叠因无此门禁）。validate 报错优先 `--fix`，仍 >0 回 §2 拆页/降文字，**不要用缩字号硬塞**。
+- **section 必须是 pin/label 的定位上下文**：`.reveal .slides > section { position: relative !important }`（css-skeleton §2 已含，**不可降级去掉 !important**）。reveal.css 把 section 设 `absolute` 做 slide 堆叠，会覆盖普通 `relative` → 退回 absolute 后，absolute pin/stamp 的定位上下文错乱 → 邻近 slide 的 label 泄露到当前视口并互相重叠。这条 CSS 是 `test-label-overlap.js` 门禁能 pass 的前提（实测加 !important 后泄露 18→0）。
 
 ### 2. 内容预算（生成 section 前先算）
 
@@ -306,6 +307,7 @@ node scripts/lint-design.js <file> --verbose      # 含 P2 建议 + 精致度
 node scripts/validate.js <file>                    # Playwright 溢出检测 + 截图
 node scripts/validate.js <file> --fix              # 检测 + 自动修复 + 重检
 node scripts/test-pin-collision.js <file>          # Pin/水印与正文重叠检测
+node scripts/test-label-overlap.js <file>          # 标签互相重叠 + 跨 slide 泄露检测（pin 定位上下文失效）
 node scripts/visual-qa.js <file> --out /private/tmp/<deck>-visual
 node scripts/visual-qa.js <file> --show-fragments --out /private/tmp/<deck>-visual-all
 node scripts/test-initial-slide-visible.js         # fragment 首屏门禁
@@ -319,11 +321,12 @@ node scripts/test-launch-grade-contract.js          # 发布会级 skill 规则 
 | `lint-design.js` | 退出码 1 = 存在 P0 违规 |
 | `validate.js` | 输出 `total > 0` = 真实布局溢出 |
 | `test-pin-collision.js` | 退出码 1 = Pin 与正文重叠 |
+| `test-label-overlap.js` | 退出码 1 = 标签互相重叠或跨 slide 泄露（section 未 `position: relative !important`） |
 | `visual-qa.js` 截图 | 残影/裁切/按钮污染/主标题弱化 = 回 P5 修 |
 
 **可选 AI-tell 复查**：`node .agents/skills/impeccable/scripts/detect.mjs --json <file>` 补 lint 盲区（side-tab、em-dash overuse）。⚠️ detect 为 web 设计，演示场景部分命中是**假阳性**——`numbered-section-markers`（章节索引是合理用法）、`dark-glow`（雷达/舞台光束是主题 voice）通常忽略；只关注 side-tab、em-dash overuse 等真问题。
 
-**P4 后必跑（双门禁，任一不满足回 P5 重生成）**：`lint-design.js`（P0 必须 0）**和** `validate.js`（total 必须 0）。两者覆盖不同缺陷域——lint 抓设计规则，validate 抓真实渲染溢出，**不可互相替代**。**P6 必跑**：完整 `visual-qa.js` 初始 + `--show-fragments` 两组截图，逐页人工审阅。完整 P4/P6 检查表：`references/pipeline-phases.md`。
+**P4 后必跑（三门禁，任一不满足回 P5 重生成）**：`lint-design.js`（P0 必须 0）**和** `validate.js`（total 必须 0）**和** `test-label-overlap.js`（退出码 0）。三者覆盖不同缺陷域——lint 抓设计规则，validate 抓真实渲染溢出，test-label-overlap 抓标签泄露/重叠（前两者都看不到的盲区），**不可互相替代**。**P6 必跑**：完整 `visual-qa.js` 初始 + `--show-fragments` 两组截图，逐页人工审阅。完整 P4/P6 检查表：`references/pipeline-phases.md`。
 
 如果未执行验证，在最终回复中**明确说明**。
 
