@@ -2,8 +2,8 @@
 /**
  * Label Overlap Detector
  * ─────────────────────────────────────────────────────────────
- * Detects label-class elements (.pin / .stamp / .corner-mark / kicker /
- * folio) that visually overlap inside the 1280×720 viewport — INCLUDING
+ * Detects label-class elements (.pin / .stamp / .corner-mark / kicker)
+ * that visually overlap inside the 1280×720 viewport — INCLUDING
  * labels that belong to a non-present slide but leak into the current
  * viewport (a known blind spot of reveal.js 4.x absolute-positioned pins).
  *
@@ -19,15 +19,15 @@
  *   node scripts/test-label-overlap.js examples/template-*.html
  *
  * Exit codes:
- *   0 — no overlapping label pairs (or only single-label slides).
+ *   0 — no overlapping label pairs (and no missing files).
  *   1 — at least one overlap pair (blocking for delivery).
- *   2 — dependency / usage error.
+ *   2 — dependency / usage error / missing file(s) (CI must not be fooled).
  *
  * Fix guidance when this fails:
  *   - Leaked pins (tagged [LEAK]) mean a non-present section's pin is
  *     visible on the current slide. Ensure the pin's offsetParent is its
- *     own <section> (give the section `position: relative`) so it hides
- *     with the section, OR confirm reveal.js is hiding .past/.future.
+ *     own <section> (give the section `position: relative !important`) so
+ *     it hides with the section via reveal's display:none on .past/.future.
  *   - Same-slide overlaps mean two labels were placed at colliding
  *     coordinates — move one (e.g. `.pin.right { right:64px; left:auto }`).
  */
@@ -53,22 +53,22 @@ if (!files.length) {
   process.exit(2);
 }
 
-// Label-class elements that carry indexing / metadata text and must not
-// visually collide with each other or leak across slides.
-// NOTE: 不含 [class*="folio"] / [class*="catalog-mark"] —— 它们会误匹配布局容器
-// (.folio-grid / .folio-cell / .cover-body 等大块)，容器包含子元素天然"重叠" = 假阳性。
-// 真正的 label 是小尺寸索引元素(.pin 页码 / .stamp 印章 / .corner-mark 角标 / .kicker 小标签)。
-const LABEL_SELECTOR = '.pin, .stamp, .corner-mark, [class*="kicker"]';
+// Label-class elements: 真正的索引/元数据小元素。不含 [class*="folio"]/
+// [class*="catalog-mark"]（误匹配 .folio-grid 等布局容器）。[class~="kicker"]
+// 用词边界匹配 class="kicker" / class="a kicker b"，但不匹配 superkicker。
+const LABEL_SELECTOR = '.pin, .stamp, .corner-mark, [class~="kicker"]';
 
 (async () => {
   const browser = await chromium.launch();
   let totalIssues = 0;
   let filesWithIssues = 0;
+  let missingCount = 0;  // MINOR5: track missing files so CI gate can't be fooled by a typo'd path
 
   for (const file of files) {
     const abs = path.resolve(file);
     if (!fs.existsSync(abs)) {
       console.error(`  ✗  not found: ${file}`);
+      missingCount++;
       continue;
     }
 
@@ -77,71 +77,87 @@ const LABEL_SELECTOR = '.pin, .stamp, .corner-mark, [class*="kicker"]';
     await page.goto('file://' + abs, { waitUntil: 'networkidle' });
     await page.waitForTimeout(400);
 
-    const slideCount = await page.evaluate(() =>
-      document.querySelectorAll('.reveal .slides > section').length
+    // MAJOR1: enumerate horizontal sections AND their nested vertical sub-slides
+    // (reveal.js drill-down pages). Old code hardcoded v=0 and missed verticals.
+    const horizontals = await page.evaluate(() =>
+      Array.from(document.querySelectorAll('.reveal .slides > section')).map(hor => ({
+        vCount: hor.querySelectorAll(':scope > section').length,
+      }))
     );
 
     const issues = [];
+    let slideNo = 0;
 
-    for (let i = 0; i < slideCount; i++) {
-      await page.evaluate(idx => window.Reveal && window.Reveal.slide(idx, 0), i);
-      await page.waitForTimeout(100);
+    for (let h = 0; h < horizontals.length; h++) {
+      const vCount = Math.max(1, horizontals[h].vCount);
+      for (let v = 0; v < vCount; v++) {
+        slideNo++;
+        await page.evaluate(([hh, vv]) => window.Reveal && window.Reveal.slide(hh, vv), [h, v]);
+        // MAJOR2: wait for the fade transition to actually settle, not just 100ms.
+        // reveal.js default fade ≈ 300ms; 450ms covers it with margin. The old 100ms
+        // relied on overflow:hidden's instant clip = fragile coupling to a CSS side-effect.
+        await page.waitForTimeout(450);
 
-      const result = await page.evaluate(({ slideIdx, sel }) => {
-        function isVisible(el) {
-          if (!el.isConnected) return false;
-          const cs = getComputedStyle(el);
-          if (cs.display === 'none' || cs.visibility === 'hidden' || parseFloat(cs.opacity) < 0.05) return false;
-          const r = el.getBoundingClientRect();
-          if (r.width < 2 || r.height < 2) return false;
-          // label 是小尺寸索引/元数据元素；排除被选择器误匹配的布局容器（双保险，
-          // 即使选择器命中 .folio-grid 等容器，尺寸 >600×120 也会被滤掉）
-          if (r.width > 600 || r.height > 120) return false;
-          // inside the 1280×720 viewport (allow a few px of bleed)
-          if (r.right < 2 || r.left > 1278 || r.bottom < 2 || r.top > 718) return false;
-          return true;
-        }
+        const result = await page.evaluate(({ slideIdx, sel }) => {
+          function isVisible(el) {
+            if (!el.isConnected) return false;
+            const cs = getComputedStyle(el);
+            if (cs.display === 'none' || cs.visibility === 'hidden' || parseFloat(cs.opacity) < 0.05) return false;
+            const r = el.getBoundingClientRect();
+            if (r.width < 2 || r.height < 2) return false;
+            // label 是小尺寸索引/元数据元素；排除被选择器误匹配的布局容器（双保险，
+            // 即使选择器命中 .folio-grid 等容器，尺寸 >600×120 也会被滤掉）。
+            // 实测依据: .folio-grid ~1280×640 / .archive-cover ~1280×720 被挡，
+            // .stamp ≤300×60 / .pin ≤120×40 / .kicker ≤440×60 放行（template-01..05）。
+            if (r.width > 600 || r.height > 120) return false;
+            // inside the 1280×720 viewport (allow a few px of bleed)
+            if (r.right < 2 || r.left > 1278 || r.bottom < 2 || r.top > 718) return false;
+            return true;
+          }
 
-        const present = document.querySelector('.reveal .slides > section.present');
-        const labels = Array.from(document.querySelectorAll(sel)).filter(isVisible);
+          const labels = Array.from(document.querySelectorAll(sel)).filter(isVisible);
 
-        const items = labels.map(el => {
-          const r = el.getBoundingClientRect();
-          const ownSection = el.closest('section');
-          const leak = !!(present && ownSection && ownSection !== present);
-          return {
-            text: (el.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 40),
-            cls: (typeof el.className === 'string' ? el.className : '').split(' ').filter(Boolean).join('.'),
-            rect: { l: Math.round(r.left), t: Math.round(r.top), r: Math.round(r.right), b: Math.round(r.bottom) },
-            leak,
-          };
-        });
+          const items = labels.map(el => {
+            const r = el.getBoundingClientRect();
+            // MAJOR1: leak = label 不在任何 .present section 内（属于 .past/.future）。
+            // 用 closest('section.present') 正确处理嵌套 vertical 栈：当 inner sub-slide
+            // active 时 reveal 把 .present 放在 inner section，inner label 的 closest
+            // 命中它 → 非 leak；其他 vertical sub 的 label closest 落空 → leak。
+            const leak = !el.closest('section.present');
+            return {
+              text: (el.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 40),
+              cls: (typeof el.className === 'string' ? el.className : '').split(' ').filter(Boolean).join('.'),
+              rect: { l: Math.round(r.left), t: Math.round(r.top), r: Math.round(r.right), b: Math.round(r.bottom) },
+              leak,
+            };
+          });
 
-        const overlaps = [];
-        for (let a = 0; a < items.length; a++) {
-          for (let b = a + 1; b < items.length; b++) {
-            const A = items[a].rect, B = items[b].rect;
-            const ix = Math.min(A.r, B.r) - Math.max(A.l, B.l);
-            const iy = Math.min(A.b, B.b) - Math.max(A.t, B.t);
-            if (ix > 8 && iy > 4) {
-              overlaps.push({ a: items[a], b: items[b], ix, iy });
+          const overlaps = [];
+          for (let a = 0; a < items.length; a++) {
+            for (let b = a + 1; b < items.length; b++) {
+              const A = items[a].rect, B = items[b].rect;
+              const ix = Math.min(A.r, B.r) - Math.max(A.l, B.l);
+              const iy = Math.min(A.b, B.b) - Math.max(A.t, B.t);
+              if (ix > 8 && iy > 4) {
+                overlaps.push({ a: items[a], b: items[b], ix, iy });
+              }
             }
           }
-        }
-        return { slide: slideIdx + 1, visible: items.length, leakCount: items.filter(x => x.leak).length, overlaps };
-      }, { slideIdx: i, sel: LABEL_SELECTOR });
+          return { slide: slideIdx, visible: items.length, leakCount: items.filter(x => x.leak).length, overlaps };
+        }, { slideIdx: slideNo, sel: LABEL_SELECTOR });
 
-      for (const ov of result.overlaps) {
-        issues.push({
-          slide: result.slide,
-          a: ov.a, b: ov.b, ix: ov.ix, iy: ov.iy,
-          leak: ov.a.leak || ov.b.leak,
-        });
+        for (const ov of result.overlaps) {
+          issues.push({
+            slide: result.slide,
+            a: ov.a, b: ov.b, ix: ov.ix, iy: ov.iy,
+            leak: ov.a.leak || ov.b.leak,
+          });
+        }
       }
     }
 
     if (issues.length === 0) {
-      console.log(`  ✓  ${path.basename(file)} — no label overlap on ${slideCount} slide(s)`);
+      console.log(`  ✓  ${path.basename(file)} — no label overlap on ${slideNo} slide(s)`);
     } else {
       filesWithIssues++;
       totalIssues += issues.length;
@@ -162,8 +178,12 @@ const LABEL_SELECTOR = '.pin, .stamp, .corner-mark, [class*="kicker"]';
   if (totalIssues > 0) {
     console.log(`\nFAIL: ${totalIssues} label overlap pair(s) across ${filesWithIssues} file(s).`);
     console.log('  [LEAK] = label from a non-present slide leaking into the viewport.');
-    console.log('  Fix: ensure each <section> is `position: relative` so its absolute .pin hides with it; or move colliding labels apart (`.pin.right { right:64px; left:auto }`).');
+    console.log('  Fix: ensure each <section> is `position: relative !important` so its absolute .pin hides with it; or move colliding labels apart (`.pin.right { right:64px; left:auto }`).');
     process.exit(1);
+  }
+  if (missingCount > 0) {
+    console.error(`\nERROR: ${missingCount} file(s) not found. A blocking gate must not exit 0 on missing input.`);
+    process.exit(2);
   }
   console.log('\nOK: no label overlaps.');
   process.exit(0);

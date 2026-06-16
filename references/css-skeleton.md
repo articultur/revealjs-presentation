@@ -37,7 +37,7 @@
   padding: 60px 80px 80px 80px;             /* 底部 80px = pin 安全带 */
   height: 100%; box-sizing: border-box;
   overflow: hidden;
-  position: relative !important;             /* 关键，不可省略 !important：reveal.css 把 section 设为 absolute 做 slide 堆叠，会覆盖普通 relative。一旦退回 absolute，absolute pin 的定位上下文错乱 → 邻近 slide 的 pin/stamp 泄露到当前视口并互相重叠（test-label-overlap.js 检测的 P0 bug）。实测 9/9 既有文件中招；加 !important 后泄露 18→0。 */
+  position: relative !important;             /* 关键，不可省略 !important：reveal.css 把 section 设为 absolute 做 slide 堆叠，会覆盖普通 relative。一旦退回 absolute，absolute pin 的定位上下文错乱 → 邻近 slide 的 pin/stamp 泄露到当前视口并互相重叠（test-label-overlap.js 检测的 P0 bug）。实测 9/9 既有文件中招；加 !important 后泄露 18→0。安全说明：reveal.css 用 display:none 隐藏 .past/.future，section 改 relative 不影响它们的可见性（past/future 不在文档流），present section 的 relative + overflow:hidden 正常工作；validate.js 对 5 模板均报 0 溢出。 */
 }
 
 /* Reveal 会把 present section 强制设为 block；section 级 flex/grid 必须加 deck-flex/deck-grid 类 */
