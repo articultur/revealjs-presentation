@@ -3,428 +3,371 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>深色科技风格演示文稿</title>
+  <title>实时运营控制台 · Live Ops Console</title>
 
-  <!-- Reveal.js 核心 -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/theme/black.css">
 
-  <!-- Google Fonts: 技术字体 -->
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
-
-  <!-- Font Awesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
-  <!-- Highlight.js -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
 
   <style>
-    /* ============================================
-       CSS 变量 - 深色科技配色
-       深色背景 + 亮蓝/青色强调
-       ============================================ */
+    /* ── Tokens ─────────────────────────────────────── */
     :root {
-      /* 主色 - 电光蓝 (chroma ≤ 15% per 60-30-10 rule) */
-      --primary: oklch(75% 0.14 230);
-      --primary-light: oklch(85% 0.10 230);
-      --primary-dark: oklch(55% 0.16 230);
+      --c-bg: #0b0f14;
+      --c-bg-elev: #121821;
+      --c-bg-panel: #161f2b;
+      --c-fg: #e6edf5;
+      --c-fg-2: rgba(230, 237, 245, 0.62);
+      --c-fg-3: rgba(230, 237, 245, 0.34);
+      --c-accent: #50e3c2;
+      --c-warn: #ffb454;
+      --c-alarm: #ff5d6c;
+      --c-ok: #71c994;
+      --c-grid: rgba(80, 227, 194, 0.10);
+      --c-border: rgba(230, 237, 245, 0.10);
 
-      /* 背景 - 深色 */
-      --bg: oklch(15% 0.02 250);
-      --bg-subtle: oklch(20% 0.02 250);
-      --bg-elevated: oklch(25% 0.02 250);
-
-      /* 文字 */
-      --text: oklch(95% 0.01 250);
-      --text-muted: oklch(65% 0.03 250);
-      --text-dim: oklch(45% 0.02 250);
-
-      /* 强调色 - 青色 */
-      --accent: oklch(80% 0.15 175);
-      --accent-secondary: oklch(70% 0.12 280);
-
-      /* 功能色 */
-      --success: oklch(75% 0.15 145);
-      --warning: oklch(80% 0.15 85);
-      --error: oklch(70% 0.18 25);
-
-      /* 网格线 */
-      --grid-line: oklch(30% 0.01 250);
-
-      /* 字体 */
-      --font-mono: 'JetBrains Mono', 'SF Mono', monospace;
-      --font-sans: 'Inter', 'Noto Sans SC', -apple-system, sans-serif;
-
-      /* Easing */
-      --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
-      --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+      --f-display: "IBM Plex Sans", "Noto Sans SC", system-ui, sans-serif;
+      --f-body: "IBM Plex Sans", "Noto Sans SC", system-ui, sans-serif;
+      --f-mono: "IBM Plex Mono", "SF Mono", "Menlo", monospace;
+      --bg: var(--c-bg); --text: var(--c-fg); --text-muted: var(--c-fg-2);
+      --text-subtle: var(--c-fg-3); --accent: var(--c-accent); --divider: var(--c-border);
+      --font-display: var(--f-display); --font-body: var(--f-body); --font-mono: var(--f-mono);
     }
 
-    /* ============================================
-       基础重置
-       ============================================ */
-    .reveal {
-      font-family: var(--font-sans);
-      font-size: 30px;
-      color: var(--text);
-      background: var(--bg);
+    /* ── Base ───────────────────────────────────────── */
+    .reveal { font-family: var(--f-body); font-size: 28px; color: var(--c-fg); background: var(--c-bg); }
+    .reveal .slides { text-align: left; }
+    .reveal .slides > section {
+      padding: 48px 64px; height: 100%; box-sizing: border-box; overflow: hidden;
+      background: var(--c-bg); position: relative !important;   /* !important 必含：覆盖 reveal.css section absolute，防 pin/label 跨 slide 泄露（test-label-overlap.js）*/
+    }
+    .reveal .slides > section.deck-flex.present { display: flex !important; top: 0 !important; }
+    .reveal .slides > section.deck-grid.present { display: grid !important; top: 0 !important; }
+    .reveal section > * { max-width: 100%; box-sizing: border-box; }
+    h1, h2, h3, h4, p, li, span, div { word-break: break-word; overflow-wrap: break-word; }
+    img, svg, video { max-width: 100%; max-height: 100%; object-fit: contain; }
+
+    /* ── Type ───────────────────────────────────────── */
+    .reveal h1, .reveal h2, .reveal h3 {
+      font-family: var(--f-display); line-height: 1.08; letter-spacing: 0; color: var(--c-fg);
+    }
+    .reveal h1 { font-size: 2.8em; font-weight: 300; margin: 0; }
+    .reveal h2 { font-size: 1.7em; font-weight: 500; margin: 0 0 0.4em 0; }
+    .reveal h3 { font-size: 0.95em; font-weight: 500; margin: 0; }
+    .reveal h4 { font-family: var(--f-mono); font-size: 0.55em; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--c-fg-3); margin: 0; }
+    .reveal p { font-family: var(--f-body); font-size: 0.78em; line-height: 1.6; color: var(--c-fg-2); margin: 0; font-weight: 300; }
+
+    .kicker {
+      font-family: var(--f-mono); font-size: 0.48em;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--c-accent);
+      display: inline-flex; align-items: center; gap: 0.7em;
+    }
+    .kicker::before {
+      content: ''; width: 8px; height: 8px; background: var(--c-accent); border-radius: 50%;
+      box-shadow: 0 0 10px var(--c-accent);
     }
 
-    .reveal .slides {
-      text-align: left;
+    .pin {
+      position: absolute; left: 64px; bottom: 28px;
+      font-family: var(--f-mono); font-size: 0.46em;
+      color: var(--c-fg-3); letter-spacing: 0.08em;
+      z-index: 10;
+    }
+    /* Pin safe zone for slides with bottom-left content */
+    .ops-map .pin, .signal-page .pin, .incident .pin, .status-grid .pin {
+      right: 64px; left: auto;
     }
 
-    .reveal section {
-      padding: 60px 80px;
-      height: 100%;
-      box-sizing: border-box;
-      background: var(--bg);
+    /* ── Top ops bar (uniform header) ───────────────── */
+    .ops-copy {
+      position: absolute; top: 20px; left: 64px; right: 64px;
+      display: flex; align-items: center; gap: 1.4em;
+      font-family: var(--f-mono); font-size: 0.42em;
+      letter-spacing: 0.1em; color: var(--c-fg-3); text-transform: uppercase;
+      padding-bottom: 12px; border-bottom: 1px solid var(--c-border);
+    }
+    .ops-copy .dot {
+      width: 6px; height: 6px; border-radius: 50%; background: var(--c-ok);
+      box-shadow: 0 0 8px var(--c-ok);
+    }
+    .ops-copy b { color: var(--c-fg); font-weight: 500; letter-spacing: 0.08em; }
+    .ops-copy .sep { color: var(--c-fg-3); }
+    .ops-copy .right { margin-left: auto; display: flex; gap: 1.4em; }
+
+    /* ─────────── CONTROL COVER ─────────── */
+    .control-cover {
+      padding: 56px 56px;
+      background:
+        linear-gradient(var(--c-grid) 1px, transparent 1px) 0 0 / 40px 40px,
+        linear-gradient(90deg, var(--c-grid) 1px, transparent 1px) 0 0 / 40px 40px,
+        var(--c-bg);
+    }
+    .control-cover .terminal {
+      position: absolute; right: 56px; top: 64px; bottom: 64px; width: 420px;
+      background: var(--c-bg-panel);
+      border: 1px solid var(--c-border);
+      border-top: 3px solid var(--c-accent);
+      padding: 0.8em 1.2em;
+      font-family: var(--f-mono); font-size: 0.5em;
+      color: var(--c-fg-2); line-height: 1.55;
+      box-shadow: 0 0 60px rgba(80, 227, 194, 0.06);
+      display: flex; flex-direction: column;
+    }
+    .control-cover .terminal .term-bar {
+      display: flex; gap: 0.4em; margin-bottom: 1em;
+    }
+    .control-cover .terminal .term-bar span {
+      width: 9px; height: 9px; border-radius: 50%; background: var(--c-fg-3);
+    }
+    .control-cover .terminal .term-bar span:first-child { background: var(--c-alarm); }
+    .control-cover .terminal .term-bar span:nth-child(2) { background: var(--c-warn); }
+    .control-cover .terminal .term-bar span:nth-child(3) { background: var(--c-ok); }
+    .control-cover .terminal .term-path {
+      color: var(--c-fg-3); margin-left: auto; font-size: 0.85em;
+    }
+    .control-cover .terminal .line { display: block; }
+    .control-cover .terminal .prompt { color: var(--c-accent); }
+    .control-cover .terminal .key { color: var(--c-warn); }
+    .control-cover .terminal .ok { color: var(--c-ok); }
+    .control-cover .terminal .err { color: var(--c-alarm); }
+    .control-cover .terminal .cursor {
+      display: inline-block; width: 8px; height: 1em;
+      background: var(--c-accent); margin-left: 2px;
+      animation: blink 1s steps(2) infinite; vertical-align: middle;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+
+    .control-cover .control-radar {
+      position: absolute; right: 56px; bottom: 56px;
+      width: 130px; height: 130px;
+      opacity: 0.45;
+    }
+    .control-cover .control-radar .radar-blip {
+      position: absolute; width: 8px; height: 8px; border-radius: 50%;
+      background: var(--c-accent); box-shadow: 0 0 12px var(--c-accent);
     }
 
-    /* 网格背景 */
-    .reveal section::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-image:
-        linear-gradient(var(--grid-line) 1px, transparent 1px),
-        linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
-      background-size: 40px 40px;
-      opacity: 0.15;
-      pointer-events: none;
-      z-index: 0;
+    .control-cover .cover-body {
+      width: 56%; padding-top: 60px;
+    }
+    .control-cover h1 { font-size: 2.4em; line-height: 1.02; margin-bottom: 0.4em; max-width: 560px; }
+    .control-cover h1 em { color: var(--c-accent); font-style: normal; }
+    .control-cover .cover-deck {
+      font-family: var(--f-body); font-size: 0.74em;
+      color: var(--c-fg-2); line-height: 1.5; max-width: 460px;
+      margin-top: 0.8em; font-weight: 300;
+    }
+    .control-cover .cover-tags {
+      display: flex; gap: 0.4em; margin-top: 1em; flex-wrap: wrap;
+    }
+    .control-cover .cover-tags span {
+      font-family: var(--f-mono); font-size: 0.42em;
+      padding: 0.35em 0.7em;
+      border: 1px solid var(--c-border);
+      color: var(--c-fg-2); letter-spacing: 0.1em;
+    }
+    .control-cover .cover-tags span.active {
+      background: rgba(80, 227, 194, 0.08);
+      border-color: var(--c-accent); color: var(--c-accent);
     }
 
-    .reveal section > * {
+    /* ─────────── OPS MAP (proof) ─────────── */
+    .ops-map {
+      padding-top: 80px;
+      grid-template-columns: 0.42fr 0.58fr;
+      gap: 32px;
+    }
+    .ops-map .map-meta { display: flex; flex-direction: column; justify-content: center; padding-right: 16px; }
+    .ops-map .map-meta h2 { font-size: 1.8em; margin-top: 0.5em; }
+    .ops-map .map-meta .lede {
+      font-size: 0.78em; line-height: 1.6; color: var(--c-fg-2);
+      margin-top: 0.8em; max-width: 380px;
+    }
+    .ops-map .map-meta .source {
+      font-family: var(--f-mono); font-size: 0.42em; letter-spacing: 0.08em;
+      color: var(--c-fg-3); margin-top: 1.4em;
+    }
+
+    .ops-map .map-panel {
+      background: var(--c-bg-panel);
+      border: 1px solid var(--c-border);
+      padding: 24px;
+      display: grid; grid-template-rows: auto 1fr auto; gap: 14px;
       position: relative;
-      z-index: 1;
     }
-
-    /* ============================================
-       标题样式 - 无衬线粗体
-       ============================================ */
-    .reveal h1, .reveal h2, .reveal h3, .reveal h4 {
-      font-family: var(--font-sans);
-      color: var(--text);
-      font-weight: 600;
-      letter-spacing: -0.03em;
-      line-height: 1.1;
+    .ops-map .panel-head {
+      display: flex; align-items: center; gap: 0.7em;
+      font-family: var(--f-mono); font-size: 0.46em;
+      letter-spacing: 0.08em; text-transform: uppercase; color: var(--c-fg-3);
+      padding-bottom: 10px; border-bottom: 1px solid var(--c-border);
     }
-
-    .reveal h1 {
-      font-size: 2.8em;
-      font-weight: 700;
+    .ops-map .panel-head b { color: var(--c-fg); font-weight: 500; }
+    .ops-map .world {
+      position: relative; min-height: 280px;
+      background-image:
+        linear-gradient(var(--c-grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--c-grid) 1px, transparent 1px);
+      background-size: 32px 32px;
     }
-
-    .reveal h2 {
-      font-size: 1.8em;
-      margin-bottom: 0.6em;
+    .ops-map .world svg { width: 100%; height: 100%; position: absolute; inset: 0; }
+    .ops-map .node {
+      position: absolute; width: 12px; height: 12px;
+      background: var(--c-accent); border-radius: 50%;
+      box-shadow: 0 0 16px var(--c-accent);
+      transform: translate(-50%, -50%);
     }
-
-    .reveal h3 {
-      font-size: 1.2em;
-      font-weight: 500;
+    .ops-map .node.warn { background: var(--c-warn); box-shadow: 0 0 16px var(--c-warn); }
+    .ops-map .node.alarm { background: var(--c-alarm); box-shadow: 0 0 16px var(--c-alarm); animation: pulse 1.5s ease-in-out infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 50% { opacity: 0.6; transform: translate(-50%, -50%) scale(1.3); } }
+    .ops-map .node-label {
+      position: absolute; transform: translate(-50%, calc(-50% - 22px));
+      font-family: var(--f-mono); font-size: 0.36em;
+      color: var(--c-fg-2); letter-spacing: 0.08em; white-space: nowrap;
     }
-
-    .reveal p {
-      font-size: 1em;
-      line-height: 1.6;
-      margin-bottom: 0.8em;
+    .ops-map .legend {
+      display: flex; gap: 1.4em;
+      font-family: var(--f-mono); font-size: 0.4em;
+      color: var(--c-fg-2); letter-spacing: 0.08em;
     }
+    .ops-map .legend .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; vertical-align: middle; margin-right: 6px; }
 
-    /* ============================================
-       代码样式
-       ============================================ */
-    .reveal pre {
-      font-size: 0.7em;
-      box-shadow: none;
-      margin: 1em 0;
+    /* ─────────── SIGNAL PAGE (mechanism) ─────────── */
+    .signal-page {
+      padding-top: 80px;
+      grid-template-rows: auto 1fr;
+      gap: 28px;
     }
-
-    .reveal pre code {
-      font-family: var(--font-mono);
-      padding: 1em 1.5em;
-      background: var(--bg-subtle);
-      border: 1px solid var(--grid-line);
-      border-radius: 4px;
-      line-height: 1.5;
+    .signal-page .head h2 { margin-top: 0.4em; max-width: 760px; }
+    .signal-page .signal-grid {
+      display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px; align-items: stretch;
     }
-
-    .code-label {
-      font-family: var(--font-mono);
-      font-size: 0.65em;
-      color: var(--accent);
-      background: var(--bg-subtle);
-      padding: 0.3em 0.6em;
-      border-radius: 2px 2px 0 0;
-      border: 1px solid var(--grid-line);
-      border-bottom: none;
-      display: inline-block;
-      margin-bottom: -1px;
+    .signal-page .signal {
+      background: var(--c-bg-panel);
+      border: 1px solid var(--c-border);
+      padding: 16px 18px;
+      display: flex; flex-direction: column; gap: 8px;
     }
+    .signal-page .signal h4 { margin-bottom: 4px; }
+    .signal-page .signal .val {
+      font-family: var(--f-mono); font-size: 2em; font-weight: 500;
+      color: var(--c-fg); line-height: 1;
+    }
+    .signal-page .signal .val em { color: var(--c-accent); font-style: normal; font-size: 0.6em; margin-left: 0.3em; }
+    .signal-page .signal .spark {
+      height: 38px; width: 100%; margin-top: 4px;
+    }
+    .signal-page .signal .spark svg { width: 100%; height: 100%; }
+    .signal-page .signal .delta {
+      font-family: var(--f-mono); font-size: 0.45em;
+      color: var(--c-ok); letter-spacing: 0.08em;
+    }
+    .signal-page .signal .delta.warn { color: var(--c-warn); }
+    .signal-page .signal .delta.alarm { color: var(--c-alarm); }
+    .signal-page .signal.featured { background: var(--c-accent); }
+    .signal-page .signal.featured h4 { color: rgba(11, 15, 20, 0.7); }
+    .signal-page .signal.featured .val { color: var(--c-bg); }
+    .signal-page .signal.featured .delta { color: rgba(11, 15, 20, 0.85); }
+    .signal-page .signal.featured .spark svg { color: rgba(11, 15, 20, 0.5); }
 
-    /* ============================================
-       关键字高亮
-       ============================================ */
-    .keyword { color: var(--accent); }
-    .function { color: var(--primary-light); }
-    .string { color: var(--success); }
-    .comment { color: var(--text-dim); font-style: italic; }
-    .number { color: var(--warning); }
-
-    /* ============================================
-       功能标签
-       ============================================ */
-    .tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.3em;
-      font-family: var(--font-mono);
-      font-size: 0.7em;
+    /* ─────────── INCIDENT (drill) ─────────── */
+    .incident {
+      padding-top: 80px;
+      grid-template-columns: 1.05fr 0.95fr; gap: 36px;
+    }
+    .incident .case {
+      background: var(--c-bg-panel);
+      border: 1px solid var(--c-alarm);
+      padding: 24px 28px;
+    }
+    .incident .case .head-row {
+      display: flex; gap: 0.6em; align-items: center;
+      font-family: var(--f-mono); font-size: 0.42em;
+      letter-spacing: 0.1em; color: var(--c-alarm); text-transform: uppercase;
+      margin-bottom: 1.2em;
+    }
+    .incident .case .head-row .severity {
       padding: 0.3em 0.7em;
-      border-radius: 3px;
-      background: var(--bg-subtle);
-      border: 1px solid var(--grid-line);
-      color: var(--text);
-      min-width: 0;
+      background: rgba(255, 93, 108, 0.12); border: 1px solid var(--c-alarm);
+      color: var(--c-alarm);
     }
-
-    .tag.primary {
-      background: var(--primary);
-      border-color: var(--primary);
-      color: var(--bg);
+    .incident .case h3 { font-size: 1.4em; font-weight: 500; margin-bottom: 0.4em; }
+    .incident .case .one-liner {
+      font-size: 0.85em; color: var(--c-fg-2); line-height: 1.55; max-width: 460px;
     }
-
-    .tag.accent {
-      background: transparent;
-      border-color: var(--accent);
-      color: var(--accent);
+    .incident .case .impacts {
+      display: flex; gap: 1.6em; margin-top: 1.6em;
+      padding-top: 1.2em; border-top: 1px dashed var(--c-border);
     }
-
-    /* ============================================
-       指标卡片
-       ============================================ */
-    .metrics {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 1em;
-      margin: 1.5em 0;
+    .incident .case .impacts div .n {
+      font-family: var(--f-mono); font-size: 1.3em; color: var(--c-fg); display: block;
     }
-
-    .metric-card {
-      background: var(--bg-subtle);
-      border: 1px solid var(--grid-line);
-      border-radius: 6px;
-      padding: 1.2em;
-      text-align: center;
+    .incident .case .impacts div .l {
+      font-family: var(--f-mono); font-size: 0.4em; color: var(--c-fg-3);
+      letter-spacing: 0.1em; text-transform: uppercase; margin-top: 0.2em;
     }
-
-    .metric-value {
-      font-family: var(--font-mono);
-      font-size: 2.5em;
-      font-weight: 600;
-      color: var(--primary-light);
-      line-height: 1;
+    .incident .runbook {
+      display: flex; flex-direction: column; gap: 14px;
     }
-
-    .metric-label {
-      font-size: 0.75em;
-      color: var(--text-muted);
-      margin-top: 0.5em;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
+    .incident .runbook h4 { margin-bottom: 0.4em; }
+    .incident .runbook .step {
+      display: grid; grid-template-columns: 40px 1fr auto;
+      align-items: center; gap: 14px;
+      padding: 12px 16px;
+      background: var(--c-bg-panel);
+      border: 1px solid var(--c-border);
+      font-family: var(--f-mono); font-size: 0.5em;
     }
+    .incident .runbook .step .num { color: var(--c-fg-3); }
+    .incident .runbook .step .what { color: var(--c-fg-2); }
+    .incident .runbook .step .what b { color: var(--c-fg); font-weight: 500; }
+    .incident .runbook .step .t { color: var(--c-accent); }
+    .incident .runbook .step.done { background: rgba(113, 201, 148, 0.12); }
+    .incident .runbook .step.done .t { color: var(--c-ok); }
+    .incident .runbook .step.now { background: rgba(255, 180, 84, 0.12); }
 
-    /* ============================================
-       流程步骤
-       ============================================ */
-    .flow-row {
-      display: flex;
-      align-items: center;
-      gap: 0.5em;
-      flex-wrap: wrap;
-      margin: 1.5em 0;
+    /* ─────────── STATUS GRID (close) ─────────── */
+    .status-grid {
+      padding-top: 80px;
+      grid-template-rows: auto auto 1fr; gap: 22px;
     }
-
-    .flow-step {
-      font-family: var(--font-mono);
-      font-size: 0.75em;
-      padding: 0.6em 1em;
-      background: var(--bg-subtle);
-      border: 1px solid var(--grid-line);
-      border-radius: 4px;
-      color: var(--text);
+    .status-grid h2 { font-size: 1.6em; margin-top: 0.4em; }
+    .status-grid .pre {
+      font-size: 0.78em; line-height: 1.55; color: var(--c-fg-2); max-width: 600px;
+    }
+    .status-grid .grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+      align-content: start;
+    }
+    .status-grid .cell {
+      background: var(--c-bg-panel);
+      border: 1px solid var(--c-border);
+      padding: 14px 16px;
+      display: flex; align-items: center; gap: 10px;
+      font-family: var(--f-mono); font-size: 0.5em;
+    }
+    .status-grid .cell .led {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: var(--c-ok); box-shadow: 0 0 10px var(--c-ok);
       flex-shrink: 0;
-      min-width: 0;
     }
+    .status-grid .cell.warn .led { background: var(--c-warn); box-shadow: 0 0 10px var(--c-warn); }
+    .status-grid .cell.alarm .led { background: var(--c-alarm); box-shadow: 0 0 10px var(--c-alarm); animation: pulse 1.4s ease-in-out infinite; }
+    .status-grid .cell .name { color: var(--c-fg); }
+    .status-grid .cell .meta { color: var(--c-fg-3); margin-left: auto; }
 
-    .flow-step.active {
-      background: var(--primary);
-      border-color: var(--primary);
-      color: var(--bg);
-    }
+    /* Progress */
+    .reveal .progress { color: var(--c-accent); height: 2px; }
+    .reveal .controls { color: var(--c-fg-2); }
 
-    .flow-arrow {
-      color: var(--text-dim);
-      font-size: 1.2em;
-    }
-
-    /* ============================================
-       架构图
-       ============================================ */
-    .arch-diagram {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5em;
-      align-items: center;
-      margin: 1.5em 0;
-    }
-
-    .arch-layer {
-      display: flex;
-      gap: 0.5em;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-
-    .arch-node {
-      font-family: var(--font-mono);
-      font-size: 0.7em;
-      padding: 0.5em 1.2em;
-      border-radius: 4px;
-      background: var(--bg-subtle);
-      border: 1px solid var(--grid-line);
-      color: var(--text);
-      min-width: 0;
-    }
-
-    .arch-node.highlight {
-      background: var(--primary);
-      border-color: var(--primary);
-      color: var(--bg);
-    }
-
-    .arch-connector {
-      color: var(--text-dim);
-      font-size: 1.5em;
-      line-height: 0.5;
-    }
-
-    /* ============================================
-       标题页
-       ============================================ */
-    .title-slide {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: flex-start;
-    }
-
-    .title-slide .badge-row {
-      display: flex;
-      gap: 0.5em;
-      margin-bottom: 1.5em;
-    }
-
-    .title-slide h1 {
-      font-size: 3em;
-      margin-bottom: 0.3em;
-    }
-
-    .title-slide .subtitle {
-      font-size: 1.3em;
-      font-weight: 400;
-      color: var(--text-muted);
-      margin-bottom: 2em;
-    }
-
-    .title-slide .meta {
-      font-family: var(--font-mono);
-      font-size: 0.8em;
-      color: var(--text-dim);
-    }
-
-    /* ============================================
-       Fragment 动画 - slide 风格 (duration 300-400ms per guidelines)
-       ============================================ */
-    .reveal .fragment {
-      transition-timing-function: var(--ease-out-expo);
-      transition-duration: 350ms;
-    }
-
-    .reveal .fragment.slide-left {
-      opacity: 0;
-      transform: translateX(-30px);
-    }
-
-    .reveal .fragment.slide-left.visible {
-      opacity: 1;
-      transform: translateX(0);
-    }
-
-    .reveal .fragment.scale-up {
-      opacity: 0;
-      transform: scale(0.9);
-    }
-
-    .reveal .fragment.scale-up.visible {
-      opacity: 1;
-      transform: scale(1);
-    }
-
-    /* ============================================
-       进度条
-       ============================================ */
-    .reveal .progress {
-      color: var(--primary);
-      height: 2px;
-    }
-
-    .reveal .controls {
-      color: var(--primary);
-    }
-
-    /* ============================================
-       Reduced Motion
-       ============================================ */
+    .reveal .fragment { transition-duration: 350ms; }
     @media (prefers-reduced-motion: reduce) {
-      .reveal .fragment {
-        opacity: 1;
-        transform: none;
-        transition: opacity 200ms ease-out;
+      .reveal .fragment, .control-cover .terminal .cursor,
+      .ops-map .node.alarm, .status-grid .cell.alarm .led {
+        animation: none; opacity: 1; transform: none; transition: opacity 200ms ease-out;
       }
-    }
-
-    /* ============================================
-       两列布局
-       ============================================ */
-    .two-col {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-      gap: 2em;
-    }
-
-    .feature-list {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-
-    .feature-list li {
-      display: flex;
-      align-items: flex-start;
-      gap: 0.8em;
-      margin-bottom: 1em;
-      font-size: 0.9em;
-    }
-
-    .feature-list .icon {
-      color: var(--accent);
-      flex-shrink: 0;
-      margin-top: 0.2em;
     }
   </style>
 </head>
@@ -432,197 +375,398 @@
   <div class="reveal">
     <div class="slides">
 
-      <!-- Slide 1: 标题页 -->
-      <section class="title-slide" data-background="var(--bg)">
-        <div class="badge-row fragment scale-up">
-          <span class="tag primary">
-            <i class="fas fa-bolt"></i> v2.0
+      <!-- 1: CONTROL COVER -->
+      <section class="control-cover deck-flex" data-background="#0b0f14">
+        <div class="ops-copy" data-qa-ignore="decorative">
+          <span class="dot"></span>
+          <b>LIVE OPS · STAGING-EU1</b>
+          <span class="sep">/</span>
+          <span>2026.03.14 09:14 UTC</span>
+          <span class="sep">/</span>
+          <span>shift A · on-call J.K.</span>
+          <span class="right">
+            <span>build 4.6.1-rc</span>
+            <span class="sep">/</span>
+            <span>SLO 99.95%</span>
           </span>
-          <span class="tag accent">
-            <i class="fas fa-rocket"></i> 技术演讲
-          </span>
         </div>
-        <h1 class="fragment slide-left" style="transition-delay: 100ms;">
-          构建下一代<br>边缘计算平台
-        </h1>
-        <p class="subtitle fragment slide-left" style="transition-delay: 200ms;">
-          高性能 · 低延迟 · 全球部署
-        </p>
-        <div class="meta fragment slide-left" style="transition-delay: 300ms;">
-          技术架构组 · 李明 · 2026.03
+
+        <div class="cover-body">
+          <span class="kicker">Edge platform · Q1 keynote</span>
+          <h1 style="margin-top: 0.6em;">Run the edge<br>like a <em>cockpit</em>,<br>not a dashboard.</h1>
+          <p class="cover-deck">
+            One screen. One on-call. One answer to "is it healthy now?" — built around incidents, not slideware.
+          </p>
+          <div class="cover-tags">
+            <span class="active">runtime</span>
+            <span>incident drill</span>
+            <span>SLO</span>
+            <span>edge fleet</span>
+            <span>q1 · 2026</span>
+          </div>
         </div>
+
+        <div class="terminal">
+          <div class="term-bar">
+            <span></span><span></span><span></span>
+            <span class="term-path">edge@cockpit:~ · ssh</span>
+          </div>
+          <span class="line"><span class="prompt">$</span> edgectl status --all</span>
+          <span class="line" style="color: var(--c-fg-3);"></span>
+          <span class="line"><span class="ok">  ✓</span> <span class="key">eu-west</span>     <span style="color:var(--c-fg-3);">62 nodes</span>   <span class="ok">healthy</span></span>
+          <span class="line"><span class="ok">  ✓</span> <span class="key">us-east</span>     <span style="color:var(--c-fg-3);">58 nodes</span>   <span class="ok">healthy</span></span>
+          <span class="line"><span class="ok">  ✓</span> <span class="key">ap-south</span>    <span style="color:var(--c-fg-3);">44 nodes</span>   <span class="ok">healthy</span></span>
+          <span class="line" style="color: var(--c-warn);">  !  <span class="key" style="color: var(--c-warn);">ap-east</span>     <span style="color:var(--c-fg-3);">38 nodes</span>   degraded · 2 slow</span>
+          <span class="line"><span class="err">  ✗</span> <span class="key">eu-north</span>    <span style="color:var(--c-fg-3);">12 nodes</span>   <span class="err">isolation drill</span></span>
+          <span class="line">&nbsp;</span>
+          <span class="line"><span class="prompt">$</span> edgectl drill start --region eu-north<span class="cursor"></span></span>
+        </div>
+
+        <svg class="control-radar" viewBox="0 0 220 220" stroke="var(--c-accent)" fill="none" stroke-width="0.8" opacity="0.6" data-qa-ignore="decorative">
+          <circle cx="110" cy="110" r="100"/>
+          <circle cx="110" cy="110" r="68"/>
+          <circle cx="110" cy="110" r="36"/>
+          <line x1="10" y1="110" x2="210" y2="110"/>
+          <line x1="110" y1="10" x2="110" y2="210"/>
+          <line x1="40" y1="40" x2="180" y2="180"/>
+          <line x1="180" y1="40" x2="40" y2="180"/>
+          <path d="M 110 110 L 200 80 A 100 100 0 0 0 165 30 Z" fill="var(--c-accent)" opacity="0.18" stroke="none"/>
+        </svg>
+        <div class="radar-blip" data-qa-ignore="decorative" style="left: calc(100% - 56px - 18px); bottom: calc(56px + 100px);"></div>
+        <div class="radar-blip" data-qa-ignore="decorative" style="left: calc(100% - 56px - 90px); bottom: calc(56px + 50px); background: var(--c-warn); box-shadow: 0 0 12px var(--c-warn);"></div>
+        <div class="radar-blip" data-qa-ignore="decorative" style="left: calc(100% - 56px - 40px); bottom: calc(56px + 30px); background: var(--c-alarm); box-shadow: 0 0 12px var(--c-alarm);"></div>
+
+        <span class="pin">01 · cockpit · cover</span>
       </section>
 
-      <!-- Slide 2: 性能指标 -->
-      <section data-background="var(--bg)">
-        <h2 class="fragment slide-left">性能突破</h2>
-        <div class="metrics">
-          <div class="metric-card fragment scale-up" style="transition-delay: 100ms;">
-            <div class="metric-value">12ms</div>
-            <div class="metric-label">平均延迟</div>
+      <!-- 2: OPS MAP (proof) -->
+      <section class="ops-map deck-grid" data-background="#0b0f14">
+        <div class="ops-copy" data-qa-ignore="decorative">
+          <span class="dot"></span><b>OPS MAP · GLOBAL</b>
+          <span class="sep">/</span><span>312 nodes · 18 regions</span>
+          <span class="sep">/</span><span>refresh 5s</span>
+          <span class="right"><span>traffic 2.4M rps</span><span class="sep">/</span><span>p99 38ms</span></span>
+        </div>
+        <div class="map-meta">
+          <span class="kicker">Proof · the live fleet</span>
+          <h2>What "healthy" looks like on a Friday afternoon.</h2>
+          <p class="lede">
+            Every dot is one runtime. Color is what on-call sees. The two yellow nodes in AP-east are next.
+          </p>
+          <div class="source">data · edgectl status · 2026.03.14 14:02 UTC · user-provided</div>
+        </div>
+        <div class="map-panel">
+          <div class="panel-head">
+            <span style="width:8px;height:8px;background:var(--c-ok);border-radius:50%;display:inline-block;box-shadow:0 0 8px var(--c-ok);"></span>
+            <b>fleet/global</b>
+            <span style="margin-left:auto;">refresh · 5s</span>
           </div>
-          <div class="metric-card fragment scale-up" style="transition-delay: 200ms;">
-            <div class="metric-value">99.9%</div>
-            <div class="metric-label">可用性</div>
+          <div class="world">
+            <svg viewBox="0 0 460 300" stroke="rgba(230,237,245,0.10)" fill="none" stroke-width="0.6">
+              <path d="M 30 110 Q 60 80 100 100 L 140 120 Q 170 100 200 110 L 240 130 Q 280 110 320 120 L 380 140 Q 420 130 440 150"/>
+              <path d="M 40 180 Q 80 170 130 190 L 180 200 Q 230 180 280 200 L 340 210 Q 400 200 440 220"/>
+              <path d="M 60 240 Q 130 230 200 250 L 280 260 Q 360 240 430 250"/>
+              <path d="M 100 60 L 100 250 M 200 50 L 200 270 M 300 60 L 300 260 M 400 70 L 400 250" stroke-dasharray="2 4"/>
+            </svg>
+            <div class="node" style="left: 24%; top: 38%;"></div>
+            <span class="node-label" style="left: 24%; top: 38%;">eu-west · 62</span>
+            <div class="node" style="left: 14%; top: 52%;"></div>
+            <span class="node-label" style="left: 14%; top: 52%;">us-east · 58</span>
+            <div class="node" style="left: 78%; top: 60%;"></div>
+            <span class="node-label" style="left: 78%; top: 60%;">ap-south · 44</span>
+            <div class="node warn" style="left: 86%; top: 48%;"></div>
+            <span class="node-label" style="left: 86%; top: 48%; color: var(--c-warn);">ap-east · 38 ⚠</span>
+            <div class="node" style="left: 6%; top: 64%;"></div>
+            <span class="node-label" style="left: 6%; top: 64%;">us-west · 38</span>
+            <div class="node alarm" style="left: 32%; top: 22%;"></div>
+            <span class="node-label" style="left: 32%; top: 22%; color: var(--c-alarm);">eu-north · drill</span>
+            <div class="node" style="left: 56%; top: 70%;"></div>
+            <span class="node-label" style="left: 56%; top: 70%;">sa-east · 18</span>
+            <div class="node" style="left: 92%; top: 78%;"></div>
+            <span class="node-label" style="left: 92%; top: 78%;">au-east · 16</span>
           </div>
-          <div class="metric-card fragment scale-up" style="transition-delay: 300ms;">
-            <div class="metric-value">150+</div>
-            <div class="metric-label">边缘节点</div>
+          <div class="legend">
+            <span><span class="dot" style="background:var(--c-accent);box-shadow:0 0 8px var(--c-accent);"></span>healthy</span>
+            <span><span class="dot" style="background:var(--c-warn);box-shadow:0 0 8px var(--c-warn);"></span>degraded</span>
+            <span><span class="dot" style="background:var(--c-alarm);box-shadow:0 0 8px var(--c-alarm);"></span>drill / incident</span>
           </div>
         </div>
-        <div class="flow-row fragment slide-left" style="transition-delay: 400ms;">
-          <span class="flow-step">请求入口</span>
-          <span class="flow-arrow">→</span>
-          <span class="flow-step">负载均衡</span>
-          <span class="flow-arrow">→</span>
-          <span class="flow-step active">边缘计算</span>
-          <span class="flow-arrow">→</span>
-          <span class="flow-step">CDN</span>
-          <span class="flow-arrow">→</span>
-          <span class="flow-step">响应</span>
+        <span class="pin">02 · ops-map · proof</span>
+      </section>
+
+      <!-- 3: SIGNAL PAGE (mechanism) -->
+      <section class="signal-page deck-grid" data-background="#0b0f14">
+        <div class="ops-copy" data-qa-ignore="decorative">
+          <span class="dot"></span><b>SIGNAL · RUNTIME TELEMETRY</b>
+          <span class="sep">/</span><span>window 1h</span>
+          <span class="right"><span>SLO budget · 71%</span></span>
         </div>
-      </section>
-
-      <!-- Slide 3: 架构 -->
-      <section data-background="var(--bg)">
-        <h2 class="fragment slide-left">系统架构</h2>
-        <div class="arch-diagram">
-          <div class="arch-layer fragment scale-up" style="transition-delay: 100ms;">
-            <span class="arch-node highlight">API Gateway</span>
+        <div class="head">
+          <span class="kicker">Mechanism · the four signals on-call reads first</span>
+          <h2>On screen — and off.</h2>
+        </div>
+        <div class="signal-grid">
+          <div class="signal featured">
+            <h4>p99 latency</h4>
+            <div class="val">38<em>ms</em></div>
+            <div class="spark">
+              <svg viewBox="0 0 100 38" stroke="currentColor" fill="none" stroke-width="1.4">
+                <polyline points="0,28 12,24 24,26 36,20 48,22 60,16 72,18 84,12 100,14"/>
+              </svg>
+            </div>
+            <div class="delta">▼ 4ms vs last hour · target ≤ 50</div>
           </div>
-          <div class="arch-connector fragment" style="transition-delay: 150ms;">↓</div>
-          <div class="arch-layer fragment scale-up" style="transition-delay: 200ms;">
-            <span class="arch-node">Auth</span>
-            <span class="arch-node">Router</span>
-            <span class="arch-node">Cache</span>
-            <span class="arch-node">Queue</span>
+          <div class="signal">
+            <h4>Error rate</h4>
+            <div class="val" style="color: var(--c-accent);">0.08<em>%</em></div>
+            <div class="spark">
+              <svg viewBox="0 0 100 38" stroke="var(--c-accent)" fill="none" stroke-width="1.4">
+                <polyline points="0,30 12,32 24,28 36,32 48,30 60,26 72,32 84,30 100,28"/>
+              </svg>
+            </div>
+            <div class="delta">flat · target ≤ 0.10%</div>
           </div>
-          <div class="arch-connector fragment" style="transition-delay: 250ms;">↓</div>
-          <div class="arch-layer fragment scale-up" style="transition-delay: 300ms;">
-            <span class="arch-node">边缘函数</span>
-            <span class="arch-node">边缘存储</span>
-            <span class="arch-node">边缘数据库</span>
+          <div class="signal">
+            <h4>Cold start</h4>
+            <div class="val" style="color: var(--c-warn);">112<em>ms</em></div>
+            <div class="spark">
+              <svg viewBox="0 0 100 38" stroke="var(--c-warn)" fill="none" stroke-width="1.4">
+                <polyline points="0,30 12,28 24,32 36,26 48,18 60,12 72,16 84,10 100,8"/>
+              </svg>
+            </div>
+            <div class="delta warn">▲ +21ms · watch</div>
+          </div>
+          <div class="signal">
+            <h4>Saturation</h4>
+            <div class="val">62<em>%</em></div>
+            <div class="spark">
+              <svg viewBox="0 0 100 38" stroke="var(--c-accent)" fill="none" stroke-width="1.4">
+                <polyline points="0,18 12,22 24,18 36,24 48,20 60,26 72,22 84,28 100,24"/>
+              </svg>
+            </div>
+            <div class="delta">▲ 4% · within budget</div>
           </div>
         </div>
-      </section>
-
-      <!-- Slide 4: 核心特性 -->
-      <section data-background="var(--bg)">
-        <h2 class="fragment slide-left">核心特性</h2>
-        <div class="two-col" style="margin-top: 1.5em;">
-          <ul class="feature-list fragment slide-left" style="transition-delay: 100ms;">
-            <li>
-              <i class="fas fa-check-circle icon"></i>
-              <div>
-                <strong>全球低延迟</strong><br>
-                <span style="color: var(--text-muted); font-size: 0.85em;">300+ 节点覆盖 50+ 地区</span>
-              </div>
-            </li>
-            <li>
-              <i class="fas fa-check-circle icon"></i>
-              <div>
-                <strong>原生 TypeScript</strong><br>
-                <span style="color: var(--text-muted); font-size: 0.85em;">完整的类型推断和 IDE 支持</span>
-              </div>
-            </li>
-            <li>
-              <i class="fas fa-check-circle icon"></i>
-              <div>
-                <strong>V8 隔离执行</strong><br>
-                <span style="color: var(--text-muted); font-size: 0.85em;">安全隔离，毫秒级冷启动</span>
-              </div>
-            </li>
-          </ul>
-          <ul class="feature-list fragment slide-left" style="transition-delay: 250ms;">
-            <li>
-              <i class="fas fa-check-circle icon"></i>
-              <div>
-                <strong>边缘持久化</strong><br>
-                <span style="color: var(--text-muted); font-size: 0.85em;">KV、Blob、Postgres 全覆盖</span>
-              </div>
-            </li>
-            <li>
-              <i class="fas fa-check-circle icon"></i>
-              <div>
-                <strong>流式响应</strong><br>
-                <span style="color: var(--text-muted); font-size: 0.85em;">Server-Sent Events 原生支持</span>
-              </div>
-            </li>
-            <li>
-              <i class="fas fa-check-circle icon"></i>
-              <div>
-                <strong>本地开发</strong><br>
-                <span style="color: var(--text-muted); font-size: 0.85em;">模拟生产环境，即刻反馈</span>
-              </div>
-            </li>
-          </ul>
+        <div class="signal-grid" style="grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 8px;">
+          <div class="signal" style="flex-direction: row; align-items: center;">
+            <div style="flex:1;">
+              <h4>What we removed from the screen</h4>
+              <p style="font-size: 0.62em; margin-top: 6px; max-width: 360px;">CPU%, RAM%, request count — none paged this year. Off the cockpit, on the audit page.</p>
+            </div>
+          </div>
+          <div class="signal" style="flex-direction: row; align-items: center; background: rgba(80, 227, 194, 0.10);">
+            <div style="flex:1;">
+              <h4>What earns screen time</h4>
+              <p style="font-size: 0.62em; margin-top: 6px; max-width: 360px;">Signals that paged in the last 12 months — with a runbook step on this screen.</p>
+            </div>
+          </div>
         </div>
+        <span class="pin">03 · signal · mechanism</span>
       </section>
 
-      <!-- Slide 5: 代码示例 -->
-      <section data-background="var(--bg)">
-        <h2 class="fragment slide-left">快速开始</h2>
-        <div class="code-label fragment" style="transition-delay: 50ms;">edge-function.ts</div>
-        <pre class="fragment slide-left" style="transition-delay: 100ms;"><code class="typescript" data-trim data-line-numbers>
-<span class="keyword">import</span> { Hono } <span class="keyword">from</span> <span class="string">'hono'</span>;
-<span class="keyword">import</span> { cors } <span class="keyword">from</span> <span class="string">'hono/cors'</span>;
-
-<span class="keyword">const</span> app = <span class="keyword">new</span> <span class="function">Hono</span>();
-
-app.<span class="function">use</span>(<span class="string">'/*'</span>, <span class="function">cors</span>());
-
-app.<span class="function">get</span>(<span class="string">'/api/status'</span>, (c) => {
-  <span class="keyword">return</span> c.<span class="function">json</span>({
-    <span class="string">"status"</span>: <span class="string">"healthy"</span>,
-    <span class="string">"region"</span>: c.<span class="function">req</span>.geo?.region,
-    <span class="string">"timestamp"</span>: Date.<span class="function">now</span>()
-  });
-});
-
-<span class="keyword">export default</span> app.<span class="function">fetch</span>;
-</code></pre>
+      <!-- 4: INCIDENT DRILL -->
+      <section class="incident deck-grid" data-background="#0b0f14">
+        <div class="ops-copy" data-qa-ignore="decorative">
+          <span class="dot" style="background:var(--c-alarm);box-shadow:0 0 8px var(--c-alarm);"></span>
+          <b>INCIDENT DRILL · EU-NORTH</b>
+          <span class="sep">/</span><span>scheduled · not user-impacting</span>
+          <span class="right"><span>elapsed 04:12</span><span class="sep">/</span><span>RTO 15:00</span></span>
+        </div>
+        <div class="case">
+          <div class="head-row">
+            <span class="severity">SEV-2 · drill</span>
+            <span>eu-north</span>
+            <span class="sep">/</span>
+            <span>isolation</span>
+          </div>
+          <h3>"Cut the region. Stay readable. Recover in 15."</h3>
+          <p class="one-liner">
+            Isolate EU-North from the control plane; watch the fleet absorb traffic. Drill exists because the Sep 2025 cut took 27 minutes — too slow, too quiet.
+          </p>
+          <div class="impacts">
+            <div>
+              <span class="n">0</span>
+              <span class="l">user-facing pages</span>
+            </div>
+            <div>
+              <span class="n">12</span>
+              <span class="l">nodes drained</span>
+            </div>
+            <div>
+              <span class="n">04:12</span>
+              <span class="l">drill elapsed</span>
+            </div>
+            <div>
+              <span class="n" style="color: var(--c-accent);">71%</span>
+              <span class="l">slo budget left</span>
+            </div>
+          </div>
+        </div>
+        <div class="runbook">
+          <h4>Runbook · live</h4>
+          <div class="step done">
+            <span class="num">01</span>
+            <span class="what"><b>Drain</b> eu-north from edge router</span>
+            <span class="t">00:42</span>
+          </div>
+          <div class="step done">
+            <span class="num">02</span>
+            <span class="what"><b>Reroute</b> traffic to eu-west / eu-south</span>
+            <span class="t">01:58</span>
+          </div>
+          <div class="step now">
+            <span class="num">03</span>
+            <span class="what"><b>Verify</b> SLO budget burn ≤ 0.4%</span>
+            <span class="t">04:12 · now</span>
+          </div>
+          <div class="step">
+            <span class="num">04</span>
+            <span class="what"><b>Rehydrate</b> eu-north · staged 20%, 60%, 100%</span>
+            <span class="t">— pending</span>
+          </div>
+          <div class="step">
+            <span class="num">05</span>
+            <span class="what"><b>Post-drill</b> · write up · 24h SLA</span>
+            <span class="t">— pending</span>
+          </div>
+        </div>
+        <span class="pin">04 · incident · drill</span>
       </section>
 
-      <!-- Slide 6: 结束 -->
-      <section class="title-slide" data-background="var(--bg)">
-        <h2 class="fragment slide-left" style="font-size: 2em;">
-          开始使用
+      <!-- 5: STATEMENT WALL -->
+      <section class="deck-flex" data-background="#0b0f14" style="flex-direction: column; justify-content: center; padding: 80px 100px 100px 100px;">
+        <span class="kicker">Argument · the cockpit thesis</span>
+        <h2 style="font-size: 2.4em; font-weight: 300; line-height: 1.2; margin-top: 0.8em; max-width: 980px;">
+          A platform is not "observable".<br>
+          It's <em style="color: var(--c-accent); font-style: normal; font-weight: 500;">page-able, drill-able, recoverable</em> — in this order, on this screen.
         </h2>
-        <div class="flow-row fragment slide-left" style="transition-delay: 150ms; justify-content: flex-start;">
-          <span class="tag primary">
-            <i class="fas fa-terminal"></i> npm install @edge/runtime
-          </span>
-        </div>
-        <p class="fragment slide-left" style="transition-delay: 300ms; color: var(--text-muted); margin-top: 2em;">
-          文档：docs.edge-platform.dev<br>
-          示例：github.com/edge/examples
+        <p style="margin-top: 1.2em; max-width: 720px; font-size: 0.82em; line-height: 1.65;">
+          Three properties earn screen time. Everything else is an audit artifact: it can live on a wiki, in a graph, or off the cockpit entirely. The brief for 2026 is to keep the cockpit small, sharp, and rehearsed.
         </p>
+        <div style="margin-top: 1.6em; display: flex; gap: 1em; font-family: var(--f-mono); font-size: 0.5em; letter-spacing: 0.08em;">
+          <span style="padding: 0.4em 0.8em; border: 1px solid var(--c-accent); color: var(--c-accent);">PAGE-ABLE</span>
+          <span style="padding: 0.4em 0.8em; border: 1px solid var(--c-accent); color: var(--c-accent);">DRILL-ABLE</span>
+          <span style="padding: 0.4em 0.8em; border: 1px solid var(--c-accent); color: var(--c-accent);">RECOVERABLE</span>
+        </div>
+        <span class="pin" style="right: 64px; left: auto;">05 · statement</span>
+      </section>
+
+      <!-- 6: STATUS GRID (close) -->
+      <section class="status-grid deck-grid" data-background="#0b0f14">
+        <div class="ops-copy" data-qa-ignore="decorative">
+          <span class="dot"></span><b>STATUS · END OF SHIFT</b>
+          <span class="sep">/</span><span>2026.03.14 16:00 UTC</span>
+          <span class="right"><span>14 services / 312 nodes / 1 drill</span></span>
+        </div>
+        <div>
+          <span class="kicker">Close · the handoff</span>
+          <h2 style="margin-top: 0.4em;">All green, one drill closed, one note for the next shift.</h2>
+          <p class="pre">
+            What the next on-call inherits — fourteen services, status colour, one line before first coffee. Nothing generated; it's what we'd say at standup.
+          </p>
+        </div>
+        <div class="grid">
+          <div class="cell"><span class="led"></span><span class="name">edge-router</span><span class="meta">312/312</span></div>
+          <div class="cell"><span class="led"></span><span class="name">auth-gateway</span><span class="meta">v4.6.1</span></div>
+          <div class="cell"><span class="led"></span><span class="name">kv-store</span><span class="meta">42ms</span></div>
+          <div class="cell"><span class="led"></span><span class="name">queue</span><span class="meta">empty</span></div>
+          <div class="cell"><span class="led"></span><span class="name">cache</span><span class="meta">94% hit</span></div>
+          <div class="cell"><span class="led"></span><span class="name">cdn</span><span class="meta">healthy</span></div>
+          <div class="cell warn"><span class="led"></span><span class="name">cold-start</span><span class="meta">+21ms</span></div>
+          <div class="cell"><span class="led"></span><span class="name">postgres</span><span class="meta">primary OK</span></div>
+          <div class="cell"><span class="led"></span><span class="name">analytics</span><span class="meta">2h lag</span></div>
+          <div class="cell"><span class="led"></span><span class="name">billing</span><span class="meta">queued</span></div>
+          <div class="cell"><span class="led"></span><span class="name">notifications</span><span class="meta">healthy</span></div>
+          <div class="cell"><span class="led"></span><span class="name">support-bot</span><span class="meta">healthy</span></div>
+          <div class="cell"><span class="led"></span><span class="name">audit-log</span><span class="meta">streaming</span></div>
+          <div class="cell"><span class="led"></span><span class="name">drill-runner</span><span class="meta">eu-north OK</span></div>
+          <div class="cell alarm"><span class="led"></span><span class="name">eu-north</span><span class="meta">drill closing</span></div>
+          <div class="cell"><span class="led"></span><span class="name">on-call</span><span class="meta">shift B in</span></div>
+        </div>
+        <span class="pin">06 · status · close</span>
       </section>
 
     </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@4.0.1/dist/pptxgen.bundle.js"></script>
   <script>
     Reveal.initialize({
-      width: 1280,
-      height: 720,
-      margin: 0.04,
-      minScale: 0.8,
-      maxScale: 1.2,
-      hash: true,
-      slideNumber: 'c/t',
-      progress: true,
-      center: false,
-      controls: true,
-      controlsTutorial: false,
-      transition: 'slide',
-      transitionSpeed: 'default',
-      backgroundTransition: 'fade',
-    }).then(() => {
-      hljs.highlightAll();
+      width: 1280, height: 720, margin: 0.04,
+      minScale: 0.8, maxScale: 1.2,
+      hash: true, slideNumber: 'c/t', progress: true,
+      center: false, controls: true, controlsTutorial: false,
+      transition: 'fade', transitionSpeed: 'default', backgroundTransition: 'fade',
     });
+  </script>
+  <script>
+  /* Reveal.js PPTX 导出按钮 — inline of scripts/export-pptx-client.js (minified) */
+  (function () {
+    'use strict';
+    var BTN_TEXT='PPTX';
+    function rgbToHex(r,g,b){return [r,g,b].map(function(c){return Math.round(c).toString(16).padStart(2,'0').toUpperCase();}).join('');}
+    function parseRgb(str){if(!str)return null;var m=str.match(/rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)/);return m?rgbToHex(+m[1],+m[2],+m[3]):null;}
+    function linearToSrgb(c){c=Math.max(0,Math.min(1,c));return c<=0.0031308?12.92*c:1.055*Math.pow(c,1/2.4)-0.055;}
+    function oklchToHex(str){if(!str)return null;var m=str.match(/oklch\(\s*([\d.]+)(%)?\s+([\d.]+)\s+([\d.]+)/);if(!m)return null;var L=m[2]==='%'?+m[1]/100:+m[1];var C=+m[3];var H=+m[4];var a=C*Math.cos(H*Math.PI/180);var b=C*Math.sin(H*Math.PI/180);var l_=L+0.3963377774*a+0.2158037573*b;var m_=L-0.1055613458*a-0.0638541728*b;var s_=L-0.0894841775*a-1.2914855480*b;var l3=l_*l_*l_,m3=m_*m_*m_,s3=s_*s_*s_;var rl=4.0767416621*l3-3.3077115913*m3+0.2309699292*s3;var gl=-1.2684380046*l3+2.6097574011*m3-0.3413193965*s3;var bl=-0.0041960863*l3-0.7034186147*m3+1.7076147010*s3;return rgbToHex(Math.round(Math.min(255,Math.max(0,linearToSrgb(rl)*255))),Math.round(Math.min(255,Math.max(0,linearToSrgb(gl)*255))),Math.round(Math.min(255,Math.max(0,linearToSrgb(bl)*255))));}
+    function anyColorToHex(s){if(!s)return null;if(s.startsWith('#'))return s.replace('#','').substring(0,6).toUpperCase();if(s.startsWith('oklch'))return oklchToHex(s);if(s.startsWith('rgb'))return parseRgb(s);return parseRgb(s);}
+    function resolveColor(v,vars){if(!v)return null;if(v.startsWith('#')&&v.length>=4)return v.replace('#','').substring(0,6).toUpperCase();if(v.startsWith('oklch'))return oklchToHex(v);if(v.startsWith('rgb'))return parseRgb(v);var m=v.match(/var\(\s*(--[\w-]+)\s*\)/);if(m&&vars[m[1]])return resolveColor(vars[m[1]],vars);return parseRgb(v);}
+    function getElColor(el){return anyColorToHex(getComputedStyle(el).color)||'FFFFFF';}
+    function getCssVars(){var vars={};document.querySelectorAll('style').forEach(function(s){var rm=s.textContent.match(/:root\s*\{([^}]+)\}/);if(rm){var re=/(--[\w-]+)\s*:\s*([^;]+)/g,m;while((m=re.exec(rm[1])))vars[m[1]]=m[2].trim();}});var al={'--bg':'--c-bg','--text':'--c-fg','--text-muted':'--c-fg-2','--text-subtle':'--c-fg-3','--accent':'--c-accent','--divider':'--c-border'};Object.keys(al).forEach(function(L){var C=al[L];if(!vars[L]&&vars[C])vars[L]=vars[C];if(!vars[C]&&vars[L])vars[C]=vars[L];});return vars;}
+    function pxToPt(px){return parseFloat(px)*0.75;}
+    function textOf(el){return (el.textContent||'').trim();}
+    var pptx;
+    function exportSection(slide,sec,vars){
+      var bg=resolveColor(vars['--c-bg']||vars['--bg'],vars)||'0B0F14';
+      slide.background={color:bg};
+      var textMuted=resolveColor(vars['--c-fg-2']||vars['--text-muted'],vars)||'999999';
+      var y=0.45;
+      var ops=sec.querySelector('.ops-copy');
+      if(ops){slide.addText(textOf(ops),{x:0.55,y:0.25,w:12.2,h:0.3,fontSize:8,color:textMuted,fontFace:'Calibri',charSpacing:2});}
+      y=0.75;
+      var kicker=sec.querySelector('.kicker');
+      if(kicker){slide.addText(textOf(kicker),{x:0.55,y:y,w:12.2,h:0.3,fontSize:9,color:resolveColor(vars['--c-accent'],vars)||'50E3C2',fontFace:'Calibri',charSpacing:3});y+=0.4;}
+      var h1=sec.querySelector('h1'),h2=sec.querySelector('h2');
+      var head=h1||h2;
+      if(head){var fs=pxToPt(getComputedStyle(head).fontSize);slide.addText(textOf(head),{x:0.55,y:y,w:12.2,h:h1?2.2:1.2,fontSize:Math.min(h1?36:24,fs),color:getElColor(head),fontFace:'Calibri',bold:false,valign:'top',lineSpacingMultiple:1.15});y+=h1?2.4:1.4;}
+      var paras=sec.querySelectorAll('p, .lede, .one-liner, .pre, .cover-deck');
+      var added=0;
+      paras.forEach(function(p){if(added>=3)return;var t=textOf(p);if(!t||t.length<5)return;var fs=pxToPt(getComputedStyle(p).fontSize);slide.addText(t,{x:0.55,y:y,w:12.2,h:0.7,fontSize:Math.min(13,fs),color:getElColor(p),fontFace:'Calibri',valign:'top',lineSpacingMultiple:1.5,wrap:true});y+=0.8;added++;});
+      var pin=sec.querySelector('.pin');
+      if(pin){slide.addText(textOf(pin),{x:0.55,y:7.0,w:6,h:0.3,fontSize:8,color:resolveColor(vars['--c-fg-3'],vars)||'AAAAAA',fontFace:'Calibri',charSpacing:2});}
+    }
+    function doExport(){
+      if(typeof PptxGenJS==='undefined'){alert('PptxGenJS 未加载');return;}
+      var btn=document.getElementById('pptx-export-btn');
+      if(btn){btn.textContent='导出中...';btn.disabled=true;}
+      try{
+        pptx=new PptxGenJS(); pptx.layout='LAYOUT_WIDE';
+        var vars=getCssVars();
+        document.querySelectorAll('.reveal .slides > section').forEach(function(sec){
+          var nested=sec.querySelectorAll(':scope > section');
+          var list=nested.length?Array.from(nested):[sec];
+          list.forEach(function(s){var slide=pptx.addSlide();exportSection(slide,s,vars);});
+        });
+        var name=(document.title||'presentation').replace(/[^\w一-鿿\-]/g,'_');
+        pptx.writeFile({fileName:name+'.pptx'}).then(function(){if(btn){btn.textContent='已导出';setTimeout(function(){btn.textContent=BTN_TEXT;btn.disabled=false;},2000);}});
+      }catch(e){console.error(e);alert('导出失败: '+e.message);if(btn){btn.textContent=BTN_TEXT;btn.disabled=false;}}
+    }
+    function init(){
+      var btn=document.createElement('button');
+      btn.id='pptx-export-btn';btn.textContent=BTN_TEXT;
+      btn.setAttribute('aria-label','导出 PPTX');
+      btn.setAttribute('style','position:fixed;top:16px;right:16px;z-index:9999;padding:6px 12px;background:#121821;color:#e6edf5;border:1px solid rgba(255,255,255,0.12);border-radius:6px;cursor:pointer;font-size:12px;opacity:0;transition:opacity 0.2s;font-family:system-ui,sans-serif;');
+      btn.onclick=doExport;
+      btn.onmouseenter=function(){btn.style.opacity='1';};
+      btn.onfocus=function(){btn.style.opacity='1';};
+      btn.onmouseleave=function(){btn.style.opacity='0';};
+      btn.onblur=function(){btn.style.opacity='0';};
+      document.body.appendChild(btn);
+      document.addEventListener('mousemove',function(e){btn.style.opacity=(e.clientY<76&&e.clientX>window.innerWidth-110)?'0.9':'0';});
+      document.addEventListener('fullscreenchange',function(){btn.style.display=document.fullscreenElement?'none':'';});
+    }
+    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init); else init();
+  })();
   </script>
 </body>
 </html>

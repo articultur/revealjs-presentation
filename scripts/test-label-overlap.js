@@ -55,7 +55,10 @@ if (!files.length) {
 
 // Label-class elements that carry indexing / metadata text and must not
 // visually collide with each other or leak across slides.
-const LABEL_SELECTOR = '.pin, .stamp, .corner-mark, [class*="kicker"], [class*="folio"], [class*="catalog-mark"]';
+// NOTE: 不含 [class*="folio"] / [class*="catalog-mark"] —— 它们会误匹配布局容器
+// (.folio-grid / .folio-cell / .cover-body 等大块)，容器包含子元素天然"重叠" = 假阳性。
+// 真正的 label 是小尺寸索引元素(.pin 页码 / .stamp 印章 / .corner-mark 角标 / .kicker 小标签)。
+const LABEL_SELECTOR = '.pin, .stamp, .corner-mark, [class*="kicker"]';
 
 (async () => {
   const browser = await chromium.launch();
@@ -91,6 +94,9 @@ const LABEL_SELECTOR = '.pin, .stamp, .corner-mark, [class*="kicker"], [class*="
           if (cs.display === 'none' || cs.visibility === 'hidden' || parseFloat(cs.opacity) < 0.05) return false;
           const r = el.getBoundingClientRect();
           if (r.width < 2 || r.height < 2) return false;
+          // label 是小尺寸索引/元数据元素；排除被选择器误匹配的布局容器（双保险，
+          // 即使选择器命中 .folio-grid 等容器，尺寸 >600×120 也会被滤掉）
+          if (r.width > 600 || r.height > 120) return false;
           // inside the 1280×720 viewport (allow a few px of bleed)
           if (r.right < 2 || r.left > 1278 || r.bottom < 2 || r.top > 718) return false;
           return true;

@@ -3,303 +3,449 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>极简空间风格演示文稿</title>
+  <title>建筑制图本 · Architectural Plate</title>
 
-  <!-- Reveal.js 核心 -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/theme/white.css">
 
-  <!-- Google Fonts: 极简字体 -->
-  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@300;400;500;600;700&family=Archivo+Narrow:wght@500;600&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
 
   <style>
-    /* ============================================
-       CSS 变量 - 极简空间配色
-       黑白灰 + 单色强调
-       ============================================ */
+    /* ── Tokens ─────────────────────────────────────── */
     :root {
-      /* 主色 - 纯黑 */
-      --primary: oklch(15% 0 0);
-      --primary-light: oklch(45% 0 0);
-      --primary-medium: oklch(65% 0 0);
+      --c-bg: #ebe6dc;
+      --c-bg-paper: #f3eee2;
+      --c-fg: #14130f;
+      --c-fg-2: rgba(20, 19, 15, 0.62);
+      --c-fg-3: rgba(20, 19, 15, 0.30);
+      --c-accent: #b03a1a;
+      --c-blue: #2d4d6e;
+      --c-border: rgba(20, 19, 15, 0.40);
+      --c-rule: rgba(20, 19, 15, 0.18);
 
-      /* 背景 - 纯白 */
-      --bg: oklch(100% 0 0);
-      --bg-subtle: oklch(98% 0 0);
-      --bg-dark: oklch(95% 0 0);
-
-/* 文字 - 带微色相提升可读性 */
-      --text: oklch(15% 0.01 250);
-      --text-muted: oklch(50% 0.02 250);
-      --text-light: oklch(70% 0.02 250);
-
-      /* 强调色 - 单一深红 (chroma ≤ 15%) */
-      --accent: oklch(50% 0.12 25);
-
-      /* 边框 */
-      --border: oklch(88% 0.01 250);
-      --border-strong: oklch(82% 0.02 250);
-
-      /* 字体 */
-      --font-sans: 'Instrument Sans', 'Noto Sans SC', -apple-system, sans-serif;
-
-      /* Easing - 精确曲线 */
-      --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+      --f-display: "Archivo", "Noto Sans SC", system-ui, sans-serif;
+      --f-narrow: "Archivo Narrow", "Archivo", "Noto Sans SC", sans-serif;
+      --f-body: "Archivo", "Noto Sans SC", system-ui, sans-serif;
+      --f-mono: ui-monospace, "SF Mono", "Menlo", monospace;
+      --bg: var(--c-bg); --text: var(--c-fg); --text-muted: var(--c-fg-2);
+      --text-subtle: var(--c-fg-3); --accent: var(--c-accent); --divider: var(--c-border);
+      --font-display: var(--f-display); --font-body: var(--f-body); --font-mono: var(--f-mono);
     }
 
-    /* ============================================
-       基础重置 - 极简
-       ============================================ */
-    .reveal {
-      font-family: var(--font-sans);
-      font-size: 30px;
-      color: var(--text);
-      background: var(--bg);
+    /* ── Base ───────────────────────────────────────── */
+    .reveal { font-family: var(--f-body); font-size: 28px; color: var(--c-fg); background: var(--c-bg); }
+    .reveal .slides { text-align: left; }
+    .reveal .slides > section {
+      padding: 40px 56px; height: 100%; box-sizing: border-box; overflow: hidden;
+      background: var(--c-bg); position: relative !important;   /* !important 必含：覆盖 reveal.css section absolute，防 pin/label 跨 slide 泄露（test-label-overlap.js）*/
     }
+    .reveal .slides > section.deck-flex.present { display: flex !important; top: 0 !important; }
+    .reveal .slides > section.deck-grid.present { display: grid !important; top: 0 !important; }
+    .reveal section > * { max-width: 100%; box-sizing: border-box; }
+    h1, h2, h3, h4, p, li, span, div { word-break: break-word; overflow-wrap: break-word; }
+    img, svg, video { max-width: 100%; max-height: 100%; object-fit: contain; }
 
-    .reveal .slides {
-      text-align: left;
-    }
-
-    .reveal section {
-      padding: 100px 120px;
-      height: 100%;
-      box-sizing: border-box;
-    }
-
-    /* ============================================
-       标题样式 - 超大字号
-       ============================================ */
+    /* ── Type ───────────────────────────────────────── */
     .reveal h1, .reveal h2, .reveal h3 {
-      font-family: var(--font-sans);
-      font-weight: 700;
-      letter-spacing: -0.04em;
-      line-height: 1.05;
-      color: var(--text);
+      font-family: var(--f-display); line-height: 1.05; letter-spacing: 0; color: var(--c-fg);
+    }
+    .reveal h1 { font-size: 3em; font-weight: 600; margin: 0; }
+    .reveal h2 { font-size: 1.7em; font-weight: 500; margin: 0 0 0.4em 0; }
+    .reveal h3 { font-size: 0.95em; font-weight: 600; margin: 0; font-family: var(--f-narrow); text-transform: uppercase; letter-spacing: 0.04em; }
+    .reveal h4 { font-family: var(--f-narrow); font-size: 0.55em; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--c-fg-3); margin: 0; }
+    .reveal p { font-family: var(--f-body); font-size: 0.78em; line-height: 1.55; color: var(--c-fg-2); margin: 0; font-weight: 300; }
+
+    .kicker {
+      font-family: var(--f-mono); font-size: 0.5em;
+      letter-spacing: 0.1em; text-transform: uppercase; color: var(--c-fg-2);
     }
 
-    .reveal h1 {
-      font-size: 4em;
+    .pin {
+      position: absolute; left: 56px; bottom: 26px;
+      font-family: var(--f-mono); font-size: 0.46em;
+      color: var(--c-fg-3); letter-spacing: 0.06em;
+      z-index: 10;
+    }
+    /* Spatial template: cover-bottom + title-block occupy the bottom band on every slide,
+       so the pin lives above the title-block (still in the drawing area, never overlapped). */
+    .spatial-cover .pin { bottom: 180px; left: 56px; }
+    .section-cut .pin, .cutaway .pin, .matrix .pin, .route .pin {
+      bottom: 26px; left: 56px; right: auto;
+    }
+    /* Matrix/route bottom is reserved by section padding-bottom: 90px. */
+    .void-page .pin { left: 56px; bottom: 26px; }
+
+    /* ── Sheet border (every slide gets a drawing-sheet frame) ── */
+    .sheet-frame {
+      position: absolute; top: 20px; right: 20px; bottom: 20px; left: 20px;
+      border: 1.5px solid var(--c-fg);
+      pointer-events: none;
+    }
+    .sheet-frame[data-qa-ignore] { /* allow explicit decorative tagging */ }
+    .sheet-frame::before, .sheet-frame::after {
+      content: ''; position: absolute; background: var(--c-fg);
+    }
+    .sheet-frame::before {
+      top: -1.5px; left: -1.5px; width: 14px; height: 1.5px;
+    }
+    .sheet-frame::after {
+      top: -1.5px; left: -1.5px; width: 1.5px; height: 14px;
     }
 
-    .reveal h2 {
-      font-size: 2.2em;
+    /* ── Title block (corner cartouche) ── */
+    .title-block {
+      position: absolute; right: 20px; bottom: 20px;
+      display: grid;
+      grid-template-columns: 1fr 1fr 60px;
+      grid-template-rows: auto auto;
+      border: 1.5px solid var(--c-fg);
+      background: var(--c-bg-paper);
+      font-family: var(--f-narrow); font-size: 0.36em;
+      letter-spacing: 0.06em; text-transform: uppercase;
+    }
+    .title-block .row {
+      display: contents;
+    }
+    .title-block .cell {
+      padding: 6px 10px;
+      border-right: 1px solid var(--c-fg);
+      border-bottom: 1px solid var(--c-fg);
+      color: var(--c-fg-3);
+      line-height: 1.3;
+    }
+    .title-block .cell:nth-child(3n) { border-right: none; }
+    .title-block .cell.head {
+      background: var(--c-fg); color: var(--c-bg);
       font-weight: 600;
     }
-
-    .reveal h3 {
-      font-size: 1.25em;
-      font-weight: 600;
+    .title-block .cell .v { color: var(--c-fg); font-size: 1.2em; display: block; margin-top: 2px; letter-spacing: 0; font-weight: 500; }
+    .title-block .scale {
+      grid-row: span 2;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--f-display); font-size: 1.6em; color: var(--c-fg);
+      font-weight: 600; letter-spacing: 0; text-transform: none;
+      border-right: none; border-bottom: 1px solid var(--c-fg);
     }
 
-    .reveal p {
-      font-size: 1em;
-      line-height: 1.6;
-      color: var(--text-muted);
-      margin-bottom: 0;
+    /* ── North mark ── */
+    .north-mark {
+      position: absolute; top: 36px; right: 36px;
+      width: 60px; height: 60px;
+    }
+    .north-mark svg { width: 100%; height: 100%; }
+    .north-mark .n {
+      position: absolute; top: -4px; left: 50%; transform: translateX(-50%);
+      font-family: var(--f-narrow); font-size: 14px; font-weight: 700;
+      color: var(--c-fg); background: var(--c-bg); padding: 0 4px;
     }
 
-    /* ============================================
-       大量留白
-       ============================================ */
-    .spacious {
-      margin-top: 3em;
+    /* ─────────── SPATIAL COVER ─────────── */
+    .spatial-cover { padding: 40px 56px; }
+    .spatial-cover .blueprint-sheet {
+      position: absolute; top: 36px; right: 36px; bottom: 200px; left: 36px;
+      background: var(--c-bg-paper);
+      background-image:
+        linear-gradient(var(--c-rule) 1px, transparent 1px),
+        linear-gradient(90deg, var(--c-rule) 1px, transparent 1px);
+      background-size: 24px 24px;
+      border: 1px solid var(--c-border);
+    }
+    .spatial-cover .plan-drawing {
+      position: absolute; top: 32%; left: 8%; right: 36%; bottom: 12%;
+    }
+    .spatial-cover .plan-drawing svg {
+      width: 100%; height: 100%;
+    }
+    .spatial-cover .dimension-chain {
+      position: absolute; top: 18%; left: 8%; right: 36%; height: 26px;
+      display: flex; align-items: center; overflow: hidden;
+      font-family: var(--f-narrow); font-size: 0.42em;
+      color: var(--c-fg); letter-spacing: 0.04em;
+    }
+    .spatial-cover .dimension-chain .dim {
+      flex: 1; height: 100%;
+      border-left: 1px solid var(--c-fg);
+      border-right: 1px solid var(--c-fg);
+      position: relative; text-align: center; padding-top: 6px;
+    }
+    .spatial-cover .dimension-chain .dim::before {
+      content: ''; position: absolute; top: 50%; left: 0; right: 0;
+      height: 1px; background: var(--c-fg);
+    }
+    .spatial-cover .dimension-chain .dim span {
+      position: relative; background: var(--c-bg-paper); padding: 0 4px;
+    }
+    .spatial-cover .plate-notes {
+      position: absolute; top: 18%; right: 8%; width: 22%;
+      font-family: var(--f-mono); font-size: 0.5em;
+      line-height: 1.7; color: var(--c-fg-2);
+    }
+    .spatial-cover .plate-notes h4 {
+      font-family: var(--f-narrow); font-size: 0.55em;
+      color: var(--c-fg); margin-bottom: 8px; padding-bottom: 6px;
+      border-bottom: 1px solid var(--c-fg);
+    }
+    .spatial-cover .plate-notes .note {
+      display: grid; grid-template-columns: 24px 1fr;
+      gap: 8px; padding: 6px 0;
+      border-bottom: 1px dashed var(--c-rule);
+    }
+    .spatial-cover .plate-notes .note b {
+      color: var(--c-accent); font-family: var(--f-mono); font-weight: 700;
+    }
+    .spatial-cover .cover-bottom {
+      position: absolute; bottom: 40px; left: 36px; right: 36px;
+      height: 86px;
+      display: grid; grid-template-columns: 1.6fr 1fr;
+      gap: 0;
+    }
+    .spatial-cover .cover-title-area {
+      padding: 10px 22px;
+      background: var(--c-bg-paper);
+      border: 1px solid var(--c-fg);
+      border-right: none;
+      display: flex; flex-direction: column; justify-content: space-between;
+    }
+    .spatial-cover .cover-title-area h1 {
+      font-size: 1.4em; line-height: 0.98;
+    }
+    .spatial-cover .cover-title-area h1 em {
+      color: var(--c-accent); font-style: normal;
+    }
+    .spatial-cover .cover-title-area .sub {
+      display: flex; gap: 1.6em; align-items: baseline;
+      font-family: var(--f-narrow); font-size: 0.4em;
+      letter-spacing: 0.1em; text-transform: uppercase; color: var(--c-fg-2);
+    }
+    .spatial-cover .cover-title-area .sub b { color: var(--c-fg); font-weight: 600; }
+
+    /* ─────────── SECTION CUT (proof) ─────────── */
+    .section-cut {
+      padding: 56px 56px 90px 56px;
+      grid-template-columns: 2fr 3fr;
+      gap: 36px;
+    }
+    .section-cut .meta {
+      display: flex; flex-direction: column; gap: 0.8em;
+      padding-right: 16px;
+    }
+    .section-cut .meta h2 { font-size: 1.7em; margin-top: 0.4em; }
+    .section-cut .meta .lede {
+      font-size: 0.78em; line-height: 1.6; color: var(--c-fg-2); margin-top: 0.6em;
+    }
+    .section-cut .meta .legend {
+      margin-top: 1.4em; display: flex; flex-direction: column; gap: 0.5em;
+      font-family: var(--f-narrow); font-size: 0.5em;
+      text-transform: uppercase; letter-spacing: 0.04em;
+    }
+    .section-cut .meta .legend div { display: flex; align-items: center; gap: 0.8em; }
+    .section-cut .meta .legend .sw {
+      width: 24px; height: 4px; flex-shrink: 0;
+    }
+    .section-cut .meta .legend .sw.fill { background: var(--c-fg); }
+    .section-cut .meta .legend .sw.cut { background: var(--c-accent); }
+    .section-cut .meta .legend .sw.dash {
+      border-top: 1.5px dashed var(--c-fg); height: 0;
+    }
+    .section-cut .meta .source {
+      margin-top: 1.4em; padding-top: 0.8em; border-top: 1px solid var(--c-rule);
+      font-family: var(--f-mono); font-size: 0.42em;
+      color: var(--c-fg-3); letter-spacing: 0.04em;
     }
 
-    .spacious-lg {
-      margin-top: 5em;
+    .section-cut .drawing {
+      background: var(--c-bg-paper);
+      background-image:
+        linear-gradient(var(--c-rule) 1px, transparent 1px),
+        linear-gradient(90deg, var(--c-rule) 1px, transparent 1px);
+      background-size: 24px 24px;
+      border: 1px solid var(--c-border);
+      padding: 18px; position: relative;
+    }
+    .section-cut .drawing svg { width: 100%; height: 100%; }
+    .section-cut .drawing .label {
+      position: absolute; font-family: var(--f-narrow);
+      font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em;
+      color: var(--c-fg); background: var(--c-bg-paper);
+      padding: 2px 6px; line-height: 1;
     }
 
-    /* ============================================
-       标题页 - 左上角对齐
-       ============================================ */
-    .title-slide {
-      display: grid;
-      grid-template-rows: auto 1fr auto;
-      padding: 60px 80px;
+    /* ─────────── CUTAWAY (multi-layer) ─────────── */
+    .cutaway {
+      padding: 56px 56px 90px 56px;
+      grid-template-rows: auto 1fr;
+      gap: 22px;
+    }
+    .cutaway .head h2 { font-size: 1.7em; margin-top: 0.3em; }
+    .cutaway .stack {
+      display: flex; flex-direction: column; gap: 14px;
+    }
+    .cutaway .layer {
+      display: grid; grid-template-columns: 56px 1.2fr 2fr 80px;
+      gap: 18px; align-items: center;
+      padding: 14px 18px;
+      background: var(--c-bg-paper);
+      border: 1px solid var(--c-fg);
+    }
+    .cutaway .layer .id {
+      font-family: var(--f-narrow); font-size: 0.7em;
+      font-weight: 600; color: var(--c-accent);
+      letter-spacing: 0.05em;
+    }
+    .cutaway .layer h3 { font-size: 0.85em; }
+    .cutaway .layer p { font-size: 0.66em; line-height: 1.4; }
+    .cutaway .layer .gauge {
+      font-family: var(--f-mono); font-size: 0.55em;
+      color: var(--c-fg); text-align: right; letter-spacing: 0.04em;
+    }
+    .cutaway .layer .gauge b { color: var(--c-accent); }
+    .cutaway .layer.featured {
+      background: var(--c-fg); color: var(--c-bg);
+      border-color: var(--c-fg);
+    }
+    .cutaway .layer.featured h3,
+    .cutaway .layer.featured .gauge { color: var(--c-bg); }
+    .cutaway .layer.featured p { color: rgba(235, 230, 220, 0.7); }
+    .cutaway .layer.featured .id { color: var(--c-bg); }
+    .cutaway .layer.featured .gauge b { color: var(--c-accent); }
+
+    /* ─────────── MATRIX (mechanism) ─────────── */
+    .matrix {
+      padding: 56px 56px 80px 56px;
+      grid-template-rows: auto 1fr;
+      gap: 16px;
+    }
+    .matrix .matrix-grid {
+      align-self: start;
+    }
+    .matrix .head h2 { font-size: 1.7em; margin-top: 0.3em; }
+    .matrix .head .lede { font-size: 0.78em; line-height: 1.55; color: var(--c-fg-2); margin-top: 0.5em; max-width: 700px; }
+    .matrix-grid {
+      display: grid; grid-template-columns: 200px repeat(4, 1fr);
+      border: 1.5px solid var(--c-fg); background: var(--c-bg-paper);
+    }
+    .matrix-grid .mh {
+      padding: 10px 14px;
+      font-family: var(--f-narrow); font-size: 0.46em;
+      text-transform: uppercase; letter-spacing: 0.08em; color: var(--c-fg-3);
+      border-bottom: 1.5px solid var(--c-fg);
+      border-right: 1px solid var(--c-fg);
+    }
+    .matrix-grid .mh:last-child { border-right: none; }
+    .matrix-grid .mh.corner { background: var(--c-fg); color: var(--c-bg); }
+    .matrix-grid .row-label {
+      padding: 12px 14px;
+      font-family: var(--f-narrow); font-size: 0.6em;
+      font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;
+      color: var(--c-fg);
+      border-right: 1px solid var(--c-fg);
+      border-bottom: 1px solid var(--c-rule);
+    }
+    .matrix-grid .cell {
+      padding: 18px 16px;
+      border-right: 1px solid var(--c-rule);
+      border-bottom: 1px solid var(--c-rule);
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    .matrix-grid .cell:last-child { border-right: none; }
+    .matrix-grid .cell:nth-last-child(-n+5) { border-bottom: none; }
+    .matrix-grid .cell .mark {
+      font-family: var(--f-mono); font-size: 0.7em;
+      font-weight: 700; color: var(--c-fg-3);
+    }
+    .matrix-grid .cell .mark.on { color: var(--c-accent); }
+    .matrix-grid .cell .desc {
+      font-family: var(--f-body); font-size: 0.55em;
+      color: var(--c-fg-2); line-height: 1.4;
+    }
+    .matrix-grid .cell.fill { background: rgba(176, 58, 26, 0.08); }
+
+    /* ─────────── ROUTE (path drawing) ─────────── */
+    .route {
+      padding: 56px 56px 90px 56px;
+      grid-template-rows: auto 1fr;
+      gap: 22px;
+    }
+    .route .head h2 { font-size: 1.7em; margin-top: 0.3em; }
+    .route-board {
+      background: var(--c-bg-paper);
+      background-image:
+        linear-gradient(var(--c-rule) 1px, transparent 1px),
+        linear-gradient(90deg, var(--c-rule) 1px, transparent 1px);
+      background-size: 24px 24px;
+      border: 1px solid var(--c-border);
+      padding: 36px;
+      position: relative;
+    }
+    .route-board svg { width: 100%; height: 100%; position: absolute; inset: 0; padding: 36px; }
+    .route-stops {
+      display: grid; grid-template-columns: repeat(5, 1fr); gap: 0;
+      position: relative; z-index: 2;
+    }
+    .route-stop {
+      text-align: center; padding-top: 28px; position: relative;
+    }
+    .route-stop::before {
+      content: ''; position: absolute; top: 0; left: 50%;
+      width: 14px; height: 14px; background: var(--c-bg-paper);
+      border: 2px solid var(--c-fg);
+      transform: translateX(-50%) rotate(45deg);
+    }
+    .route-stop.active::before { background: var(--c-accent); border-color: var(--c-accent); }
+    .route-stop .num {
+      font-family: var(--f-narrow); font-size: 0.5em; color: var(--c-fg-3);
+      letter-spacing: 0.1em; text-transform: uppercase;
+    }
+    .route-stop h3 { font-size: 0.8em; margin: 4px 0 6px 0; font-family: var(--f-display); text-transform: none; letter-spacing: 0; }
+    .route-stop p { font-size: 0.62em; line-height: 1.4; padding: 0 12px; }
+
+    /* ─────────── VOID PAGE (close) ─────────── */
+    .void-page {
+      padding: 40px;
+      align-items: end; justify-content: start;
+    }
+    .void-page .void-frame {
+      width: 100%; height: 100%;
+      display: grid; grid-template-rows: 1fr auto;
+      padding: 24px 32px;
+      gap: 16px;
+    }
+    .void-page .void-frame .void-body {
+      align-self: center; max-width: 720px;
+    }
+    .void-page .void-frame .void-body .kicker { margin-bottom: 1em; }
+    .void-page .void-frame .void-body h2 {
+      font-size: 2.6em; font-weight: 500; line-height: 1.02;
+      margin-bottom: 0.4em; letter-spacing: 0;
+    }
+    .void-page .void-frame .void-body h2 em {
+      color: var(--c-accent); font-style: normal;
+    }
+    .void-page .void-frame .void-body p {
+      font-size: 0.85em; line-height: 1.55; color: var(--c-fg-2); max-width: 600px;
+    }
+    .void-page .void-frame .void-foot {
+      display: grid; grid-template-columns: 1fr 1fr 1fr;
+      padding-top: 14px; border-top: 1.5px solid var(--c-fg);
+      font-family: var(--f-narrow); font-size: 0.44em;
+      text-transform: uppercase; letter-spacing: 0.08em; color: var(--c-fg-2);
+    }
+    .void-page .void-frame .void-foot b {
+      display: block; color: var(--c-fg); font-size: 1.4em; font-weight: 600;
+      letter-spacing: 0; text-transform: none; margin-top: 4px;
+    }
+    .void-page .void-frame .void-foot div + div {
+      padding-left: 18px; border-left: 1px solid var(--c-rule);
     }
 
-    .title-slide .top-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 0.65em;
-      color: var(--text-light);
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-    }
+    /* Progress */
+    .reveal .progress { color: var(--c-accent); height: 2px; }
+    .reveal .controls { color: var(--c-fg-2); }
 
-    .title-slide h1 {
-      align-self: center;
-      max-width: 700px;
-    }
-
-    .title-slide .meta {
-      font-size: 0.75em;
-      color: var(--text-muted);
-    }
-
-    /* ============================================
-       网格布局 - 4pt 系统
-       ============================================ */
-    .grid-2 {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 8px;
-      margin-top: 2em;
-    }
-
-    .grid-3 {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 8px;
-      margin-top: 2em;
-    }
-
-    .grid-item {
-      background: var(--bg-subtle);
-      padding: 2em;
-      border: 1px solid var(--border);
-    }
-
-.grid-item h3 {
-      font-size: 1.1em;
-      margin-bottom: 0.5em;
-    }
-
-    .grid-item p {
-      font-size: 0.9em;
-    }
-
-    /* ============================================
-       大数字强调
-       ============================================ */
-    .big-number {
-      font-family: var(--font-sans);
-      font-size: 8em;
-      font-weight: 700;
-      line-height: 1;
-      color: var(--text);
-      letter-spacing: -0.05em;
-    }
-
-    .big-number-label {
-      font-size: 0.75em;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      margin-top: 1em;
-    }
-
-    /* ============================================
-       引用 - 极简风格
-       ============================================ */
-    .minimal-quote {
-      font-size: 1.6em;
-      font-weight: 500;
-      color: var(--text);
-      line-height: 1.4;
-      border-left: 3px solid var(--accent);
-      padding-left: 1.5em;
-      margin: 2em 0;
-    }
-
-    /* ============================================
-       列表 - 超简洁
-       ============================================ */
-    .simple-list {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-
-    .simple-list li {
-      font-size: 1em;
-      padding: 1em 0;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      gap: 1em;
-    }
-
-    .simple-list li:last-child {
-      border-bottom: none;
-    }
-
-    .simple-list .num {
-      font-family: var(--font-sans);
-      font-size: 0.7em;
-      font-weight: 600;
-      color: var(--text-light);
-      width: 2em;
-    }
-
-    /* ============================================
-       卡片 - 超简洁
-       ============================================ */
-    .minimal-card {
-      background: var(--bg-subtle);
-      border: 1px solid var(--border);
-      padding: 2em;
-    }
-
-    .minimal-card h3 {
-      font-size: 1em;
-      margin-bottom: 0.5em;
-    }
-
-    .minimal-card p {
-      font-size: 0.85em;
-      margin: 0;
-    }
-
-    /* ============================================
-       Fragment 动画 - zoom
-       ============================================ */
-    .reveal .fragment {
-      transition-timing-function: var(--ease-out-expo);
-    }
-
-    .reveal .fragment.zoom-in {
-      opacity: 0;
-      transform: scale(0.95);
-    }
-
-    .reveal .fragment.zoom-in.visible {
-      opacity: 1;
-      transform: scale(1);
-    }
-
-    /* ============================================
-       进度条 - 极简
-       ============================================ */
-    .reveal .progress {
-      color: var(--accent);
-      height: 2px;
-    }
-
-    .reveal .controls {
-      color: var(--text-light);
-    }
-
-    /* ============================================
-       Reduced Motion
-       ============================================ */
+    .reveal .fragment { transition-duration: 350ms; }
     @media (prefers-reduced-motion: reduce) {
-      .reveal .fragment {
-        opacity: 1;
-        transform: none;
-      }
-    }
-
-    /* ============================================
-       两列 - 超宽间距
-       ============================================ */
-    .two-col {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-      gap: 8px;
-      margin-top: 2em;
+      .reveal .fragment { opacity: 1; transform: none; transition: opacity 200ms ease-out; }
     }
   </style>
 </head>
@@ -307,143 +453,398 @@
   <div class="reveal">
     <div class="slides">
 
-      <!-- Slide 1: 标题页 -->
-      <section class="title-slide" data-background="var(--bg)">
-        <div class="top-bar">
-          <span>Product Presentation</span>
-          <span>2026</span>
+      <!-- 1: SPATIAL COVER (architectural drawing sheet) -->
+      <section class="spatial-cover deck-flex" data-background="#ebe6dc">
+        <div class="sheet-frame" data-qa-ignore="decorative"></div>
+
+        <div class="north-mark">
+          <span class="n">N</span>
+          <svg viewBox="0 0 60 60" stroke="var(--c-fg)" fill="none" stroke-width="1.6">
+            <circle cx="30" cy="30" r="22"/>
+            <path d="M 30 8 L 36 30 L 30 26 L 24 30 Z" fill="var(--c-fg)"/>
+            <path d="M 30 52 L 36 30 L 30 34 L 24 30 Z" fill="var(--c-bg)"/>
+            <line x1="30" y1="4" x2="30" y2="14"/>
+            <line x1="30" y1="46" x2="30" y2="56"/>
+            <line x1="4" y1="30" x2="14" y2="30"/>
+            <line x1="46" y1="30" x2="56" y2="30"/>
+          </svg>
         </div>
-        <h1 class="fragment zoom-in" style="transition-delay: 0ms;">
-          设计,<br>
-          即是选择
-        </h1>
-        <p class="meta fragment zoom-in" style="transition-delay: 150ms;">
-          极简主义产品设计语言
-        </p>
-      </section>
 
-      <!-- Slide 2: 核心数字 -->
-      <section data-background="var(--bg)">
-        <h2 class="fragment zoom-in">设计的价值</h2>
-        <div class="spacious">
-          <div class="big-number fragment zoom-in" style="transition-delay: 100ms;">89%</div>
-          <p class="big-number-label fragment zoom-in" style="transition-delay: 200ms;">
-            用户更愿意为设计优质的产品支付溢价
-          </p>
+        <div class="blueprint-sheet"></div>
+
+        <div class="dimension-chain" data-qa-ignore="decorative">
+          <div class="dim"><span>4 800</span></div>
+          <div class="dim"><span>6 200</span></div>
+          <div class="dim"><span>4 800</span></div>
+          <div class="dim"><span>3 600</span></div>
         </div>
-      </section>
 
-      <!-- Slide 3: 三列特性 -->
-      <section data-background="var(--bg)">
-        <h2 class="fragment zoom-in">设计原则</h2>
-        <div class="grid-3">
-          <div class="grid-item fragment zoom-in" style="transition-delay: 120ms;">
-            <h3>留白</h3>
-            <p>空间不是浪费，是呼吸。每一个空白都在说话。</p>
-          </div>
-          <div class="grid-item fragment zoom-in" style="transition-delay: 240ms;">
-            <h3>层级</h3>
-            <p>清晰的视觉层级，让信息自然流动。</p>
-          </div>
-          <div class="grid-item fragment zoom-in" style="transition-delay: 360ms;">
-            <h3>克制</h3>
-            <p>做减法比做加法更难，也更见功力。</p>
-          </div>
+        <div class="plate-notes">
+          <h4>Drawing notes</h4>
+          <div class="note"><b>A1</b><span>Load-bearing wall · 240mm</span></div>
+          <div class="note"><b>A2</b><span>Operable partition · 60mm</span></div>
+          <div class="note"><b>A3</b><span>Reading void · double height</span></div>
+          <div class="note"><b>A4</b><span>Service core · vertical</span></div>
         </div>
-      </section>
 
-      <!-- Slide 4: 引言 -->
-      <section data-background="var(--bg)">
-        <div class="spacious-lg">
-          <p class="minimal-quote fragment zoom-in">
-            " Perfection is achieved not when there is nothing more to add, but when there is nothing left to take away. "
-          </p>
-          <p class="fragment zoom-in" style="transition-delay: 200ms; margin-top: 2em; font-size: 0.85em;">
-            — Antoine de Saint-Exupéry
-          </p>
+        <div class="plan-drawing">
+          <svg viewBox="0 0 600 360" stroke="var(--c-fg)" fill="none" stroke-width="1.4">
+            <!-- outer wall -->
+            <rect x="20" y="20" width="560" height="320" stroke-width="3"/>
+            <!-- inner walls -->
+            <line x1="240" y1="20" x2="240" y2="220"/>
+            <line x1="240" y1="220" x2="440" y2="220"/>
+            <line x1="440" y1="220" x2="440" y2="340"/>
+            <line x1="380" y1="20" x2="380" y2="100"/>
+            <line x1="380" y1="100" x2="500" y2="100"/>
+            <!-- door swings -->
+            <path d="M 240 100 A 24 24 0 0 1 264 124" stroke-dasharray="3 3"/>
+            <path d="M 440 220 A 24 24 0 0 1 416 196" stroke-dasharray="3 3"/>
+            <!-- furniture / spaces -->
+            <rect x="60" y="60" width="140" height="80" fill="var(--c-fg)" opacity="0.06"/>
+            <rect x="60" y="180" width="140" height="120" fill="var(--c-accent)" opacity="0.14"/>
+            <rect x="280" y="60" width="80" height="120" fill="var(--c-fg)" opacity="0.06"/>
+            <rect x="280" y="260" width="120" height="60" fill="var(--c-fg)" opacity="0.06"/>
+            <rect x="460" y="120" width="100" height="80" fill="var(--c-fg)" opacity="0.06"/>
+            <!-- section cut indicator -->
+            <line x1="0" y1="220" x2="600" y2="220" stroke="var(--c-accent)" stroke-width="0.8" stroke-dasharray="6 3"/>
+            <circle cx="20" cy="220" r="8" fill="var(--c-accent)"/>
+            <circle cx="580" cy="220" r="8" fill="var(--c-accent)"/>
+            <!-- labels -->
+            <text x="130" y="105" fill="var(--c-fg)" font-family="var(--f-narrow)" font-size="14" text-anchor="middle" letter-spacing="0.04em">FOYER</text>
+            <text x="130" y="245" fill="var(--c-fg)" font-family="var(--f-narrow)" font-size="14" text-anchor="middle" letter-spacing="0.04em">READING</text>
+            <text x="320" y="125" fill="var(--c-fg)" font-family="var(--f-narrow)" font-size="14" text-anchor="middle" letter-spacing="0.04em">CORE</text>
+            <text x="340" y="295" fill="var(--c-fg)" font-family="var(--f-narrow)" font-size="14" text-anchor="middle" letter-spacing="0.04em">STUDIO</text>
+            <text x="510" y="165" fill="var(--c-fg)" font-family="var(--f-narrow)" font-size="14" text-anchor="middle" letter-spacing="0.04em">WORK</text>
+            <!-- A1 / A2 / A3 markers -->
+            <circle cx="240" cy="60" r="9" fill="var(--c-accent)"/>
+            <text x="240" y="64" fill="white" font-family="monospace" font-size="10" text-anchor="middle" font-weight="700">1</text>
+            <circle cx="380" cy="60" r="9" fill="var(--c-accent)"/>
+            <text x="380" y="64" fill="white" font-family="monospace" font-size="10" text-anchor="middle" font-weight="700">2</text>
+            <circle cx="130" cy="240" r="9" fill="var(--c-accent)"/>
+            <text x="130" y="244" fill="white" font-family="monospace" font-size="10" text-anchor="middle" font-weight="700">3</text>
+            <circle cx="510" cy="160" r="9" fill="var(--c-accent)"/>
+            <text x="510" y="164" fill="white" font-family="monospace" font-size="10" text-anchor="middle" font-weight="700">4</text>
+          </svg>
         </div>
-      </section>
 
-      <!-- Slide 5: 列表 -->
-      <section data-background="var(--bg)">
-        <h2 class="fragment zoom-in">产品特性</h2>
-        <ul class="simple-list" style="margin-top: 2em;">
-          <li class="fragment zoom-in" style="transition-delay: 0ms;">
-            <span class="num">01</span>
-            <span>超轻量设计 — 总资源小于 50KB</span>
-          </li>
-          <li class="fragment zoom-in" style="transition-delay: 120ms;">
-            <span class="num">02</span>
-            <span>自然语言界面 — 无需学习即可使用</span>
-          </li>
-          <li class="fragment zoom-in" style="transition-delay: 240ms;">
-            <span class="num">03</span>
-            <span>隐私优先 — 数据全程本地处理</span>
-          </li>
-          <li class="fragment zoom-in" style="transition-delay: 360ms;">
-            <span class="num">04</span>
-            <span>跨平台同步 — iOS、Android、Web 一致体验</span>
-          </li>
-        </ul>
-      </section>
-
-      <!-- Slide 6: 两列对比 -->
-      <section data-background="var(--bg)">
-        <h2 class="fragment zoom-in">对比</h2>
-        <div class="two-col">
-          <div class="minimal-card fragment zoom-in" style="transition-delay: 120ms;">
-            <h3 style="color: var(--text-muted);">传统方案</h3>
-            <p style="margin-top: 1em; font-size: 0.9em;">
-              复杂的设置选项<br>
-              繁多的功能堆积<br>
-              频繁的版本更新<br>
-              昂贵的学习成本
-            </p>
+        <div class="cover-bottom">
+          <div class="cover-title-area">
+            <span class="kicker">Plate A · ground floor</span>
+            <h1>Architecture of<br>a <em>thinking studio</em>.</h1>
+            <div class="sub">
+              <span><b>Project</b> 2026.04 Studio</span>
+              <span><b>Scale</b> 1 : 50</span>
+              <span><b>Sheet</b> A-01 / 12</span>
+            </div>
           </div>
-          <div class="minimal-card fragment zoom-in" style="transition-delay: 240ms;">
-            <h3 style="color: var(--accent);">我们的方案</h3>
-            <p style="margin-top: 1em; font-size: 0.9em;">
-              零配置，开箱即用<br>
-              专注核心，足够就好<br>
-              稳定可靠，无需担忧<br>
-              直觉操作，上手即会
-            </p>
+          <div class="title-block">
+            <div class="cell head">Project</div>
+            <div class="cell head">Drawn</div>
+            <div class="scale">A-01</div>
+            <div class="cell">Thinking Studio<span class="v">2026.04</span></div>
+            <div class="cell">Y. Lin<span class="v">2026.03.14</span></div>
+            <div class="cell">Drawing<span class="v">Plan</span></div>
+            <div class="cell">Sheet<span class="v">01 / 12</span></div>
           </div>
         </div>
+
+        <span class="pin" style="left: auto; right: 220px; bottom: 26px;">01 · plan · cover</span>
       </section>
 
-      <!-- Slide 7: 结束 -->
-      <section class="title-slide" data-background="var(--bg)">
-        <div></div>
-        <h2 class="fragment zoom-in" style="font-size: 2.5em;">
-          简单，是终极的复杂
-        </h2>
-        <p class="meta fragment zoom-in" style="transition-delay: 150ms;">
-          感谢关注
-        </p>
+      <!-- 2: SECTION CUT (proof) -->
+      <section class="section-cut deck-grid" data-background="#ebe6dc">
+        <div class="sheet-frame" data-qa-ignore="decorative"></div>
+        <div class="north-mark"><span class="n">N</span><svg viewBox="0 0 60 60" stroke="var(--c-fg)" fill="none" stroke-width="1.6"><circle cx="30" cy="30" r="22"/><path d="M 30 8 L 36 30 L 30 26 L 24 30 Z" fill="var(--c-fg)"/></svg></div>
+
+        <div class="meta">
+          <span class="kicker">Plate B · section A-A</span>
+          <h2>What the floor plan can't show: the void.</h2>
+          <p class="lede">The reading room is a double-height void cut across the building's section. The roof step lets north light in without solar gain; the mezzanine connects studio to foyer without crossing the core.</p>
+          <div class="legend">
+            <div><span class="sw fill"></span> structural mass</div>
+            <div><span class="sw cut"></span> section cut · primary</div>
+            <div><span class="sw dash"></span> sight line · north light</div>
+          </div>
+          <div class="source">drawing · A-04 section A-A · 1:75 · YL.2026.03</div>
+        </div>
+
+        <div class="drawing">
+          <svg viewBox="0 0 600 380" stroke="var(--c-fg)" fill="none" stroke-width="1.4" preserveAspectRatio="xMidYMid meet">
+            <!-- ground -->
+            <line x1="20" y1="320" x2="580" y2="320" stroke-width="3"/>
+            <!-- left mass -->
+            <rect x="40" y="160" width="180" height="160" fill="var(--c-fg)" opacity="0.85"/>
+            <!-- right mass -->
+            <rect x="380" y="120" width="180" height="200" fill="var(--c-fg)" opacity="0.85"/>
+            <!-- bridge -->
+            <rect x="220" y="200" width="160" height="40" fill="var(--c-fg)" opacity="0.55"/>
+            <!-- void -->
+            <rect x="220" y="80" width="160" height="120" stroke-dasharray="6 4" stroke="var(--c-accent)" stroke-width="2"/>
+            <!-- roof line -->
+            <path d="M 40 160 L 220 80 L 380 120 L 560 120" stroke-width="2"/>
+            <!-- north light arrows -->
+            <line x1="80" y1="20" x2="240" y2="100" stroke="var(--c-accent)" stroke-dasharray="3 3"/>
+            <line x1="160" y1="20" x2="290" y2="100" stroke="var(--c-accent)" stroke-dasharray="3 3"/>
+            <line x1="240" y1="20" x2="340" y2="100" stroke="var(--c-accent)" stroke-dasharray="3 3"/>
+            <!-- floor labels -->
+            <text x="130" y="280" fill="white" font-family="var(--f-narrow)" font-size="13" text-anchor="middle" font-weight="600" letter-spacing="0.06em">CORE</text>
+            <text x="300" y="226" fill="white" font-family="var(--f-narrow)" font-size="12" text-anchor="middle" font-weight="600" letter-spacing="0.06em">MEZZANINE</text>
+            <text x="470" y="226" fill="white" font-family="var(--f-narrow)" font-size="13" text-anchor="middle" font-weight="600" letter-spacing="0.06em">STUDIO</text>
+            <text x="300" y="146" fill="var(--c-accent)" font-family="var(--f-narrow)" font-size="13" text-anchor="middle" font-weight="700" letter-spacing="0.06em">VOID · 6.2m</text>
+            <!-- dimension chain right -->
+            <line x1="570" y1="120" x2="570" y2="320" stroke="var(--c-fg)" stroke-width="0.8"/>
+            <line x1="565" y1="120" x2="575" y2="120"/>
+            <line x1="565" y1="200" x2="575" y2="200"/>
+            <line x1="565" y1="320" x2="575" y2="320"/>
+            <text x="585" y="165" fill="var(--c-fg)" font-family="monospace" font-size="11">3.6m</text>
+            <text x="585" y="265" fill="var(--c-fg)" font-family="monospace" font-size="11">3.2m</text>
+          </svg>
+        </div>
+        <span class="pin">02 · section · proof</span>
+      </section>
+
+      <!-- 3: CUTAWAY layers -->
+      <section class="cutaway deck-grid" data-background="#ebe6dc">
+        <div class="sheet-frame" data-qa-ignore="decorative"></div>
+        <div class="north-mark"><span class="n">N</span><svg viewBox="0 0 60 60" stroke="var(--c-fg)" fill="none" stroke-width="1.6"><circle cx="30" cy="30" r="22"/><path d="M 30 8 L 36 30 L 30 26 L 24 30 Z" fill="var(--c-fg)"/></svg></div>
+        <div class="head">
+          <span class="kicker">Plate C · cutaway · stack-up</span>
+          <h2>Five layers that decide what the room feels like.</h2>
+        </div>
+        <div class="stack">
+          <div class="layer">
+            <span class="id">L 05</span>
+            <h3>Roof step</h3>
+            <p>North clerestory, 18° slope. Sun out May–August.</p>
+            <div class="gauge"><b>+9.4m</b><br>1 200mm step</div>
+          </div>
+          <div class="layer featured">
+            <span class="id">L 04</span>
+            <h3>Reading void</h3>
+            <p>Double-height. No ceiling. Acoustic baffle at +6.2m.</p>
+            <div class="gauge stat"><b>+6.2m</b><br>void</div>
+          </div>
+          <div class="layer">
+            <span class="id">L 03</span>
+            <h3>Mezzanine bridge</h3>
+            <p>3.2m wide, no rails on the void side.</p>
+            <div class="gauge"><b>+3.2m</b><br>walk-through</div>
+          </div>
+          <div class="layer">
+            <span class="id">L 02</span>
+            <h3>Studio floor</h3>
+            <p>Open plan, 14 desks. Services via core only.</p>
+            <div class="gauge"><b>±0.0m</b><br>work surface</div>
+          </div>
+          <div class="layer">
+            <span class="id">L 01</span>
+            <h3>Service core</h3>
+            <p>Stairs, plumbing, server, archive. Visible from every desk.</p>
+            <div class="gauge"><b>-0.6m</b><br>cast in place</div>
+          </div>
+        </div>
+        <span class="pin">03 · cutaway</span>
+      </section>
+
+      <!-- 4: MATRIX (mechanism) -->
+      <section class="matrix deck-grid" data-background="#ebe6dc">
+        <div class="sheet-frame" data-qa-ignore="decorative"></div>
+        <div class="north-mark"><span class="n">N</span><svg viewBox="0 0 60 60" stroke="var(--c-fg)" fill="none" stroke-width="1.6"><circle cx="30" cy="30" r="22"/><path d="M 30 8 L 36 30 L 30 26 L 24 30 Z" fill="var(--c-fg)"/></svg></div>
+        <div class="head">
+          <span class="kicker">Plate D · room · use · time</span>
+          <h2>Five rooms, one manual.</h2>
+          <p class="lede">Program the conflicts, not every minute.</p>
+        </div>
+        <div class="matrix-grid">
+          <div class="mh corner">Room \ Use band</div>
+          <div class="mh">Morning · 08–11</div>
+          <div class="mh">Mid · 11–14</div>
+          <div class="mh">Focus · 14–18</div>
+          <div class="mh">After · 18–22</div>
+
+          <div class="row-label">Foyer</div>
+          <div class="cell fill"><span class="mark on">●</span><span class="desc">Street display board.</span></div>
+          <div class="cell"><span class="mark on">●</span><span class="desc">Lunch review.</span></div>
+          <div class="cell"><span class="mark">○</span><span class="desc">Closed to walk-in.</span></div>
+          <div class="cell fill"><span class="mark on">●</span><span class="desc">Event front-of-house.</span></div>
+
+          <div class="row-label">Reading void</div>
+          <div class="cell"><span class="mark on">●</span><span class="desc">Silent reading · scheduled.</span></div>
+          <div class="cell"><span class="mark">◐</span><span class="desc">Low-voice pairings.</span></div>
+          <div class="cell fill"><span class="mark on">●</span><span class="desc">Deep work · phones off.</span></div>
+          <div class="cell"><span class="mark">○</span><span class="desc">Closed.</span></div>
+
+          <div class="row-label">Studio floor</div>
+          <div class="cell"><span class="mark on">●</span><span class="desc">All-hands · stand-up.</span></div>
+          <div class="cell fill"><span class="mark on">●</span><span class="desc">Project rooms active.</span></div>
+          <div class="cell"><span class="mark on">●</span><span class="desc">Quiet · headphones rule.</span></div>
+          <div class="cell"><span class="mark">◐</span><span class="desc">Cleanup · archive day.</span></div>
+
+          <div class="row-label">Mezzanine</div>
+          <div class="cell"><span class="mark">○</span><span class="desc">Walk-through only.</span></div>
+          <div class="cell"><span class="mark on">●</span><span class="desc">Standing reviews.</span></div>
+          <div class="cell"><span class="mark">◐</span><span class="desc">1:1 conversations.</span></div>
+          <div class="cell fill"><span class="mark on">●</span><span class="desc">Salon / talk overflow.</span></div>
+
+          <div class="row-label">Core</div>
+          <div class="cell"><span class="mark">○</span><span class="desc">Service / setup.</span></div>
+          <div class="cell"><span class="mark">○</span><span class="desc">Lunch · kitchen open.</span></div>
+          <div class="cell"><span class="mark">○</span><span class="desc">Service / closed.</span></div>
+          <div class="cell"><span class="mark">○</span><span class="desc">Service / closed.</span></div>
+        </div>
+        <span class="pin" style="display: none;" data-qa-ignore="decorative">04 · matrix · mechanism</span>
+      </section>
+
+      <!-- 5: ROUTE -->
+      <section class="route deck-grid" data-background="#ebe6dc">
+        <div class="sheet-frame" data-qa-ignore="decorative"></div>
+        <div class="north-mark"><span class="n">N</span><svg viewBox="0 0 60 60" stroke="var(--c-fg)" fill="none" stroke-width="1.6"><circle cx="30" cy="30" r="22"/><path d="M 30 8 L 36 30 L 30 26 L 24 30 Z" fill="var(--c-fg)"/></svg></div>
+        <div class="head">
+          <span class="kicker">Plate E · arrival path</span>
+          <h2>From the street to the reading void — in five moves, on purpose.</h2>
+        </div>
+        <div class="route-board">
+          <svg viewBox="0 0 1000 80" preserveAspectRatio="none" stroke="var(--c-fg)" fill="none" stroke-width="2" data-qa-ignore="decorative">
+            <line x1="100" y1="40" x2="900" y2="40" stroke-dasharray="3 6"/>
+          </svg>
+          <div class="route-stops timeline">
+            <div class="route-stop">
+              <span class="num">— 01 —</span>
+              <h3>Street</h3>
+              <p>Open foyer · no reception desk.</p>
+            </div>
+            <div class="route-stop">
+              <span class="num">— 02 —</span>
+              <h3>Display board</h3>
+              <p>Today's reading, today's review.</p>
+            </div>
+            <div class="route-stop active">
+              <span class="num">— 03 —</span>
+              <h3>Threshold</h3>
+              <p>Phone off, shoes optional.</p>
+            </div>
+            <div class="route-stop">
+              <span class="num">— 04 —</span>
+              <h3>Reading void</h3>
+              <p>North-lit · double-height room.</p>
+            </div>
+            <div class="route-stop">
+              <span class="num">— 05 —</span>
+              <h3>Mezzanine</h3>
+              <p>Optional · review on the way out.</p>
+            </div>
+          </div>
+        </div>
+        <span class="pin">05 · route</span>
+      </section>
+
+      <!-- 6: VOID PAGE (close) -->
+      <section class="void-page deck-grid" data-background="#ebe6dc">
+        <div class="sheet-frame" data-qa-ignore="decorative"></div>
+        <div class="north-mark"><span class="n">N</span><svg viewBox="0 0 60 60" stroke="var(--c-fg)" fill="none" stroke-width="1.6"><circle cx="30" cy="30" r="22"/><path d="M 30 8 L 36 30 L 30 26 L 24 30 Z" fill="var(--c-fg)"/></svg></div>
+        <div class="void-frame">
+          <div class="void-body">
+            <span class="kicker">Plate F · closing note</span>
+            <h2>A studio is the<br><em>void</em> you decide<br>to keep.</h2>
+            <p>Walls, desks, and signage are easy. The hard, expensive, and load-bearing decision is which room never gets a ceiling — because that is the room everything else has to stay out of.</p>
+          </div>
+          <div class="void-foot">
+            <div>
+              <span>Project · 2026.04</span>
+              <b>Thinking Studio</b>
+            </div>
+            <div>
+              <span>Drawn · 14.03.2026</span>
+              <b>Y. Lin, principal</b>
+            </div>
+            <div>
+              <span>Sheet</span>
+              <b>A-12 / 12 · END</b>
+            </div>
+          </div>
+        </div>
+        <span class="pin">06 · void · close</span>
       </section>
 
     </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@4.0.1/dist/pptxgen.bundle.js"></script>
   <script>
     Reveal.initialize({
-      width: 1280,
-      height: 720,
-      margin: 0.06,
-      minScale: 0.8,
-      maxScale: 1.2,
-      hash: true,
-      slideNumber: false,
-      progress: true,
-      center: false,
-      controls: true,
-      controlsTutorial: false,
-      transition: 'zoom',
-      transitionSpeed: 'default',
-      backgroundTransition: 'fade',
+      width: 1280, height: 720, margin: 0.04,
+      minScale: 0.8, maxScale: 1.2,
+      hash: true, slideNumber: 'c/t', progress: true,
+      center: false, controls: true, controlsTutorial: false,
+      transition: 'fade', transitionSpeed: 'default', backgroundTransition: 'fade',
     });
+  </script>
+  <script>
+  /* Reveal.js PPTX 导出按钮 — inline of scripts/export-pptx-client.js (minified) */
+  (function () {
+    'use strict';
+    var BTN_TEXT='PPTX';
+    function rgbToHex(r,g,b){return [r,g,b].map(function(c){return Math.round(c).toString(16).padStart(2,'0').toUpperCase();}).join('');}
+    function parseRgb(str){if(!str)return null;var m=str.match(/rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)/);return m?rgbToHex(+m[1],+m[2],+m[3]):null;}
+    function linearToSrgb(c){c=Math.max(0,Math.min(1,c));return c<=0.0031308?12.92*c:1.055*Math.pow(c,1/2.4)-0.055;}
+    function oklchToHex(str){if(!str)return null;var m=str.match(/oklch\(\s*([\d.]+)(%)?\s+([\d.]+)\s+([\d.]+)/);if(!m)return null;var L=m[2]==='%'?+m[1]/100:+m[1];var C=+m[3];var H=+m[4];var a=C*Math.cos(H*Math.PI/180);var b=C*Math.sin(H*Math.PI/180);var l_=L+0.3963377774*a+0.2158037573*b;var m_=L-0.1055613458*a-0.0638541728*b;var s_=L-0.0894841775*a-1.2914855480*b;var l3=l_*l_*l_,m3=m_*m_*m_,s3=s_*s_*s_;var rl=4.0767416621*l3-3.3077115913*m3+0.2309699292*s3;var gl=-1.2684380046*l3+2.6097574011*m3-0.3413193965*s3;var bl=-0.0041960863*l3-0.7034186147*m3+1.7076147010*s3;return rgbToHex(Math.round(Math.min(255,Math.max(0,linearToSrgb(rl)*255))),Math.round(Math.min(255,Math.max(0,linearToSrgb(gl)*255))),Math.round(Math.min(255,Math.max(0,linearToSrgb(bl)*255))));}
+    function anyColorToHex(s){if(!s)return null;if(s.startsWith('#'))return s.replace('#','').substring(0,6).toUpperCase();if(s.startsWith('oklch'))return oklchToHex(s);if(s.startsWith('rgb'))return parseRgb(s);return parseRgb(s);}
+    function resolveColor(v,vars){if(!v)return null;if(v.startsWith('#')&&v.length>=4)return v.replace('#','').substring(0,6).toUpperCase();if(v.startsWith('oklch'))return oklchToHex(v);if(v.startsWith('rgb'))return parseRgb(v);var m=v.match(/var\(\s*(--[\w-]+)\s*\)/);if(m&&vars[m[1]])return resolveColor(vars[m[1]],vars);return parseRgb(v);}
+    function getElColor(el){return anyColorToHex(getComputedStyle(el).color)||'14130F';}
+    function getCssVars(){var vars={};document.querySelectorAll('style').forEach(function(s){var rm=s.textContent.match(/:root\s*\{([^}]+)\}/);if(rm){var re=/(--[\w-]+)\s*:\s*([^;]+)/g,m;while((m=re.exec(rm[1])))vars[m[1]]=m[2].trim();}});var al={'--bg':'--c-bg','--text':'--c-fg','--text-muted':'--c-fg-2','--text-subtle':'--c-fg-3','--accent':'--c-accent','--divider':'--c-border'};Object.keys(al).forEach(function(L){var C=al[L];if(!vars[L]&&vars[C])vars[L]=vars[C];if(!vars[C]&&vars[L])vars[C]=vars[L];});return vars;}
+    function pxToPt(px){return parseFloat(px)*0.75;}
+    function textOf(el){return (el.textContent||'').trim();}
+    var pptx;
+    function exportSection(slide,sec,vars){
+      var bg=resolveColor(vars['--c-bg']||vars['--bg'],vars)||'EBE6DC';
+      slide.background={color:bg};
+      var textMuted=resolveColor(vars['--c-fg-2']||vars['--text-muted'],vars)||'666666';
+      var y=0.55;
+      var kicker=sec.querySelector('.kicker');
+      if(kicker){slide.addText(textOf(kicker),{x:0.55,y:y,w:12.2,h:0.3,fontSize:9,color:textMuted,fontFace:'Calibri',charSpacing:2});y+=0.42;}
+      var h1=sec.querySelector('h1'),h2=sec.querySelector('h2');
+      var head=h1||h2;
+      if(head){var fs=pxToPt(getComputedStyle(head).fontSize);slide.addText(textOf(head),{x:0.55,y:y,w:12.2,h:h1?2.2:1.2,fontSize:Math.min(h1?38:24,fs),color:getElColor(head),fontFace:'Calibri',bold:true,valign:'top',lineSpacingMultiple:1.1});y+=h1?2.4:1.4;}
+      var paras=sec.querySelectorAll('p, .lede, .one-liner');
+      var added=0;
+      paras.forEach(function(p){if(added>=3)return;var t=textOf(p);if(!t||t.length<5)return;var fs=pxToPt(getComputedStyle(p).fontSize);slide.addText(t,{x:0.55,y:y,w:12.2,h:0.7,fontSize:Math.min(13,fs),color:getElColor(p),fontFace:'Calibri',valign:'top',lineSpacingMultiple:1.5,wrap:true});y+=0.8;added++;});
+      var pin=sec.querySelector('.pin');
+      if(pin){slide.addText(textOf(pin),{x:0.55,y:7.0,w:6,h:0.3,fontSize:8,color:resolveColor(vars['--c-fg-3'],vars)||'AAAAAA',fontFace:'Calibri',charSpacing:2});}
+    }
+    function doExport(){
+      if(typeof PptxGenJS==='undefined'){alert('PptxGenJS 未加载');return;}
+      var btn=document.getElementById('pptx-export-btn');
+      if(btn){btn.textContent='导出中...';btn.disabled=true;}
+      try{
+        pptx=new PptxGenJS(); pptx.layout='LAYOUT_WIDE';
+        var vars=getCssVars();
+        document.querySelectorAll('.reveal .slides > section').forEach(function(sec){
+          var nested=sec.querySelectorAll(':scope > section');
+          var list=nested.length?Array.from(nested):[sec];
+          list.forEach(function(s){var slide=pptx.addSlide();exportSection(slide,s,vars);});
+        });
+        var name=(document.title||'presentation').replace(/[^\w一-鿿\-]/g,'_');
+        pptx.writeFile({fileName:name+'.pptx'}).then(function(){if(btn){btn.textContent='已导出';setTimeout(function(){btn.textContent=BTN_TEXT;btn.disabled=false;},2000);}});
+      }catch(e){console.error(e);alert('导出失败: '+e.message);if(btn){btn.textContent=BTN_TEXT;btn.disabled=false;}}
+    }
+    function init(){
+      var btn=document.createElement('button');
+      btn.id='pptx-export-btn';btn.textContent=BTN_TEXT;
+      btn.setAttribute('aria-label','导出 PPTX');
+      btn.setAttribute('style','position:fixed;top:16px;right:16px;z-index:9999;padding:6px 12px;background:#f3eee2;color:#14130f;border:1px solid rgba(0,0,0,0.30);border-radius:3px;cursor:pointer;font-size:12px;opacity:0;transition:opacity 0.2s;font-family:system-ui,sans-serif;');
+      btn.onclick=doExport;
+      btn.onmouseenter=function(){btn.style.opacity='1';};
+      btn.onfocus=function(){btn.style.opacity='1';};
+      btn.onmouseleave=function(){btn.style.opacity='0';};
+      btn.onblur=function(){btn.style.opacity='0';};
+      document.body.appendChild(btn);
+      document.addEventListener('mousemove',function(e){btn.style.opacity=(e.clientY<76&&e.clientX>window.innerWidth-110)?'0.9':'0';});
+      document.addEventListener('fullscreenchange',function(){btn.style.display=document.fullscreenElement?'none':'';});
+    }
+    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init); else init();
+  })();
   </script>
 </body>
 </html>

@@ -3,432 +3,460 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>自然清新风格演示文稿</title>
+  <title>田野笔记本 · Field Notebook</title>
 
-  <!-- Reveal.js 核心 -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/theme/white.css">
 
-  <!-- Google Fonts: 自然圆润字体 -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Nunito:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
-
-  <!-- Font Awesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Work+Sans:wght@300;400;500;600&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
 
   <style>
-    /* ============================================
-       CSS 变量 - 自然清新配色
-       绿色/青色系，清新自然
-       ============================================ */
+    /* ── Tokens ─────────────────────────────────────── */
     :root {
-      /* 主色 - 清新绿 */
-      --primary: oklch(65% 0.14 155);
-      --primary-light: oklch(80% 0.10 155);
-      --primary-dark: oklch(45% 0.16 155);
+      --c-bg: #f4ede0;
+      --c-bg-paper: #faf4e4;
+      --c-bg-card: #fffaee;
+      --c-fg: #2a2418;
+      --c-fg-2: rgba(42, 36, 24, 0.62);
+      --c-fg-3: rgba(42, 36, 24, 0.34);
+      --c-accent: #3f6c3f;
+      --c-leaf: #6ba368;
+      --c-clay: #b85e3a;
+      --c-ink: #2d4d35;
+      --c-twine: #b89770;
+      --c-border: rgba(42, 36, 24, 0.18);
+      --c-rule: rgba(42, 36, 24, 0.12);
 
-      /* 背景 - 暖白 */
-      --bg: oklch(98% 0.01 120);
-      --bg-subtle: oklch(96% 0.015 120);
-      --bg-warm: oklch(94% 0.02 80);
-
-      /* 文字 */
-      --text: oklch(30% 0.02 120);
-      --text-muted: oklch(50% 0.02 120);
-
-      /* 强调色 - 活力橙 (饱和度降至15%以内) */
-      --accent: oklch(70% 0.15 60);
-      --accent-secondary: oklch(60% 0.10 280);
-
-      /* 功能色 */
-      --success: oklch(65% 0.14 155);
-      --info: oklch(60% 0.12 220);
-
-      /* 字体 */
-      --font-display: 'Nunito', 'Noto Sans SC', sans-serif;
-      --font-body: 'DM Sans', 'Noto Sans SC', sans-serif;
-
-      /* Easing - 自然缓动 */
-      --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
-      --ease-out-back: cubic-bezier(0.34, 1.4, 0.64, 1);
+      --f-display: "Fraunces", "Noto Serif SC", Georgia, serif;
+      --f-body: "Work Sans", "Noto Sans SC", system-ui, sans-serif;
+      --f-hand: "Caveat", "Noto Sans SC", cursive;
+      --f-mono: ui-monospace, "SF Mono", monospace;
+      --bg: var(--c-bg); --text: var(--c-fg); --text-muted: var(--c-fg-2);
+      --text-subtle: var(--c-fg-3); --accent: var(--c-accent); --divider: var(--c-border);
+      --font-display: var(--f-display); --font-body: var(--f-body); --font-mono: var(--f-mono);
     }
 
-    /* ============================================
-       基础重置
-       ============================================ */
-    .reveal {
-      font-family: var(--font-body);
-      font-size: 30px;
-      color: var(--text);
-      background: var(--bg);
+    /* ── Base ───────────────────────────────────────── */
+    .reveal { font-family: var(--f-body); font-size: 28px; color: var(--c-fg); background: var(--c-bg); }
+    .reveal .slides { text-align: left; }
+    .reveal .slides > section {
+      padding: 44px 60px; height: 100%; box-sizing: border-box; overflow: hidden;
+      background: var(--c-bg); position: relative !important;   /* !important 必含：覆盖 reveal.css section absolute，防 pin/label 跨 slide 泄露（test-label-overlap.js）*/
     }
+    .reveal .slides > section.deck-flex.present { display: flex !important; top: 0 !important; }
+    .reveal .slides > section.deck-grid.present { display: grid !important; top: 0 !important; }
+    .reveal section > * { max-width: 100%; box-sizing: border-box; }
+    h1, h2, h3, h4, p, li, span, div { word-break: break-word; overflow-wrap: break-word; }
+    img, svg, video { max-width: 100%; max-height: 100%; object-fit: contain; }
 
-    .reveal .slides {
-      text-align: left;
-    }
-
-    .reveal section {
-      padding: 70px 90px;
-      height: 100%;
-      box-sizing: border-box;
-    }
-
-    /* ============================================
-       标题样式
-       ============================================ */
+    /* ── Type ───────────────────────────────────────── */
     .reveal h1, .reveal h2, .reveal h3 {
-      font-family: var(--font-display);
-      font-weight: 700;
-      letter-spacing: -0.01em;
-      line-height: 1.2;
-      color: var(--text);
+      font-family: var(--f-display); line-height: 1.05; letter-spacing: 0; color: var(--c-fg);
+    }
+    .reveal h1 { font-size: 3.2em; font-weight: 500; margin: 0; }
+    .reveal h2 { font-size: 1.9em; font-weight: 500; margin: 0 0 0.4em 0; }
+    .reveal h3 { font-size: 1em; font-weight: 600; margin: 0; }
+    .reveal h4 { font-family: var(--f-body); font-size: 0.55em; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--c-fg-3); margin: 0; }
+    .reveal p { font-family: var(--f-body); font-size: 0.78em; line-height: 1.6; color: var(--c-fg-2); margin: 0; font-weight: 300; }
+    .hand { font-family: var(--f-hand); font-weight: 500; color: var(--c-clay); }
+
+    .kicker {
+      font-family: var(--f-body); font-size: 0.48em;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--c-accent); font-weight: 600;
+      display: inline-flex; align-items: center; gap: 0.7em;
+    }
+    .kicker::before {
+      content: ''; width: 22px; height: 2px; background: var(--c-accent); display: inline-block;
     }
 
-    .reveal h1 {
-      font-size: 2.8em;
+    .pin {
+      position: absolute; left: 60px; bottom: 26px;
+      font-family: var(--f-mono); font-size: 0.46em;
+      color: var(--c-fg-3); letter-spacing: 0.06em;
+      z-index: 10;
+    }
+    /* Pin safe zone for slides where bottom-left has content */
+    .harvest .pin, .field-cover .pin, .lesson-map .pin, .workshop .pin {
+      right: 60px; left: auto;
     }
 
-    .reveal h2 {
-      font-size: 1.8em;
-      margin-bottom: 0.6em;
+    /* Reusable sticky / pin / tag */
+    .sample-tag {
+      display: inline-grid;
+      grid-template-rows: auto auto;
+      padding: 6px 14px 8px 22px;
+      background: var(--c-bg-card);
+      border: 1px solid var(--c-twine);
+      position: relative;
+      font-family: var(--f-body); font-size: 0.5em;
+      color: var(--c-fg);
+      transform: rotate(-2deg);
+      box-shadow: 2px 3px 0 rgba(42, 36, 24, 0.08);
+    }
+    .sample-tag::before {
+      content: ''; position: absolute; left: 6px; top: 50%;
+      transform: translateY(-50%);
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--c-bg); border: 1.5px solid var(--c-twine);
+    }
+    .sample-tag b { font-family: var(--f-display); font-size: 1.4em; color: var(--c-accent); font-weight: 600; letter-spacing: 0; line-height: 1; }
+    .sample-tag span { font-family: var(--f-mono); font-size: 0.85em; color: var(--c-fg-3); letter-spacing: 0.08em; margin-top: 2px; }
+
+    .twine-line {
+      stroke: var(--c-twine); stroke-width: 1.5px; fill: none;
+      stroke-dasharray: 4 3;
     }
 
-    .reveal h3 {
-      font-size: 1.1em;
-      font-weight: 600;
+    /* ─────────── FIELD COVER (desk) ─────────── */
+    .field-cover { padding: 56px 72px; }
+    .field-cover .field-desk {
+      position: absolute; inset: 32px 32px 32px 32px;
+      background:
+        radial-gradient(ellipse 80% 40% at 50% 100%, rgba(42, 36, 24, 0.04), transparent 60%),
+        var(--c-bg);
+      border: 1px solid var(--c-rule);
     }
 
-    .reveal p {
-      font-size: 1em;
-      line-height: 1.7;
-      color: var(--text);
-      margin-bottom: 0.8em;
+    .field-cover .notebook-spread {
+      position: absolute; top: 80px; left: 72px;
+      width: 56%; height: calc(100% - 160px);
+      background: var(--c-bg-paper);
+      box-shadow: 4px 6px 0 rgba(42, 36, 24, 0.08);
+      border: 1px solid var(--c-rule);
+      padding: 30px 40px;
+      transform: rotate(-1.2deg);
+      display: flex; flex-direction: column; gap: 12px;
+      background-image:
+        repeating-linear-gradient(180deg, transparent, transparent 27px, var(--c-rule) 27px, var(--c-rule) 28px);
+    }
+    .field-cover .notebook-spread::before {
+      content: ''; position: absolute; left: 50%; top: 0; bottom: 0;
+      width: 1px; background: var(--c-rule);
+    }
+    .field-cover .notebook-spread .header {
+      display: flex; justify-content: space-between; align-items: baseline;
+      font-family: var(--f-body); font-size: 0.42em;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--c-fg-3);
+      padding-bottom: 10px; border-bottom: 1.5px solid var(--c-fg);
+    }
+    .field-cover .notebook-spread .header b { color: var(--c-fg); font-weight: 600; }
+    .field-cover .notebook-spread h1 {
+      font-family: var(--f-display); font-size: 2.4em;
+      font-weight: 500; line-height: 1.02; margin-top: 0.4em;
+      color: var(--c-fg);
+    }
+    .field-cover .notebook-spread h1 em {
+      color: var(--c-accent); font-style: normal;
+    }
+    .field-cover .notebook-spread .sub {
+      font-family: var(--f-hand); font-size: 1.4em;
+      color: var(--c-clay); margin-top: 0.4em; line-height: 1.1;
+    }
+    .field-cover .notebook-spread .deck-meta {
+      margin-top: auto;
+      padding-top: 12px; border-top: 1px dashed var(--c-rule);
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 8px 16px;
+      font-family: var(--f-body); font-size: 0.5em;
+      color: var(--c-fg-2);
+    }
+    .field-cover .notebook-spread .deck-meta b { color: var(--c-fg); font-weight: 600; }
+
+    /* Route map (top-right) */
+    .field-cover .route-map {
+      position: absolute; top: 64px; right: 60px;
+      width: 32%; height: 50%;
+      background: var(--c-bg-card);
+      border: 1px solid var(--c-border);
+      transform: rotate(2.4deg);
+      box-shadow: 4px 6px 0 rgba(42, 36, 24, 0.06);
+      padding: 14px;
+    }
+    .field-cover .route-map .map-head {
+      font-family: var(--f-body); font-size: 0.4em;
+      letter-spacing: 0.16em; text-transform: uppercase;
+      color: var(--c-fg-3); margin-bottom: 8px;
+      display: flex; justify-content: space-between;
+    }
+    .field-cover .route-map .map-head b { color: var(--c-fg); font-weight: 600; }
+    .field-cover .route-map svg {
+      width: 100%; height: calc(100% - 24px);
     }
 
-    /* ============================================
-       标题页
-       ============================================ */
-    .title-slide {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      background: var(--bg);
+    /* Sample tags scattered (cover) */
+    .field-cover .sample-tag.t1 { position: absolute; bottom: 24%; right: 50px; transform: rotate(-4deg); }
+    .field-cover .sample-tag.t2 { position: absolute; bottom: 14%; right: 18%; transform: rotate(3deg); }
+    .field-cover .sample-tag.t3 { position: absolute; bottom: 8%; right: 38%; transform: rotate(-2deg); }
+
+    /* Specimen envelope (bottom-right) */
+    .field-cover .specimen-envelope {
+      position: absolute; bottom: 70px; right: 56px;
+      width: 26%; height: 80px;
+      background: var(--c-bg-card);
+      border: 1px solid var(--c-border);
+      transform: rotate(-3deg);
+      box-shadow: 4px 6px 0 rgba(42, 36, 24, 0.10);
+      padding: 10px 14px;
+      display: flex; flex-direction: column; justify-content: space-between;
+    }
+    .field-cover .specimen-envelope::before {
+      content: ''; position: absolute; top: 4px; left: 50%;
+      transform: translateX(-50%);
+      width: 0; height: 0;
+      border-left: 50px solid transparent;
+      border-right: 50px solid transparent;
+      border-bottom: 16px solid var(--c-bg-paper);
+    }
+    .field-cover .specimen-envelope .se-head {
+      font-family: var(--f-body); font-size: 0.42em;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--c-fg-3); margin-top: 16px;
+    }
+    .field-cover .specimen-envelope .se-head b { color: var(--c-fg); font-weight: 600; display: block; margin-top: 2px; }
+    .field-cover .specimen-envelope .se-body {
+      font-family: var(--f-hand); font-size: 1.2em;
+      color: var(--c-ink); line-height: 1.1;
     }
 
-    .title-slide .icon-row {
-      display: flex;
-      gap: 1em;
-      margin-bottom: 2em;
+    /* Twine across the cover */
+    .field-cover .twine-svg {
+      position: absolute; inset: 0; pointer-events: none; z-index: 1;
     }
 
-    .title-slide .icon-circle {
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      background: var(--primary-light);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.5em;
-      color: var(--primary-dark);
+    /* ─────────── LESSON MAP (proof) ─────────── */
+    .lesson-map {
+      grid-template-columns: 2fr 3fr;
+      gap: 28px;
+      padding: 44px 60px;
+    }
+    .lesson-map .lm-meta { display: flex; flex-direction: column; gap: 0.6em; }
+    .lesson-map .lm-meta h2 { margin-top: 0.2em; font-size: 1.5em; }
+    .lesson-map .lm-meta .lede { font-size: 0.72em; line-height: 1.5; color: var(--c-fg-2); margin-top: 0.4em; max-width: 340px; }
+    .lesson-map .lm-meta .source {
+      font-family: var(--f-mono); font-size: 0.4em;
+      color: var(--c-fg-3); letter-spacing: 0.08em;
+      margin-top: 1em; padding-top: 0.6em; border-top: 1px solid var(--c-rule);
     }
 
-    .title-slide h1 {
-      font-size: 2.5em;
-      margin-bottom: 0.3em;
+    .lesson-map .map-canvas {
+      background:
+        repeating-linear-gradient(0deg, transparent, transparent 23px, var(--c-rule) 23px, var(--c-rule) 24px),
+        var(--c-bg-paper);
+      border: 1px solid var(--c-border);
+      box-shadow: 4px 6px 0 rgba(42, 36, 24, 0.06);
+      padding: 18px; position: relative;
+    }
+    .lesson-map .map-canvas svg.connectors { position: absolute; inset: 18px; width: calc(100% - 36px); height: calc(100% - 36px); pointer-events: none; }
+    .lesson-map .stations {
+      position: relative; z-index: 2;
+      display: grid; grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(4, 1fr); gap: 6px;
+      height: 100%; min-height: 240px;
+    }
+    .lesson-map .station {
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      padding: 6px 4px;
+      background: var(--c-bg-card);
+      border: 1.5px solid var(--c-twine);
+      text-align: center;
+    }
+    .lesson-map .station.cross { background: transparent; border: none; box-shadow: none; }
+    .lesson-map .station .week {
+      font-family: var(--f-body); font-size: 0.34em;
+      color: var(--c-fg-3); letter-spacing: 0.1em; text-transform: uppercase;
+    }
+    .lesson-map .station h3 {
+      font-family: var(--f-display); font-size: 0.6em; line-height: 1.1; margin: 3px 0;
+    }
+    .lesson-map .station p {
+      font-family: var(--f-hand); font-size: 0.78em;
+      color: var(--c-clay); margin: 0; line-height: 1.0;
+    }
+    .lesson-map .station.featured {
+      background: var(--c-accent); border-color: var(--c-accent);
+    }
+    .lesson-map .station.featured h3, .lesson-map .station.featured .week { color: var(--c-bg-paper); }
+    .lesson-map .station.featured p { color: var(--c-bg); }
+
+    /* ─────────── JOURNAL (mechanism) ─────────── */
+    .journal {
+      grid-template-columns: 1fr 1fr; gap: 0;
+      padding: 44px 60px;
+      position: relative;
+    }
+    .journal::before {
+      content: ''; position: absolute; top: 44px; bottom: 44px;
+      left: 50%; width: 2px;
+      background: var(--c-fg);
+      transform: translateX(-1px);
+    }
+    .journal .page {
+      padding: 0 20px;
+      display: flex; flex-direction: column; gap: 10px;
+      background-image:
+        repeating-linear-gradient(180deg, transparent, transparent 27px, var(--c-rule) 27px, var(--c-rule) 28px);
+    }
+    .journal .page.left { padding-left: 0; padding-right: 24px; }
+    .journal .page.right { padding-right: 0; padding-left: 24px; }
+    .journal .page-head {
+      padding-bottom: 6px; border-bottom: 1.5px solid var(--c-fg);
+      display: flex; justify-content: space-between; align-items: baseline;
+      font-family: var(--f-body); font-size: 0.4em;
+      letter-spacing: 0.14em; text-transform: uppercase; color: var(--c-fg-3);
+    }
+    .journal .page-head b { color: var(--c-fg); font-weight: 600; }
+    .journal h2 { font-size: 1.3em; line-height: 1.05; }
+    .journal .lede { font-size: 0.68em; line-height: 1.5; }
+    .journal .observation {
+      padding: 8px 12px; background: var(--c-bg-card);
+      border: 1px solid var(--c-leaf);
+      font-family: var(--f-hand); font-size: 0.92em;
+      color: var(--c-ink); line-height: 1.15;
+    }
+    .journal .field-step {
+      display: grid; grid-template-columns: 28px 1fr;
+      gap: 10px; align-items: baseline;
+      padding: 4px 0;
+    }
+    .journal .field-step .n {
+      font-family: var(--f-display); font-size: 1.2em;
+      color: var(--c-accent); font-weight: 600; line-height: 1;
+    }
+    .journal .field-step h3 { font-size: 0.74em; font-weight: 500; }
+    .journal .field-step p { font-size: 0.6em; margin-top: 2px; line-height: 1.4; }
+
+    .journal .right .sketch {
+      width: 100%; height: 70px;
+      border: 1px dashed var(--c-rule);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .journal .right .sketch svg { width: 80%; height: 80%; }
+
+    /* ─────────── WORKSHOP ─────────── */
+    .workshop {
+      padding: 56px 72px;
+      grid-template-rows: auto 1fr; gap: 22px;
+    }
+    .workshop .head h2 { margin-top: 0.3em; }
+    .workshop-board {
+      background:
+        radial-gradient(circle at 10% 10%, rgba(63, 108, 63, 0.08), transparent 40%),
+        radial-gradient(circle at 90% 90%, rgba(184, 94, 58, 0.08), transparent 40%),
+        var(--c-bg-paper);
+      border: 1px solid var(--c-border);
+      box-shadow: 4px 6px 0 rgba(42, 36, 24, 0.06);
+      padding: 32px;
+      display: grid; grid-template-columns: 1fr 1fr 1fr;
+      gap: 18px; position: relative;
+    }
+    .workshop-board .sticky {
+      padding: 16px 18px;
+      background: var(--c-bg-card);
+      border: 1px solid var(--c-rule);
+      box-shadow: 2px 3px 0 rgba(42, 36, 24, 0.08);
+      position: relative;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .workshop-board .sticky::before {
+      content: ''; position: absolute; top: -8px; left: 50%;
+      transform: translateX(-50%);
+      width: 28px; height: 14px;
+      background: var(--c-twine); opacity: 0.7;
+      clip-path: polygon(0 0, 100% 0, 80% 100%, 20% 100%);
+    }
+    .workshop-board .sticky.s1 { transform: rotate(-1deg); background: #f9efd5; }
+    .workshop-board .sticky.s2 { transform: rotate(1.5deg); background: #f0e3c8; }
+    .workshop-board .sticky.s3 { transform: rotate(-0.5deg); background: #e6e2cd; }
+    .workshop-board .sticky.s4 { transform: rotate(1deg); background: #eed9bd; }
+    .workshop-board .sticky.s5 { transform: rotate(-1.5deg); background: #d8dcb6; }
+    .workshop-board .sticky.s6 { transform: rotate(0.5deg); background: #efd6b1; }
+    .workshop-board .sticky .num {
+      font-family: var(--f-mono); font-size: 0.42em;
+      color: var(--c-fg-3); letter-spacing: 0.1em; text-transform: uppercase;
+    }
+    .workshop-board .sticky h3 {
+      font-size: 0.95em; font-family: var(--f-display); font-weight: 500; line-height: 1.15;
+    }
+    .workshop-board .sticky p {
+      font-family: var(--f-hand); font-size: 1em;
+      color: var(--c-ink); line-height: 1.1;
     }
 
-    .title-slide .subtitle {
-      font-size: 1.2em;
-      color: var(--text-muted);
-      margin-bottom: 2em;
+    /* ─────────── HARVEST (close) ─────────── */
+    .harvest {
+      padding: 44px 60px;
+      grid-template-rows: auto 1fr auto;
+      gap: 16px;
     }
-
-    .title-slide .meta {
-      display: flex;
-      align-items: center;
-      gap: 0.5em;
-      font-size: 0.85em;
-      color: var(--text-muted);
+    .harvest .head .kicker { color: var(--c-clay); }
+    .harvest .head .kicker::before { background: var(--c-clay); }
+    .harvest .h-body {
+      display: grid; grid-template-columns: 0.58fr 0.42fr;
+      gap: 28px; align-items: center;
     }
-
-    .title-slide .meta i {
-      color: var(--primary);
+    .harvest .h-body h2 {
+      font-size: 2.2em; font-weight: 500; line-height: 1.02;
+      color: var(--c-fg);
     }
-
-    /* ============================================
-       课程卡片
-       ============================================ */
-    .course-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 1.2em;
-      margin-top: 2em;
+    .harvest .h-body h2 em { color: var(--c-accent); font-style: normal; }
+    .harvest .h-body h2 .hand {
+      display: block; font-size: 0.5em; margin-top: 0.2em;
+      transform: rotate(-2deg) translateX(8px);
+      transform-origin: left;
     }
-
-    .course-card {
-      background: white;
-      border-radius: 12px;
-      padding: 1.5em;
-      box-shadow: 0 2px 8px oklch(90% 0.01 120 / 0.5);
-      transition: transform 300ms var(--ease-out-quart),
-                  box-shadow 300ms var(--ease-out-quart);
-      min-width: 0;
+    .harvest .h-body .summary p {
+      font-size: 0.78em; line-height: 1.55; max-width: 420px;
     }
-
-    .course-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 8px 24px oklch(90% 0.01 120 / 0.7);
+    .harvest .envelope-stack {
+      position: relative; height: 180px;
     }
-
-    .course-card .card-icon {
-      width: 44px;
-      height: 44px;
-      border-radius: 10px;
-      background: var(--bg-subtle);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.2em;
-      color: var(--primary);
-      margin-bottom: 1em;
+    .harvest .envelope-stack .specimen-envelope {
+      position: absolute; width: 86%; height: 110px;
+      background: var(--c-bg-card);
+      border: 1px solid var(--c-border);
+      box-shadow: 4px 6px 0 rgba(42, 36, 24, 0.10);
+      padding: 10px 14px;
+      display: flex; flex-direction: column; gap: 4px;
     }
-
-    .course-card h3 {
-      font-size: 1em;
-      margin-bottom: 0.4em;
+    .harvest .envelope-stack .specimen-envelope::before {
+      content: ''; position: absolute; top: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 0; height: 0;
+      border-left: 64px solid transparent;
+      border-right: 64px solid transparent;
+      border-bottom: 24px solid var(--c-bg-paper);
     }
-
-    .course-card p {
-      font-size: 0.8em;
-      color: var(--text-muted);
-      margin: 0;
-      line-height: 1.5;
+    .harvest .envelope-stack .specimen-envelope.e1 { top: 0; right: 0; transform: rotate(-3deg); }
+    .harvest .envelope-stack .specimen-envelope.e2 { top: 26px; right: 22px; transform: rotate(2deg); background: #faf0d8; }
+    .harvest .envelope-stack .specimen-envelope.e3 { top: 50px; right: 8px; transform: rotate(-1deg); background: #f3e8c8; }
+    .harvest .envelope-stack .se-head {
+      font-family: var(--f-body); font-size: 0.38em;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--c-fg-3); margin-top: 18px;
     }
-
-    .course-card .tag {
-      display: inline-block;
-      font-size: 0.65em;
-      padding: 0.25em 0.6em;
-      border-radius: 4px;
-      background: var(--bg-subtle);
-      color: var(--primary-dark);
-      margin-top: 0.8em;
+    .harvest .envelope-stack .se-head b { color: var(--c-fg); font-weight: 600; display: block; }
+    .harvest .envelope-stack .se-body {
+      font-family: var(--f-hand); font-size: 0.9em;
+      color: var(--c-ink); line-height: 1.0;
     }
-
-    /* ============================================
-       步骤列表
-       ============================================ */
-    .step-list {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-      counter-reset: step;
+    .harvest .h-foot {
+      padding-top: 10px; border-top: 1.5px solid var(--c-fg);
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      font-family: var(--f-body); font-size: 0.42em;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--c-fg-2);
     }
+    .harvest .h-foot b { display: block; color: var(--c-fg); font-size: 1.4em; letter-spacing: 0; text-transform: none; font-family: var(--f-display); font-weight: 600; margin-top: 4px; }
 
-    .step-item {
-      display: flex;
-      align-items: flex-start;
-      gap: 1em;
-      padding: 0.8em 0;
-      border-bottom: 1px dashed var(--bg-warm);
-    }
+    /* Progress */
+    .reveal .progress { color: var(--c-accent); height: 2px; }
+    .reveal .controls { color: var(--c-fg-2); }
 
-    .step-item:last-child {
-      border-bottom: none;
-    }
-
-    .step-item::before {
-      counter-increment: step;
-      content: counter(step);
-      flex-shrink: 0;
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background: var(--primary);
-      color: white;
-      font-family: var(--font-display);
-      font-weight: 700;
-      font-size: 0.85em;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .step-item h3 {
-      font-size: 0.95em;
-      margin-bottom: 0.15em;
-    }
-
-    .step-item p {
-      font-size: 0.8em;
-      color: var(--text-muted);
-      margin: 0;
-      line-height: 1.4;
-    }
-
-    /* ============================================
-       引用框
-       ============================================ */
-    .tip-box {
-      background: var(--bg-subtle);
-      border-radius: 12px;
-      padding: 1.5em;
-      margin: 1.5em 0;
-      display: flex;
-      gap: 1em;
-    }
-
-    .tip-box .icon {
-      flex-shrink: 0;
-      width: 40px;
-      height: 40px;
-      border-radius: 10px;
-      background: var(--primary-light);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--primary-dark);
-    }
-
-    .tip-box .content h4 {
-      font-family: var(--font-display);
-      font-size: 0.95em;
-      font-weight: 600;
-      margin-bottom: 0.3em;
-    }
-
-    .tip-box .content p {
-      font-size: 0.85em;
-      color: var(--text-muted);
-      margin: 0;
-      line-height: 1.5;
-    }
-
-    /* ============================================
-       进度条
-       ============================================ */
-    .progress-dots {
-      display: flex;
-      gap: 0.5em;
-      margin-top: 1.5em;
-    }
-
-    .progress-dot {
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      background: var(--bg-warm);
-    }
-
-    .progress-dot.active {
-      background: var(--primary);
-      animation: pulse-subtle 2s ease-in-out infinite;
-    }
-
-    @keyframes pulse-subtle {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.7; }
-    }
-
-    /* ============================================
-       图标列表
-       ============================================ */
-    .icon-list {
-      list-style: none;
-      padding: 0;
-      margin: 1.5em 0;
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 1em;
-    }
-
-    .icon-list li {
-      display: flex;
-      align-items: center;
-      gap: 0.8em;
-      font-size: 0.95em;
-      min-width: 0;
-    }
-
-    .icon-list .icon {
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
-      background: var(--primary-light);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--primary-dark);
-      font-size: 0.8em;
-      flex-shrink: 0;
-    }
-
-    /* ============================================
-       Fragment 动画 - 自然缓动 (400ms)
-       ============================================ */
-    .reveal .fragment {
-      transition-timing-function: var(--ease-out-back);
-      transition-duration: 400ms;
-    }
-
-    .reveal .fragment.fade-up {
-      opacity: 0;
-      transform: translateY(25px);
-    }
-
-    .reveal .fragment.fade-up.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    .reveal .fragment.scale-in {
-      opacity: 0;
-      transform: scale(0.9);
-    }
-
-    .reveal .fragment.scale-in.visible {
-      opacity: 1;
-      transform: scale(1);
-    }
-
-    /* ============================================
-       进度条 & 导航
-       ============================================ */
-    .reveal .progress {
-      color: var(--primary);
-      height: 3px;
-    }
-
-    .reveal .controls {
-      color: var(--primary);
-    }
-
-    /* ============================================
-       Reduced Motion
-       ============================================ */
-    @media (prefers-reduced-motion: reduce), .reduce-motion {
-      .reveal .fragment,
-      .reveal .fragment.fade-up,
-      .reveal .fragment.scale-in {
-        opacity: 1 !important;
-        transform: none !important;
-        transition: none !important;
-      }
-      .course-card,
-      .course-card:hover {
-        transform: none;
-        transition: none;
-      }
-      .progress-dot.active {
-        animation: none;
-      }
-      * {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-      }
+    .reveal .fragment { transition-duration: 380ms; }
+    @media (prefers-reduced-motion: reduce) {
+      .reveal .fragment { opacity: 1; transform: none; transition: opacity 200ms ease-out; }
     }
   </style>
 </head>
@@ -436,218 +464,399 @@
   <div class="reveal">
     <div class="slides">
 
-      <!-- Slide 1: 标题页 -->
-      <section class="title-slide" data-background="var(--bg)">
-        <div class="icon-row">
-          <div class="icon-circle fragment scale-in">
-            <i class="fas fa-seedling"></i>
+      <!-- 1: FIELD COVER -->
+      <section class="field-cover deck-flex" data-background="#f4ede0">
+        <div class="field-desk" data-qa-ignore="decorative"></div>
+
+        <!-- Twine line across the desk -->
+        <svg class="twine-svg" viewBox="0 0 1280 720" preserveAspectRatio="none" data-qa-ignore="decorative">
+          <path class="twine-line" d="M 0 120 Q 200 80, 480 180 T 1100 220 L 1280 200"/>
+          <path class="twine-line" d="M 0 540 Q 320 580, 660 520 T 1280 540" stroke-dasharray="2 5"/>
+        </svg>
+
+        <div class="notebook-spread">
+          <div class="header">
+            <span><b>Field notebook</b> · ed.04</span>
+            <span>2026.03</span>
           </div>
-          <div class="icon-circle fragment scale-in" style="transition-delay: 100ms;">
-            <i class="fas fa-sun"></i>
-          </div>
-          <div class="icon-circle fragment scale-in" style="transition-delay: 200ms;">
-            <i class="fas fa-droplet"></i>
+          <h1>Walk the field<br>before you<br><em>draw the map</em>.</h1>
+          <p class="sub">a workshop for slow research</p>
+          <div class="deck-meta">
+            <span><b>Field</b><br>Yu·Shan basin · 18 sites</span>
+            <span><b>Window</b><br>8 weeks · spring '26</span>
+            <span><b>Walkers</b><br>14 (mixed practice)</span>
+            <span><b>Field lead</b><br>R. Tanaka · K. Lee</span>
           </div>
         </div>
-        <h1 class="fragment fade-up">
-          从零开始<br>
-          学好摄影
-        </h1>
-        <p class="subtitle fragment fade-up" style="transition-delay: 150ms;">
-          用镜头捕捉生活的美好瞬间
-        </p>
-        <div class="meta fragment fade-up" style="transition-delay: 250ms;">
-          <i class="fas fa-user"></i>
-          <span>讲师：王小明 · 摄影师</span>
+
+        <div class="route-map">
+          <div class="map-head">
+            <span><b>Walking route</b> · day 03</span>
+            <span>1 : 5 000</span>
+          </div>
+          <svg viewBox="0 0 240 140" preserveAspectRatio="xMidYMid meet">
+            <!-- terrain -->
+            <path d="M 0 80 Q 40 60 80 70 T 160 80 T 240 70" stroke="var(--c-fg-3)" fill="none" stroke-width="0.8" stroke-dasharray="1 2"/>
+            <path d="M 0 110 Q 60 100 120 105 T 240 110" stroke="var(--c-fg-3)" fill="none" stroke-width="0.8" stroke-dasharray="1 2"/>
+            <!-- water -->
+            <path d="M 20 130 Q 60 120 100 125 T 200 122 L 230 124" stroke="var(--c-accent)" stroke-width="1" fill="none" opacity="0.6"/>
+            <!-- main route -->
+            <path d="M 20 100 L 60 75 L 100 90 L 140 60 L 180 70 L 220 40" stroke="var(--c-clay)" fill="none" stroke-width="2" stroke-linecap="round"/>
+            <!-- stops -->
+            <circle cx="20" cy="100" r="4" fill="var(--c-clay)"/>
+            <circle cx="60" cy="75" r="4" fill="var(--c-clay)"/>
+            <circle cx="100" cy="90" r="4" fill="var(--c-clay)"/>
+            <circle cx="140" cy="60" r="5" fill="var(--c-accent)" stroke="var(--c-bg-paper)" stroke-width="1.5"/>
+            <circle cx="180" cy="70" r="4" fill="var(--c-clay)"/>
+            <circle cx="220" cy="40" r="4" fill="var(--c-clay)"/>
+            <!-- labels -->
+            <text x="20" y="115" font-family="var(--f-mono)" font-size="6" fill="var(--c-fg-2)">Start · 06:40</text>
+            <text x="140" y="50" font-family="var(--f-mono)" font-size="6" fill="var(--c-accent)" font-weight="700">Sample · A3</text>
+            <text x="220" y="32" font-family="var(--f-mono)" font-size="6" fill="var(--c-fg-2)">Camp · 11:20</text>
+          </svg>
         </div>
-        <div class="meta fragment fade-up" style="transition-delay: 350ms; margin-top: 0.5em;">
-          <i class="fas fa-clock"></i>
-          <span>课程时长：8 周 · 24 课时</span>
+
+        <div class="sample-tag t1">
+          <b>A·03</b>
+          <span>sedge · clay bank</span>
         </div>
+        <div class="sample-tag t2">
+          <b>B·11</b>
+          <span>moss · north slope</span>
+        </div>
+        <div class="sample-tag t3">
+          <b>C·02</b>
+          <span>shell · river bed</span>
+        </div>
+
+        <div class="specimen-envelope">
+          <div class="se-head">
+            Envelope ·<b>A · sedge</b>
+          </div>
+          <div class="se-body">
+            18 samples<br>logged 2026.03.07
+          </div>
+        </div>
+
+        <span class="pin" style="left: 60px; right: auto; bottom: 6px;">01 · field · cover</span>
       </section>
 
-      <!-- Slide 2: 课程目标 -->
-      <section data-background="var(--bg)">
-        <h2 class="fragment fade-up">课程目标</h2>
-        <ul class="icon-list">
-          <li class="fragment fade-up" style="transition-delay: 50ms;">
-            <span class="icon"><i class="fas fa-camera"></i></span>
-            掌握相机基本操作
-          </li>
-          <li class="fragment fade-up" style="transition-delay: 100ms;">
-            <span class="icon"><i class="fas fa-image"></i></span>
-            理解光线与构图
-          </li>
-          <li class="fragment fade-up" style="transition-delay: 150ms;">
-            <span class="icon"><i class="fas fa-palette"></i></span>
-            学会后期调色
-          </li>
-          <li class="fragment fade-up" style="transition-delay: 200ms;">
-            <span class="icon"><i class="fas fa-comments"></i></span>
-            建立个人风格
-          </li>
-        </ul>
-        <div class="tip-box fragment fade-up" style="transition-delay: 300ms;">
-          <div class="icon">
-            <i class="fas fa-lightbulb"></i>
-          </div>
-          <div class="content">
-            <h4>学习小贴士</h4>
-            <p>每周练习一个主题，多拍多思考是进步最快的途径。</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- Slide 3: 课程内容 (6周合并为一页) -->
-      <section data-background="var(--bg)">
-        <h2 class="fragment fade-up">课程内容</h2>
-        <div class="course-grid" style="grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.6em; margin-top: 1.2em;">
-          <div class="course-card fragment scale-in" style="transition-delay: 50ms; padding: 0.7em;">
-            <div class="card-icon" style="width: 32px; height: 32px; margin-bottom: 0.4em;">
-              <i class="fas fa-camera-retro" style="font-size: 0.85em;"></i>
-            </div>
-            <h3 style="font-size: 0.85em; margin-bottom: 0.2em;">第一周</h3>
-            <p style="font-size: 0.7em; line-height: 1.3;">认识相机</p>
-          </div>
-          <div class="course-card fragment scale-in" style="transition-delay: 100ms; padding: 0.7em;">
-            <div class="card-icon" style="width: 32px; height: 32px; margin-bottom: 0.4em;">
-              <i class="fas fa-sun" style="font-size: 0.85em;"></i>
-            </div>
-            <h3 style="font-size: 0.85em; margin-bottom: 0.2em;">第二周</h3>
-            <p style="font-size: 0.7em; line-height: 1.3;">光线的艺术</p>
-          </div>
-          <div class="course-card fragment scale-in" style="transition-delay: 150ms; padding: 0.7em;">
-            <div class="card-icon" style="width: 32px; height: 32px; margin-bottom: 0.4em;">
-              <i class="fas fa-shapes" style="font-size: 0.85em;"></i>
-            </div>
-            <h3 style="font-size: 0.85em; margin-bottom: 0.2em;">第三周</h3>
-            <p style="font-size: 0.7em; line-height: 1.3;">构图法则</p>
-          </div>
-          <div class="course-card fragment scale-in" style="transition-delay: 200ms; padding: 0.7em;">
-            <div class="card-icon" style="width: 32px; height: 32px; margin-bottom: 0.4em;">
-              <i class="fas fa-portrait" style="font-size: 0.85em;"></i>
-            </div>
-            <h3 style="font-size: 0.85em; margin-bottom: 0.2em;">第四周</h3>
-            <p style="font-size: 0.7em; line-height: 1.3;">人像摄影</p>
-          </div>
-          <div class="course-card fragment scale-in" style="transition-delay: 250ms; padding: 0.7em;">
-            <div class="card-icon" style="width: 32px; height: 32px; margin-bottom: 0.4em;">
-              <i class="fas fa-mountain" style="font-size: 0.85em;"></i>
-            </div>
-            <h3 style="font-size: 0.85em; margin-bottom: 0.2em;">第五周</h3>
-            <p style="font-size: 0.7em; line-height: 1.3;">风光摄影</p>
-          </div>
-          <div class="course-card fragment scale-in" style="transition-delay: 300ms; padding: 0.7em;">
-            <div class="card-icon" style="width: 32px; height: 32px; margin-bottom: 0.4em;">
-              <i class="fas fa-wand-magic-sparkles" style="font-size: 0.85em;"></i>
-            </div>
-            <h3 style="font-size: 0.85em; margin-bottom: 0.2em;">第六周</h3>
-            <p style="font-size: 0.7em; line-height: 1.3;">后期入门</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- Slide 4: 学习步骤 -->
-      <section data-background="var(--bg)">
-        <h2 class="fragment fade-up">学习方法</h2>
-        <ol class="step-list" style="margin-top: 1.5em;">
-          <li class="step-item fragment fade-up" style="transition-delay: 50ms;">
-            <div>
-              <h3>观看视频课程</h3>
-              <p>跟随讲解，理解核心概念和操作技巧</p>
-            </div>
-          </li>
-          <li class="step-item fragment fade-up" style="transition-delay: 150ms;">
-            <div>
-              <h3>完成课后作业</h3>
-              <p>用所学知识拍摄指定主题，提交作品集</p>
-            </div>
-          </li>
-          <li class="step-item fragment fade-up" style="transition-delay: 250ms;">
-            <div>
-              <h3>参与作品点评</h3>
-              <p>获得导师一对一反馈，持续改进</p>
-            </div>
-          </li>
-          <li class="step-item fragment fade-up" style="transition-delay: 350ms;">
-            <div>
-              <h3>加入交流群</h3>
-              <p>与同学互相学习，共同进步</p>
-            </div>
-          </li>
-        </ol>
-      </section>
-
-      <!-- Slide 5: 总结 -->
-      <section data-background="var(--bg)">
-        <h2 class="fragment fade-up">总结</h2>
-        <div class="tip-box fragment fade-up" style="transition-delay: 100ms;">
-          <div class="icon" style="background: var(--primary-light); color: var(--primary-dark);">
-            <i class="fas fa-heart"></i>
-          </div>
-          <div class="content">
-            <h4>核心理念</h4>
-            <p>摄影不只是技术，更是观察世界的方式。保持好奇心，多拍多思考，你一定能拍出属于自己的好照片。</p>
-          </div>
-        </div>
-        <div class="progress-dots fragment fade-up" style="transition-delay: 250ms;">
-          <div class="progress-dot active"></div>
-          <div class="progress-dot active"></div>
-          <div class="progress-dot active"></div>
-          <div class="progress-dot"></div>
-        </div>
-        <p class="fragment fade-up" style="transition-delay: 350ms; margin-top: 1em; color: var(--text-muted); font-size: 0.85em;">
-          课程进度：第 3 周 / 共 8 周
-        </p>
-      </section>
-
-      <!-- Slide 6: 结束 -->
-      <section class="title-slide" data-background="var(--bg)">
-        <div class="icon-row">
-          <div class="icon-circle fragment scale-in">
-            <i class="fas fa-hands-clapping"></i>
-          </div>
-        </div>
-        <h2 class="fragment fade-up" style="font-size: 2em;">
-          感谢聆听
+      <!-- 2: STATEMENT -->
+      <section class="deck-flex" data-background="#f4ede0" style="flex-direction: column; justify-content: center; padding: 56px 120px;">
+        <span class="kicker">Note · why we walk first</span>
+        <h2 style="font-size: 3em; font-weight: 500; line-height: 1.1; margin-top: 1em; max-width: 900px;">
+          You can't <em style="color: var(--c-accent); font-style: normal;">survey</em> a field<br>
+          you haven't <em style="color: var(--c-clay); font-style: normal;">walked twice</em>.
         </h2>
-        <p class="subtitle fragment fade-up" style="transition-delay: 150ms;">
-          期待在课程中与你相遇
+        <p style="margin-top: 1.4em; font-size: 0.95em; line-height: 1.6; max-width: 680px;">
+          Workshop 04 is built around walks, not slides. The first map is a guess. The second walk is the experiment. The notebook is the only deliverable that has to survive the rain.
         </p>
-        <div class="meta fragment fade-up" style="transition-delay: 250ms;">
-          <i class="fas fa-envelope"></i>
-          <span>hello@photo-course.com</span>
+        <div style="margin-top: 2.4em; font-family: var(--f-hand); font-size: 1.5em; color: var(--c-clay); transform: rotate(-1.5deg); display: inline-block; margin-left: 0.4em;">
+          — and bring two pencils.
         </div>
+        <span class="pin" style="display: none;" data-qa-ignore="decorative">02 · statement</span>
+      </section>
+
+      <!-- 3: LESSON MAP (proof) -->
+      <section class="lesson-map deck-grid" data-background="#f4ede0">
+        <div class="lm-meta">
+          <span class="kicker">Lesson map · the 8-week walk</span>
+          <h2>One field, eight weeks, six stations, two long walks.</h2>
+          <p class="lede">Stations 1–4 build the question; 5–6 test it. Cross marks are rest days.</p>
+          <div class="source">map · sites 14–18 · YS basin · drawn 2026.03 · K. Lee</div>
+        </div>
+        <div class="map-canvas">
+          <svg class="connectors" viewBox="0 0 800 420" preserveAspectRatio="none">
+            <path class="twine-line" d="M 60 80 Q 150 60, 240 100 T 420 140 T 620 100 T 760 160"/>
+            <path class="twine-line" d="M 60 250 Q 200 220, 360 280 T 760 240" stroke="var(--c-leaf)" stroke-dasharray="6 4"/>
+            <path d="M 60 360 L 760 360" stroke="var(--c-rule)" stroke-width="1" stroke-dasharray="2 4" fill="none"/>
+          </svg>
+          <div class="stations">
+            <div class="station" style="grid-column: 1; grid-row: 1;">
+              <span class="week">Wk 01</span>
+              <h3>Read the basin</h3>
+              <p>maps + journals</p>
+            </div>
+            <div class="station cross" style="grid-column: 2; grid-row: 1;"></div>
+            <div class="station" style="grid-column: 3; grid-row: 1;">
+              <span class="week">Wk 02</span>
+              <h3>First walk</h3>
+              <p>no notes, eyes only</p>
+            </div>
+            <div class="station cross" style="grid-column: 4 / span 2; grid-row: 1;"></div>
+            <div class="station featured" style="grid-column: 6; grid-row: 1;">
+              <span class="week">Wk 03</span>
+              <h3>Draft the question</h3>
+              <p>one sentence</p>
+            </div>
+            <div class="station cross" style="grid-column: 7; grid-row: 1;"></div>
+            <div class="station" style="grid-column: 8; grid-row: 1;">
+              <span class="week">Wk 04</span>
+              <h3>Sample plan</h3>
+              <p>tagged route</p>
+            </div>
+
+            <div class="station cross" style="grid-row: 2; grid-column: 1 / span 8;"></div>
+
+            <div class="station" style="grid-column: 1; grid-row: 3;">
+              <span class="week">Wk 05</span>
+              <h3>Second walk</h3>
+              <p>collect · 18 tags</p>
+            </div>
+            <div class="station cross" style="grid-column: 2 / span 2; grid-row: 3;"></div>
+            <div class="station" style="grid-column: 4; grid-row: 3;">
+              <span class="week">Wk 06</span>
+              <h3>Lab + notes</h3>
+              <p>cross-check</p>
+            </div>
+            <div class="station cross" style="grid-column: 5 / span 2; grid-row: 3;"></div>
+            <div class="station" style="grid-column: 7; grid-row: 3;">
+              <span class="week">Wk 07</span>
+              <h3>Review with locals</h3>
+              <p>2 evenings</p>
+            </div>
+            <div class="station cross" style="grid-column: 8; grid-row: 3;"></div>
+
+            <div class="station cross" style="grid-row: 4; grid-column: 1 / span 5;"></div>
+            <div class="station" style="grid-column: 6 / span 3; grid-row: 4; background: var(--c-clay); border-color: var(--c-clay);">
+              <span class="week" style="color: var(--c-bg-paper);">Wk 08</span>
+              <h3 style="color: var(--c-bg-paper);">Harvest day</h3>
+              <p style="color: var(--c-bg-card);">one notebook out</p>
+            </div>
+          </div>
+        </div>
+        <span class="pin">03 · lesson-map · proof</span>
+      </section>
+
+      <!-- 4: JOURNAL (mechanism) -->
+      <section class="journal deck-grid" data-background="#f4ede0">
+        <div class="page left">
+          <div class="page-head">
+            <span><b>Day 14</b> · clay bank A·03</span>
+            <span>10:18</span>
+          </div>
+          <span class="kicker" style="color: var(--c-clay);">Mechanism · how the notebook works</span>
+          <h2>Three columns:<br>only the middle is yours.</h2>
+          <p class="lede">Left observe, middle think, right replies.</p>
+          <div class="observation">
+            "Sedge at 4 m."
+          </div>
+          <div class="field-step">
+            <span class="n">i.</span>
+            <div>
+              <h3>Observe — no verbs.</h3>
+              <p>Nouns and measures only.</p>
+            </div>
+          </div>
+          <div class="field-step">
+            <span class="n">ii.</span>
+            <div>
+              <h3>Think on the right of the line.</h3>
+              <p>Guesses, questions. Sign it.</p>
+            </div>
+          </div>
+        </div>
+        <div class="page right">
+          <div class="page-head">
+            <span><b>Notes</b> · field reply</span>
+            <span>03.21</span>
+          </div>
+          <div class="sketch">
+            <svg viewBox="0 0 200 60" stroke="var(--c-ink)" fill="none" stroke-width="1.4">
+              <path d="M 10 40 Q 30 28 50 36 T 90 32 T 130 38 T 170 30 L 190 36"/>
+              <path d="M 10 50 L 190 50" stroke="var(--c-leaf)" stroke-width="1" stroke-dasharray="2 3"/>
+              <circle cx="60" cy="34" r="3" fill="var(--c-clay)"/>
+              <circle cx="130" cy="38" r="3" fill="var(--c-clay)"/>
+              <text x="60" y="22" font-family="var(--f-hand)" font-size="11" fill="var(--c-clay)">A·03</text>
+              <text x="130" y="28" font-family="var(--f-hand)" font-size="11" fill="var(--c-clay)">A·11</text>
+            </svg>
+          </div>
+          <div class="field-step">
+            <span class="n">iii.</span>
+            <div>
+              <h3>Re-walk before you reply.</h3>
+              <p>After walk two. Most vanish.</p>
+            </div>
+          </div>
+          <div class="field-step">
+            <span class="n">iv.</span>
+            <div>
+              <h3>One page closes the loop.</h3>
+              <p>Ends: "what the field corrected."</p>
+            </div>
+          </div>
+          <div class="observation" style="border-left-color: var(--c-clay); margin-top: auto;">
+            "4 m ring holds water."
+          </div>
+        </div>
+        <span class="pin">04 · journal · mechanism</span>
+      </section>
+
+      <!-- 5: WORKSHOP -->
+      <section class="workshop deck-grid" data-background="#f4ede0">
+        <div class="head">
+          <span class="kicker">Workshop · six things</span>
+          <h2>What we cannot do over a call.</h2>
+        </div>
+        <div class="workshop-board">
+          <div class="sticky s1 card">
+            <span class="num">01 · sun</span>
+            <h3>Compare two notebooks.</h3>
+            <p>two walkers, same site.</p>
+          </div>
+          <div class="sticky s2">
+            <span class="num">02 · mon</span>
+            <h3>Re-walk what one walker only mapped once.</h3>
+            <p>second eyes = workshop.</p>
+          </div>
+          <div class="sticky s3">
+            <span class="num">03 · tue</span>
+            <h3>Sort 180 sample tags on a long table.</h3>
+            <p>category at third sort.</p>
+          </div>
+          <div class="sticky s4">
+            <span class="num">04 · wed</span>
+            <h3>Argue with someone who knows the basin.</h3>
+            <p>two evenings, no slides.</p>
+          </div>
+          <div class="sticky s5">
+            <span class="num">05 · thu</span>
+            <h3>Draw the second map together.</h3>
+            <p>all hands, one map.</p>
+          </div>
+          <div class="sticky s6">
+            <span class="num">06 · fri</span>
+            <h3>Pick the one finding worth printing.</h3>
+            <p>close with a vote.</p>
+          </div>
+        </div>
+        <span class="pin">05 · workshop</span>
+      </section>
+
+      <!-- 6: HARVEST (close) -->
+      <section class="harvest deck-grid" data-background="#f4ede0">
+        <div class="head">
+          <span class="kicker">Harvest · what walks back out of the field</span>
+        </div>
+        <div class="h-body">
+          <div class="summary">
+            <h2>One notebook,<br>one finding,<br><em>one drawn map</em>.<br><span class="hand">— and one envelope of soil.</span></h2>
+            <p>The deliverable is small on purpose. A workshop with a stack of decks hasn't decided which sentence the field corrected.</p>
+          </div>
+          <div class="envelope-stack">
+            <div class="specimen-envelope e3">
+              <div class="se-head">Envelope ·<b>C · river shells</b></div>
+              <div class="se-body">9 samples · 11 sketches</div>
+            </div>
+            <div class="specimen-envelope e2">
+              <div class="se-head">Envelope ·<b>B · moss</b></div>
+              <div class="se-body">14 samples · 2 anomalies</div>
+            </div>
+            <div class="specimen-envelope e1">
+              <div class="se-head">Envelope ·<b>A · sedge</b></div>
+              <div class="se-body">18 samples · finding A·03</div>
+            </div>
+          </div>
+        </div>
+        <div class="h-foot">
+          <div>
+            <span>Workshop</span>
+            <b>ed.04 · spring '26</b>
+          </div>
+          <div>
+            <span>Out</span>
+            <b>1 notebook · 1 map</b>
+          </div>
+          <div>
+            <span>Lead</span>
+            <b>R. Tanaka · K. Lee</b>
+          </div>
+          <div>
+            <span>Next walk</span>
+            <b>Autumn · same field</b>
+          </div>
+        </div>
+        <span class="pin" style="left: 60px; right: auto; bottom: 6px;">06 · harvest · close</span>
       </section>
 
     </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@4.0.1/dist/pptxgen.bundle.js"></script>
   <script>
     Reveal.initialize({
-      width: 1280,
-      height: 720,
-      margin: 0.04,
-      minScale: 0.8,
-      maxScale: 1.2,
-      hash: true,
-      slideNumber: false,
-      progress: true,
-      center: false,
-      controls: true,
-      controlsTutorial: false,
-      transition: 'fade',
-      transitionSpeed: 'default',
-      backgroundTransition: 'fade',
-      fragmentInURL: true,
-      embedded: false,
+      width: 1280, height: 720, margin: 0.04,
+      minScale: 0.8, maxScale: 1.2,
+      hash: true, slideNumber: 'c/t', progress: true,
+      center: false, controls: true, controlsTutorial: false,
+      transition: 'fade', transitionSpeed: 'default', backgroundTransition: 'fade',
     });
-
-    // 确保 fragment 动画支持 prefers-reduced-motion
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      document.documentElement.classList.add('reduce-motion');
+  </script>
+  <script>
+  /* Reveal.js PPTX 导出按钮 — inline of scripts/export-pptx-client.js (minified) */
+  (function () {
+    'use strict';
+    var BTN_TEXT='PPTX';
+    function rgbToHex(r,g,b){return [r,g,b].map(function(c){return Math.round(c).toString(16).padStart(2,'0').toUpperCase();}).join('');}
+    function parseRgb(str){if(!str)return null;var m=str.match(/rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)/);return m?rgbToHex(+m[1],+m[2],+m[3]):null;}
+    function linearToSrgb(c){c=Math.max(0,Math.min(1,c));return c<=0.0031308?12.92*c:1.055*Math.pow(c,1/2.4)-0.055;}
+    function oklchToHex(str){if(!str)return null;var m=str.match(/oklch\(\s*([\d.]+)(%)?\s+([\d.]+)\s+([\d.]+)/);if(!m)return null;var L=m[2]==='%'?+m[1]/100:+m[1];var C=+m[3];var H=+m[4];var a=C*Math.cos(H*Math.PI/180);var b=C*Math.sin(H*Math.PI/180);var l_=L+0.3963377774*a+0.2158037573*b;var m_=L-0.1055613458*a-0.0638541728*b;var s_=L-0.0894841775*a-1.2914855480*b;var l3=l_*l_*l_,m3=m_*m_*m_,s3=s_*s_*s_;var rl=4.0767416621*l3-3.3077115913*m3+0.2309699292*s3;var gl=-1.2684380046*l3+2.6097574011*m3-0.3413193965*s3;var bl=-0.0041960863*l3-0.7034186147*m3+1.7076147010*s3;return rgbToHex(Math.round(Math.min(255,Math.max(0,linearToSrgb(rl)*255))),Math.round(Math.min(255,Math.max(0,linearToSrgb(gl)*255))),Math.round(Math.min(255,Math.max(0,linearToSrgb(bl)*255))));}
+    function anyColorToHex(s){if(!s)return null;if(s.startsWith('#'))return s.replace('#','').substring(0,6).toUpperCase();if(s.startsWith('oklch'))return oklchToHex(s);if(s.startsWith('rgb'))return parseRgb(s);return parseRgb(s);}
+    function resolveColor(v,vars){if(!v)return null;if(v.startsWith('#')&&v.length>=4)return v.replace('#','').substring(0,6).toUpperCase();if(v.startsWith('oklch'))return oklchToHex(v);if(v.startsWith('rgb'))return parseRgb(v);var m=v.match(/var\(\s*(--[\w-]+)\s*\)/);if(m&&vars[m[1]])return resolveColor(vars[m[1]],vars);return parseRgb(v);}
+    function getElColor(el){return anyColorToHex(getComputedStyle(el).color)||'2A2418';}
+    function getCssVars(){var vars={};document.querySelectorAll('style').forEach(function(s){var rm=s.textContent.match(/:root\s*\{([^}]+)\}/);if(rm){var re=/(--[\w-]+)\s*:\s*([^;]+)/g,m;while((m=re.exec(rm[1])))vars[m[1]]=m[2].trim();}});var al={'--bg':'--c-bg','--text':'--c-fg','--text-muted':'--c-fg-2','--text-subtle':'--c-fg-3','--accent':'--c-accent','--divider':'--c-border'};Object.keys(al).forEach(function(L){var C=al[L];if(!vars[L]&&vars[C])vars[L]=vars[C];if(!vars[C]&&vars[L])vars[C]=vars[L];});return vars;}
+    function pxToPt(px){return parseFloat(px)*0.75;}
+    function textOf(el){return (el.textContent||'').trim();}
+    var pptx;
+    function exportSection(slide,sec,vars){
+      var bg=resolveColor(vars['--c-bg']||vars['--bg'],vars)||'F4EDE0';
+      slide.background={color:bg};
+      var textMuted=resolveColor(vars['--c-fg-2']||vars['--text-muted'],vars)||'666666';
+      var y=0.55;
+      var kicker=sec.querySelector('.kicker');
+      if(kicker){slide.addText(textOf(kicker),{x:0.55,y:y,w:12.2,h:0.3,fontSize:9,color:resolveColor(vars['--c-accent'],vars)||'3F6C3F',fontFace:'Calibri',charSpacing:3});y+=0.42;}
+      var h1=sec.querySelector('h1'),h2=sec.querySelector('h2');
+      var head=h1||h2;
+      if(head){var fs=pxToPt(getComputedStyle(head).fontSize);slide.addText(textOf(head),{x:0.55,y:y,w:12.2,h:h1?2.4:1.4,fontSize:Math.min(h1?40:26,fs),color:getElColor(head),fontFace:'Calibri',bold:true,valign:'top',lineSpacingMultiple:1.1});y+=h1?2.6:1.6;}
+      var paras=sec.querySelectorAll('p, .lede, .sub, .summary p');
+      var added=0;
+      paras.forEach(function(p){if(added>=3)return;var t=textOf(p);if(!t||t.length<5)return;var fs=pxToPt(getComputedStyle(p).fontSize);slide.addText(t,{x:0.55,y:y,w:12.2,h:0.7,fontSize:Math.min(13,fs),color:getElColor(p),fontFace:'Calibri',valign:'top',lineSpacingMultiple:1.5,wrap:true});y+=0.8;added++;});
+      var pin=sec.querySelector('.pin');
+      if(pin){slide.addText(textOf(pin),{x:0.55,y:7.0,w:6,h:0.3,fontSize:8,color:resolveColor(vars['--c-fg-3'],vars)||'888888',fontFace:'Calibri',charSpacing:2});}
     }
+    function doExport(){
+      if(typeof PptxGenJS==='undefined'){alert('PptxGenJS 未加载');return;}
+      var btn=document.getElementById('pptx-export-btn');
+      if(btn){btn.textContent='导出中...';btn.disabled=true;}
+      try{
+        pptx=new PptxGenJS(); pptx.layout='LAYOUT_WIDE';
+        var vars=getCssVars();
+        document.querySelectorAll('.reveal .slides > section').forEach(function(sec){
+          var nested=sec.querySelectorAll(':scope > section');
+          var list=nested.length?Array.from(nested):[sec];
+          list.forEach(function(s){var slide=pptx.addSlide();exportSection(slide,s,vars);});
+        });
+        var name=(document.title||'presentation').replace(/[^\w一-鿿\-]/g,'_');
+        pptx.writeFile({fileName:name+'.pptx'}).then(function(){if(btn){btn.textContent='已导出';setTimeout(function(){btn.textContent=BTN_TEXT;btn.disabled=false;},2000);}});
+      }catch(e){console.error(e);alert('导出失败: '+e.message);if(btn){btn.textContent=BTN_TEXT;btn.disabled=false;}}
+    }
+    function init(){
+      var btn=document.createElement('button');
+      btn.id='pptx-export-btn';btn.textContent=BTN_TEXT;
+      btn.setAttribute('aria-label','导出 PPTX');
+      btn.setAttribute('style','position:fixed;top:16px;right:16px;z-index:9999;padding:6px 12px;background:#fffaee;color:#2a2418;border:1px solid rgba(42,36,24,0.18);border-radius:4px;cursor:pointer;font-size:12px;opacity:0;transition:opacity 0.2s;font-family:system-ui,sans-serif;');
+      btn.onclick=doExport;
+      btn.onmouseenter=function(){btn.style.opacity='1';};
+      btn.onfocus=function(){btn.style.opacity='1';};
+      btn.onmouseleave=function(){btn.style.opacity='0';};
+      btn.onblur=function(){btn.style.opacity='0';};
+      document.body.appendChild(btn);
+      document.addEventListener('mousemove',function(e){btn.style.opacity=(e.clientY<76&&e.clientX>window.innerWidth-110)?'0.9':'0';});
+      document.addEventListener('fullscreenchange',function(){btn.style.display=document.fullscreenElement?'none':'';});
+    }
+    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init); else init();
+  })();
   </script>
 </body>
 </html>

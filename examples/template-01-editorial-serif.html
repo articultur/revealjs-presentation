@@ -3,519 +3,691 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>社论衬线风格演示文稿</title>
+  <title>编辑档案馆 · Editorial Archive</title>
 
-  <!-- Reveal.js 核心 -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/theme/white.css">
 
-  <!-- Google Fonts: 衬线字体 -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..700;1,6..72,300..700&family=Source+Sans+3:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500&family=Noto+Serif+SC:wght@400;500;600&family=Noto+Sans+SC:wght@300;400;500&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 
   <style>
-    /* ============================================
-       CSS 变量 - 社论衬线配色
-       暖色调：赭石/棕/米白
-       ============================================ */
+    /* ── 1. 颜色与字体 Token ───────────────────────────── */
     :root {
-      /* 主色 - 暖赭 */
-      --primary: oklch(55% 0.12 50);
-      --primary-light: oklch(80% 0.08 50);
-      --primary-dark: oklch(35% 0.10 50);
+      --c-bg: #f3ecd9;
+      --c-bg-paper: #fbf6e6;
+      --c-fg: #1d1a14;
+      --c-fg-2: rgba(29, 26, 20, 0.66);
+      --c-fg-3: rgba(29, 26, 20, 0.34);
+      --c-accent: #6e2a18;
+      --c-stamp: #8a2b1d;
+      --c-border: rgba(29, 26, 20, 0.22);
+      --c-rule: rgba(29, 26, 20, 0.14);
 
-      /* 背景 - 米白 */
-      --bg: oklch(98% 0.01 80);
-      --bg-subtle: oklch(94% 0.02 80);
-      --bg-dark: oklch(88% 0.02 80);
+      --f-display: "Cormorant Garamond", "Noto Serif SC", Georgia, serif;
+      --f-body: "Source Serif 4", "Noto Serif SC", Georgia, serif;
+      --f-mono: "Courier Prime", "Courier New", monospace;
+      --f-sans: "Noto Sans SC", system-ui, sans-serif;
 
-      /* 文字 - 暖灰色调 */
-      --text: oklch(25% 0.02 50);
-      --text-muted: oklch(50% 0.015 50);
-
-      /* 强调色 - 深棕 */
-      --accent: oklch(45% 0.15 35);
-      --accent-light: oklch(65% 0.10 35);
-
-      /* 60-30-10 配色 */
-      --surface: var(--bg);
-      --content: var(--text);
-      --highlight: var(--accent);
-
-      /* 字体 */
-      --font-serif: 'Newsreader', 'Noto Serif SC', Georgia, serif;
-      font-display: swap;
-      --font-sans: 'Source Sans 3', 'Noto Sans SC', -apple-system, sans-serif;
-      text-rendering: optimizeLegibility;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-
-      /* 字体大小比例 (1.25 ratio) */
-      --text-xs: 0.64rem;
-      --text-sm: 0.8rem;
-      --text-base: 1rem;
-      --text-lg: 1.25rem;
-      --text-xl: 1.563rem;
-      --text-2xl: 1.953rem;
-      --text-3xl: 2.441rem;
-      --text-4xl: 3.052rem;
-
-      /* Easing */
-      --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
-      --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+      --bg: var(--c-bg);
+      --text: var(--c-fg);
+      --text-muted: var(--c-fg-2);
+      --text-subtle: var(--c-fg-3);
+      --accent: var(--c-accent);
+      --divider: var(--c-border);
+      --font-display: var(--f-display);
+      --font-body: var(--f-body);
+      --font-mono: var(--f-mono);
     }
 
-    /* ============================================
-       基础重置
-       ============================================ */
-    .reveal {
-      font-family: var(--font-sans);
-      font-size: 32px;
-      color: var(--text);
-      background: var(--bg);
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
+    /* ── 2. 基础重置 ──────────────────────────────────── */
+    .reveal { font-family: var(--f-body); font-size: 30px; color: var(--c-fg); background: var(--c-bg); }
+    .reveal .slides { text-align: left; }
+    .reveal .slides > section {
+      padding: 44px 64px; height: 100%; box-sizing: border-box; overflow: hidden;
+      background: var(--c-bg);
+      position: relative !important;   /* !important 必含：覆盖 reveal.css section absolute，防 pin/label 跨 slide 泄露（test-label-overlap.js）*/
     }
+    .reveal .slides > section.deck-flex.present { display: flex !important; top: 0 !important; }
+    .reveal .slides > section.deck-grid.present { display: grid !important; top: 0 !important; }
 
-    .reveal .slides {
-      text-align: left;
-    }
+    /* ── 3. 溢出预防 ──────────────────────────────────── */
+    .reveal section > * { max-width: 100%; box-sizing: border-box; }
+    h1, h2, h3, h4, p, li, span, div { word-break: break-word; overflow-wrap: break-word; }
+    img, svg, video { max-width: 100%; max-height: 100%; object-fit: contain; }
 
-    .reveal section {
-      padding: 80px 100px;
-      height: 100%;
-      box-sizing: border-box;
-      overflow: hidden;
-    }
-
-    /* ============================================
-       标题样式 - 衬线字体
-       ============================================ */
+    /* ── 4. 排版系统 ──────────────────────────────────── */
     .reveal h1, .reveal h2, .reveal h3 {
-      font-family: var(--font-serif);
-      color: var(--text);
-      font-weight: 600;
-      letter-spacing: -0.02em;
-      line-height: 1.2;
+      font-family: var(--f-display); line-height: 1.06; letter-spacing: 0; color: var(--c-fg);
+    }
+    .reveal h1 { font-size: 3.3em; font-weight: 400; font-style: italic; margin: 0; }
+    .reveal h2 { font-size: 2em; font-weight: 500; margin: 0 0 0.4em 0; }
+    .reveal h3 { font-size: 1.1em; font-weight: 600; margin: 0; }
+    .reveal h4 { font-family: var(--f-display); font-size: 0.9em; font-weight: 600; margin: 0; letter-spacing: 0; }
+    .reveal p { font-family: var(--f-body); font-size: 0.85em; line-height: 1.62; color: var(--c-fg-2); margin: 0; }
+    .reveal em { font-style: italic; color: var(--c-fg); }
+
+    /* Eyebrow / Kicker */
+    .kicker {
+      font-family: var(--f-mono); font-size: 0.5em;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--c-fg-3);
+      display: inline-flex; align-items: center; gap: 0.7em;
+    }
+    .kicker::before {
+      content: ''; width: 28px; height: 1px; background: var(--c-fg-3);
     }
 
-    .reveal h1 {
-      font-size: 3.2em;
-      font-weight: 700;
-      margin-bottom: 0.3em;
+    /* Pin (左下角索引) */
+    .pin {
+      position: absolute; left: 72px; bottom: 32px;
+      font-family: var(--f-mono); font-size: 0.5em;
+      color: var(--c-fg-3); letter-spacing: 0.06em;
+      z-index: 10;
+    }
+    /* Pin safe zone for slides with bottom-left content (ledger, closing, plate-grid, folio-grid) */
+    .ledger .pin, .closing .pin, .plate-grid .pin, .folio-grid .pin {
+      right: 72px; left: auto;
+    }
+    /* Closing colophon spans full width — pin sits centered above */
+    .closing .pin { right: auto; left: 50%; transform: translateX(-50%); bottom: 12px; }
+
+    /* Rule (装饰横线) */
+    .rule {
+      width: 64px; height: 2px; background: var(--c-accent); border: 0; margin: 0;
+    }
+    .rule-thin {
+      width: 100%; height: 1px; background: var(--c-rule); border: 0;
     }
 
-    .reveal h2 {
-      font-size: 2em;
-      margin-bottom: 0.5em;
+    /* Stamp (印章) */
+    .stamp {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 0.4em 0.8em;
+      border: 2px solid var(--c-stamp); color: var(--c-stamp);
+      font-family: var(--f-mono); font-size: 0.5em;
+      letter-spacing: 0.22em; text-transform: uppercase;
+      transform: rotate(-3deg);
     }
 
-    .reveal h3 {
-      font-size: 1.3em;
-      font-weight: 600;
+    /* ─────────── ARCHIVE COVER (封面) ─────────── */
+    .archive-cover { padding: 44px 72px; position: relative; }
+    .archive-cover .poster-wall {
+      position: absolute; top: 44px; right: 72px;
+      width: 320px; height: 420px;
+      display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(4, 1fr);
+      gap: 6px; opacity: 0.92;
     }
-
-    .reveal p {
-      font-family: var(--font-sans);
-      font-size: 1em;
-      line-height: 1.7;
-      color: var(--text);
-      margin-bottom: 0.8em;
+    .archive-cover .poster-wall .paper {
+      background: var(--c-bg-paper);
+      border: 1px solid var(--c-border);
+      box-shadow: 2px 3px 0 rgba(29, 26, 20, 0.06);
+      position: relative; overflow: hidden;
     }
+    .archive-cover .poster-wall .paper:nth-child(1) { background: #e8d8a8; transform: rotate(-1.5deg); }
+    .archive-cover .poster-wall .paper:nth-child(4) { background: #d6cba0; transform: rotate(1deg); }
+    .archive-cover .poster-wall .paper:nth-child(6) { background: var(--c-accent); }
+    .archive-cover .poster-wall .paper:nth-child(8) { background: #2a2418; }
+    .archive-cover .poster-wall .paper:nth-child(11) { background: #c4b885; transform: rotate(-1deg); }
+    .archive-cover .poster-wall .paper svg { width: 60%; height: 60%; position: absolute; top: 20%; left: 20%; opacity: 0.5; }
 
-    /* 引用块 */
-    .reveal blockquote {
-      font-family: var(--font-serif);
-      font-size: 1.4em;
-      font-style: italic;
-      border-left: 4px solid var(--accent);
-      margin: 1.5em 0;
-      background: var(--bg-subtle);
-      padding: 1em 1.5em;
-      border-radius: 0 4px 4px 0;
+    .archive-cover .cover-body {
+      display: flex; flex-direction: column; justify-content: flex-end;
+      width: 56%; height: 100%; padding-bottom: 18px; padding-top: 60px;
     }
-
-    .reveal blockquote p {
-      margin: 0;
-      font-size: 1em;
+    .archive-cover .cover-meta {
+      font-family: var(--f-mono); font-size: 0.42em; letter-spacing: 0.12em;
+      color: var(--c-fg-3); text-transform: uppercase;
+      display: flex; gap: 1.2em; margin-bottom: 0.8em; flex-wrap: wrap;
     }
-
-    .reveal blockquote cite {
-      display: block;
-      font-size: 0.7em;
-      font-style: normal;
-      color: var(--text-muted);
-      margin-top: 0.5em;
+    .archive-cover h1 { font-size: 2.3em; line-height: 1; margin-bottom: 0.15em; }
+    .archive-cover .cover-deck {
+      font-family: var(--f-body); font-style: italic;
+      font-size: 0.72em; color: var(--c-fg-2); line-height: 1.4;
+      max-width: 440px; margin-top: 0.6em;
     }
-
-    /* ============================================
-       列表样式
-       ============================================ */
-    .reveal ul, .reveal ol {
-      font-family: var(--font-sans);
+    .archive-cover .cover-credits {
+      margin-top: 1em; font-family: var(--f-mono); font-size: 0.4em;
+      letter-spacing: 0.12em; color: var(--c-fg-3); text-transform: uppercase;
       line-height: 1.6;
     }
+    .archive-cover .cover-credits b { color: var(--c-fg); font-weight: 600; letter-spacing: 0.08em; }
+    .archive-cover .stamp { position: absolute; top: 60px; left: 72px; }
 
-    .reveal li {
-      margin-bottom: 0.3em;
+    /* ─────────── PROOF: FOLIO GRID (材料对开) ─────────── */
+    .folio-grid {
+      grid-template-columns: 0.42fr 0.58fr;
+      gap: 56px;
+      padding: 56px 72px 80px 72px;
+      align-content: center;
     }
-
-    /* 装饰性列表标记 */
-    .reveal .decorated-list li::before {
-      content: '—';
-      color: var(--accent);
-      margin-right: 0.5em;
+    .folio-grid .folio-left { display: flex; flex-direction: column; gap: 1.4em; }
+    .folio-grid .folio-left .kicker { margin-bottom: 0.6em; }
+    .folio-grid .folio-left h2 { font-size: 2.2em; line-height: 1.05; }
+    .folio-grid .folio-left .lede {
+      font-family: var(--f-body); font-style: italic;
+      font-size: 0.95em; line-height: 1.6; color: var(--c-fg-2);
     }
-
-    /* ============================================
-       卡片布局 - 社论风格
-       ============================================ */
-    .editorial-card {
-      background: var(--bg-subtle);
-      border-radius: 2px;
-      padding: 0.8em 1em;
-      border-left: 3px solid var(--accent);
+    .folio-grid .folio-left .byline {
+      margin-top: 0.6em; font-family: var(--f-mono); font-size: 0.46em;
+      letter-spacing: 0.14em; color: var(--c-fg-3); text-transform: uppercase;
     }
-
-    .editorial-card {
-      background: var(--bg-subtle);
-      border-radius: 2px;
-      padding: 1em 1.5em;
-      border-left: 3px solid var(--accent);
+    .folio-grid .folio-right {
+      display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px; align-content: start;
     }
-
-    .editorial-card h4 {
-      font-size: 0.85em;
-      margin-bottom: 0.3em;
-    }
-
-    .editorial-card p {
-      font-size: 0.75em;
-      line-height: 1.4;
-      margin: 0;
-    }
-
-    /* ============================================
-       标题页特殊样式
-       ============================================ */
-    .title-slide {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-    }
-
-    .title-slide h1 {
-      font-size: 3.5em;
-      font-weight: 700;
-      margin-bottom: 0.2em;
-    }
-
-    .title-slide .subtitle {
-      font-family: var(--font-sans);
-      font-size: 1.4em;
-      font-weight: 300;
-      color: var(--text-muted);
-      margin-bottom: 2em;
-    }
-
-    .title-slide .meta {
-      font-size: 0.9em;
-      color: var(--text-muted);
-      border-top: 1px solid var(--bg-dark);
-      padding-top: 1.5em;
-      margin-top: 1em;
-    }
-
-    /* ============================================
-       Fragment 动画
-       ============================================ */
-    .reveal .fragment {
-      transition-timing-function: var(--ease-out-quart);
-      transition-duration: 400ms;
-      transition-property: opacity, transform;
-    }
-
-    .reveal .fragment.fade-up {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-
-    .reveal .fragment.fade-up.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    /* ============================================
-       装饰元素 - 细线
-       ============================================ */
-    .divider {
-      width: 60px;
-      height: 2px;
-      background: var(--accent);
-      margin: 1.5em 0;
-    }
-
-    /* Focus states for accessibility */
-    .reveal .controls button:focus-visible,
-    .reveal .progress-bar:focus-visible {
-      outline: 2px solid var(--accent);
-      outline-offset: 2px;
-    }
-
-    .section-number {
-      font-family: var(--font-serif);
-      font-size: 4em;
-      font-weight: 700;
-      color: var(--bg-dark);
-      line-height: 1;
-      margin-bottom: 0.2em;
-      min-width: 0;
-    }
-
-    /* ============================================
-       代码块
-       ============================================ */
-    .reveal pre {
-      font-size: 0.75em;
-      box-shadow: none;
-      border-radius: 2px;
-    }
-
-    .reveal pre code {
-      font-family: 'SF Mono', 'Fira Code', monospace;
-      padding: 1em 1.5em;
-      background: var(--text);
-      color: var(--bg);
-      border-radius: 2px;
-    }
-
-    /* ============================================
-       进度条 & 导航
-       ============================================ */
-    .reveal .progress {
-      color: var(--accent);
-      height: 3px;
-    }
-
-    .reveal .controls {
-      color: var(--accent);
-    }
-
-    /* ============================================
-       Reduced Motion
-       ============================================ */
-    @media (prefers-reduced-motion: reduce) {
-      .reveal .fragment,
-      .fade-in,
-      .slide-up {
-        opacity: 1 !important;
-        transform: none !important;
-        transition: none !important;
-      }
-    }
-
-    /* 标题页入场动画 */
-
-    /* ============================================
-       两列布局
-       ============================================ */
-    .two-columns {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-      gap: 2em;
-      align-items: start;
-    }
-
-    .two-columns h3 {
-      margin-bottom: 0.8em;
-    }
-
-    .viewpoint-card {
-      background: var(--bg-subtle);
-      border-radius: 2px;
-      padding: 1.2em 1.5em;
-      border-top: 3px solid var(--accent);
-    }
-
-    .viewpoint-card ul {
-      list-style: none;
-      padding: 0;
-      margin: 0.8em 0 0 0;
-    }
-
-    .viewpoint-card li {
-      font-size: 0.9em;
-      line-height: 1.8;
-      color: var(--text);
-      padding-left: 1em;
+    .folio-grid .folio-cell {
+      background: var(--c-bg-paper);
+      border: 1px solid var(--c-border);
+      padding: 0.9em 1em;
       position: relative;
     }
+    .folio-grid .folio-cell .num {
+      font-family: var(--f-mono); font-size: 0.42em;
+      color: var(--c-fg-3); letter-spacing: 0.14em;
+    }
+    .folio-grid .folio-cell h4 {
+      font-size: 0.95em; margin: 0.2em 0 0.3em 0; line-height: 1.15;
+    }
+    .folio-grid .folio-cell p { font-size: 0.62em; line-height: 1.45; }
+    .folio-grid .folio-cell.featured {
+      background: var(--c-fg); color: var(--c-bg);
+    }
+    .folio-grid .folio-cell.featured .num,
+    .folio-grid .folio-cell.featured p { color: rgba(243, 236, 217, 0.7); }
+    .folio-grid .folio-cell.featured h4 { color: var(--c-bg); }
 
-    .viewpoint-card li::before {
-      content: '—';
-      color: var(--accent-light);
-      position: absolute;
-      left: 0;
+    /* ─────────── MECHANISM: PLATE GRID (图版网格) ─────────── */
+    .plate-grid {
+      grid-template-rows: auto 1fr;
+      gap: 0.6em;
+      padding: 44px 72px;
+    }
+    .plate-grid .plate-header { display: flex; align-items: baseline; gap: 1.4em; }
+    .plate-grid .plate-header h2 { flex: 1; font-size: 1.55em; margin: 0; }
+    .plate-grid .plate-row {
+      display: grid; grid-template-columns: 56px 1fr 1.2fr;
+      gap: 1.2em; padding: 0.6em 0;
+      border-top: 1px solid var(--c-rule);
+      align-items: start;
+    }
+    .plate-grid .plate-row:last-child { border-bottom: 1px solid var(--c-rule); }
+    .plate-grid .plate-no {
+      font-family: var(--f-display); font-style: italic;
+      font-size: 1.4em; color: var(--c-accent); line-height: 1;
+    }
+    .plate-grid .plate-title h3 { font-size: 0.92em; }
+    .plate-grid .plate-title .sub {
+      font-family: var(--f-mono); font-size: 0.42em;
+      letter-spacing: 0.14em; color: var(--c-fg-3); text-transform: uppercase;
+      margin-top: 0.4em;
+    }
+    .plate-grid .plate-body p { font-size: 0.64em; line-height: 1.5; }
+
+    /* ─────────── QUOTE PAGE ─────────── */
+    .quote-page {
+      grid-template-columns: 0.3fr 0.7fr;
+      gap: 64px;
+      padding: 64px 80px;
+      align-items: center;
+    }
+    .quote-page .quote-meta {
+      border-right: 1px solid var(--c-border);
+      padding-right: 56px;
+      display: flex; flex-direction: column; gap: 0.6em;
+    }
+    .quote-page .quote-meta .num {
+      font-family: var(--f-display); font-style: italic;
+      font-size: 4em; color: var(--c-accent); line-height: 0.9;
+    }
+    .quote-page .quote-meta .who {
+      font-family: var(--f-mono); font-size: 0.5em;
+      letter-spacing: 0.14em; color: var(--c-fg-3); text-transform: uppercase;
+    }
+    .quote-page .quote-meta b { color: var(--c-fg); font-size: 0.6em; letter-spacing: 0; text-transform: none; font-family: var(--f-body); font-weight: 600; }
+    .quote-page .quote-body {
+      font-family: var(--f-display); font-style: italic;
+      font-size: 2em; line-height: 1.3; color: var(--c-fg);
+      position: relative;
+    }
+    .quote-page .quote-body::before {
+      content: '"'; position: absolute; left: -0.4em; top: -0.5em;
+      font-size: 3em; color: var(--c-accent); opacity: 0.5;
+      line-height: 1; font-family: var(--f-display);
     }
 
-    /* 案例条目 - 带编号 */
-    .case-item {
-      display: flex;
-      align-items: stretch;
-      gap: 1em;
+    /* ─────────── EVIDENCE LEDGER ─────────── */
+    .ledger {
+      padding: 44px 72px;
+    }
+    .ledger h2 { margin-bottom: 0.4em; font-size: 1.55em; }
+    .ledger-table {
+      width: 100%; border-collapse: collapse;
+      font-family: var(--f-body); font-size: 0.6em;
+      margin-top: 0.8em;
+    }
+    .ledger-table th {
+      text-align: left; padding: 0.5em 0.5em;
+      font-family: var(--f-mono); font-size: 0.85em;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--c-fg-3); font-weight: 400;
+      border-bottom: 2px solid var(--c-fg);
+    }
+    .ledger-table td {
+      padding: 0.55em 0.5em; vertical-align: top;
+      border-bottom: 1px solid var(--c-rule); line-height: 1.4;
+    }
+    .ledger-table .grade-A { color: var(--c-accent); font-weight: 600; font-family: var(--f-mono); }
+    .ledger-table .grade-B { color: var(--c-fg); font-weight: 600; font-family: var(--f-mono); }
+    .ledger-table .grade-C { color: var(--c-fg-2); font-family: var(--f-mono); }
+    .ledger-table tr:last-child td { border-bottom: none; }
+    .ledger-table .source { font-family: var(--f-mono); font-size: 0.85em; color: var(--c-fg-3); }
+
+    /* ─────────── TIMELINE ─────────── */
+    .timeline-wrap { padding: 64px 80px; }
+    .timeline-wrap h2 { margin-bottom: 1em; }
+    .timeline-rule {
+      position: relative; padding-top: 32px;
+      border-top: 1px solid var(--c-border);
+      margin-top: 32px;
+    }
+    .timeline-marks {
+      display: grid; grid-template-columns: repeat(5, 1fr);
+      gap: 16px;
+    }
+    .timeline-item { position: relative; padding-top: 18px; }
+    .timeline-item::before {
+      content: ''; position: absolute; top: -38px; left: 0;
+      width: 9px; height: 9px; background: var(--c-accent);
+      border-radius: 50%;
+    }
+    .timeline-item.muted::before { background: var(--c-fg-3); }
+    .timeline-item .year {
+      font-family: var(--f-display); font-style: italic;
+      font-size: 1.5em; color: var(--c-fg); line-height: 1;
+    }
+    .timeline-item h4 { font-size: 0.78em; margin: 0.4em 0 0.3em 0; }
+    .timeline-item p { font-size: 0.6em; line-height: 1.45; }
+
+    /* ─────────── CLOSING ─────────── */
+    .closing {
+      padding: 44px 72px;
+      grid-template-rows: 1fr auto;
+      align-items: center; gap: 1.4em;
+    }
+    .closing .close-body { max-width: 720px; }
+    .closing .close-body h2 {
+      font-family: var(--f-display); font-style: italic;
+      font-size: 2.6em; line-height: 1.05; font-weight: 400;
+      margin-bottom: 0.4em;
+    }
+    .closing .close-body p {
+      font-family: var(--f-body); font-style: italic;
+      font-size: 0.85em; line-height: 1.55; color: var(--c-fg-2);
+      max-width: 580px;
+    }
+    .closing .colophon {
+      display: flex; justify-content: space-between; align-items: end;
+      padding-top: 1em; border-top: 1px solid var(--c-border);
+      font-family: var(--f-mono); font-size: 0.46em;
+      letter-spacing: 0.12em; color: var(--c-fg-3);
+      text-transform: uppercase;
+    }
+    .closing .colophon b { color: var(--c-fg); font-weight: 600; }
+
+    /* ─────────── FRAGMENT ANIMATIONS ─────────── */
+    .reveal .fragment { transition-duration: 380ms; }
+    @media (prefers-reduced-motion: reduce) {
+      .reveal .fragment { opacity: 1; transform: none; transition: opacity 200ms ease-out; }
     }
 
-    .case-num {
-      font-family: var(--font-serif);
-      font-size: 1.4em;
-      font-weight: 700;
-      color: var(--accent);
-      min-width: 2em;
-      min-width: 0;
-      padding-top: 0.2em;
-    }
-
-    .case-item .editorial-card {
-      flex: 1;
-    }
-
+    /* Progress */
+    .reveal .progress { color: var(--c-accent); height: 2px; }
+    .reveal .controls { color: var(--c-fg-2); }
   </style>
 </head>
 <body>
   <div class="reveal">
     <div class="slides">
 
-      <!-- Slide 1: 标题页 -->
-      <section class="title-slide" data-background="var(--bg)">
-        <p class="section-number">01</p>
-        <h1 class="fragment fade-up" style="transition-delay: 0ms;">
-          设计的理性与感性
-        </h1>
-        <p class="subtitle fragment fade-up" style="transition-delay: 150ms;">
-          探索数字产品中的美学逻辑
-        </p>
-        <div class="divider fragment fade-up" style="transition-delay: 300ms;"></div>
-        <div class="meta fragment fade-up" style="transition-delay: 450ms;">
-          <p>张明远 · 2026年春季</p>
+      <!-- 1: ARCHIVE COVER -->
+      <section class="archive-cover deck-flex" data-background="#f3ecd9">
+        <div class="poster-wall">
+          <div class="paper"><svg viewBox="0 0 40 40" stroke="currentColor" fill="none" stroke-width="1.6"><circle cx="20" cy="20" r="16"/><circle cx="20" cy="20" r="9"/></svg></div>
+          <div class="paper"></div>
+          <div class="paper"><svg viewBox="0 0 40 40" stroke="currentColor" fill="none" stroke-width="1.6"><path d="M6 30 L20 8 L34 30 Z"/></svg></div>
+          <div class="paper"></div>
+          <div class="paper"></div>
+          <div class="paper"></div>
+          <div class="paper"></div>
+          <div class="paper"></div>
+          <div class="paper"><svg viewBox="0 0 40 40" stroke="currentColor" fill="none" stroke-width="1.6"><rect x="8" y="8" width="24" height="24"/><line x1="8" y1="20" x2="32" y2="20"/></svg></div>
+          <div class="paper"></div>
+          <div class="paper"></div>
+          <div class="paper"></div>
         </div>
-      </section>
 
-      <!-- Slide 2: 引言 -->
-      <section data-background="var(--bg)">
-        <h2 class="fragment fade-up" style="transition-delay: 0ms;">设计的双重性</h2>
-        <div class="divider fragment fade-up" style="transition-delay: 100ms;"></div>
-        <blockquote class="fragment fade-up" style="transition-delay: 200ms;">
-          <p>「设计不只是让事物看起来美观，而是让事物发挥作用。」</p>
-          <cite>— Dieter Rams</cite>
-        </blockquote>
-        <p class="fragment fade-up" style="transition-delay: 400ms; color: var(--text-muted); font-size: 0.9em;">
-          这句话揭示了设计的本质：功能与美学的统一。
-        </p>
-      </section>
+        <div class="stamp">No. 014 · Catalogued</div>
 
-      <!-- Slide 3: 两个观点 -->
-      <section data-background="var(--bg)">
-        <h2 class="fragment fade-up">理性与感性的交汇</h2>
-        <div class="two-columns" style="margin-top: 1.5em;">
-          <div class="fragment fade-up" style="transition-delay: 100ms;">
-            <h3 style="color: var(--accent);">理性的维度</h3>
-            <ul style="font-size: 0.9em;">
-              <li>系统性的思考方式</li>
-              <li>可量化的评估标准</li>
-              <li>用户研究数据支撑</li>
-              <li>设计规范的建立</li>
-            </ul>
+        <div class="cover-body">
+          <div class="cover-meta">
+            <span>Volume 04</span>
+            <span>—</span>
+            <span>Spring · 2026</span>
+            <span>—</span>
+            <span>An editorial archive</span>
           </div>
-          <div class="fragment fade-up" style="transition-delay: 250ms;">
-            <h3 style="color: var(--primary-dark);">感性的维度</h3>
-            <ul style="font-size: 0.9em;">
-              <li>直觉与审美的判断</li>
-              <li>情感共鸣的创造</li>
-              <li>叙事与故事的构建</li>
-              <li>意想不到的惊喜</li>
-            </ul>
+          <hr class="rule" style="margin-bottom: 0.8em;">
+          <h1>Slow Looking,<br><em>Sharp Conclusions.</em></h1>
+          <p class="cover-deck">A field-built archive of how design teams turned long-form research into decisions that shipped — pulled from twelve quarterly reviews, six closed-door briefings, and one stubborn newsroom.</p>
+          <div class="cover-credits">
+            <span><b>Edited by</b> Y. Lin · Z. Hao</span><br>
+            <span style="display:inline-block; margin-top: 0.4em;"><b>Series</b> Practice Notebooks · ed.04</span>
           </div>
         </div>
+
+        <span class="pin">01 · cover</span>
       </section>
 
-      <!-- Slide 4: 案例 -->
-      <section data-background="var(--bg)">
-        <h2 class="fragment fade-up">案例研究</h2>
-        <div style="display: flex; flex-direction: column; gap: 0.8em; margin-top: 1em;">
-          <div class="editorial-card fragment fade-up" style="transition-delay: 100ms;">
-            <h4>Apple Human Interface</h4>
-            <p>通过一致的视觉语言和微交互，建立起用户与设备之间的情感连接。</p>
+      <!-- 2: STATEMENT -->
+      <section class="deck-flex" data-background="#f3ecd9" style="flex-direction: column; justify-content: center; padding: 56px 100px 90px 100px;">
+        <span class="kicker">Editor's note · the argument</span>
+        <hr class="rule" style="margin: 1.5em 0;">
+        <h2 style="font-family: var(--f-display); font-style: italic; font-weight: 400; font-size: 2.4em; line-height: 1.15; max-width: 920px;">
+          Research stops being credible the moment it<br>
+          stops <em style="color: var(--c-accent);">forcing a decision</em>.
+        </h2>
+        <p style="font-size: 0.82em; margin-top: 1em; max-width: 720px; line-height: 1.55; font-style: italic;">
+          We collected twelve teams who turned reading time into shipping time. None used more dashboards. All used a smaller, sharper question.
+        </p>
+        <div style="margin-top: 1.4em; display: flex; gap: 2em; font-family: var(--f-mono); font-size: 0.44em; letter-spacing: 0.14em; color: var(--c-fg-3); text-transform: uppercase;">
+          <span><b style="color: var(--c-fg);">12</b> teams</span>
+          <span><b style="color: var(--c-fg);">8 wks</b> field window</span>
+          <span><b style="color: var(--c-fg);">3</b> failure modes recorded</span>
+        </div>
+        <span class="pin" style="right: 80px; left: auto;">02 · statement</span>
+      </section>
+
+      <!-- 3: FOLIO GRID (proof) -->
+      <section class="folio-grid deck-grid" data-background="#f3ecd9">
+        <div class="folio-left">
+          <span class="kicker">Folio · the four cuts</span>
+          <h2>Four research moves that kept conclusions <em style="color: var(--c-accent);">sharp</em>.</h2>
+          <p class="lede">Trades volume for force.</p>
+          <div class="byline">Plate group A · cf. plates §07–§10</div>
+        </div>
+        <div class="folio-right">
+          <div class="folio-cell">
+            <span class="num">§ 01</span>
+            <h4>Frame, then read.</h4>
+            <p>Brief first. Read only to test a stated claim.</p>
           </div>
-          <div class="editorial-card fragment fade-up" style="transition-delay: 200ms;">
-            <h4>Dieter Rams 的十诫</h4>
-            <p>好的设计是尽可能少的设计——less, but better。</p>
+          <div class="folio-cell featured">
+            <span class="num">§ 02</span>
+            <h4>One interview, one decision.</h4>
+            <p>Retire one possibility per session. Name the decision before the call.</p>
           </div>
-          <div class="editorial-card fragment fade-up" style="transition-delay: 300ms;">
-            <h4>Braun 的功能主义</h4>
-            <p>形式追随功能，但功能本身也可以是美的。</p>
+          <div class="folio-cell">
+            <span class="num">§ 03</span>
+            <h4>Source the disagreement.</h4>
+            <p>Cite the strongest counter-evidence by name, or the question isn't ready.</p>
+          </div>
+          <div class="folio-cell">
+            <span class="num">§ 04</span>
+            <h4>Print, don't archive.</h4>
+            <p>If findings won't fit a folio page, they weren't structured to ship.</p>
           </div>
         </div>
+        <span class="pin">03 · folio · proof</span>
       </section>
 
-      <!-- Slide 5: 总结 -->
-      <section data-background="var(--bg)">
-        <h2 class="fragment fade-up">核心观点</h2>
-        <div class="divider fragment fade-up" style="transition-delay: 100ms;"></div>
-        <ul style="list-style: none; padding: 0; margin-top: 1em;">
-          <li class="fragment fade-up" style="transition-delay: 200ms; margin-bottom: 1em;">
-            <strong style="color: var(--accent);">01</strong>
-            &nbsp;&nbsp;设计是沟通——用视觉语言传达信息与情感
-          </li>
-          <li class="fragment fade-up" style="transition-delay: 350ms; margin-bottom: 1em;">
-            <strong style="color: var(--accent);">02</strong>
-            &nbsp;&nbsp;约束是创意——限制往往激发更纯粹的解决方案
-          </li>
-          <li class="fragment fade-up" style="transition-delay: 500ms; margin-bottom: 1em;">
-            <strong style="color: var(--accent);">03</strong>
-            &nbsp;&nbsp;细节是魔鬼——每一个像素都值得认真对待
-          </li>
-        </ul>
+      <!-- 4: PLATE GRID (mechanism) -->
+      <section class="plate-grid deck-grid" data-background="#f3ecd9">
+        <div class="plate-header">
+          <span class="kicker">Plate book</span>
+          <h2>How a small team built the 8-week research cadence.</h2>
+        </div>
+        <div>
+          <div class="plate-row">
+            <div class="plate-no">i.</div>
+            <div class="plate-title">
+              <h3>Brief on Monday.</h3>
+              <div class="sub">Week 01 · scoping</div>
+            </div>
+            <div class="plate-body"><p>One page: the question, the disagreement, the decision by week 8.</p></div>
+          </div>
+          <div class="plate-row">
+            <div class="plate-no">ii.</div>
+            <div class="plate-title">
+              <h3>Read on a clock.</h3>
+              <div class="sub">Weeks 02–03 · corpus</div>
+            </div>
+            <div class="plate-body"><p>A 9-hour reading window. Marked sources, never highlights.</p></div>
+          </div>
+          <div class="plate-row">
+            <div class="plate-no">iii.</div>
+            <div class="plate-title">
+              <h3>Interview to retire.</h3>
+              <div class="sub">Weeks 04–06 · field</div>
+            </div>
+            <div class="plate-body"><p>Each interview retires one possibility from a short-list.</p></div>
+          </div>
+          <div class="plate-row">
+            <div class="plate-no">iv.</div>
+            <div class="plate-title">
+              <h3>Print the folio.</h3>
+              <div class="sub">Weeks 07–08 · publish</div>
+            </div>
+            <div class="plate-body"><p>Deliverable: a four-page folio — claim, evidence, counter, decision.</p></div>
+          </div>
+        </div>
+        <span class="pin">04 · plate · mechanism</span>
       </section>
 
-      <!-- Slide 6: 结束页 -->
-      <section class="title-slide" data-background="var(--bg)">
-        <div class="divider" style="margin-bottom: 2em;"></div>
-        <h1 class="fragment fade-up" style="font-size: 2.5em;">
-          谢谢聆听
-        </h1>
-        <p class="subtitle fragment fade-up" style="transition-delay: 150ms;">
-          期待交流与讨论
-        </p>
-        <p class="fragment fade-up" style="transition-delay: 300ms; color: var(--text-muted); font-size: 0.8em;">
-          演示文稿使用 Reveal.js 制作
-        </p>
+      <!-- 5: QUOTE PAGE -->
+      <section class="quote-page deck-grid" data-background="#fbf6e6">
+        <div class="quote-meta">
+          <span class="num">№ 07</span>
+          <hr class="rule" style="width: 32px;">
+          <span class="who">Field interview</span>
+          <span style="margin-top: 1.2em;"><b>R. Tanaka</b></span>
+          <span class="who" style="color: var(--c-fg-2);">Editorial lead</span>
+          <span class="who" style="margin-top: 0.4em;">Recorded · 02.2026</span>
+        </div>
+        <div class="quote-body">
+          A research note that doesn't change next week's calendar is just<br>
+          a <em style="color: var(--c-accent); font-style: italic;">very long bookmark</em>.
+        </div>
+        <span class="pin">05 · interview</span>
+      </section>
+
+      <!-- 6: EVIDENCE LEDGER -->
+      <section class="ledger deck-flex" data-background="#f3ecd9" style="flex-direction: column;">
+        <span class="kicker">Ledger · grade of evidence</span>
+        <h2 style="margin-top: 0.6em;">Not every cited line earns the same shelf space.</h2>
+        <table class="ledger-table">
+          <thead>
+            <tr>
+              <th style="width: 12%;">Grade</th>
+              <th style="width: 28%;">Type</th>
+              <th style="width: 44%;">Admissible when</th>
+              <th style="width: 16%;">Source needed</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="grade-A">A · cited</span></td>
+              <td>Field interview, named author</td>
+              <td>Transcript on file; verbatim quote</td>
+              <td class="source">verified · URL</td>
+            </tr>
+            <tr>
+              <td><span class="grade-A">A · cited</span></td>
+              <td>Peer-reviewed or regulator-filed</td>
+              <td>Identifier printable beside the claim</td>
+              <td class="source">verified · DOI</td>
+            </tr>
+            <tr>
+              <td><span class="grade-B">B · user</span></td>
+              <td>Team-provided figure</td>
+              <td>User-supplied; they stand behind it</td>
+              <td class="source">user-provided</td>
+            </tr>
+            <tr>
+              <td><span class="grade-C">C · illus.</span></td>
+              <td>Estimate, range, indicative figure</td>
+              <td>Marked <em>illustrative</em>; never the headline</td>
+              <td class="source">illustrative</td>
+            </tr>
+            <tr>
+              <td style="color: var(--c-fg-3); font-family: var(--f-mono);">—</td>
+              <td style="color: var(--c-fg-3);">"Public disclosure" / "industry data"</td>
+              <td style="color: var(--c-fg-3);">Not admissible. Reduce or remove.</td>
+              <td class="source" style="color: var(--c-fg-3);">drop</td>
+            </tr>
+          </tbody>
+        </table>
+        <span class="pin">06 · ledger</span>
+      </section>
+
+      <!-- 7: TIMELINE -->
+      <section class="timeline-wrap deck-flex" data-background="#f3ecd9" style="flex-direction: column; justify-content: center;">
+        <span class="kicker">Series register · the practice notebooks</span>
+        <h2 style="margin-top: 0.6em;">Four years of slow-looking files.</h2>
+        <p style="max-width: 640px; margin-top: 0.4em; font-style: italic;">Each edition closes one question. Vol. 04 closes the one above.</p>
+        <div class="timeline-rule">
+          <div class="timeline-marks">
+            <div class="timeline-item muted">
+              <span class="year">'22</span>
+              <h4>ed.01 — Pilot.</h4>
+              <p>Two teams, one shared shelf. Cadence set here.</p>
+            </div>
+            <div class="timeline-item muted">
+              <span class="year">'23</span>
+              <h4>ed.02 — Open the doors.</h4>
+              <p>Six teams. Folio moves from PDF to print.</p>
+            </div>
+            <div class="timeline-item muted">
+              <span class="year">'24</span>
+              <h4>ed.03 — Ledger rule.</h4>
+              <p>Evidence grading enters; quotes need a callable source.</p>
+            </div>
+            <div class="timeline-item">
+              <span class="year">'26</span>
+              <h4>ed.04 — Print, don't archive.</h4>
+              <p>You are here. Twelve teams, one decision per project.</p>
+            </div>
+            <div class="timeline-item muted">
+              <span class="year">'27</span>
+              <h4>ed.05 — Open shelf.</h4>
+              <p>Forthcoming. External editors enter the cadence.</p>
+            </div>
+          </div>
+        </div>
+        <span class="pin">07 · register</span>
+      </section>
+
+      <!-- 8: CLOSING -->
+      <section class="closing deck-grid" data-background="#fbf6e6">
+        <div class="close-body">
+          <span class="kicker">Closing · the editor signs</span>
+          <h2><em>Read less.<br>Decide on Friday.<br>Print on Monday.</em></h2>
+          <p>This volume closes here. The next volume opens a question we don't yet know how to retire — which is the only kind of question worth the cost of the field window.</p>
+        </div>
+        <div class="colophon">
+          <div>
+            <b>Volume 04 · 2026</b><br>
+            <span style="display:inline-block; margin-top:0.4em;">Practice Notebooks</span>
+          </div>
+          <div style="text-align: center;">
+            <span class="stamp">Catalogued · 2026.03</span>
+          </div>
+          <div style="text-align: right;">
+            <b>archive.editorial</b><br>
+            <span style="display:inline-block; margin-top:0.4em;">Y. Lin · Z. Hao, eds.</span>
+          </div>
+        </div>
+        <span class="pin">08 · closing · close</span>
       </section>
 
     </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@4.0.1/dist/pptxgen.bundle.js"></script>
   <script>
     Reveal.initialize({
-      width: 1280,
-      height: 720,
-      margin: 0.04,
-      minScale: 0.8,
-      maxScale: 1.2,
-      hash: true,
-      slideNumber: 'c/t',
-      progress: true,
-      center: false,
-      controls: true,
-      controlsTutorial: false,
-      transition: 'fade',
-      transitionSpeed: 'default',
-      backgroundTransition: 'fade',
+      width: 1280, height: 720, margin: 0.04,
+      minScale: 0.8, maxScale: 1.2,
+      hash: true, slideNumber: 'c/t', progress: true,
+      center: false, controls: true, controlsTutorial: false,
+      transition: 'fade', transitionSpeed: 'default', backgroundTransition: 'fade',
     });
+  </script>
+  <script>
+  /* Inline PPTX exporter — see scripts/export-pptx-client.js */
+  (function () {
+    'use strict';
+    var BTN_TEXT = 'PPTX';
+    function rgbToHex(r,g,b){return [r,g,b].map(function(c){return Math.round(c).toString(16).padStart(2,'0').toUpperCase();}).join('');}
+    function parseRgb(str){if(!str)return null;var m=str.match(/rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)/);return m?rgbToHex(+m[1],+m[2],+m[3]):null;}
+    function linearToSrgb(c){c=Math.max(0,Math.min(1,c));return c<=0.0031308?12.92*c:1.055*Math.pow(c,1/2.4)-0.055;}
+    function oklchToHex(str){if(!str)return null;var m=str.match(/oklch\(\s*([\d.]+)(%)?\s+([\d.]+)\s+([\d.]+)/);if(!m)return null;var L=m[2]==='%'?+m[1]/100:+m[1];var C=+m[3];var H=+m[4];var a=C*Math.cos(H*Math.PI/180);var b=C*Math.sin(H*Math.PI/180);var l_=L+0.3963377774*a+0.2158037573*b;var m_=L-0.1055613458*a-0.0638541728*b;var s_=L-0.0894841775*a-1.2914855480*b;var l3=l_*l_*l_,m3=m_*m_*m_,s3=s_*s_*s_;var rl=4.0767416621*l3-3.3077115913*m3+0.2309699292*s3;var gl=-1.2684380046*l3+2.6097574011*m3-0.3413193965*s3;var bl=-0.0041960863*l3-0.7034186147*m3+1.7076147010*s3;return rgbToHex(Math.round(Math.min(255,Math.max(0,linearToSrgb(rl)*255))),Math.round(Math.min(255,Math.max(0,linearToSrgb(gl)*255))),Math.round(Math.min(255,Math.max(0,linearToSrgb(bl)*255))));}
+    function anyColorToHex(str){if(!str)return null;if(str.startsWith('#'))return str.replace('#','').substring(0,6).toUpperCase();if(str.startsWith('oklch'))return oklchToHex(str);if(str.startsWith('rgb'))return parseRgb(str);return parseRgb(str);}
+    function resolveColor(val,vars){if(!val)return null;if(val.startsWith('#')&&val.length>=4)return val.replace('#','').substring(0,6).toUpperCase();if(val.startsWith('oklch'))return oklchToHex(val);if(val.startsWith('rgb'))return parseRgb(val);var vm=val.match(/var\(\s*(--[\w-]+)\s*\)/);if(vm&&vars[vm[1]])return resolveColor(vars[vm[1]],vars);return parseRgb(val);}
+    function getElColor(el){return anyColorToHex(getComputedStyle(el).color)||'000000';}
+    function getCssVars(){var vars={};document.querySelectorAll('style').forEach(function(s){var rm=s.textContent.match(/:root\s*\{([^}]+)\}/);if(rm){var re=/(--[\w-]+)\s*:\s*([^;]+)/g,m;while((m=re.exec(rm[1])))vars[m[1]]=m[2].trim();}});var al={'--bg':'--c-bg','--text':'--c-fg','--text-muted':'--c-fg-2','--text-subtle':'--c-fg-3','--accent':'--c-accent','--divider':'--c-border'};Object.keys(al).forEach(function(L){var C=al[L];if(!vars[L]&&vars[C])vars[L]=vars[C];if(!vars[C]&&vars[L])vars[C]=vars[L];});return vars;}
+    function pxToPt(px){return parseFloat(px)*0.75;}
+    function textOf(el){return (el.textContent||'').trim();}
+    var pptx;
+    function exportSection(slide,sec,vars){
+      var bg=resolveColor(vars['--c-bg']||vars['--bg'],vars)||'FFFFFF';
+      slide.background={color:bg};
+      var textMuted=resolveColor(vars['--c-fg-2']||vars['--text-muted'],vars)||'999999';
+      var y=0.55;
+      var kicker=sec.querySelector('.kicker');
+      if(kicker){slide.addText(textOf(kicker),{x:0.55,y:y,w:12.2,h:0.32,fontSize:9,color:textMuted,fontFace:'Calibri',charSpacing:3});y+=0.42;}
+      var h1=sec.querySelector('h1'),h2=sec.querySelector('h2');
+      var head=h1||h2;
+      if(head){var fs=pxToPt(getComputedStyle(head).fontSize);slide.addText(textOf(head),{x:0.55,y:y,w:12.2,h:h1?2.2:1.1,fontSize:Math.min(h1?40:26,fs),color:getElColor(head),fontFace:'Calibri',bold:true,valign:'top',lineSpacingMultiple:1.1});y+=h1?2.4:1.3;}
+      var paras=sec.querySelectorAll('p, .lede, .cover-deck, .quote-body');
+      var added=0;
+      paras.forEach(function(p){if(added>=3)return;var t=textOf(p);if(!t||t.length<5)return;var fs=pxToPt(getComputedStyle(p).fontSize);slide.addText(t,{x:0.55,y:y,w:12.2,h:0.7,fontSize:Math.min(14,fs),color:getElColor(p),fontFace:'Calibri',valign:'top',lineSpacingMultiple:1.5,wrap:true});y+=0.8;added++;});
+      var pin=sec.querySelector('.pin');
+      if(pin){slide.addText(textOf(pin),{x:0.55,y:7.0,w:6,h:0.3,fontSize:8,color:resolveColor(vars['--c-fg-3'],vars)||'AAAAAA',fontFace:'Calibri',charSpacing:2});}
+    }
+    function doExport(){
+      if(typeof PptxGenJS==='undefined'){alert('PptxGenJS 未加载');return;}
+      var btn=document.getElementById('pptx-export-btn');
+      if(btn){btn.textContent='导出中...';btn.disabled=true;}
+      try{
+        pptx=new PptxGenJS(); pptx.layout='LAYOUT_WIDE';
+        var vars=getCssVars();
+        document.querySelectorAll('.reveal .slides > section').forEach(function(sec){
+          var nested=sec.querySelectorAll(':scope > section');
+          var list=nested.length?Array.from(nested):[sec];
+          list.forEach(function(s){var slide=pptx.addSlide();exportSection(slide,s,vars);});
+        });
+        var name=(document.title||'presentation').replace(/[^\w一-鿿\-]/g,'_');
+        pptx.writeFile({fileName:name+'.pptx'}).then(function(){if(btn){btn.textContent='已导出';setTimeout(function(){btn.textContent=BTN_TEXT;btn.disabled=false;},2000);}});
+      }catch(e){console.error(e);alert('导出失败: '+e.message);if(btn){btn.textContent=BTN_TEXT;btn.disabled=false;}}
+    }
+    function init(){
+      var btn=document.createElement('button');
+      btn.id='pptx-export-btn'; btn.textContent=BTN_TEXT;
+      btn.setAttribute('aria-label','导出 PPTX');
+      btn.setAttribute('style','position:fixed;top:16px;right:16px;z-index:9999;padding:6px 12px;background:#fbf6e6;color:#1d1a14;border:1px solid rgba(0,0,0,0.12);border-radius:6px;cursor:pointer;font-size:12px;opacity:0;transition:opacity 0.2s;font-family:system-ui,sans-serif;');
+      btn.onclick=doExport;
+      btn.onmouseenter=function(){btn.style.opacity='1';};
+      btn.onfocus=function(){btn.style.opacity='1';};
+      btn.onmouseleave=function(){btn.style.opacity='0';};
+      btn.onblur=function(){btn.style.opacity='0';};
+      document.body.appendChild(btn);
+      document.addEventListener('mousemove',function(e){btn.style.opacity=(e.clientY<76&&e.clientX>window.innerWidth-110)?'0.9':'0';});
+      document.addEventListener('fullscreenchange',function(){btn.style.display=document.fullscreenElement?'none':'';});
+    }
+    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init); else init();
+  })();
   </script>
 </body>
 </html>

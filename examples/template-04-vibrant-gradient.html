@@ -3,388 +3,548 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>活力渐变风格演示文稿</title>
+  <title>发布会现场 · Live Keynote Stage</title>
 
-  <!-- Reveal.js 核心 -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/theme/black.css">
 
-  <!-- Google Fonts: 现代圆润字体 -->
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
-
-  <!-- Font Awesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
   <style>
-    /* ============================================
-       CSS 变量 - 活力渐变配色
-       渐变背景 + 高饱和强调
-       Phase 6: 强调色饱和度 ≤15% chroma
-       ============================================ */
+    /* ── Tokens ─────────────────────────────────────── */
     :root {
-      /* 主色 - 渐变紫橙 */
-      --primary-1: oklch(70% 0.18 320);
-      --primary-2: oklch(75% 0.15 50);
+      --c-bg: #0a0612;
+      --c-bg-stage: #15091f;
+      --c-fg: #faf5ff;
+      --c-fg-2: rgba(250, 245, 255, 0.62);
+      --c-fg-3: rgba(250, 245, 255, 0.30);
+      --c-accent: #ff3e7f;
+      --c-accent-soft: rgba(255, 62, 127, 0.18);
+      --c-beam: rgba(255, 62, 127, 0.10);
+      --c-spot: #ffc857;
+      --c-border: rgba(250, 245, 255, 0.12);
 
-      /* 背景渐变 */
-      --bg-start: oklch(12% 0.03 280);
-      --bg-end: oklch(15% 0.04 220);
-
-      /* 文字 */
-      --text: oklch(98% 0.01 250);
-      --text-muted: oklch(70% 0.02 250);
-
-      /* 强调色 - 霓虹感 (饱和度 ≤15% chroma per Phase 6) */
-      --accent-pink: oklch(75% 0.15 350);
-      --accent-cyan: oklch(80% 0.15 200);
-      --accent-yellow: oklch(85% 0.15 90);
-
-      /* 玻璃效果 */
-      --glass-bg: oklch(25% 0.02 280 / 0.6);
-      --glass-border: oklch(40% 0.03 280 / 0.3);
-
-      /* 字体 */
-      --font-display: 'Outfit', 'Noto Sans SC', sans-serif;
-      --font-body: 'Plus Jakarta Sans', 'Noto Sans SC', sans-serif;
-
-      /* Easing */
-      --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
-      --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
-      --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+      --f-display: "Sora", "Noto Sans SC", system-ui, sans-serif;
+      --f-body: "Sora", "Noto Sans SC", system-ui, sans-serif;
+      --f-mono: "JetBrains Mono", "SF Mono", monospace;
+      --bg: var(--c-bg); --text: var(--c-fg); --text-muted: var(--c-fg-2);
+      --text-subtle: var(--c-fg-3); --accent: var(--c-accent); --divider: var(--c-border);
+      --font-display: var(--f-display); --font-body: var(--f-body); --font-mono: var(--f-mono);
     }
 
-    /* ============================================
-       基础重置
-       ============================================ */
-    .reveal {
-      font-family: var(--font-body);
-      font-size: 30px;
-      color: var(--text);
-      background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%);
+    /* ── Base ───────────────────────────────────────── */
+    .reveal { font-family: var(--f-body); font-size: 30px; color: var(--c-fg); background: var(--c-bg); }
+    .reveal .slides { text-align: left; }
+    .reveal .slides > section {
+      padding: 48px 64px; height: 100%; box-sizing: border-box; overflow: hidden;
+      background: var(--c-bg); position: relative !important;   /* !important 必含：覆盖 reveal.css section absolute，防 pin/label 跨 slide 泄露（test-label-overlap.js）*/
+    }
+    .reveal .slides > section.deck-flex.present { display: flex !important; top: 0 !important; }
+    .reveal .slides > section.deck-grid.present { display: grid !important; top: 0 !important; }
+    .reveal section > * { max-width: 100%; box-sizing: border-box; }
+    h1, h2, h3, h4, p, li, span, div { word-break: break-word; overflow-wrap: break-word; }
+    img, svg, video { max-width: 100%; max-height: 100%; object-fit: contain; }
+
+    /* ── Type ───────────────────────────────────────── */
+    .reveal h1, .reveal h2, .reveal h3 {
+      font-family: var(--f-display); line-height: 1.02; letter-spacing: 0; color: var(--c-fg);
+    }
+    .reveal h1 { font-size: 3.4em; font-weight: 300; margin: 0; }
+    .reveal h2 { font-size: 1.8em; font-weight: 400; margin: 0 0 0.4em 0; }
+    .reveal h3 { font-size: 1em; font-weight: 500; margin: 0; }
+    .reveal h4 { font-family: var(--f-mono); font-size: 0.5em; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase; color: var(--c-fg-3); margin: 0; }
+    .reveal p { font-family: var(--f-body); font-size: 0.85em; line-height: 1.55; color: var(--c-fg-2); margin: 0; font-weight: 300; }
+
+    .kicker {
+      font-family: var(--f-mono); font-size: 0.5em;
+      letter-spacing: 0.16em; text-transform: uppercase;
+      color: var(--c-accent);
+      display: inline-flex; align-items: center; gap: 0.7em;
+    }
+    .kicker::before {
+      content: '●'; color: var(--c-accent); font-size: 0.6em;
     }
 
-    .reveal .slides {
-      text-align: left;
+    .pin {
+      position: absolute; left: 64px; bottom: 32px;
+      font-family: var(--f-mono); font-size: 0.48em;
+      color: var(--c-fg-3); letter-spacing: 0.1em;
+      z-index: 10;
     }
+    /* Pin safe zone for slides where bottom-left has content */
+    .launch-cover .pin, .totem-section .pin {
+      right: 64px; left: auto;
+    }
+    /* launch-close colophon spans full width; pin lives below the colophon centered */
+    .launch-close .pin { left: 50%; right: auto; transform: translateX(-50%); bottom: 10px; }
 
-    .reveal section {
-      padding: 80px 100px;
-      height: 100%;
+    /* ── Live ticker (top of every page) ── */
+    .live-ticker {
+      position: absolute; top: 0; left: 0; right: 0;
+      height: 28px; padding: 0 64px;
+      display: flex; align-items: center; gap: 1.4em;
+      font-family: var(--f-mono); font-size: 0.42em;
+      letter-spacing: 0.1em; color: var(--c-fg-3);
+      background: linear-gradient(180deg, rgba(255, 62, 127, 0.15), transparent);
+      z-index: 4;
       box-sizing: border-box;
     }
+    .live-ticker .live-dot {
+      display: inline-flex; align-items: center; gap: 0.4em;
+      color: var(--c-accent);
+    }
+    .live-ticker .live-dot::before {
+      content: ''; width: 7px; height: 7px; background: var(--c-accent); border-radius: 50%;
+      box-shadow: 0 0 8px var(--c-accent);
+      animation: pulse-live 1.6s ease-in-out infinite;
+    }
+    @keyframes pulse-live { 50% { opacity: 0.4; } }
+    .live-ticker b { color: var(--c-fg); font-weight: 500; }
+    .live-ticker .sep { color: var(--c-fg-3); }
+    .live-ticker .right { margin-left: auto; display: flex; gap: 1.4em; }
 
-    /* ============================================
-       标题样式 - 圆润粗体
-       ============================================ */
-    .reveal h1, .reveal h2, .reveal h3 {
-      font-family: var(--font-display);
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      line-height: 1.1;
-      color: var(--text);
+    /* ─────────── LAUNCH COVER (stage) ─────────── */
+    .launch-cover {
+      padding: 48px 64px;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% 110%, rgba(255, 62, 127, 0.22), transparent 60%),
+        radial-gradient(ellipse 70% 55% at 50% 0%, rgba(255, 200, 87, 0.10), transparent 60%),
+        var(--c-bg);
+    }
+    .launch-cover .stage-scene {
+      position: absolute; inset: 28px 32px 100px 32px;
+      overflow: hidden;
+    }
+    .launch-cover .stage-scene .beam {
+      position: absolute; transform-origin: 50% 0;
+      background: linear-gradient(180deg, rgba(255, 62, 127, 0.40), transparent 70%);
+      filter: blur(1px);
+    }
+    .launch-cover .stage-scene .beam.b1 { top: -10%; left: 18%; width: 24%; height: 70%; transform: rotate(-12deg); }
+    .launch-cover .stage-scene .beam.b2 { top: -10%; left: 38%; width: 18%; height: 75%; transform: rotate(-4deg); background: linear-gradient(180deg, rgba(255, 200, 87, 0.35), transparent 70%); }
+    .launch-cover .stage-scene .beam.b3 { top: -10%; left: 56%; width: 20%; height: 70%; transform: rotate(8deg); }
+    .launch-cover .stage-scene .beam.b4 { top: -10%; right: 14%; width: 22%; height: 72%; transform: rotate(14deg); background: linear-gradient(180deg, rgba(255, 200, 87, 0.30), transparent 70%); }
+
+    .launch-cover .main-screen {
+      position: absolute; top: 56px; left: 14%; right: 14%; bottom: 200px;
+      background:
+        linear-gradient(180deg, rgba(255, 62, 127, 0.18), rgba(21, 9, 31, 0.96)),
+        var(--c-bg-stage);
+      border: 1px solid var(--c-border);
+      box-shadow:
+        0 0 80px rgba(255, 62, 127, 0.35),
+        inset 0 0 0 8px rgba(250, 245, 255, 0.04);
+      display: flex; flex-direction: column; justify-content: center; align-items: flex-start;
+      padding: 32px 48px;
+    }
+    .launch-cover .main-screen .screen-tag {
+      font-family: var(--f-mono); font-size: 0.5em;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--c-spot); margin-bottom: 1em;
+      display: inline-flex; align-items: center; gap: 0.6em;
+    }
+    .launch-cover .main-screen h1 {
+      font-size: 3.2em; font-weight: 300; line-height: 0.98;
+      color: var(--c-fg);
+    }
+    .launch-cover .main-screen h1 em {
+      color: var(--c-accent); font-style: normal; font-weight: 400;
+    }
+    .launch-cover .main-screen .sub {
+      margin-top: 0.8em; font-size: 0.78em; color: var(--c-fg-2);
+      font-weight: 300; line-height: 1.4; max-width: 600px;
     }
 
-    .reveal h1 {
-      font-size: 3.5em;
-      font-weight: 600;
+    .launch-cover .camera-frame {
+      position: absolute; top: 56px; left: 14%; right: 14%; bottom: 200px;
+      border: 2px solid var(--c-fg-3); pointer-events: none;
+    }
+    .launch-cover .camera-frame::before,
+    .launch-cover .camera-frame::after {
+      content: ''; position: absolute; width: 24px; height: 24px;
+      border: 2px solid var(--c-spot);
+    }
+    .launch-cover .camera-frame::before {
+      top: -14px; left: -14px;
+      border-right: none; border-bottom: none;
+    }
+    .launch-cover .camera-frame::after {
+      bottom: -14px; right: -14px;
+      border-left: none; border-top: none;
+    }
+    .launch-cover .camera-frame .rec {
+      position: absolute; top: -32px; left: 0;
+      font-family: var(--f-mono); font-size: 11px;
+      color: var(--c-accent); letter-spacing: 0.16em;
+      display: flex; align-items: center; gap: 0.4em;
+    }
+    .launch-cover .camera-frame .rec::before {
+      content: ''; width: 8px; height: 8px; background: var(--c-accent); border-radius: 50%;
+    }
+    .launch-cover .camera-frame .timecode {
+      position: absolute; top: -32px; right: 0;
+      font-family: var(--f-mono); font-size: 11px;
+      color: var(--c-fg-3); letter-spacing: 0.12em;
     }
 
-    .reveal h2 {
-      font-size: 2em;
-      margin-bottom: 0.8em;
+    .launch-cover .audience-floor {
+      position: absolute; left: 32px; right: 32px; bottom: 32px;
+      height: 140px;
+      background:
+        linear-gradient(180deg, transparent, rgba(10, 6, 18, 0.95)),
+        radial-gradient(ellipse at center top, rgba(255, 200, 87, 0.12), transparent 60%);
+      border-top: 1px solid var(--c-border);
+      display: grid; grid-template-columns: repeat(24, 1fr);
+      gap: 4px; align-content: end; padding: 12px 8px;
+    }
+    .launch-cover .audience-floor .head {
+      width: 100%; aspect-ratio: 1; border-radius: 50%;
+      background: var(--c-fg-3); opacity: 0.55;
+    }
+    .launch-cover .audience-floor .head.lit { background: var(--c-spot); opacity: 0.85; box-shadow: 0 0 8px var(--c-spot); }
+    .launch-cover .audience-floor .head.pink { background: var(--c-accent); opacity: 0.7; }
+
+    .launch-cover .product-drop {
+      position: absolute; top: 90px; right: 19%;
+      width: 64px; height: 64px;
+      background: linear-gradient(135deg, var(--c-accent), var(--c-spot));
+      border-radius: 14px;
+      box-shadow:
+        0 0 48px rgba(255, 62, 127, 0.55),
+        inset 0 -6px 18px rgba(0, 0, 0, 0.25);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--f-display); font-size: 26px; font-weight: 700;
+      color: var(--c-bg); letter-spacing: 0; z-index: 3;
+      transform: rotate(-8deg);
     }
 
-    .reveal h3 {
-      font-size: 1.2em;
-      font-weight: 600;
+    /* ─────────── IMPACT (proof) ─────────── */
+    .impact {
+      padding: 44px 64px;
+      grid-template-rows: auto 1fr;
+      gap: 18px;
     }
-
-    .reveal p {
-      font-size: 1em;
-      line-height: 1.7;
-      margin-bottom: 0.8em;
-      color: var(--text-muted);
-    }
-
-    /* ============================================
-       强调文字 - 使用纯色而非渐变 (Phase 6)
-       ============================================ */
-    .accent-text {
-      color: var(--accent-pink);
-    }
-
-    .accent-text-cyan {
-      color: var(--accent-cyan);
-    }
-
-    /* ============================================
-       玻璃卡片
-       ============================================ */
-    .glass-card {
-      background: var(--glass-bg);
-      backdrop-filter: blur(20px);
-      border: 1px solid var(--glass-border);
-      border-radius: 16px;
-      padding: 2em;
-    }
-
-    .glass-card.accent-border {
-      border-top: 3px solid var(--accent-pink);
-    }
-
-    /* ============================================
-       特性卡片网格
-       ============================================ */
-    .feature-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 1em;
-      margin-top: 2em;
-    }
-
-    .feature-card {
-      background: var(--glass-bg);
-      backdrop-filter: blur(20px);
-      border: 1px solid var(--glass-border);
-      border-radius: 12px;
-      padding: 1.5em;
-      transition: transform 300ms var(--ease-out-quint),
-                  border-color 300ms var(--ease-out-quint);
-    }
-
-    .feature-card:hover {
-      transform: translateY(-4px);
-      border-color: var(--accent-cyan);
-    }
-
-    .feature-card .icon {
-      font-size: 1.8em;
-      margin-bottom: 0.5em;
-    }
-
-    .feature-card h3 {
-      font-size: 1em;
-      margin-bottom: 0.3em;
-    }
-
-    .feature-card p {
-      font-size: 0.8em;
-      margin: 0;
-      color: var(--text-muted);
-    }
-
-    /* ============================================
-       大数字强调
-       ============================================ */
-    .stat-row {
-      display: flex;
-      gap: 3em;
-      margin-top: 2em;
+    .impact .head { display: flex; align-items: baseline; gap: 1.6em; margin-top: 18px; }
+    .impact .head h2 { font-size: 1.5em; max-width: 600px; }
+    .impact .impact-stage {
+      display: grid; grid-template-columns: 1.4fr 1fr;
+      gap: 18px;
       min-width: 0;
     }
-
-    .stat-item {
-      text-align: center;
+    .impact .hero-metric {
+      background: linear-gradient(135deg, var(--c-accent) 0%, #c12158 100%);
+      border-radius: 18px;
+      padding: 22px 28px;
+      display: flex; flex-direction: column; justify-content: space-between;
+      color: var(--c-fg);
+      position: relative; overflow: hidden;
+      box-shadow: 0 0 80px rgba(255, 62, 127, 0.35);
       min-width: 0;
     }
-
-    .stat-value {
-      font-family: var(--font-display);
-      font-size: 3em;
-      font-weight: 700;
-      line-height: 1;
-      color: var(--accent-pink);
+    .impact .hero-metric::after {
+      content: ''; position: absolute; right: -30px; top: -30px;
+      width: 160px; height: 160px;
+      background: radial-gradient(circle, rgba(255, 200, 87, 0.4), transparent 60%);
     }
-
-    .stat-label {
-      font-size: 0.75em;
-      color: var(--text-muted);
-      margin-top: 0.5em;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
+    .impact .hero-metric .label {
+      font-family: var(--f-mono); font-size: 0.46em;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: rgba(250, 245, 255, 0.7);
     }
-
-    /* ============================================
-       标题页
-       ============================================ */
-    .title-slide {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: flex-start;
-      min-width: 0;
+    .impact .hero-metric .value {
+      font-family: var(--f-display); font-size: 4em;
+      font-weight: 300; line-height: 0.92;
+      letter-spacing: 0;
     }
-
-    .title-slide .badge {
-      font-family: var(--font-body);
-      font-size: 0.7em;
-      font-weight: 500;
-      padding: 0.5em 1em;
-      border-radius: 100px;
-      background: var(--glass-bg);
-      border: 1px solid var(--glass-border);
-      color: var(--accent-cyan);
-      margin-bottom: 1.5em;
+    .impact .hero-metric .value em {
+      font-style: normal; font-size: 0.32em; color: var(--c-spot);
+      letter-spacing: 0.04em; margin-left: 0.4em; font-weight: 500;
     }
-
-    .title-slide h1 {
-      font-size: 3.2em;
-      margin-bottom: 0.3em;
+    .impact .hero-metric .since {
+      font-family: var(--f-mono); font-size: 0.46em;
+      color: rgba(250, 245, 255, 0.85);
+      position: relative; z-index: 2;
     }
-
-    .title-slide .subtitle {
-      font-size: 1.4em;
-      font-weight: 300;
-      color: var(--text-muted);
-      margin-bottom: 2em;
+    .impact .hero-metric .source {
+      position: relative; z-index: 2;
+      font-family: var(--f-mono); font-size: 0.36em;
+      color: rgba(250, 245, 255, 0.55); letter-spacing: 0.08em;
+      margin-top: 0.3em;
     }
-
-    .title-slide .cta {
-      display: inline-flex;
+    .impact .metric-stack { display: flex; flex-direction: column; gap: 8px; }
+    .impact .metric {
+      background: var(--c-bg-stage);
+      border: 1px solid var(--c-border);
+      border-radius: 14px;
+      padding: 8px 16px;
+      display: grid; grid-template-columns: 1fr auto;
       align-items: center;
-      gap: 0.5em;
-      font-family: var(--font-body);
-      font-size: 0.9em;
-      font-weight: 500;
-      padding: 0.8em 1.5em;
-      border-radius: 100px;
-      background: var(--accent-pink);
-      color: white;
-      text-decoration: none;
+      gap: 10px;
+    }
+    .impact .metric .row-label { font-family: var(--f-mono); font-size: 0.4em; letter-spacing: 0.14em; text-transform: uppercase; color: var(--c-fg-3); }
+    .impact .metric .row-name { font-family: var(--f-display); font-size: 0.68em; font-weight: 400; margin-top: 2px; color: var(--c-fg); }
+    .impact .metric .row-source { font-family: var(--f-mono); font-size: 0.32em; color: var(--c-fg-3); margin-top: 2px; letter-spacing: 0.04em; }
+    .impact .metric .v {
+      font-family: var(--f-display); font-size: 1.4em; font-weight: 300;
+      color: var(--c-accent); line-height: 1;
+    }
+    .impact .metric .v em { color: var(--c-fg-2); font-style: normal; font-size: 0.5em; font-weight: 400; margin-left: 0.2em; }
+
+    /* ─────────── CHAT (live community proof) ─────────── */
+    .chat {
+      padding: 44px 64px;
+      grid-template-columns: 0.42fr 0.58fr;
+      gap: 28px;
+    }
+    .chat .chat-meta {
+      display: flex; flex-direction: column; justify-content: center; gap: 0.4em;
+      padding-right: 8px;
+    }
+    .chat .chat-meta h2 { font-size: 1.6em; margin-top: 0.2em; max-width: 380px; }
+    .chat .chat-meta .lede {
+      font-size: 0.72em; line-height: 1.5; color: var(--c-fg-2); margin-top: 0.4em; max-width: 380px;
+    }
+    .chat .chat-meta .stat-row {
+      margin-top: 0.8em; display: grid; grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .chat .chat-meta .stat-row div {
+      padding: 8px 12px; background: var(--c-bg-stage); border-radius: 10px;
+      border: 1px solid var(--c-border);
+    }
+    .chat .chat-meta .stat-row b {
+      display: block; font-family: var(--f-display); font-size: 1.1em;
+      font-weight: 400; color: var(--c-accent); line-height: 1;
+    }
+    .chat .chat-meta .stat-row span {
+      font-family: var(--f-mono); font-size: 0.36em; color: var(--c-fg-3);
+      letter-spacing: 0.1em; text-transform: uppercase; margin-top: 4px; display: block;
+    }
+    .chat .bubble-stack {
+      background:
+        linear-gradient(180deg, rgba(255, 62, 127, 0.05), transparent 30%),
+        var(--c-bg-stage);
+      border: 1px solid var(--c-border);
+      border-radius: 18px;
+      padding: 18px 22px;
+      display: flex; flex-direction: column; gap: 8px;
+      position: relative; overflow: hidden;
+    }
+    .chat .bubble-stack::before {
+      content: '#launch-stage'; position: absolute; top: 14px; right: 18px;
+      font-family: var(--f-mono); font-size: 10px;
+      color: var(--c-fg-3); letter-spacing: 0.1em;
+    }
+    .chat .bubble {
+      padding: 9px 14px;
+      background: rgba(250, 245, 255, 0.06);
+      border-radius: 14px;
+      max-width: 90%;
+      display: grid; grid-template-columns: auto 1fr;
+      gap: 10px; align-items: baseline;
+    }
+    .chat .bubble .who {
+      font-family: var(--f-mono); font-size: 0.4em;
+      color: var(--c-spot); letter-spacing: 0.06em;
+    }
+    .chat .bubble .msg {
+      font-family: var(--f-body); font-size: 0.66em;
+      color: var(--c-fg); font-weight: 300;
+    }
+    .chat .bubble .msg b { color: var(--c-accent); font-weight: 500; }
+    .chat .bubble.hot {
+      background: var(--c-accent-soft); border: 1px solid var(--c-accent);
+      align-self: flex-end; max-width: 88%;
+    }
+    .chat .bubble.hot .who { color: var(--c-accent); }
+    .chat .bubble.gold .who { color: var(--c-spot); }
+    .chat .reactions {
+      margin-top: 8px; display: flex; gap: 0.5em;
+      font-family: var(--f-mono); font-size: 0.42em;
+      color: var(--c-fg-3); letter-spacing: 0.06em;
+    }
+    .chat .reactions span {
+      padding: 4px 9px; border-radius: 20px;
+      background: rgba(250, 245, 255, 0.05);
+    }
+    .chat .reactions span.hot { background: var(--c-accent-soft); color: var(--c-accent); }
+
+    /* ─────────── DROP (product hero) ─────────── */
+    .drop {
+      padding: 44px 64px;
+      grid-template-columns: 0.55fr 0.45fr;
+      gap: 36px; align-items: center;
+    }
+    .drop .drop-copy h2 { font-size: 1.7em; font-weight: 300; line-height: 1.05; }
+    .drop .drop-copy h2 em { color: var(--c-accent); font-style: normal; font-weight: 500; }
+    .drop .drop-copy .lede {
+      font-size: 0.78em; line-height: 1.5; color: var(--c-fg-2);
+      margin-top: 0.8em; max-width: 420px;
+    }
+    .drop .drop-copy .spec-list {
+      margin-top: 1em; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+    }
+    .drop .drop-copy .spec-list div {
+      padding: 8px 12px;
+      border: 1px solid var(--c-border); border-radius: 10px;
+    }
+    .drop .drop-copy .spec-list b {
+      display: block; font-family: var(--f-mono); font-size: 0.42em;
+      color: var(--c-fg-3); letter-spacing: 0.12em; text-transform: uppercase;
+    }
+    .drop .drop-copy .spec-list span {
+      font-family: var(--f-display); font-size: 0.75em;
+      color: var(--c-fg); font-weight: 400; margin-top: 4px; display: block;
+    }
+    .drop .drop-stage {
+      position: relative; height: 100%; min-height: 280px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .drop .drop-stage .ring {
+      position: absolute; width: 240px; height: 240px;
+      border: 1px solid var(--c-fg-3); border-radius: 50%;
+    }
+    .drop .drop-stage .ring.r2 { width: 180px; height: 180px; }
+    .drop .drop-stage .ring.r3 { width: 120px; height: 120px; }
+    .drop .drop-stage .ring.r1 { border-color: var(--c-accent); opacity: 0.4; }
+    .drop .drop-stage .product {
+      position: relative; width: 140px; height: 140px;
+      border-radius: 20px;
+      background: linear-gradient(160deg, var(--c-accent) 0%, var(--c-spot) 100%);
+      box-shadow:
+        0 0 80px rgba(255, 62, 127, 0.55),
+        inset 0 -10px 36px rgba(0, 0, 0, 0.3),
+        inset 0 10px 36px rgba(255, 255, 255, 0.18);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--f-display); font-size: 58px; font-weight: 700;
+      color: var(--c-bg); letter-spacing: 0;
+      transform: rotate(-6deg);
+    }
+    .drop .drop-stage .price-tag {
+      position: absolute; bottom: 30px; right: -10px;
+      background: var(--c-bg);
+      border: 1px solid var(--c-accent);
+      padding: 8px 12px; border-radius: 10px;
+      font-family: var(--f-mono); font-size: 0.5em;
+      color: var(--c-accent); letter-spacing: 0.06em;
+      transform: rotate(8deg);
+    }
+    .drop .drop-stage .price-tag b { color: var(--c-fg); font-size: 1.6em; display: block; font-weight: 700; letter-spacing: 0; }
+
+    /* ─────────── TOTEM GRID ─────────── */
+    .totem-section {
+      padding: 56px 64px;
+      grid-template-rows: auto 1fr; gap: 28px;
+    }
+    .totem-section .head h2 { font-size: 1.8em; margin-top: 0.4em; max-width: 740px; }
+    .totem-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;
+      align-items: stretch;
+    }
+    .totem {
+      background: var(--c-bg-stage);
+      border: 1px solid var(--c-border);
+      border-radius: 16px;
+      padding: 24px 22px;
+      display: flex; flex-direction: column; gap: 12px;
+      position: relative; overflow: hidden;
+    }
+    .totem::before {
+      content: ''; position: absolute; left: 22px; top: 24px;
+      width: 32px; height: 4px; background: var(--c-accent); border-radius: 20px;
+    }
+    .totem h3 { margin-top: 28px; font-size: 1.05em; font-weight: 500; }
+    .totem p { font-size: 0.7em; line-height: 1.55; color: var(--c-fg-2); }
+    .totem .num {
+      font-family: var(--f-mono); font-size: 0.5em;
+      color: var(--c-fg-3); letter-spacing: 0.12em;
+      position: absolute; top: 20px; right: 22px;
+    }
+    .totem.featured {
+      background: linear-gradient(135deg, var(--c-accent) 0%, #c12158 100%);
+    }
+    .totem.featured::before { background: var(--c-spot); }
+    .totem.featured .num { color: rgba(250, 245, 255, 0.7); }
+    .totem.featured h3 { color: var(--c-fg); }
+    .totem.featured p { color: rgba(250, 245, 255, 0.85); }
+
+    /* ─────────── STATEMENT WALL ─────────── */
+    .statement-wall {
+      padding: 44px 80px;
+      flex-direction: column; justify-content: center;
+      background:
+        radial-gradient(ellipse 60% 80% at 50% 50%, rgba(255, 62, 127, 0.12), transparent 70%),
+        var(--c-bg);
+    }
+    .statement-wall h2 {
+      font-size: 2.2em; line-height: 1.1; font-weight: 300;
+      max-width: 900px;
+    }
+    .statement-wall h2 em {
+      color: var(--c-accent); font-style: normal; font-weight: 400;
+    }
+    .statement-wall .sub-row {
+      margin-top: 2em; display: flex; gap: 1.4em;
+      font-family: var(--f-mono); font-size: 0.5em; letter-spacing: 0.16em;
+      text-transform: uppercase; color: var(--c-fg-3);
     }
 
-    /* ============================================
-       引用
-       ============================================ */
-    .glow-quote {
-      position: relative;
-      font-family: var(--font-display);
-      font-size: 1.8em;
-      font-weight: 500;
-      color: var(--text);
-      text-align: center;
-      padding: 2em;
-      margin: 2em 0;
+    /* ─────────── LAUNCH CLOSE ─────────── */
+    .launch-close {
+      padding: 56px 64px;
+      grid-template-rows: 1fr auto;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% 100%, rgba(255, 62, 127, 0.25), transparent 60%),
+        radial-gradient(ellipse 60% 40% at 50% 0%, rgba(255, 200, 87, 0.10), transparent 60%),
+        var(--c-bg);
+    }
+    .launch-close .close-body {
+      display: flex; flex-direction: column; justify-content: center;
+      gap: 1em;
+    }
+    .launch-close .close-body h2 {
+      font-size: 2.4em; font-weight: 300; line-height: 1.05;
+      max-width: 760px;
+    }
+    .launch-close .close-body h2 em { color: var(--c-accent); font-style: normal; font-weight: 400; }
+    .launch-close .close-body p {
+      font-size: 0.85em; max-width: 540px; color: var(--c-fg-2);
+    }
+    .launch-close .cta-row {
+      margin-top: 1.2em; display: flex; gap: 12px;
+    }
+    .launch-close .cta {
+      display: inline-flex; align-items: center; gap: 0.6em;
+      padding: 0.6em 1.2em;
+      font-family: var(--f-display); font-size: 0.7em; font-weight: 500;
+      letter-spacing: 0; border-radius: 24px;
+    }
+    .launch-close .cta.primary {
+      background: var(--c-accent); color: var(--c-fg);
+    }
+    .launch-close .cta.ghost {
+      border: 1px solid var(--c-border); color: var(--c-fg);
+    }
+    .launch-close .colophon {
+      padding-top: 1.4em; border-top: 1px solid var(--c-border);
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      font-family: var(--f-mono); font-size: 0.5em;
+      color: var(--c-fg-3); letter-spacing: 0.1em;
+    }
+    .launch-close .colophon b {
+      display: block; font-family: var(--f-display); font-size: 1.4em;
+      color: var(--c-fg); letter-spacing: 0; font-weight: 400;
+      margin-top: 4px;
     }
 
-    .glow-quote::before {
-      content: '"';
-      position: absolute;
-      top: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 4em;
-      color: var(--accent-pink);
-      opacity: 0.3;
-      line-height: 1;
-    }
+    /* Progress */
+    .reveal .progress { color: var(--c-accent); height: 3px; }
+    .reveal .controls { color: var(--c-fg-2); }
 
-    /* ============================================
-       时间线
-       ============================================ */
-    .timeline {
-      position: relative;
-      padding-left: 2em;
-      margin-top: 2em;
-    }
-
-    .timeline::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 0.5em;
-      bottom: 0;
-      width: 2px;
-      background: linear-gradient(180deg, var(--accent-pink) 0%, var(--accent-cyan) 100%);
-    }
-
-    .timeline-item {
-      position: relative;
-      padding-bottom: 1.5em;
-    }
-
-    .timeline-item::before {
-      content: '';
-      position: absolute;
-      left: -2em;
-      top: 0.5em;
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: var(--accent-pink);
-      transform: translateX(-4px);
-    }
-
-    .timeline-item h3 {
-      font-size: 1em;
-      margin-bottom: 0.3em;
-    }
-
-    .timeline-item p {
-      font-size: 0.85em;
-      margin: 0;
-    }
-
-    /* ============================================
-       Fragment 动画 - bounce (Phase 5: 100-500ms)
-       ============================================ */
-    .reveal .fragment {
-      transition-duration: 400ms;
-      transition-timing-function: var(--ease-bounce);
-    }
-
-    .reveal .fragment.bounce-in {
-      opacity: 0;
-      transform: scale(0.8);
-    }
-
-    .reveal .fragment.bounce-in.visible {
-      opacity: 1;
-      transform: scale(1);
-    }
-
-    .reveal .fragment.fade-up {
-      opacity: 0;
-      transform: translateY(30px);
-    }
-
-    .reveal .fragment.fade-up.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    /* ============================================
-       进度条 & 导航
-       ============================================ */
-    .reveal .progress {
-      background: linear-gradient(90deg, var(--accent-pink) 0%, var(--accent-cyan) 100%);
-      height: 3px;
-    }
-
-    .reveal .controls {
-      color: var(--accent-cyan);
-    }
-
-    /* ============================================
-       Reduced Motion (Phase 6: prefers-reduced-motion)
-       ============================================ */
+    .reveal .fragment { transition-duration: 380ms; }
     @media (prefers-reduced-motion: reduce) {
-      .reveal .fragment,
-      .reveal .fragment.visible {
-        opacity: 1;
-        transform: none;
-        transition-duration: 200ms;
-        transition-timing-function: var(--ease-smooth);
-      }
-      .reveal .slides section {
-        transform: none;
-      }
-      .feature-card:hover {
-        transform: none;
-      }
-      .glow-quote::before {
-        animation: none;
-      }
+      .reveal .fragment, .live-ticker .live-dot::before { animation: none; opacity: 1; transform: none; transition: opacity 200ms ease-out; }
     }
   </style>
 </head>
@@ -392,144 +552,346 @@
   <div class="reveal">
     <div class="slides">
 
-      <!-- Slide 1: 标题页 -->
-      <section class="title-slide" data-background="linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%)">
-        <span class="badge fragment bounce-in">
-          <i class="fas fa-sparkles"></i> New Release
-        </span>
-        <h1 class="fragment fade-up" style="transition-delay: 100ms;">
-          重新定义<br>
-          <span class="accent-text">创意表达</span>
-        </h1>
-        <p class="subtitle fragment fade-up" style="transition-delay: 200ms;">
-          让每一个想法，都被看见
-        </p>
-        <a href="#" class="cta fragment fade-up" style="transition-delay: 300ms;">
-          <i class="fas fa-play"></i> 立即体验
-        </a>
+      <!-- 1: LAUNCH COVER -->
+      <section class="launch-cover deck-flex" data-background="#0a0612">
+        <div class="live-ticker" data-qa-ignore="decorative">
+          <span class="live-dot">LIVE</span>
+          <span class="sep">/</span>
+          <span>Hall 7 · main stage</span>
+          <span class="sep">/</span>
+          <b>Spring Reveal · day 1</b>
+          <span class="right">
+            <span>2026.03.14 · 19:00 CST</span>
+            <span class="sep">/</span>
+            <span>4 800 in the room · 1.2M streaming</span>
+          </span>
+        </div>
+
+        <div class="stage-scene">
+          <div data-qa-ignore="decorative" class="beam b1"></div>
+          <div data-qa-ignore="decorative" class="beam b2"></div>
+          <div data-qa-ignore="decorative" class="beam b3"></div>
+          <div data-qa-ignore="decorative" class="beam b4"></div>
+        </div>
+
+        <div class="product-drop">N5</div>
+
+        <div class="main-screen">
+          <span class="screen-tag">⏵ on air · in 00:03</span>
+          <h1>Make the<br><em>opening minute</em><br>the answer.</h1>
+          <p class="sub">Spring 2026 reveal. One product, one stage, one room that already knows what we are about to show.</p>
+        </div>
+
+        <div class="camera-frame">
+          <span class="rec">REC · CAM 2</span>
+          <span class="timecode">TC 00:00:14:08</span>
+        </div>
+
+        <div class="audience-floor" data-qa-ignore="decorative">
+          <!-- 5 rows × 24 cols of audience heads -->
+          <div class="head"></div><div class="head"></div><div class="head lit"></div><div class="head"></div><div class="head"></div><div class="head"></div><div class="head"></div><div class="head pink"></div><div class="head"></div><div class="head"></div><div class="head"></div><div class="head lit"></div><div class="head"></div><div class="head"></div><div class="head pink"></div><div class="head"></div><div class="head"></div><div class="head"></div><div class="head lit"></div><div class="head"></div><div class="head"></div><div class="head"></div><div class="head pink"></div><div class="head"></div>
+          <div class="head"></div><div class="head"></div><div class="head"></div><div class="head pink"></div><div class="head"></div><div class="head lit"></div><div class="head"></div><div class="head"></div><div class="head"></div><div class="head pink"></div><div class="head"></div><div class="head"></div><div class="head lit"></div><div class="head"></div><div class="head"></div><div class="head"></div><div class="head pink"></div><div class="head lit"></div><div class="head"></div><div class="head"></div><div class="head"></div><div class="head pink"></div><div class="head"></div><div class="head"></div>
+          <div class="head"></div><div class="head lit"></div><div class="head"></div><div class="head"></div><div class="head pink"></div><div class="head"></div><div class="head"></div><div class="head"></div><div class="head"></div><div class="head"></div><div class="head pink"></div><div class="head"></div><div class="head"></div><div class="head"></div><div class="head lit"></div><div class="head"></div><div class="head pink"></div><div class="head"></div><div class="head"></div><div class="head"></div><div class="head"></div><div class="head pink"></div><div class="head"></div><div class="head"></div>
+        </div>
+
+        <span class="pin">01 · stage · cover</span>
       </section>
 
-      <!-- Slide 2: 数据 -->
-      <section data-background="linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%)">
-        <h2 class="fragment fade-up">全球用户的共同选择</h2>
-        <div class="stat-row">
-          <div class="stat-item fragment bounce-in" style="transition-delay: 100ms;">
-            <div class="stat-value">2M+</div>
-            <div class="stat-label">活跃用户</div>
+      <!-- 2: IMPACT (proof) -->
+      <section class="impact deck-grid" data-background="#0a0612">
+        <div class="live-ticker" data-qa-ignore="decorative">
+          <span class="live-dot">LIVE</span><span class="sep">/</span><span>IMPACT · keynote · 02</span>
+          <span class="right"><span>2026.03.14 · 19:08</span></span>
+        </div>
+        <div class="head">
+          <span class="kicker">Proof · the number we won't ship without</span>
+          <h2>One number, two reasons it matters.</h2>
+        </div>
+        <div class="impact-stage">
+          <div class="hero-metric">
+            <div class="label">Active creators · monthly</div>
+            <div>
+              <div class="value">4.8<em>M</em></div>
+              <div class="since" style="margin-top: 0.6em;">+38% YoY · biggest hardware quarter shipped.</div>
+            </div>
+            <div class="source">data · platform · 2026.02 · user-provided</div>
           </div>
-          <div class="stat-item fragment bounce-in" style="transition-delay: 200ms;">
-            <div class="stat-value">50+</div>
-            <div class="stat-label">国家地区</div>
-          </div>
-          <div class="stat-item fragment bounce-in" style="transition-delay: 300ms;">
-            <div class="stat-value">4.9</div>
-            <div class="stat-label">应用评分</div>
+          <div class="metric-stack">
+            <div class="metric">
+              <div>
+                <div class="row-label">Retention · 90-day</div>
+                <div class="row-name">Came back after the trial month</div>
+                <div class="row-source">user-provided · cohort 2025.Q4</div>
+              </div>
+              <div class="v">92<em>%</em></div>
+            </div>
+            <div class="metric">
+              <div>
+                <div class="row-label">Live markets</div>
+                <div class="row-name">Where you can buy this on launch day</div>
+                <div class="row-source">verified · ops 2026.03</div>
+              </div>
+              <div class="v">18</div>
+            </div>
+            <div class="metric">
+              <div>
+                <div class="row-label">Stage time</div>
+                <div class="row-name">Minutes we get tonight before the demo</div>
+                <div class="row-source">live · cue sheet 2026.03.14</div>
+              </div>
+              <div class="v">11<em>min</em></div>
+            </div>
+            <div class="metric">
+              <div>
+                <div class="row-label">Pre-orders · open · 24h</div>
+                <div class="row-name">Window that decides Q2 shipping</div>
+                <div class="row-source">illustrative · forecast band ±15%</div>
+              </div>
+              <div class="v">≈400<em>k</em></div>
+            </div>
           </div>
         </div>
+        <span class="pin">02 · impact · proof</span>
       </section>
 
-      <!-- Slide 3: 特性 -->
-      <section data-background="linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%)">
-        <h2 class="fragment fade-up">核心特性</h2>
-        <div class="feature-grid">
-          <div class="feature-card fragment bounce-in" style="transition-delay: 100ms;">
-            <div class="icon" style="color: var(--accent-pink);">
-              <i class="fas fa-wand-magic-sparkles"></i>
+      <!-- 3: CHAT (mechanism / community proof) -->
+      <section class="chat deck-grid" data-background="#0a0612">
+        <div class="live-ticker" data-qa-ignore="decorative">
+          <span class="live-dot">LIVE</span><span class="sep">/</span><span>CHAT · floor + stream · 03</span>
+          <span class="right"><span>9 412 msg/min · top tag #N5</span></span>
+        </div>
+        <div class="chat-meta">
+          <span class="kicker">Mechanism · the room replies in real time</span>
+          <h2>Chat is the second screen.</h2>
+          <p class="lede">Every demo lives or dies in the next ten minutes of chat.</p>
+          <div class="stat-row">
+            <div>
+              <b>9 412<span style="font-size:0.6em;color:var(--c-fg-2);"> /min</span></b>
+              <span>floor + stream</span>
             </div>
-            <h3>AI 智能创作</h3>
-            <p>输入文字，即可生成精美图像</p>
-          </div>
-          <div class="feature-card fragment bounce-in" style="transition-delay: 200ms;">
-            <div class="icon" style="color: var(--accent-cyan);">
-              <i class="fas fa-layer-group"></i>
+            <div>
+              <b>#N5</b>
+              <span>top hashtag · 14m</span>
             </div>
-            <h3>无限图层</h3>
-            <p>专业级编辑能力，无限创意空间</p>
-          </div>
-          <div class="feature-card fragment bounce-in" style="transition-delay: 300ms;">
-            <div class="icon" style="color: var(--accent-yellow);">
-              <i class="fas fa-bolt"></i>
-            </div>
-            <h3>实时协作</h3>
-            <p>多人同时编辑，灵感同步碰撞</p>
-          </div>
-          <div class="feature-card fragment bounce-in" style="transition-delay: 400ms;">
-            <div class="icon" style="color: var(--accent-pink);">
-              <i class="fas fa-mobile-screen"></i>
-            </div>
-            <h3>跨平台同步</h3>
-            <p>一处编辑，处处可见</p>
           </div>
         </div>
-      </section>
-
-      <!-- Slide 4: 引言 -->
-      <section data-background="linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%)">
-        <div class="glow-quote fragment fade-up">
-          创造力是天赋，<br>
-          但表达需要工具。
-        </div>
-        <p class="fragment fade-up" style="transition-delay: 200ms; text-align: center; color: var(--text-muted);">
-          — 产品愿景
-        </p>
-      </section>
-
-      <!-- Slide 5: 发展历程 -->
-      <section data-background="linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%)">
-        <h2 class="fragment fade-up">发展历程</h2>
-        <div class="timeline">
-          <div class="timeline-item fragment fade-up" style="transition-delay: 100ms;">
-            <h3>2024 Q1 — 产品立项</h3>
-            <p>从零开始，组建核心团队</p>
+        <div class="bubble-stack">
+          <div class="bubble">
+            <span class="who">@aria_w</span>
+            <span class="msg">单手可用 · 比 N4 轻 <b>22 克</b></span>
           </div>
-          <div class="timeline-item fragment fade-up" style="transition-delay: 200ms;">
-            <h3>2024 Q3 — 内测发布</h3>
-            <p>首批 1000 名用户体验</p>
+          <div class="bubble hot">
+            <span class="who">@hiro__</span>
+            <span class="msg">"opening minute" — 直接 quote 进 deck</span>
           </div>
-          <div class="timeline-item fragment fade-up" style="transition-delay: 300ms;">
-            <h3>2025 Q1 — 正式上线</h3>
-            <p>全球发布，获得市场认可</p>
+          <div class="bubble gold">
+            <span class="who">@row_03 · floor</span>
+            <span class="msg">主屏 14m，第三排也看得清字号。</span>
           </div>
-          <div class="timeline-item fragment fade-up" style="transition-delay: 400ms;">
-            <h3>2026 — 全新进化</h3>
-            <p>AI 创作能力全面升级</p>
+          <div class="bubble hot">
+            <span class="who">@k.morita</span>
+            <span class="msg">已下单 ×2 · ship to JP</span>
+          </div>
+          <div class="reactions">
+            <span class="hot">❤️ 24.6k</span>
+            <span>🔁 8.2k</span>
+            <span>🔖 3.1k</span>
+            <span>👀 1.2M</span>
           </div>
         </div>
+        <span class="pin">03 · chat · mechanism</span>
       </section>
 
-      <!-- Slide 6: 结束 -->
-      <section class="title-slide" data-background="linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%)">
-        <h2 class="fragment fade-up" style="font-size: 2.5em;">
-          准备好<br>
-          <span class="accent-text">开始创作</span>了吗？
-        </h2>
-        <p class="fragment fade-up" style="transition-delay: 150ms; color: var(--text-muted);">
-          www.product-name.com
-        </p>
+      <!-- 4: DROP (product) -->
+      <section class="drop deck-grid" data-background="#0a0612">
+        <div class="live-ticker" data-qa-ignore="decorative">
+          <span class="live-dot">LIVE</span><span class="sep">/</span><span>DROP · product · 04</span>
+          <span class="right"><span>spotlight · cue 14</span></span>
+        </div>
+        <div class="drop-copy">
+          <span class="kicker">Product · meet N5</span>
+          <h2>One device,<br>built for the<br><em>opening minute</em>.</h2>
+          <p class="lede">Smaller, lighter, sharper at 14 m. The only spec we tested every prototype against: would the third row of the room read the screen without leaning in.</p>
+          <div class="spec-list">
+            <div><b>Weight</b><span>318 g</span></div>
+            <div><b>Reach</b><span>14 m readable</span></div>
+            <div><b>Battery</b><span>22 h live</span></div>
+            <div><b>Markets · day 1</b><span>18</span></div>
+          </div>
+        </div>
+        <div class="drop-stage">
+          <div class="ring r1"></div>
+          <div class="ring r2"></div>
+          <div class="ring r3"></div>
+          <div class="product">N5</div>
+          <div class="price-tag">FROM<b>¥ 2 980</b></div>
+        </div>
+        <span class="pin">04 · drop</span>
+      </section>
+
+      <!-- 5: TOTEM GRID (ecosystem) -->
+      <section class="totem-section deck-grid" data-background="#0a0612">
+        <div class="live-ticker" data-qa-ignore="decorative">
+          <span class="live-dot">LIVE</span><span class="sep">/</span><span>ECOSYSTEM · 05</span>
+          <span class="right"><span>four pillars · one stage</span></span>
+        </div>
+        <div class="head">
+          <span class="kicker">Ecosystem · the four moves we are betting on</span>
+          <h2>Four things ship together — none ships well alone.</h2>
+        </div>
+        <div class="totem-grid">
+          <div class="totem">
+            <span class="num">01</span>
+            <h3>Device · N5</h3>
+            <p>On stage. Smaller, sharper at 14m. 18 markets day one.</p>
+          </div>
+          <div class="totem featured">
+            <span class="num">02</span>
+            <h3>Studio · N-OS 7</h3>
+            <p>The creator surface. Built around the opening minute.</p>
+          </div>
+          <div class="totem">
+            <span class="num">03</span>
+            <h3>Community · Stage Pass</h3>
+            <p>The room outside the room. Backstage demos, day-one drops, earns not subscribes.</p>
+          </div>
+          <div class="totem">
+            <span class="num">04</span>
+            <h3>Commerce · Drop-Through</h3>
+            <p>Checkout inside the player. Tap, ship, never leave the stream.</p>
+          </div>
+        </div>
+        <span class="pin">05 · ecosystem</span>
+      </section>
+
+      <!-- 6: STATEMENT WALL -->
+      <section class="statement-wall deck-flex" data-background="#0a0612">
+        <div class="live-ticker" data-qa-ignore="decorative">
+          <span class="live-dot">LIVE</span><span class="sep">/</span><span>STATEMENT · 06</span>
+          <span class="right"><span>main stage</span></span>
+        </div>
+        <span class="kicker">Manifesto · why the room is here</span>
+        <h2 style="margin-top: 1em;">A keynote is not a slideshow.<br>It is the <em>first ten minutes</em> of a community that already moved.</h2>
+        <div class="sub-row" style="margin-top: 2em;">
+          <span>opening minute</span>
+          <span style="color: var(--c-fg-3);">·</span>
+          <span>second screen</span>
+          <span style="color: var(--c-fg-3);">·</span>
+          <span>drop-through</span>
+        </div>
+        <span class="pin">06 · statement</span>
+      </section>
+
+      <!-- 7: LAUNCH CLOSE -->
+      <section class="launch-close deck-grid" data-background="#0a0612">
+        <div class="live-ticker" data-qa-ignore="decorative">
+          <span class="live-dot">LIVE</span><span class="sep">/</span><span>CLOSE · 07</span>
+          <span class="right"><span>cue 28 · house lights down · 19:48</span></span>
+        </div>
+        <div class="close-body">
+          <span class="kicker">Close · what walks out of the room</span>
+          <h2>N5 ships tonight.<br>Pre-order is <em>open in chat</em>.<br>The stream stays on.</h2>
+          <p>The opening minute is the answer. The next 200 minutes are yours.</p>
+          <div class="cta-row">
+            <span class="cta primary">▶ Open the drop · in chat</span>
+            <span class="cta ghost">⤓ Backstage Pass</span>
+          </div>
+        </div>
+        <div class="colophon">
+          <div>
+            <span>Show</span>
+            <b>Spring Reveal · 2026</b>
+          </div>
+          <div>
+            <span>Stream stays open</span>
+            <b>n5.stage / live</b>
+          </div>
+          <div>
+            <span>Pre-order ends</span>
+            <b>03.15 · 19:00 CST</b>
+          </div>
+        </div>
+        <span class="pin" style="display: none;" data-qa-ignore="decorative">07 · close</span>
       </section>
 
     </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@4.0.1/dist/pptxgen.bundle.js"></script>
   <script>
     Reveal.initialize({
-      width: 1280,
-      height: 720,
-      margin: 0.04,
-      minScale: 0.8,
-      maxScale: 1.2,
-      hash: true,
-      slideNumber: false,
-      progress: true,
-      center: false,
-      controls: true,
-      controlsTutorial: false,
-      transition: 'convex',
-      transitionSpeed: 'default',
-      backgroundTransition: 'fade',
-      fragmentInclusivity: 'include',
+      width: 1280, height: 720, margin: 0.04,
+      minScale: 0.8, maxScale: 1.2,
+      hash: true, slideNumber: 'c/t', progress: true,
+      center: false, controls: true, controlsTutorial: false,
+      transition: 'fade', transitionSpeed: 'default', backgroundTransition: 'fade',
     });
+  </script>
+  <script>
+  /* Reveal.js PPTX 导出按钮 — inline of scripts/export-pptx-client.js (minified) */
+  (function () {
+    'use strict';
+    var BTN_TEXT='PPTX';
+    function rgbToHex(r,g,b){return [r,g,b].map(function(c){return Math.round(c).toString(16).padStart(2,'0').toUpperCase();}).join('');}
+    function parseRgb(str){if(!str)return null;var m=str.match(/rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)/);return m?rgbToHex(+m[1],+m[2],+m[3]):null;}
+    function linearToSrgb(c){c=Math.max(0,Math.min(1,c));return c<=0.0031308?12.92*c:1.055*Math.pow(c,1/2.4)-0.055;}
+    function oklchToHex(str){if(!str)return null;var m=str.match(/oklch\(\s*([\d.]+)(%)?\s+([\d.]+)\s+([\d.]+)/);if(!m)return null;var L=m[2]==='%'?+m[1]/100:+m[1];var C=+m[3];var H=+m[4];var a=C*Math.cos(H*Math.PI/180);var b=C*Math.sin(H*Math.PI/180);var l_=L+0.3963377774*a+0.2158037573*b;var m_=L-0.1055613458*a-0.0638541728*b;var s_=L-0.0894841775*a-1.2914855480*b;var l3=l_*l_*l_,m3=m_*m_*m_,s3=s_*s_*s_;var rl=4.0767416621*l3-3.3077115913*m3+0.2309699292*s3;var gl=-1.2684380046*l3+2.6097574011*m3-0.3413193965*s3;var bl=-0.0041960863*l3-0.7034186147*m3+1.7076147010*s3;return rgbToHex(Math.round(Math.min(255,Math.max(0,linearToSrgb(rl)*255))),Math.round(Math.min(255,Math.max(0,linearToSrgb(gl)*255))),Math.round(Math.min(255,Math.max(0,linearToSrgb(bl)*255))));}
+    function anyColorToHex(s){if(!s)return null;if(s.startsWith('#'))return s.replace('#','').substring(0,6).toUpperCase();if(s.startsWith('oklch'))return oklchToHex(s);if(s.startsWith('rgb'))return parseRgb(s);return parseRgb(s);}
+    function resolveColor(v,vars){if(!v)return null;if(v.startsWith('#')&&v.length>=4)return v.replace('#','').substring(0,6).toUpperCase();if(v.startsWith('oklch'))return oklchToHex(v);if(v.startsWith('rgb'))return parseRgb(v);var m=v.match(/var\(\s*(--[\w-]+)\s*\)/);if(m&&vars[m[1]])return resolveColor(vars[m[1]],vars);return parseRgb(v);}
+    function getElColor(el){return anyColorToHex(getComputedStyle(el).color)||'FAF5FF';}
+    function getCssVars(){var vars={};document.querySelectorAll('style').forEach(function(s){var rm=s.textContent.match(/:root\s*\{([^}]+)\}/);if(rm){var re=/(--[\w-]+)\s*:\s*([^;]+)/g,m;while((m=re.exec(rm[1])))vars[m[1]]=m[2].trim();}});var al={'--bg':'--c-bg','--text':'--c-fg','--text-muted':'--c-fg-2','--text-subtle':'--c-fg-3','--accent':'--c-accent','--divider':'--c-border'};Object.keys(al).forEach(function(L){var C=al[L];if(!vars[L]&&vars[C])vars[L]=vars[C];if(!vars[C]&&vars[L])vars[C]=vars[L];});return vars;}
+    function pxToPt(px){return parseFloat(px)*0.75;}
+    function textOf(el){return (el.textContent||'').trim();}
+    var pptx;
+    function exportSection(slide,sec,vars){
+      var bg=resolveColor(vars['--c-bg']||vars['--bg'],vars)||'0A0612';
+      slide.background={color:bg};
+      var textMuted=resolveColor(vars['--c-fg-2']||vars['--text-muted'],vars)||'AAAAAA';
+      var y=0.55;
+      var kicker=sec.querySelector('.kicker');
+      if(kicker){slide.addText(textOf(kicker),{x:0.55,y:y,w:12.2,h:0.3,fontSize:9,color:resolveColor(vars['--c-accent'],vars)||'FF3E7F',fontFace:'Calibri',charSpacing:3});y+=0.42;}
+      var h1=sec.querySelector('h1'),h2=sec.querySelector('h2');
+      var head=h1||h2;
+      if(head){var fs=pxToPt(getComputedStyle(head).fontSize);slide.addText(textOf(head),{x:0.55,y:y,w:12.2,h:h1?2.6:1.4,fontSize:Math.min(h1?42:28,fs),color:getElColor(head),fontFace:'Calibri',bold:false,valign:'top',lineSpacingMultiple:1.05});y+=h1?2.8:1.6;}
+      var paras=sec.querySelectorAll('p, .lede, .sub');
+      var added=0;
+      paras.forEach(function(p){if(added>=3)return;var t=textOf(p);if(!t||t.length<5)return;var fs=pxToPt(getComputedStyle(p).fontSize);slide.addText(t,{x:0.55,y:y,w:12.2,h:0.7,fontSize:Math.min(14,fs),color:getElColor(p),fontFace:'Calibri',valign:'top',lineSpacingMultiple:1.5,wrap:true});y+=0.8;added++;});
+      var pin=sec.querySelector('.pin');
+      if(pin){slide.addText(textOf(pin),{x:0.55,y:7.0,w:6,h:0.3,fontSize:8,color:resolveColor(vars['--c-fg-3'],vars)||'888888',fontFace:'Calibri',charSpacing:2});}
+    }
+    function doExport(){
+      if(typeof PptxGenJS==='undefined'){alert('PptxGenJS 未加载');return;}
+      var btn=document.getElementById('pptx-export-btn');
+      if(btn){btn.textContent='导出中...';btn.disabled=true;}
+      try{
+        pptx=new PptxGenJS(); pptx.layout='LAYOUT_WIDE';
+        var vars=getCssVars();
+        document.querySelectorAll('.reveal .slides > section').forEach(function(sec){
+          var nested=sec.querySelectorAll(':scope > section');
+          var list=nested.length?Array.from(nested):[sec];
+          list.forEach(function(s){var slide=pptx.addSlide();exportSection(slide,s,vars);});
+        });
+        var name=(document.title||'presentation').replace(/[^\w一-鿿\-]/g,'_');
+        pptx.writeFile({fileName:name+'.pptx'}).then(function(){if(btn){btn.textContent='已导出';setTimeout(function(){btn.textContent=BTN_TEXT;btn.disabled=false;},2000);}});
+      }catch(e){console.error(e);alert('导出失败: '+e.message);if(btn){btn.textContent=BTN_TEXT;btn.disabled=false;}}
+    }
+    function init(){
+      var btn=document.createElement('button');
+      btn.id='pptx-export-btn';btn.textContent=BTN_TEXT;
+      btn.setAttribute('aria-label','导出 PPTX');
+      btn.setAttribute('style','position:fixed;top:16px;right:16px;z-index:9999;padding:6px 14px;background:#15091f;color:#faf5ff;border:1px solid rgba(250,245,255,0.18);border-radius:20px;cursor:pointer;font-size:12px;opacity:0;transition:opacity 0.2s;font-family:system-ui,sans-serif;');
+      btn.onclick=doExport;
+      btn.onmouseenter=function(){btn.style.opacity='1';};
+      btn.onfocus=function(){btn.style.opacity='1';};
+      btn.onmouseleave=function(){btn.style.opacity='0';};
+      btn.onblur=function(){btn.style.opacity='0';};
+      document.body.appendChild(btn);
+      document.addEventListener('mousemove',function(e){btn.style.opacity=(e.clientY<76&&e.clientX>window.innerWidth-110)?'0.9':'0';});
+      document.addEventListener('fullscreenchange',function(){btn.style.display=document.fullscreenElement?'none':'';});
+    }
+    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init); else init();
+  })();
   </script>
 </body>
 </html>
