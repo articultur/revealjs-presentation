@@ -38,9 +38,9 @@
     /* ── Base ───────────────────────────────────────── */
     .reveal { font-family: var(--f-body); font-size: 28px; color: var(--c-fg); background: var(--c-bg); }
     .reveal .slides { text-align: left; }
-    .reveal .slides > section {
+    .reveal section {
       padding: 48px 64px; height: 100%; box-sizing: border-box; overflow: hidden;
-      background: var(--c-bg); position: relative !important;   /* !important 必含：覆盖 reveal.css section absolute，防 pin/label 跨 slide 泄露（test-label-overlap.js）*/
+      background: var(--c-bg); position: relative;   /* !important 必含：覆盖 reveal.css section absolute，防 pin/label 跨 slide 泄露（test-label-overlap.js）*/
     }
     .reveal .slides > section.deck-flex.present { display: flex !important; top: 0 !important; }
     .reveal .slides > section.deck-grid.present { display: grid !important; top: 0 !important; }

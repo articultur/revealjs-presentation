@@ -33,11 +33,11 @@
 /* ── 2. 基础重置 + Pin 安全带（必含 padding-bottom: 80px） ── */
 .reveal { font-family: var(--f-body); font-size: 30px; color: var(--c-fg); background: var(--c-bg); }
 .reveal .slides { text-align: left; }
-.reveal .slides > section {
+.reveal section {
   padding: 60px 80px 80px 80px;             /* 底部 80px = pin 安全带 */
   height: 100%; box-sizing: border-box;
   overflow: hidden;
-  position: relative !important;             /* 关键，不可省略 !important：reveal.css 把 section 设为 absolute 做 slide 堆叠，会覆盖普通 relative。一旦退回 absolute，absolute pin 的定位上下文错乱 → 邻近 slide 的 pin/stamp 泄露到当前视口并互相重叠（test-label-overlap.js 检测的 P0 bug）。实测 9/9 既有文件中招；加 !important 后泄露 18→0。安全说明：reveal.css 用 display:none 隐藏 .past/.future，section 改 relative 不影响它们的可见性（past/future 不在文档流），present section 的 relative + overflow:hidden 正常工作；validate.js 对 5 模板均报 0 溢出。 */
+  position: relative;             /* ⚠️ 切勿加 !important、切勿把选择器加强到 `.reveal .slides > section`：任一都会覆盖 reveal.css 的 `.reveal .slides>section{position:absolute}`（!important 强制 / 同特异性后加载赢）→ section 退回 relative 进文档流垂直堆叠 → .slides overflow:hidden 截断 → 除首页外全空白（实测 slide 3 top=1397，已回滚）。本弱选择器 `.reveal section`（0,1,1）被 reveal.css（0,2,1）覆盖，section 保持 absolute 正常堆叠，position: relative 仅 fallback 无害。pin/label 跨 slide 泄露待不破坏堆叠的方案。 */
 }
 
 /* Reveal 会把 present section 强制设为 block；section 级 flex/grid 必须加 deck-flex/deck-grid 类 */
