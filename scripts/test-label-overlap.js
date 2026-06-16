@@ -103,6 +103,14 @@ const LABEL_SELECTOR = '.pin, .stamp, .corner-mark, [class~="kicker"]';
             if (!el.isConnected) return false;
             const cs = getComputedStyle(el);
             if (cs.display === 'none' || cs.visibility === 'hidden' || parseFloat(cs.opacity) < 0.05) return false;
+            // 祖先 opacity:0 → 视觉不可见。reveal.js 用 opacity 隐藏非 present section，
+            // label 自己 opacity:1 但被父 section opacity:0 遮蔽 = 视觉不可见。不查祖先会
+            // 误判为可见 → 假阳性泄露（曾让 5 个正常模板报 120 对假泄露）。
+            let anc = el.parentElement;
+            while (anc && !anc.classList.contains('reveal')) {
+              if (parseFloat(getComputedStyle(anc).opacity) < 0.05) return false;
+              anc = anc.parentElement;
+            }
             const r = el.getBoundingClientRect();
             if (r.width < 2 || r.height < 2) return false;
             // label 是小尺寸索引/元数据元素；排除被选择器误匹配的布局容器（双保险，
