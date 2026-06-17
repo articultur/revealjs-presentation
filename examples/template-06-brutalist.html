@@ -32,12 +32,12 @@
   font-family:var(--f-mono);font-size:0.5em;letter-spacing:0.22em;
   text-transform:uppercase;color:var(--c-ink);
   border-bottom:3px solid var(--c-line);
-  padding-bottom:6px;margin:0 0 1em;display:flex;justify-content:space-between;
+  padding-bottom:6px;margin:0 0 0.9em;display:flex;justify-content:space-between;
   position:relative;z-index:3;
 }
 .coord{font-family:var(--f-mono);font-size:0.4em;letter-spacing:0.14em;color:var(--c-mute);}
 .at{
-  font-family:var(--f-display);font-size:1.65em;line-height:1.04;
+  font-family:var(--f-display);font-size:1.7em;line-height:1.04;
   letter-spacing:0;margin:0 0 0.7em;max-width:92%;position:relative;z-index:3;
 }
 .at.shift{margin-left:0.4em;}
@@ -55,9 +55,12 @@
   font-family:var(--f-mono);font-size:0.4em;letter-spacing:0.18em;
   text-transform:uppercase;color:var(--c-mute);z-index:3;
 }
-.big{font-family:var(--f-display);font-size:3.8em;line-height:1;letter-spacing:-0.02em;}
-.big small{font-family:var(--f-mono);font-size:0.22em;letter-spacing:0.1em;display:block;margin-top:6px;color:var(--c-mute);font-weight:400;}
+.big{font-family:var(--f-display);font-size:4.6em;line-height:0.92;letter-spacing:-0.03em;}
+.big small{font-family:var(--f-mono);font-size:0.18em;letter-spacing:0.1em;display:block;margin-top:8px;color:var(--c-mute);font-weight:400;}
+.mega{font-family:var(--f-display);font-size:4.9em;line-height:0.86;letter-spacing:-0.03em;margin:0;position:relative;z-index:3;}
+.mega.shift{margin-left:0.2em;}
 .hi{background:var(--c-accent);color:var(--c-ink);padding:1px 8px;display:inline-block;}
+.hi-block{background:var(--c-accent);color:var(--c-ink);padding:4px 16px;display:inline-block;}
 .bar{border:2px solid var(--c-line);border-bottom:none;background:var(--c-paper);position:relative;}
 .bar.fill{background:var(--c-ink);}
 .bar.accent{background:var(--c-accent);}
@@ -66,14 +69,17 @@
 .node{border:2px solid var(--c-line);background:var(--c-paper);padding:10px 12px;flex:1;text-align:center;font-size:0.6em;}
 .node.dark{background:var(--c-ink);color:var(--c-bg);}
 .arrow{display:flex;align-items:center;padding:0 4px;font-family:var(--f-mono);color:var(--c-ink);font-weight:700;}
-.num{font-family:var(--f-display);font-size:1.7em;line-height:1;}
+.num{font-family:var(--f-display);font-size:2.2em;line-height:1;letter-spacing:-0.02em;}
 .rule{border:2px solid var(--c-line);background:var(--c-paper);padding:11px 16px;display:flex;gap:14px;align-items:baseline;margin-bottom:10px;}
-.rule .n{font-family:var(--f-display);font-size:1.3em;color:var(--c-ink);min-width:0.8em;}
-.rule .t{font-size:0.74em;}
+.rule .n{font-family:var(--f-display);font-size:1.6em;color:var(--c-ink);min-width:0.8em;}
+.rule .t{font-size:0.72em;}
+.slab{height:14px;background:var(--c-ink);width:100%;margin:10px 0;position:relative;z-index:3;}
+.slab.accent{background:var(--c-accent);height:8px;}
+.slab.thick{height:20px;}
 .grid-deco{position:absolute;inset:20px;pointer-events:none;z-index:2;display:grid;grid-template-columns:repeat(4,1fr);}
 .grid-deco span{border-right:1px dashed oklch(80% 0.003 85);}
 .grid-deco span:last-child{border-right:none;}
-.display{font-family:var(--f-display);font-size:3.1em;line-height:0.9;letter-spacing:-0.01em;margin:0;}
+.display{font-family:var(--f-display);font-size:3.9em;line-height:0.88;letter-spacing:-0.02em;margin:0;}
 .display.shift{margin-left:0.3em;}
 .sub{font-family:var(--f-mono);font-size:0.55em;letter-spacing:0.04em;color:var(--c-mute);margin-top:14px;max-width:60%;line-height:1.4;}
 .pptx-btn{position:fixed;top:16px;right:16px;z-index:100;font-family:var(--f-mono);font-size:12px;letter-spacing:0.1em;text-transform:uppercase;background:var(--c-ink);color:var(--c-bg);border:none;padding:8px 14px;cursor:pointer;opacity:0;transition:opacity .2s;}
@@ -81,15 +87,17 @@
 </style>
 </head>
 <body>
-<!-- Reveal.js PPTX 导出按钮 --><button class="pptx-btn" onclick="exportPPTX()">↓ PPTX</button>
+<!-- Reveal.js PPTX 导出按钮 -->
+<button class="pptx-btn" onclick="exportPPTX()">↓ PPTX</button>
 <div class="reveal"><div class="slides">
 
 <section class="brutal-cover">
 <div class="grid-deco"><span></span><span></span><span></span><span></span></div>
 <div class="kicker"><span>RESIDUE / 01 · COVER</span><span class="coord">X:0000 Y:0000</span></div>
-<h1 class="display shift">ATTENTION<br><span class="hi">RESIDUE.</span></h1>
+<h1 class="display shift">ATTENTION<br><span class="hi-block">RESIDUE.</span></h1>
+<div class="slab"></div>
 <p class="sub">每次切换，注意力都在漏水。一份关于上下文切换真实代价的批判性报告。</p>
-<div class="proof" style="display:inline-block;margin-top:18px;">
+<div class="proof" style="display:inline-block;margin-top:14px;">
 <div class="big">23<small>MIN · AVERAGE RESIDUE PER SWITCH</small></div>
 </div>
 <div class="source">illustrative · based on Mark 2008</div>
@@ -100,7 +108,7 @@
 <div class="kicker"><span>RESIDUE / 02 · CLAIM</span><span class="coord">X:0240 Y:0540</span></div>
 <h2 class="at">一次上下文切换，注意力残留 <span class="hi">平均 23 分钟</span>。</h2>
 <div class="proof">
-<div style="display:flex;gap:20px;align-items:center;">
+<div style="display:flex;gap:24px;align-items:center;">
 <div class="big">23<small>MIN · BEFORE FOCUS REBUILDS</small></div>
 <div style="flex:1;font-size:0.66em;line-height:1.5;">
 残留 = 上一个任务未关闭的思绪，持续占用工作记忆槽位。切换越深，残留越重。
@@ -169,6 +177,7 @@
 <section>
 <div class="kicker"><span>RESIDUE / 06 · DATA</span><span class="coord">X:0400 Y:0990</span></div>
 <h2 class="at">知识工作者日均切换 <span class="hi">566 次</span>，每 11 秒一次。</h2>
+<div class="slab accent"></div>
 <div class="proof" style="display:flex;gap:28px;align-items:center;">
 <div class="big" style="flex:0 0 auto;">566<small>SWITCHES / DAY</small></div>
 <div style="flex:1;font-size:0.68em;line-height:1.6;">
@@ -200,7 +209,8 @@
 <section>
 <div class="kicker"><span>RESIDUE / 08 · CLOSE</span><span class="coord">X:0480 Y:1170</span></div>
 <h2 class="at">三条止血规则：<span class="hi">批次 · 保护带 · 可见度</span>。</h2>
-<div style="position:relative;z-index:3;margin-top:4px;">
+<div class="slab"></div>
+<div style="position:relative;z-index:3;">
 <div class="rule"><span class="n">01</span><span class="t"><strong>BATCH · 批次</strong>——同类任务集中 90 分钟，不交错。</span></div>
 <div class="rule"><span class="n">02</span><span class="t"><strong>SHIELD · 保护带</strong>——每日 2 段勿扰时段，关闭通知。</span></div>
 <div class="rule"><span class="n">03</span><span class="t"><strong>VISIBLE · 可见度</strong>——未关闭任务写到纸上，腾出工作记忆。</span></div>
@@ -214,7 +224,7 @@
 <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
 <script>
 Reveal.initialize({width:1280,height:720,margin:0.04,hash:true,slideNumber:'c/t',transition:'slide'});
-function exportPPTX(){if(typeof PptxGenJS==='undefined'){alert('pptxgenjs 未加载');return;}var p=new PptxGenJS();p.defineLayout({name:'C',width:13.33,height:7.5});p.layout='C';Reveal.getSlides().forEach(function(s){var t=(s.querySelector('.kicker')||{}).innerText||'';var h=(s.querySelector('.at,.display')||{}).innerText||'';p.addSlide().addText(h,{x:0.5,y:0.5,w:12,h:1.5,fontSize:28,bold:true}).addText(t,{x:0.5,y:0.2,w:12,h:0.3,fontSize:10,color:'999999'});});p.writeFile({fileName:'attention-residue.pptx'});}
+function exportPPTX(){if(typeof PptxGenJS==='undefined'){alert('pptxgenjs 未加载');return;}var p=new PptxGenJS();p.defineLayout({name:'C',width:13.33,height:7.5});p.layout='C';Reveal.getSlides().forEach(function(s){var t=(s.querySelector('.kicker')||{}).innerText||'';var h=(s.querySelector('.at,.display,.mega')||{}).innerText||'';p.addSlide().addText(h,{x:0.5,y:0.5,w:12,h:1.5,fontSize:28,bold:true}).addText(t,{x:0.5,y:0.2,w:12,h:0.3,fontSize:10,color:'999999'});});p.writeFile({fileName:'attention-residue.pptx'});}
 </script>
 </body>
 </html>
