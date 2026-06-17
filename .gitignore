@@ -14,5 +14,5 @@ examples/*-overflow*.png
 
 # eval run artifacts (keep only benchmark files at workspace root)
 revealjs-presentation-workspace/*/screenshots/
-revealjs-presentation-workspace/*/skill-snapshot/
+revealjs-presentation-workspace/**/skill-snapshot/
 revealjs-presentation-workspace/*/*/

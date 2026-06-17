@@ -40,8 +40,12 @@ const IGNORE_RE = /\b(?:\d+(?:\.\d+)?\s*(?:em|px|rem|%|vh|vw|ch|s|ms|deg)\b|(?:1
 const DATE_RE = /\b\d{4}\.\d{2}(?:\.\d{2})?\b|\b\d{2}\.\d{4}\b|\b\d{2}\.\d{2}\b/g;
 
 // Precise-number patterns: percentages, large integers (≥1000), decimals
-// with 1-2 fractional digits, and K/M/B suffix forms
-const METRIC_RE = /\b(?:\d{1,3}(?:,\d{3})+|\d{4,}(?:\.\d+)?|\d+\.\d{1,2}%?|\d+\s*[KkMmBb])\b/g;
+// with 1-2 fractional digits, and K/M/B suffix forms.
+// 量级后缀只认大写 [KMB]（千/百万/十亿）——小写 m 是"米"（物理尺寸：建筑
+// 6.2m、投影 14m、观察 4m），不是 million。原 [KkMmBb] 把物理尺寸当业务指标，
+// 导致 minimal-spatial / vibrant-gradient / nature-fresh 模板的尺寸标注全部
+// 误报（假红）。业务量级约定用大写：1.2M streaming、3B users、5K servers。
+const METRIC_RE = /\b(?:\d{1,3}(?:,\d{3})+|\d{4,}(?:\.\d+)?|\d+\.\d{1,2}%?|\d+\s*[KMB])\b/g;
 
 function stripHtmlTags(str) {
   return str.replace(/<[^>]+>/g, ' ').replace(/&[a-z]+;/gi, ' ').replace(/\s+/g, ' ').trim();

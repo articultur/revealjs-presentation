@@ -31,20 +31,19 @@ if (!files.length) {
 
 // ─── Helpers ──────────────────────────────────────────────────
 
-// Extract meaningful topic words (2+ CJK chars or 3+ Latin chars)
+// Extract meaningful topic words — CJK only.
+// 只提取 CJK 主题词（≥2 中文字）。英文索引词（cover / proof / mechanism / stage
+// 等页面角色词）不作为主题词，与 lint-design.js 的 isMeaningfulPinTopic 对齐：
+// 5 套种子模板的 pin 全是英文索引（"01 · cover"），主题由 h1/h2 承担；若把英文
+// 索引词当主题词检查，pin 角色词不在 main 标题 → 5 模板全部误报（实测 25 处）。
+// 中文 deck 的 pin 主题词是中文（如"价格屠夫"），CJK 提取能正确捕获。
 function topicWords(text) {
   const cleaned = text
     .replace(/[0-9]+\s*[\/·]\s*/g, '')   // strip "06 / "
     .replace(/[\d.,%+\-×x()（）【】\[\]]/g, '')  // strip numbers / symbols
     .trim();
-  const tokens = [];
-  // CJK bigrams
   const cjk = cleaned.match(/[一-鿿]{2,}/g);
-  if (cjk) tokens.push(...cjk);
-  // Latin words ≥ 3 chars
-  const latin = cleaned.match(/[a-zA-Z]{3,}/g);
-  if (latin) tokens.push(...latin);
-  return tokens.filter(t => t.length >= 2);
+  return cjk ? [...new Set(cjk)] : [];
 }
 
 // Check if any topic word from pin appears in main-visual text
@@ -79,8 +78,12 @@ for (const file of files) {
   // <section>…</section> pair by tag-counting.  This handles nested
   // vertical slides correctly — no false matches on container sections.
 
-  // Step 1 — collect all .pin positions and text
-  const pinRegex = /<div[^>]*class="[^"]*\bpin\b[^"]*"[^>]*>([\s\S]*?)<\/div>/gi;
+  // Step 1 — collect all .pin positions and text.
+  // 修复 (闭环审查发现)：原正则只匹配 <div class="pin">，但 5 套种子模板的
+  // pin 全部是 <span class="pin">，导致脚本对每个模板都报 "no .pin elements
+  // found" 静默 pass —— 门禁形同虚设（假绿色）。改为匹配任意标签，与
+  // lint-design.js 的 checkPinMainClaimHierarchy 用同一正则，保证两者一致。
+  const pinRegex = /<[^>]*class="[^"]*\bpin\b[^"]*"[^>]*>([\s\S]*?)<\/[^>]+>/gi;
   const pins = [];
   let pmatch;
   while ((pmatch = pinRegex.exec(html)) !== null) {
