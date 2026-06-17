@@ -24,10 +24,14 @@
   }
 
   function isDecorativeIgnored(el) {
+    // data-qa-ignore="decorative" 标记的元素跳过溢出检测。
+    // 原要求"空文本"过严——建筑制图 dimension-chain（L475 已标 decorative 但有尺寸
+    // 数字文本）、发布会 stage frame、田野 specimen envelope 等设计性延伸带文本但
+    // 视觉上是故意的（用户确认截图 OK）。放宽为"标记即忽略"，与 test-pin-collision
+    // 的 data-qa-ignore 机制一致。严禁滥用：正文/数据/标题不得加此标记逃避检测
+    // （SKILL.md 失败门禁 #13）。
     const ignored = el.closest('[data-qa-ignore="decorative"]');
-    if (!ignored) return false;
-    const text = (ignored.textContent || '').trim();
-    return text.length === 0;
+    return !!ignored;
   }
 
   function comprehensiveOverflowScan(options = {}) {
