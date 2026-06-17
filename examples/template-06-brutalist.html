@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>Attention Residue — Brutalist Deck</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.css">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --c-bg:oklch(96% 0.003 85);
+  --c-paper:oklch(92% 0.004 85);
+  --c-ink:oklch(22% 0.005 85);
+  --c-mute:oklch(48% 0.004 85);
+  --c-line:oklch(22% 0.005 85);
+  --c-accent:oklch(88% 0.18 115);
+  --f-display:'Archivo Black',system-ui,sans-serif;
+  --f-body:'IBM Plex Sans',system-ui,sans-serif;
+  --f-mono:'JetBrains Mono',ui-monospace,monospace;
+}
+*{box-sizing:border-box;}
+.reveal,.reveal h1,.reveal h2,.reveal h3,.reveal p{font-family:var(--f-body);}
+.reveal section{
+  background:var(--c-bg);color:var(--c-ink);
+  font-size:26px;line-height:1.4;text-align:left;
+  padding:56px 72px 72px;overflow:hidden;position:relative;
+}
+.reveal section::before{
+  content:'';position:absolute;inset:20px;
+  border:2px solid var(--c-line);pointer-events:none;z-index:1;
+}
+.kicker{
+  font-family:var(--f-mono);font-size:0.5em;letter-spacing:0.22em;
+  text-transform:uppercase;color:var(--c-ink);
+  border-bottom:3px solid var(--c-line);
+  padding-bottom:6px;margin:0 0 1em;display:flex;justify-content:space-between;
+  position:relative;z-index:3;
+}
+.coord{font-family:var(--f-mono);font-size:0.4em;letter-spacing:0.14em;color:var(--c-mute);}
+.at{
+  font-family:var(--f-display);font-size:1.65em;line-height:1.04;
+  letter-spacing:0;margin:0 0 0.7em;max-width:92%;position:relative;z-index:3;
+}
+.at.shift{margin-left:0.4em;}
+.proof{
+  position:relative;z-index:3;border:2px solid var(--c-line);
+  background:var(--c-paper);padding:20px 24px;
+}
+.source{
+  position:absolute;bottom:28px;right:72px;
+  font-family:var(--f-mono);font-size:0.4em;letter-spacing:0.12em;
+  text-transform:uppercase;color:var(--c-mute);z-index:3;
+}
+.pin{
+  position:absolute;left:64px;bottom:28px;
+  font-family:var(--f-mono);font-size:0.4em;letter-spacing:0.18em;
+  text-transform:uppercase;color:var(--c-mute);z-index:3;
+}
+.big{font-family:var(--f-display);font-size:3.8em;line-height:1;letter-spacing:-0.02em;}
+.big small{font-family:var(--f-mono);font-size:0.22em;letter-spacing:0.1em;display:block;margin-top:6px;color:var(--c-mute);font-weight:400;}
+.hi{background:var(--c-accent);color:var(--c-ink);padding:1px 8px;display:inline-block;}
+.bar{border:2px solid var(--c-line);border-bottom:none;background:var(--c-paper);position:relative;}
+.bar.fill{background:var(--c-ink);}
+.bar.accent{background:var(--c-accent);}
+.label{font-family:var(--f-mono);font-size:0.42em;letter-spacing:0.1em;text-transform:uppercase;color:var(--c-mute);margin-top:4px;}
+.flow{display:flex;align-items:stretch;gap:0;margin-top:6px;}
+.node{border:2px solid var(--c-line);background:var(--c-paper);padding:10px 12px;flex:1;text-align:center;font-size:0.6em;}
+.node.dark{background:var(--c-ink);color:var(--c-bg);}
+.arrow{display:flex;align-items:center;padding:0 4px;font-family:var(--f-mono);color:var(--c-ink);font-weight:700;}
+.num{font-family:var(--f-display);font-size:1.7em;line-height:1;}
+.rule{border:2px solid var(--c-line);background:var(--c-paper);padding:11px 16px;display:flex;gap:14px;align-items:baseline;margin-bottom:10px;}
+.rule .n{font-family:var(--f-display);font-size:1.3em;color:var(--c-ink);min-width:0.8em;}
+.rule .t{font-size:0.74em;}
+.grid-deco{position:absolute;inset:20px;pointer-events:none;z-index:2;display:grid;grid-template-columns:repeat(4,1fr);}
+.grid-deco span{border-right:1px dashed oklch(80% 0.003 85);}
+.grid-deco span:last-child{border-right:none;}
+.display{font-family:var(--f-display);font-size:3.1em;line-height:0.9;letter-spacing:-0.01em;margin:0;}
+.display.shift{margin-left:0.3em;}
+.sub{font-family:var(--f-mono);font-size:0.55em;letter-spacing:0.04em;color:var(--c-mute);margin-top:14px;max-width:60%;line-height:1.4;}
+.pptx-btn{position:fixed;top:16px;right:16px;z-index:100;font-family:var(--f-mono);font-size:12px;letter-spacing:0.1em;text-transform:uppercase;background:var(--c-ink);color:var(--c-bg);border:none;padding:8px 14px;cursor:pointer;opacity:0;transition:opacity .2s;}
+.pptx-btn:hover,.pptx-btn:focus{opacity:1;}
+</style>
+</head>
+<body>
+<!-- Reveal.js PPTX 导出按钮 --><button class="pptx-btn" onclick="exportPPTX()">↓ PPTX</button>
+<div class="reveal"><div class="slides">
+
+<section class="brutal-cover">
+<div class="grid-deco"><span></span><span></span><span></span><span></span></div>
+<div class="kicker"><span>RESIDUE / 01 · COVER</span><span class="coord">X:0000 Y:0000</span></div>
+<h1 class="display shift">ATTENTION<br><span class="hi">RESIDUE.</span></h1>
+<p class="sub">每次切换，注意力都在漏水。一份关于上下文切换真实代价的批判性报告。</p>
+<div class="proof" style="display:inline-block;margin-top:18px;">
+<div class="big">23<small>MIN · AVERAGE RESIDUE PER SWITCH</small></div>
+</div>
+<div class="source">illustrative · based on Mark 2008</div>
+<span class="pin">01 · cover · residue</span>
+</section>
+
+<section>
+<div class="kicker"><span>RESIDUE / 02 · CLAIM</span><span class="coord">X:0240 Y:0540</span></div>
+<h2 class="at">一次上下文切换，注意力残留 <span class="hi">平均 23 分钟</span>。</h2>
+<div class="proof">
+<div style="display:flex;gap:20px;align-items:center;">
+<div class="big">23<small>MIN · BEFORE FOCUS REBUILDS</small></div>
+<div style="flex:1;font-size:0.66em;line-height:1.5;">
+残留 = 上一个任务未关闭的思绪，持续占用工作记忆槽位。切换越深，残留越重。
+</div>
+</div>
+</div>
+<div class="source">verified · Gloria Mark, UC Irvine, 2008</div>
+<span class="pin">02 · claim · residue</span>
+</section>
+
+<section>
+<div class="kicker"><span>RESIDUE / 03 · PROOF</span><span class="coord">X:0280 Y:0720</span></div>
+<h2 class="at shift">切换越频繁，错误率越高——且代价非线性。</h2>
+<div class="proof">
+<div style="display:flex;gap:14px;align-items:flex-end;height:150px;">
+<div style="flex:1;"><div class="bar" style="height:28px;"></div><div class="label">2×/HR · 12%</div></div>
+<div style="flex:1;"><div class="bar" style="height:56px;"></div><div class="label">6×/HR · 24%</div></div>
+<div style="flex:1;"><div class="bar fill" style="height:100px;"></div><div class="label">12×/HR · 47%</div></div>
+<div style="flex:1;"><div class="bar accent" style="height:140px;"></div><div class="label">20×/HR · <span class="hi">71%</span></div></div>
+</div>
+<div class="label" style="margin-top:10px;">错误率 % · 随切换频率非线性上升</div>
+</div>
+<div class="source">illustrative · lab simulation</div>
+<span class="pin">03 · proof · error-rate</span>
+</section>
+
+<section>
+<div class="kicker"><span>RESIDUE / 04 · MECHANISM</span><span class="coord">X:0320 Y:0810</span></div>
+<h2 class="at">残留累积：未关闭的任务持续占用工作记忆。</h2>
+<div class="proof">
+<div class="flow">
+<div class="node">TASK A<br><small style="font-family:var(--f-mono);">进行中</small></div>
+<div class="arrow">▶</div>
+<div class="node dark">RESIDUE<br><small style="font-family:var(--f-mono);">未关闭</small></div>
+<div class="arrow">▶</div>
+<div class="node">TASK B<br><small style="font-family:var(--f-mono);">性能 ↓ 40%</small></div>
+<div class="arrow">▶</div>
+<div class="node dark">CUMULATIVE<br><small style="font-family:var(--f-mono);">日终崩溃</small></div>
+</div>
+<div class="label" style="margin-top:12px;">每个未关闭任务 = 一个常驻后台进程</div>
+</div>
+<div class="source">illustrative · working memory model</div>
+<span class="pin">04 · mechanism · memory</span>
+</section>
+
+<section>
+<div class="kicker"><span>RESIDUE / 05 · COMPARISON</span><span class="coord">X:0360 Y:0900</span></div>
+<h2 class="at shift">深度 90 分钟 vs 碎片 90 分钟——产出差 4 倍。</h2>
+<div class="proof">
+<div style="display:flex;gap:24px;align-items:flex-end;height:160px;">
+<div style="flex:1;text-align:center;">
+<div class="bar" style="height:36px;background:var(--c-paper);"></div>
+<div class="label">FRAGMENTED · 1×产出</div>
+</div>
+<div style="flex:1;text-align:center;">
+<div class="bar fill" style="height:150px;"></div>
+<div class="label">DEEP · <span class="hi">4×产出</span></div>
+</div>
+</div>
+<div class="label" style="margin-top:10px;">同等时长 · 单位时间有效产出比</div>
+</div>
+<div class="source">illustrative · Cal Newport, Deep Work</div>
+<span class="pin">05 · comparison · depth</span>
+</section>
+
+<section>
+<div class="kicker"><span>RESIDUE / 06 · DATA</span><span class="coord">X:0400 Y:0990</span></div>
+<h2 class="at">知识工作者日均切换 <span class="hi">566 次</span>，每 11 秒一次。</h2>
+<div class="proof" style="display:flex;gap:28px;align-items:center;">
+<div class="big" style="flex:0 0 auto;">566<small>SWITCHES / DAY</small></div>
+<div style="flex:1;font-size:0.68em;line-height:1.6;">
+按 8 小时计：<strong>每 51 秒切一次屏幕</strong>。<br>
+其中 40% 的切换在 10 秒内发生——根本来不及进入任何深度状态。
+</div>
+</div>
+<div class="source">verified · RescueTime, 2023</div>
+<span class="pin">06 · data · frequency</span>
+</section>
+
+<section>
+<div class="kicker"><span>RESIDUE / 07 · RISK</span><span class="coord">X:0440 Y:1080</span></div>
+<h2 class="at shift">碎片化团队：周期延长 2.3 倍，缺陷率上升 47%。</h2>
+<div class="proof" style="display:flex;gap:20px;">
+<div style="flex:1;border-right:2px solid var(--c-line);padding-right:20px;">
+<div class="num">2.3×</div>
+<div class="label" style="margin-top:8px;">DELIVERY CYCLE<br>交付周期延长</div>
+</div>
+<div style="flex:1;padding-left:20px;">
+<div class="num">+47%</div>
+<div class="label" style="margin-top:8px;">DEFECT RATE<br>缺陷率上升</div>
+</div>
+</div>
+<div class="source">illustrative · team retro aggregate</div>
+<span class="pin">07 · risk · team-cost</span>
+</section>
+
+<section>
+<div class="kicker"><span>RESIDUE / 08 · CLOSE</span><span class="coord">X:0480 Y:1170</span></div>
+<h2 class="at">三条止血规则：<span class="hi">批次 · 保护带 · 可见度</span>。</h2>
+<div style="position:relative;z-index:3;margin-top:4px;">
+<div class="rule"><span class="n">01</span><span class="t"><strong>BATCH · 批次</strong>——同类任务集中 90 分钟，不交错。</span></div>
+<div class="rule"><span class="n">02</span><span class="t"><strong>SHIELD · 保护带</strong>——每日 2 段勿扰时段，关闭通知。</span></div>
+<div class="rule"><span class="n">03</span><span class="t"><strong>VISIBLE · 可见度</strong>——未关闭任务写到纸上，腾出工作记忆。</span></div>
+</div>
+<div class="source">illustrative · residue protocol</div>
+<span class="pin">08 · close · protocol</span>
+</section>
+
+</div></div>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+<script>
+Reveal.initialize({width:1280,height:720,margin:0.04,hash:true,slideNumber:'c/t',transition:'slide'});
+function exportPPTX(){if(typeof PptxGenJS==='undefined'){alert('pptxgenjs 未加载');return;}var p=new PptxGenJS();p.defineLayout({name:'C',width:13.33,height:7.5});p.layout='C';Reveal.getSlides().forEach(function(s){var t=(s.querySelector('.kicker')||{}).innerText||'';var h=(s.querySelector('.at,.display')||{}).innerText||'';p.addSlide().addText(h,{x:0.5,y:0.5,w:12,h:1.5,fontSize:28,bold:true}).addText(t,{x:0.5,y:0.2,w:12,h:0.3,fontSize:10,color:'999999'});});p.writeFile({fileName:'attention-residue.pptx'});}
+</script>
+</body>
+</html>

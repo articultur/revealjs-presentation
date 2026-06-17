@@ -243,9 +243,9 @@ Proof object：必须可视化证明 ____，不能只写成 bullet。
 | 12 | 高风险布局预警 | 2×2 + 长标题、4-8 卡、密集时间线 + fragment 都易溢出，先用紧凑版 |
 | 13 | **Pin 安全区** | 必须跑 `test-pin-collision.js`，OK 才能交付；详见上文「关键约束 §3」 |
 
-## 种子模板（5 套已实现）
+## 种子模板（8 套已实现）
 
-每个模板在 `examples/template-01..05-*.html` 有完整示例，class 命名和领域对象登记在 `references/template-invariants.json`。**使用种子模板时必须改变叙事结构和页面骨架，不只换字体/颜色/背景**（失败模式 #9）。
+每个模板在 `examples/template-01..08-*.html` 有完整示例，class 命名和领域对象登记在 `references/template-invariants.json`。**使用种子模板时必须改变叙事结构和页面骨架，不只换字体/颜色/背景**（失败模式 #9）。
 
 | 模板 | 设计语法 | 适用场景 |
 |------|---------|---------|
@@ -254,8 +254,11 @@ Proof object：必须可视化证明 ____，不能只写成 bullet。
 | `template-03-minimal-spatial` | 建筑制图（图纸、尺寸链、平面、剖面、路径） | 产品架构、方法论、复杂系统、组织设计 |
 | `template-04-vibrant-gradient` | 发布会现场（主屏、观众席、摄影机框、产品 drop） | 品牌开场、社区产品、营销、Keynote |
 | `template-05-nature-fresh` | 田野桌面（笔记本、钉图、样本标签、信封） | 培训、研究 workshop、教育、用户洞察 |
+| `template-06-brutalist` | 野兽派 / 反模板（裸露硬边框、粗黑线、Archivo Black、荧光黄绿警示、错位坐标） | AI 批判、先锋创意、宣言式、反潮流品牌 |
+| `template-07-memphis` | 80s Memphis 复古（撞色色块、几何三角/圆/波浪、粗描边、不对称散落） | 创意机构、活动、作品集、文化品牌、营销 |
+| `template-08-isometric` | 等距 3D 信息图（30° 立体层叠、Edge/Mesh/Data 架构栈、侧视网格） | 平台架构、系统流程、路线图、阶段规划 |
 
-> 另有 10 套设计语法（金融终端、临床实验室、城市基建、法律案卷、奢侈工坊、影视分镜、动画节奏、系统流程、代码走查、数据可视化）作为扩展参考登记在 `references/template-invariants.json` 与 `references/design-polish.md`，**尚未落地为种子 HTML**；需要时按其设计语法新建，不要引用不存在的 `examples/template-06..15` 文件。
+> 另有 10 套设计语法（金融终端、临床实验室、城市基建、法律案卷、奢侈工坊、影视分镜、动画节奏、系统流程、代码走查、数据可视化）作为扩展参考登记在 `references/design-polish.md`，**尚未落地为种子 HTML**。注意：`design-polish.md` 的 "Template 06-15" 是设计语法章节的**逻辑序号**，与 `examples/template-06..08`（已实现为 brutalist / memphis / isometric 三种正交新风格）主题不同；需要这些设计语法时新建文件，不要引用不存在的 `examples/template-09..15`。
 
 ## 设计规则（lint 自动检查）
 

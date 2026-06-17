@@ -89,6 +89,9 @@ const expectedTemplates = [
   'examples/template-03-minimal-spatial.html',
   'examples/template-04-vibrant-gradient.html',
   'examples/template-05-nature-fresh.html',
+  'examples/template-06-brutalist.html',
+  'examples/template-07-memphis.html',
+  'examples/template-08-isometric.html',
 ];
 
 const genericMarkerRe = /^(?:hero|card|panel|section|content|block|item|box)$/i;
@@ -143,7 +146,7 @@ function readTemplateInvariants() {
 const templateInvariants = readTemplateInvariants();
 const invariantTemplatePaths = Object.keys(templateInvariants.templates).sort();
 if (JSON.stringify(invariantTemplatePaths) !== JSON.stringify([...expectedTemplates].sort())) {
-  fail('references/template-invariants.json must list exactly the 5 expected seed templates.');
+  fail('references/template-invariants.json must list exactly the 8 expected seed templates.');
 }
 
 const coverClassOwners = new Map();

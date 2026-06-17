@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>Make Loud Things — Memphis Deck</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.css">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700;12..96,800&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --c-bg:oklch(98% 0.005 90);
+  --c-ink:oklch(20% 0.01 280);
+  --c-pink:oklch(72% 0.19 0);
+  --c-yellow:oklch(90% 0.16 95);
+  --c-teal:oklch(74% 0.13 195);
+  --c-mute:oklch(45% 0.01 280);
+  --f-display:'Bricolage Grotesque',system-ui,sans-serif;
+  --f-body:'Outfit',system-ui,sans-serif;
+  --f-mono:'JetBrains Mono',monospace;
+}
+*{box-sizing:border-box;}
+.reveal,.reveal h1,.reveal h2,.reveal h3{font-family:var(--f-display);}
+.reveal section{
+  background:var(--c-bg);color:var(--c-ink);font-family:var(--f-body);
+  font-size:26px;line-height:1.4;text-align:left;
+  padding:56px 72px 72px;overflow:hidden;position:relative;
+}
+.kicker{
+  font-family:var(--f-mono);font-size:0.5em;letter-spacing:0.18em;
+  text-transform:uppercase;color:var(--c-ink);background:var(--c-yellow);
+  display:inline-block;padding:4px 12px;border:2px solid var(--c-ink);
+  margin:0 0 0.9em;position:relative;z-index:3;
+}
+.at{
+  font-family:var(--f-display);font-weight:800;font-size:1.8em;line-height:1.04;
+  margin:0 0 0.7em;max-width:90%;position:relative;z-index:3;
+}
+.at em{font-style:normal;background:var(--c-pink);padding:0 8px;color:var(--c-ink);}
+.proof{position:relative;z-index:3;border:3px solid var(--c-ink);background:var(--c-bg);padding:18px 22px;}
+.source{position:absolute;bottom:28px;right:72px;font-family:var(--f-mono);font-size:0.4em;letter-spacing:0.1em;text-transform:uppercase;color:var(--c-mute);z-index:3;}
+.pin{position:absolute;left:64px;bottom:28px;font-family:var(--f-mono);font-size:0.4em;letter-spacing:0.16em;text-transform:uppercase;color:var(--c-mute);z-index:3;}
+.big{font-family:var(--f-display);font-weight:800;font-size:3.6em;line-height:1;}
+.tag{display:inline-block;font-family:var(--f-mono);font-size:0.42em;letter-spacing:0.1em;text-transform:uppercase;padding:3px 10px;border:2px solid var(--c-ink);margin:3px;background:var(--c-bg);color:var(--c-ink);}
+.tag.pink{background:var(--c-pink);}
+.tag.yellow{background:var(--c-yellow);}
+.tag.teal{background:var(--c-teal);}
+.shape{position:absolute;z-index:1;}
+.display{font-family:var(--f-display);font-weight:800;font-size:3.4em;line-height:0.92;margin:0;}
+.display em{font-style:normal;background:var(--c-pink);padding:0 10px;color:var(--c-ink);display:inline-block;}
+.sub{font-family:var(--f-body);font-size:0.7em;color:var(--c-mute);margin-top:12px;max-width:58%;line-height:1.4;}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+.card{border:3px solid var(--c-ink);padding:12px;background:var(--c-bg);}
+.card.yellow{background:var(--c-yellow);}
+.card.pink{background:var(--c-pink);}
+.card.teal{background:var(--c-teal);}
+.card h4{font-family:var(--f-display);font-weight:700;font-size:0.88em;margin:0 0 4px;}
+.card p{font-size:0.56em;margin:0;line-height:1.4;}
+.pptx-btn{position:fixed;top:16px;right:16px;z-index:100;font-family:var(--f-mono);font-size:12px;letter-spacing:0.1em;text-transform:uppercase;background:var(--c-ink);color:var(--c-bg);border:none;padding:8px 14px;cursor:pointer;opacity:0;transition:opacity .2s;}
+.pptx-btn:hover,.pptx-btn:focus{opacity:1;}
+</style>
+</head>
+<body>
+<!-- Reveal.js PPTX 导出按钮 --><button class="pptx-btn" onclick="exportPPTX()">↓ PPTX</button>
+<div class="reveal"><div class="slides">
+
+<section class="memphis-cover">
+<svg class="shape" style="top:140px;right:90px;" width="84" height="84"><polygon points="42,5 79,72 5,72" style="fill:var(--c-yellow);stroke:var(--c-ink);stroke-width:3"/></svg>
+<svg class="shape" style="top:60px;right:200px;" width="80" height="80"><circle cx="40" cy="40" r="34" style="fill:var(--c-teal);stroke:var(--c-ink);stroke-width:3"/></svg>
+<div class="kicker">STUDIO · 2025 PORTFOLIO</div>
+<h1 class="display">Make<br><em>Loud</em> Things.</h1>
+<p class="sub">一个反极简的创意机构——为不害怕被看见的品牌做视觉系统、活动与短片。</p>
+<div class="proof" style="display:inline-block;margin-top:16px;background:var(--c-yellow);">
+<div class="big">47<small style="font-family:var(--f-mono);font-size:0.22em;display:block;margin-top:4px;font-weight:400;letter-spacing:0.1em;">PROJECTS · 2024-25</small></div>
+</div>
+<div class="source">illustrative · studio record</div>
+<span class="pin">01 · cover · manifesto</span>
+</section>
+
+<section>
+<div class="kicker">MANIFESTO / 02</div>
+<h2 class="at">我们相信 <em>吵闹</em> 是一种诚实——安静的设计被算法淹没。</h2>
+<div style="position:relative;z-index:3;margin-bottom:14px;">
+<span class="tag yellow">BOLD OVER SAFE</span>
+<span class="tag pink">RISK OVER TREND</span>
+<span class="tag teal">CRAFT OVER SPEED</span>
+<span class="tag">SIGNAL OVER NOISE</span>
+</div>
+<div class="proof">
+<p style="font-size:0.66em;margin:0;line-height:1.55;">极简主义是 2010 年代的语言。在信息洪流里，被记住需要色彩决断、几何张力、和一点点不合时宜的幽默。我们替品牌"被看见"。</p>
+</div>
+<div class="source">studio ethos · v3</div>
+<span class="pin">02 · manifesto · voice</span>
+</section>
+
+<section>
+<div class="kicker">WORKS / 03 · 2024 HIGHLIGHTS</div>
+<h2 class="at">六个 <em>敢loud</em> 的项目。</h2>
+<div class="row3">
+<div class="card yellow"><h4>BAKERY × CITY</h4><p>连锁烘焙品牌重塑，撞色包装系统，销售 +63%。</p></div>
+<div class="card pink"><h4>FESTIVAL 26</h4><p>音乐节视觉，Memphis 海报矩阵，票房破纪录。</p></div>
+<div class="card teal"><h4>TEA LAB</h4><p>新茶饮品牌，几何 IP 系统，3 个月开 40 店。</p></div>
+<div class="card"><h4>NEON BANK</h4><p>数字银行 launch，荧光 UI，获客成本 -38%。</p></div>
+<div class="card yellow"><h4>TOY STORY</h4><p>玩具品牌短片，手绘动画，社媒 2.1 亿播放。</p></div>
+<div class="card pink"><h4>MARKET HALL</h4><p>市集空间导视，撞色标识系统，客流 +120%。</p></div>
+</div>
+<div class="source">illustrative · portfolio sample</div>
+<span class="pin">03 · works · portfolio</span>
+</section>
+
+<section>
+<div class="kicker">PROCESS / 04 · HOW WE MAKE NOISE</div>
+<h2 class="at">四步：<em>挑衅</em> → 打磨 → 放大 → 守护。</h2>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;position:relative;z-index:3;">
+<div class="card" style="text-align:center;"><div style="font-family:var(--f-display);font-size:1.5em;font-weight:800;">01</div><h4 style="font-size:0.8em;">PROVOKE</h4><p style="font-size:0.52em;">找到让品牌无法被忽略的角度。</p></div>
+<div class="card yellow" style="text-align:center;"><div style="font-family:var(--f-display);font-size:1.5em;font-weight:800;">02</div><h4 style="font-size:0.8em;">CRAFT</h4><p style="font-size:0.52em;">打磨成可执行的视觉系统。</p></div>
+<div class="card pink" style="text-align:center;"><div style="font-family:var(--f-display);font-size:1.5em;font-weight:800;">03</div><h4 style="font-size:0.8em;">AMPLIFY</h4><p style="font-size:0.52em;">跨渠道放大，保持一致。</p></div>
+<div class="card teal" style="text-align:center;"><div style="font-family:var(--f-display);font-size:1.5em;font-weight:800;">04</div><h4 style="font-size:0.8em;">GUARD</h4><p style="font-size:0.52em;">守护不被算法稀释。</p></div>
+</div>
+<div class="proof" style="margin-top:12px;">
+<p style="font-size:0.6em;margin:0;">每一步都有 veto 权——如果某步失去了"loud"，回到 01。</p>
+</div>
+<div class="source">studio process · 2024</div>
+<span class="pin">04 · process · method</span>
+</section>
+
+<section>
+<div class="kicker">TEAM / 05 · 12 PEOPLE</div>
+<h2 class="at">小到每个人都能 <em>veto</em>，大到能扛全球 launch。</h2>
+<div class="row3">
+<div class="card"><h4>STRATEGY · 3</h4><p>品牌策略 + 文案。前身：4A planner、独立作家。</p></div>
+<div class="card yellow"><h4>DESIGN · 5</h4><p>平面 + 动效 + 空间。每人能独立交付完整系统。</p></div>
+<div class="card pink"><h4>PRODUCTION · 4</h4><p>制片 + 开发 + 印刷管理。把设计变成现实。</p></div>
+</div>
+<div class="proof teal" style="margin-top:12px;background:var(--c-teal);">
+<p style="font-size:0.6em;margin:0;">12 人 / 6 国 / 平均工龄 7 年。没有人是"资源"，每个人是作者。</p>
+</div>
+<div class="source">studio roster · 2025</div>
+<span class="pin">05 · team · roster</span>
+</section>
+
+<section>
+<div class="kicker">IMPACT / 06 · 2024 IN NUMBERS</div>
+<h2 class="at">被看见，是有 <em>数字</em> 的。</h2>
+<div style="display:flex;gap:18px;position:relative;z-index:3;">
+<div class="card yellow" style="flex:1;text-align:center;"><div class="big">+89%</div><p style="font-size:0.52em;margin-top:6px;">客户品牌搜索量中位数</p></div>
+<div class="card pink" style="flex:1;text-align:center;"><div class="big">2.1B</div><p style="font-size:0.52em;margin-top:6px;">社媒总曝光</p></div>
+<div class="card teal" style="flex:1;text-align:center;"><div class="big">14</div><p style="font-size:0.52em;margin-top:6px;">国际设计奖项</p></div>
+</div>
+<div class="source">verified · agency year-end report</div>
+<span class="pin">06 · impact · metrics</span>
+</section>
+
+<section>
+<div class="kicker">VOICES / 07 · CLIENT WORDS</div>
+<h2 class="at"><em>"他们让我相信品牌可以大声说话。"</em></h2>
+<div class="proof" style="background:var(--c-yellow);">
+<p style="font-size:0.68em;margin:0 0 10px;line-height:1.5;">"我们换了 5 家机构都在做'安全的设计'。Make Loud Things 第一稿就让我们吓一跳——然后卖爆了。"</p>
+<p style="font-family:var(--f-mono);font-size:0.46em;margin:0;letter-spacing:0.08em;text-transform:uppercase;">— 品牌总监 · 连锁烘焙（+63% 销售客户）</p>
+</div>
+<div class="proof" style="margin-top:12px;">
+<p style="font-size:0.66em;margin:0;line-height:1.5;">"他们不在乎'行业惯例'，只在乎你能不能被记住。这是我们 launch 成功的关键。"</p>
+<p style="font-family:var(--f-mono);font-size:0.46em;margin:8px 0 0;letter-spacing:0.08em;text-transform:uppercase;">— CEO · 数字银行（获客成本 -38%）</p>
+</div>
+<div class="source">verified · client interviews</div>
+<span class="pin">07 · voices · testimonials</span>
+</section>
+
+<section>
+<svg class="shape" style="bottom:110px;left:80px;" width="60" height="60"><circle cx="30" cy="30" r="26" style="fill:var(--c-teal);stroke:var(--c-ink);stroke-width:3"/></svg>
+<svg class="shape" style="top:90px;right:90px;" width="76" height="76"><polygon points="38,5 71,68 5,68" style="fill:var(--c-pink);stroke:var(--c-ink);stroke-width:3"/></svg>
+<div class="kicker">CLOSE / 08 · MAKE IT LOUD</div>
+<h2 class="at">如果你的品牌 <em>不被记住</em>，那就是设计的问题。</h2>
+<div style="position:relative;z-index:3;">
+<div class="card pink" style="margin-bottom:10px;"><h4 style="font-size:0.95em;">来做一个让人无法忽略的项目。</h4><p style="font-size:0.56em;">hello@makeloudthings.studio · +86 21 0000 0000 · 上海 · 阿姆斯特丹</p></div>
+<div class="row3">
+<div class="card yellow" style="text-align:center;"><p style="font-size:0.52em;margin:0;">品牌系统</p></div>
+<div class="card teal" style="text-align:center;"><p style="font-size:0.52em;margin:0;">活动视觉</p></div>
+<div class="card" style="text-align:center;"><p style="font-size:0.52em;margin:0;">短片与动画</p></div>
+</div>
+</div>
+<div class="source">illustrative · studio 2025</div>
+<span class="pin">08 · close · contact</span>
+</section>
+
+</div></div>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+<script>
+Reveal.initialize({width:1280,height:720,margin:0.04,hash:true,slideNumber:'c/t',transition:'slide'});
+function exportPPTX(){if(typeof PptxGenJS==='undefined'){alert('pptxgenjs 未加载');return;}var p=new PptxGenJS();p.defineLayout({name:'C',width:13.33,height:7.5});p.layout='C';Reveal.getSlides().forEach(function(s){var t=(s.querySelector('.kicker')||{}).innerText||'';var h=(s.querySelector('.at,.display')||{}).innerText||'';p.addSlide().addText(h,{x:0.5,y:0.5,w:12,h:1.5,fontSize:28,bold:true}).addText(t,{x:0.5,y:0.2,w:12,h:0.3,fontSize:10,color:'999999'});});p.writeFile({fileName:'make-loud-things.pptx'});}
+</script>
+</body>
+</html>

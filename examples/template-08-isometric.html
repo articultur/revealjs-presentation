@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>Platform Architecture — Isometric Deck</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.css">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --c-bg:oklch(96% 0.005 240);
+  --c-surface:oklch(99% 0.003 240);
+  --c-ink:oklch(25% 0.02 250);
+  --c-mute:oklch(50% 0.01 240);
+  --c-line:oklch(25% 0.02 250);
+  --c-blue:oklch(58% 0.12 235);
+  --c-blue-d:oklch(45% 0.13 235);
+  --c-orange:oklch(72% 0.14 50);
+  --c-teal:oklch(70% 0.11 180);
+  --f-display:'Outfit',system-ui,sans-serif;
+  --f-body:'Outfit',system-ui,sans-serif;
+  --f-mono:'JetBrains Mono',monospace;
+}
+*{box-sizing:border-box;}
+.reveal,.reveal h1,.reveal h2,.reveal h3{font-family:var(--f-display);}
+.reveal section{
+  background:var(--c-bg);color:var(--c-ink);font-family:var(--f-body);
+  font-size:26px;line-height:1.4;text-align:left;
+  padding:56px 72px 72px;overflow:hidden;position:relative;
+}
+.kicker{
+  font-family:var(--f-mono);font-size:0.5em;letter-spacing:0.16em;
+  text-transform:uppercase;color:var(--c-mute);
+  margin:0 0 0.9em;display:flex;justify-content:space-between;position:relative;z-index:3;
+}
+.coord{font-family:var(--f-mono);font-size:0.4em;letter-spacing:0.1em;color:var(--c-mute);}
+.at{
+  font-family:var(--f-display);font-weight:700;font-size:1.72em;line-height:1.1;
+  margin:0 0 0.7em;max-width:90%;position:relative;z-index:3;letter-spacing:-0.005em;
+}
+.at em{font-style:normal;color:var(--c-blue);font-weight:800;}
+.proof{position:relative;z-index:3;border:1px solid var(--c-line);background:var(--c-surface);padding:18px 22px;border-radius:4px;}
+.source{position:absolute;bottom:28px;right:72px;font-family:var(--f-mono);font-size:0.4em;letter-spacing:0.1em;text-transform:uppercase;color:var(--c-mute);z-index:3;}
+.pin{position:absolute;left:64px;bottom:28px;font-family:var(--f-mono);font-size:0.4em;letter-spacing:0.16em;text-transform:uppercase;color:var(--c-mute);z-index:3;}
+.big{font-family:var(--f-display);font-weight:800;font-size:3.6em;line-height:1;letter-spacing:-0.02em;color:var(--c-ink);}
+.display{font-family:var(--f-display);font-weight:800;font-size:3.1em;line-height:0.95;margin:0;letter-spacing:-0.01em;}
+.display em{font-style:normal;color:var(--c-blue);}
+.sub{font-family:var(--f-body);font-size:0.7em;color:var(--c-mute);margin-top:14px;max-width:55%;line-height:1.4;}
+.iso-stage{position:relative;z-index:3;display:flex;align-items:center;gap:28px;}
+.layer{font-family:var(--f-mono);font-size:0.48em;letter-spacing:0.1em;text-transform:uppercase;}
+.metric{font-family:var(--f-display);font-weight:800;font-size:2.8em;line-height:1;color:var(--c-blue);letter-spacing:-0.02em;}
+.metric small{font-size:0.22em;font-family:var(--f-mono);letter-spacing:0.1em;display:block;margin-top:6px;font-weight:400;color:var(--c-mute);}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+.card{border:1px solid var(--c-line);background:var(--c-surface);padding:12px;border-radius:4px;}
+.card.blue{border-top:3px solid var(--c-blue);}
+.card.orange{border-top:3px solid var(--c-orange);}
+.card.teal{border-top:3px solid var(--c-teal);}
+.card h4{font-family:var(--f-display);font-weight:700;font-size:0.86em;margin:0 0 4px;}
+.card p{font-size:0.56em;margin:0;line-height:1.4;color:var(--c-mute);}
+.pptx-btn{position:fixed;top:16px;right:16px;z-index:100;font-family:var(--f-mono);font-size:12px;letter-spacing:0.1em;text-transform:uppercase;background:var(--c-ink);color:var(--c-bg);border:none;padding:8px 14px;cursor:pointer;opacity:0;transition:opacity .2s;border-radius:4px;}
+.pptx-btn:hover,.pptx-btn:focus{opacity:1;}
+</style>
+</head>
+<body>
+<!-- Reveal.js PPTX 导出按钮 --><button class="pptx-btn" onclick="exportPPTX()">↓ PPTX</button>
+<div class="reveal"><div class="slides">
+
+<section class="iso-cover">
+<div class="kicker"><span>PLATFORM / 01 · COVER</span><span class="coord">ISO 30° · LAYER 0</span></div>
+<h1 class="display">三层架构，<br>承载 <em>10M</em> 用户。</h1>
+<p class="sub">一份关于我们如何在 18 个月内把单体重构为 Edge / Mesh / Data 三层、并保持 99.97% 可用的工程汇报。</p>
+<div class="iso-stage" style="margin-top:14px;">
+<svg width="260" height="150" viewBox="0 0 260 150">
+<g transform="translate(30,10)" style="stroke:var(--c-ink);stroke-width:1.5">
+<polygon points="100,0 150,-20 200,0 150,20" style="fill:var(--c-blue)"/>
+<polygon points="100,0 100,40 150,60 150,20" style="fill:var(--c-blue-d)"/>
+<polygon points="200,0 200,40 150,60 150,20" style="fill:var(--c-blue);opacity:0.85"/>
+<polygon points="100,50 150,30 200,50 150,70" style="fill:var(--c-teal)"/>
+<polygon points="100,50 100,90 150,110 150,70" style="fill:var(--c-teal);opacity:0.8"/>
+<polygon points="200,50 200,90 150,110 150,70" style="fill:var(--c-teal);opacity:0.6"/>
+<polygon points="100,100 150,80 200,100 150,120" style="fill:var(--c-orange)"/>
+<polygon points="100,100 100,140 150,160 150,120" style="fill:var(--c-orange);opacity:0.8"/>
+<polygon points="200,100 200,140 150,160 150,120" style="fill:var(--c-orange);opacity:0.6"/>
+</g>
+</svg>
+<div>
+<div class="layer" style="color:var(--c-blue);">EDGE · 接入</div>
+<div class="layer" style="color:var(--c-teal);margin-top:8px;">MESH · 编排</div>
+<div class="layer" style="color:var(--c-orange);margin-top:8px;">DATA · 持久</div>
+</div>
+</div>
+<div class="source">illustrative · 2025 Q1 architecture review</div>
+<span class="pin">01 · cover · architecture</span>
+</section>
+
+<section>
+<div class="kicker"><span>PLATFORM / 02 · OVERVIEW</span><span class="coord">ISO · ALL LAYERS</span></div>
+<h2 class="at">三层各司其职：<em>Edge</em> 接入、Mesh 编排、Data 持久。</h2>
+<div class="row3">
+<div class="card blue"><h4>EDGE LAYER</h4><p>全球 28 个 PoP，TLS 终止 + 鉴权 + 限流。P99 延迟 12ms。</p></div>
+<div class="card teal"><h4>MESH LAYER</h4><p>服务网格，gRPC + sidecar，自动熔断与重试。无单点。</p></div>
+<div class="card orange"><h4>DATA LAYER</h4><p>分片 KV + 列存 + 流。10PB，每日全量校验。</p></div>
+</div>
+<div class="proof" style="margin-top:12px;">
+<p style="font-size:0.62em;margin:0;line-height:1.5;">每一层可以独立演进、独立扩缩容、独立出故障——而不影响其他两层的契约。</p>
+</div>
+<div class="source">illustrative · architecture spec</div>
+<span class="pin">02 · overview · layers</span>
+</section>
+
+<section>
+<div class="kicker"><span>PLATFORM / 03 · EDGE</span><span class="coord">ISO · LAYER 1</span></div>
+<h2 class="at">Edge 层：<em>12ms</em> 内完成接入、鉴权、限流。</h2>
+<div class="iso-stage">
+<div class="metric">12<small>MS · P99 LATENCY</small></div>
+<div style="flex:1;">
+<div class="row3" style="gap:10px;">
+<div class="card blue"><h4>28 PoPs</h4><p>全球边缘节点</p></div>
+<div class="card blue"><h4>4.2M RPS</h4><p>峰值吞吐</p></div>
+<div class="card blue"><h4>99.99%</h4><p>接入层可用</p></div>
+</div>
+</div>
+</div>
+<div class="source">verified · edge telemetry 2025Q1</div>
+<span class="pin">03 · edge · latency</span>
+</section>
+
+<section>
+<div class="kicker"><span>PLATFORM / 04 · MESH</span><span class="coord">ISO · LAYER 2</span></div>
+<h2 class="at">Mesh 层：服务网格自动 <em>熔断 + 重试 + 负载均衡</em>。</h2>
+<div class="proof">
+<div style="display:flex;gap:18px;align-items:center;">
+<svg width="190" height="110" viewBox="0 0 190 110" style="flex:0 0 auto;">
+<g style="stroke:var(--c-line);stroke-width:1.5">
+<line x1="40" y1="55" x2="95" y2="35"/>
+<line x1="40" y1="55" x2="95" y2="75"/>
+<line x1="95" y1="35" x2="150" y2="55"/>
+<line x1="95" y1="75" x2="150" y2="55"/>
+<line x1="95" y1="35" x2="95" y2="75" style="stroke-dasharray:3 3"/>
+</g>
+<g style="fill:var(--c-teal);stroke:var(--c-ink);stroke-width:1.5">
+<circle cx="40" cy="55" r="13"/>
+<circle cx="95" cy="35" r="13"/>
+<circle cx="95" cy="75" r="13"/>
+<circle cx="150" cy="55" r="13"/>
+</g>
+</svg>
+<div style="flex:1;font-size:0.66em;line-height:1.5;">
+<strong>sidecar 模式</strong>：每个服务实例注入一个 sidecar，统一处理 gRPC 调用、熔断器、重试预算、负载均衡。<br>服务代码只关心业务逻辑，不写一行弹性代码。
+</div>
+</div>
+</div>
+<div class="source">illustrative · mesh topology</div>
+<span class="pin">04 · mesh · sidecar</span>
+</section>
+
+<section>
+<div class="kicker"><span>PLATFORM / 05 · DATA</span><span class="coord">ISO · LAYER 3</span></div>
+<h2 class="at">Data 层：<em>10PB</em> 分片存储，每日全量校验。</h2>
+<div class="iso-stage">
+<div class="metric" style="color:var(--c-orange);">10<small>PETABYTES · SHARDED</small></div>
+<div style="flex:1;">
+<div class="row3" style="gap:10px;">
+<div class="card orange"><h4>3 副本</h4><p>跨可用区</p></div>
+<div class="card orange"><h4>24h</h4><p>校验周期</p></div>
+<div class="card orange"><h4>&lt; 60s</h4><p>PITR 恢复</p></div>
+</div>
+</div>
+</div>
+<div class="proof" style="margin-top:12px;">
+<p style="font-size:0.62em;margin:0;">列存用于分析（10× 压缩），流用于变更捕获（&lt; 200ms 端到端），分片 KV 用于热路径（&lt; 2ms 读）。</p>
+</div>
+<div class="source">verified · data layer SLO</div>
+<span class="pin">05 · data · storage</span>
+</section>
+
+<section>
+<div class="kicker"><span>PLATFORM / 06 · SECURITY</span><span class="coord">ISO · CROSS-CUT</span></div>
+<h2 class="at">安全是 <em>横切</em> 的，不是某一层的事。</h2>
+<div class="row3">
+<div class="card blue"><h4>mTLS everywhere</h4><p>服务间双向 TLS，证书自动轮换 24h。</p></div>
+<div class="card teal"><h4>零信任鉴权</h4><p>每个请求带 token，mesh 校验权限，无隐式信任。</p></div>
+<div class="card orange"><h4>字段级加密</h4><p>PII 字段静态加密，密钥独立轮换。</p></div>
+</div>
+<div class="proof" style="margin-top:12px;border-left:3px solid var(--c-orange);">
+<p style="font-size:0.62em;margin:0;">2024 年通过 SOC2 Type II + 等保三级，零数据泄露事件。</p>
+</div>
+<div class="source">verified · security audit 2024</div>
+<span class="pin">06 · security · zero-trust</span>
+</section>
+
+<section>
+<div class="kicker"><span>PLATFORM / 07 · SCALE</span><span class="coord">ISO · GROWTH CURVE</span></div>
+<h2 class="at">18 个月：从 1M 到 <em>10M</em> 用户，架构零重写。</h2>
+<div class="proof">
+<div style="display:flex;gap:14px;align-items:flex-end;height:140px;">
+<div style="flex:1;text-align:center;"><div style="height:28px;background:var(--c-blue);border:1px solid var(--c-ink);"></div><div class="layer" style="margin-top:6px;color:var(--c-mute);">Q1·1M</div></div>
+<div style="flex:1;text-align:center;"><div style="height:50px;background:var(--c-blue);border:1px solid var(--c-ink);"></div><div class="layer" style="margin-top:6px;color:var(--c-mute);">Q2·2.4M</div></div>
+<div style="flex:1;text-align:center;"><div style="height:74px;background:var(--c-blue);border:1px solid var(--c-ink);"></div><div class="layer" style="margin-top:6px;color:var(--c-mute);">Q3·4.1M</div></div>
+<div style="flex:1;text-align:center;"><div style="height:100px;background:var(--c-blue);border:1px solid var(--c-ink);"></div><div class="layer" style="margin-top:6px;color:var(--c-mute);">Q4·6.8M</div></div>
+<div style="flex:1;text-align:center;"><div style="height:130px;background:var(--c-orange);border:1px solid var(--c-ink);"></div><div class="layer" style="margin-top:6px;color:var(--c-orange);">Q6·10M</div></div>
+</div>
+<div class="layer" style="margin-top:10px;color:var(--c-mute);">月活用户 · 18 个月增长曲线</div>
+</div>
+<div class="source">verified · growth metrics</div>
+<span class="pin">07 · scale · growth</span>
+</section>
+
+<section>
+<div class="kicker"><span>PLATFORM / 08 · CLOSE</span><span class="coord">ISO · NEXT</span></div>
+<h2 class="at">三层架构让我们 <em>演进</em>，不重写。</h2>
+<div class="row3" style="margin-bottom:12px;">
+<div class="card blue"><h4>下一步 · Edge 智能</h4><p>推理下推到边缘，目标 P99 接入 6ms。</p></div>
+<div class="card teal"><h4>下一步 · Mesh 自愈</h4><p>基于 SLO 自动熔断与扩容，减少人工。</p></div>
+<div class="card orange"><h4>下一步 · Data 实时</h4><p>流处理统一，端到端目标 &lt; 100ms。</p></div>
+</div>
+<div class="proof" style="background:var(--c-blue);color:var(--c-surface);border:none;">
+<p style="font-size:0.66em;margin:0;">架构的目标不是"正确"，是"能持续演进而不崩"。三层隔离让我们换引擎时不翻车。</p>
+</div>
+<div class="source">platform team · 2025 roadmap</div>
+<span class="pin">08 · close · roadmap</span>
+</section>
+
+</div></div>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+<script>
+Reveal.initialize({width:1280,height:720,margin:0.04,hash:true,slideNumber:'c/t',transition:'slide'});
+function exportPPTX(){if(typeof PptxGenJS==='undefined'){alert('pptxgenjs 未加载');return;}var p=new PptxGenJS();p.defineLayout({name:'C',width:13.33,height:7.5});p.layout='C';Reveal.getSlides().forEach(function(s){var t=(s.querySelector('.kicker')||{}).innerText||'';var h=(s.querySelector('.at,.display')||{}).innerText||'';p.addSlide().addText(h,{x:0.5,y:0.5,w:12,h:1.5,fontSize:28,bold:true}).addText(t,{x:0.5,y:0.2,w:12,h:0.3,fontSize:10,color:'999999'});});p.writeFile({fileName:'platform-architecture.pptx'});}
+</script>
+</body>
+</html>

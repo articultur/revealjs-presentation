@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "contract": "Every seed template must preserve a distinct domain-native grammar. The test suite reads this file as the canonical machine-readable source for cover classes, cover-scoped objects, full-deck role markers, and forbidden fallback objects. Templates 06-15 are design-grammar references documented in design-polish.md but not yet implemented as seed HTML.",
+  "contract": "Every seed template must preserve a distinct domain-native grammar. The test suite reads this file as the canonical machine-readable source for cover classes, cover-scoped objects, full-deck role markers, and forbidden fallback objects. Templates 06-08 (brutalist / memphis / isometric) are implemented seed HTML — three orthogonal styles chosen for maximum differentiation from 01-05. The 10 design-grammar references in design-polish.md (financial-terminal, clinical-lab, civic-infrastructure, legal-casefile, luxury-atelier, cinematic-storyboard, motion-sequence, system-flow, code-walkthrough, data-visual-studio) remain unimplemented; their 06-15 numbering in design-polish.md is a logical chapter index and does NOT correspond to examples/ filenames.",
   "templates": {
     "examples/template-01-editorial-serif.html": {
       "domain": "archive / editorial research",
@@ -71,6 +71,63 @@
         "close": "harvest"
       },
       "forbidden": ["sample-tray"]
+    },
+    "examples/template-06-brutalist.html": {
+      "domain": "critical report / anti-template manifesto",
+      "designGrammar": "bare structure, hard borders, exposed grid, mono coordinates, acid-yellow accent, brutal display weight",
+      "coverClass": "brutal-cover",
+      "coverObjects": ["grid-deco", "display", "big", "coord"],
+      "deckObjects": ["proof", "bar", "flow", "num", "rule"],
+      "roleMarkers": {
+        "cover": "brutal-cover",
+        "claim": "proof",
+        "proof": "bar",
+        "mechanism": "flow",
+        "comparison": "bar",
+        "data": "big",
+        "risk": "num",
+        "close": "rule"
+      },
+      "forbidden": []
+    },
+    "examples/template-07-memphis.html": {
+      "domain": "creative studio / brand portfolio",
+      "designGrammar": "80s memphis, clashing color blocks, geometric shapes (triangle/circle/wave), bold black outlines, asymmetric scatter",
+      "coverClass": "memphis-cover",
+      "coverObjects": ["shape", "display", "big", "sub"],
+      "deckObjects": ["row3", "proof", "tag"],
+      "roleMarkers": {
+        "cover": "memphis-cover",
+        "works": "row3",
+        "process": "tag",
+        "team": "row3",
+        "impact": "big",
+        "voices": "proof",
+        "proof": "proof",
+        "mechanism": "tag",
+        "close": "row3"
+      },
+      "forbidden": []
+    },
+    "examples/template-08-isometric.html": {
+      "domain": "platform architecture / system engineering",
+      "designGrammar": "isometric 3d layers (edge/mesh/data), 30-degree stack, sidecar mesh, growth bars, cross-cut security",
+      "coverClass": "iso-cover",
+      "coverObjects": ["iso-stage", "layer", "display", "coord"],
+      "deckObjects": ["iso-stage", "layer", "metric", "proof", "row3"],
+      "roleMarkers": {
+        "cover": "iso-cover",
+        "overview": "layer",
+        "edge": "metric",
+        "mesh": "proof",
+        "data": "metric",
+        "security": "layer",
+        "scale": "proof",
+        "proof": "proof",
+        "mechanism": "layer",
+        "close": "proof"
+      },
+      "forbidden": []
     }
   }
 }
