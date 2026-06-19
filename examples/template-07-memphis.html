@@ -2,16 +2,18 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<title>Make Loud Things — Memphis Deck</title>
+<title>Make Loud Things · Memphis Deck</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.css">
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700;12..96,800&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --c-bg:oklch(98% 0.005 90);--c-ink:oklch(20% 0.01 280);
-  --c-pink:oklch(72% 0.19 0);--c-yellow:oklch(90% 0.16 95);--c-teal:oklch(74% 0.13 195);
-  --c-mute:oklch(45% 0.01 280);--c-pt:oklch(90% 0.008 280);
+  --c-bg:oklch(97% 0.008 90);--c-ink:oklch(18% 0.01 280);
+  --c-pink:oklch(68% 0.22 350);--c-yellow:oklch(88% 0.18 90);
+  --c-coral:oklch(68% 0.17 40);--c-teal:oklch(72% 0.14 195);
+  --c-lime:oklch(82% 0.2 130);--c-mint:oklch(92% 0.06 160);
+  --c-mute:oklch(42% 0.01 280);--c-pt:oklch(88% 0.008 280);
   --f-display:'Bricolage Grotesque',system-ui,sans-serif;
-  --f-body:'Outfit',system-ui,sans-serif;--f-mono:'JetBrains Mono',monospace;
+  --f-body:'Bricolage Grotesque',system-ui,sans-serif;--f-mono:'JetBrains Mono',monospace;
 }
 *{box-sizing:border-box;}
 .reveal,.reveal h1,.reveal h2,.reveal h3{font-family:var(--f-display);}
@@ -21,55 +23,74 @@
   padding:56px 72px 72px;overflow:hidden;position:relative;
   height:720px;
 }
+.reveal section > *:not(svg):not(.deco){margin-top:0 !important;}
 .reveal section.bg-dot{background-image:radial-gradient(var(--c-pt) 1.6px,transparent 1.6px);background-size:20px 20px;}
 .reveal section.bg-stripes{background-image:repeating-linear-gradient(45deg,var(--c-pt) 0 1.5px,transparent 1.5px 22px);}
 .reveal section.bg-zig{background-image:linear-gradient(135deg,var(--c-pt) 25%,transparent 25%) 0 0,linear-gradient(225deg,var(--c-pt) 25%,transparent 25%) 0 0;background-size:22px 22px;}
-.reveal section.bg-terrazzo{background-color:var(--c-bg);background-image:radial-gradient(circle at 15% 25%,var(--c-pink) 2px,transparent 3px),radial-gradient(circle at 70% 60%,var(--c-yellow) 2.5px,transparent 3.5px),radial-gradient(circle at 40% 85%,var(--c-teal) 2px,transparent 3px),radial-gradient(circle at 88% 20%,oklch(85% 0.01 280) 1.5px,transparent 2.5px),radial-gradient(circle at 25% 70%,var(--c-ink) 1px,transparent 2px);background-size:90px 80px,110px 100px,70px 70px,60px 60px,50px 50px;}
+.reveal section.bg-grid{background-image:linear-gradient(var(--c-pt) 1px,transparent 1px),linear-gradient(90deg,var(--c-pt) 1px,transparent 1px);background-size:22px 22px;}
+.reveal section.bg-terrazzo{background-color:var(--c-bg);background-image:radial-gradient(circle at 15% 25%,var(--c-pink) 2px,transparent 3px),radial-gradient(circle at 70% 60%,var(--c-yellow) 2.5px,transparent 3.5px),radial-gradient(circle at 40% 85%,var(--c-teal) 2px,transparent 3px),radial-gradient(circle at 88% 20%,oklch(85% 0.01 280) 1.5px,transparent 2.5px),radial-gradient(circle at 25% 70%,var(--c-ink) 1px,transparent 2px),radial-gradient(circle at 55% 40%,var(--c-lime) 2px,transparent 3px);background-size:90px 80px,110px 100px,70px 70px,60px 60px,50px 50px,80px 90px;}
 .deco{position:absolute;z-index:1;pointer-events:none;}
+/* Memphis 底部装饰带 - 锚定下半部 */
+.band{position:absolute;bottom:54px;left:72px;width:1136px;height:30px;z-index:1;pointer-events:none;}
 .nav{position:absolute;top:24px;left:72px;right:72px;display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:0.42em;letter-spacing:0.16em;text-transform:uppercase;color:var(--c-ink);z-index:3;}
 .nav .id{background:var(--c-yellow);border:2px solid var(--c-ink);padding:3px 10px;box-shadow:2px 2px 0 var(--c-ink);transform:rotate(-1deg);}
 .source{position:absolute;bottom:24px;right:72px;font-family:var(--f-mono);font-size:0.4em;letter-spacing:0.1em;text-transform:uppercase;color:var(--c-mute);z-index:3;}
 .pin{position:absolute;left:64px;bottom:24px;font-family:var(--f-mono);font-size:0.4em;letter-spacing:0.16em;text-transform:uppercase;color:var(--c-mute);z-index:3;}
 
-/* === 1 cover: 单焦点巨物 === */
+/* Memphis dashed frame - cover & close */
+.memphis-frame::before{content:'';position:absolute;top:14px;right:14px;bottom:14px;left:14px;border:3px dashed var(--c-ink);pointer-events:none;z-index:2;}
+
+/* Subtle Memphis drift animation */
+@keyframes memphis-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes memphis-wiggle{0%,100%{transform:rotate(0deg)}25%{transform:rotate(1.5deg)}75%{transform:rotate(-1.5deg)}}
+.deco-float{animation:memphis-float 4s ease-in-out infinite;}
+.deco-wiggle{animation:memphis-wiggle 5s ease-in-out infinite;}
+@media(prefers-reduced-motion:reduce){.deco-float,.deco-wiggle{animation:none;}}
+
+/* === 1 cover: 单焦点巨物 + Memphis 框 === */
 .poster-title{font-family:var(--f-display);font-weight:800;font-size:5.2em;line-height:0.84;letter-spacing:-0.03em;margin:0;position:relative;z-index:3;}
 .poster-title em{font-style:normal;background:var(--c-pink);padding:0 16px;display:inline-block;box-shadow:7px 7px 0 var(--c-ink);transform:rotate(-1deg);}
 .poster-title .y{background:var(--c-yellow);padding:0 14px;display:inline-block;box-shadow:6px 6px 0 var(--c-ink);transform:rotate(1deg);}
 .poster-sub{font-family:var(--f-body);font-size:0.72em;color:var(--c-mute);margin-top:20px;max-width:50%;line-height:1.4;position:relative;z-index:3;}
 .stamp{font-family:var(--f-mono);font-size:0.48em;letter-spacing:0.14em;text-transform:uppercase;border:2px solid var(--c-ink);padding:4px 11px;display:inline-block;transform:rotate(-4deg);background:var(--c-yellow);box-shadow:3px 3px 0 var(--c-ink);position:relative;z-index:3;}
 
-/* === 2 manifesto: 拼贴散落（absolute rotate 重叠） === */
-.scatter-block{position:relative;font-family:var(--f-display);font-weight:800;font-size:1.5em;padding:8px 14px;border:3px solid var(--c-ink);box-shadow:4px 4px 0 var(--c-ink);line-height:1.1;}
+/* === 2 manifesto: 拼贴散落 === */
+.scatter-block{position:relative;font-family:var(--f-display);font-weight:800;font-size:1.72em;padding:10px 16px;border:3px solid var(--c-ink);box-shadow:4px 4px 0 var(--c-ink);line-height:1.12;}
 .scatter-block.pk{background:var(--c-pink);}
 .scatter-block.yl{background:var(--c-yellow);}
 .scatter-block.tl{background:var(--c-teal);}
 .scatter-block.pl{background:var(--c-bg);}
+.scatter-block.cl{background:var(--c-coral);}
+.scatter-block.lm{background:var(--c-lime);}
 
-/* === 3 works: 瀑布画廊（column-count 不等高错落） === */
+/* === 3 works: 瀑布画廊 === */
 .gallery{column-count:3;column-gap:14px;position:relative;z-index:3;margin-top:8px;}
 .gallery .item{break-inside:avoid;margin-bottom:14px;border:3px solid var(--c-ink);padding:12px;box-shadow:5px 5px 0 var(--c-ink);position:relative;}
 .gallery .item.bg-yellow{background:var(--c-yellow);}
 .gallery .item.bg-pink{background:var(--c-pink);}
 .gallery .item.bg-teal{background:var(--c-teal);}
+.gallery .item.bg-coral{background:var(--c-coral);}
 .gallery .item h4{font-family:var(--f-display);font-weight:800;font-size:0.88em;margin:0 0 4px;}
 .gallery .item p{font-size:0.54em;margin:0;line-height:1.4;}
 .gallery .item.tall p{font-size:0.62em;}
 .gallery .item .wnum{position:absolute;top:6px;right:8px;font-family:var(--f-mono);font-size:0.4em;opacity:0.6;}
 
-/* === 4 process: 路径流（squiggle 曲线 + 步骤沿路径） === */
+/* === 4 process: 路径流 === */
 .path-canvas{position:relative;z-index:3;height:230px;margin-top:10px;}
 .path-step{position:absolute;text-align:center;width:120px;}
 .path-step .pn{font-family:var(--f-display);font-weight:800;font-size:2.4em;line-height:1;background:var(--c-bg);border:3px solid var(--c-ink);width:64px;height:64px;line-height:58px;border-radius:50%;box-shadow:4px 4px 0 var(--c-ink);margin:0 auto;}
 .path-step.bg-yellow .pn{background:var(--c-yellow);}
 .path-step.bg-pink .pn{background:var(--c-pink);}
 .path-step.bg-teal .pn{background:var(--c-teal);}
+.path-step.bg-coral .pn{background:var(--c-coral);}
 .path-step .pt{font-family:var(--f-mono);font-size:0.42em;letter-spacing:0.08em;text-transform:uppercase;margin-top:6px;font-weight:700;}
 .path-line{position:absolute;top:32px;left:0;width:100%;height:60px;z-index:-1;}
 
-/* === 5 team: 层叠堆栈（absolute transform 偏移深度） === */
+/* === 5 team: 层叠堆栈 === */
 .person{position:absolute;border:3px solid var(--c-ink);padding:14px;box-shadow:7px 7px 0 var(--c-ink);width:28%;background:var(--c-bg);}
 .person.bg-yellow{background:var(--c-yellow);}
 .person.bg-pink{background:var(--c-pink);}
+.person.bg-lime{background:var(--c-lime);}
 .person h4{font-family:var(--f-display);font-weight:800;font-size:0.95em;margin:0 0 3px;}
 .person p{font-size:0.56em;margin:0;line-height:1.35;}
 .person .avatar{width:40px;height:40px;border:2px solid var(--c-ink);display:inline-block;margin-right:10px;vertical-align:middle;}
@@ -82,14 +103,17 @@
 .scatter-num small{font-family:var(--f-mono);font-size:0.32em;display:block;font-weight:400;letter-spacing:0.06em;margin-top:2px;}
 .scatter-num.yl{background:var(--c-yellow);}
 .scatter-num.tl{background:var(--c-teal);}
+.scatter-num.cl{background:var(--c-coral);}
+.scatter-num.lm{background:var(--c-lime);}
 
-/* === 7 voices: 对话双栏（左 VS 右） === */
+/* === 7 voices: 对话双栏 === */
 .dialogue{display:grid;grid-template-columns:1fr 60px 1fr;gap:18px;align-items:stretch;position:relative;z-index:3;margin-top:8px;}
-.dialogue .side{border:3px solid var(--c-ink);padding:16px;box-shadow:5px 5px 0 var(--c-ink);position:relative;}
+.dialogue .side{border:3px solid var(--c-ink);padding:22px;box-shadow:5px 5px 0 var(--c-ink);position:relative;}
 .dialogue .side.bg-yellow{background:var(--c-yellow);}
 .dialogue .side.bg-pink{background:var(--c-pink);}
+.dialogue .side.bg-lime{background:var(--c-lime);}
 .dialogue .qm{font-family:var(--f-display);font-weight:800;font-size:2.4em;line-height:0.5;position:absolute;top:8px;left:12px;}
-.dialogue .qt{font-family:var(--f-display);font-weight:700;font-size:0.78em;line-height:1.35;margin:20px 0 10px;}
+.dialogue .qt{font-family:var(--f-display);font-weight:700;font-size:0.9em;line-height:1.35;margin:24px 0 12px;}
 .dialogue .qw{font-family:var(--f-mono);font-size:0.42em;letter-spacing:0.06em;text-transform:uppercase;}
 .dialogue .vs{font-family:var(--f-display);font-weight:800;font-size:2.4em;align-self:center;text-align:center;color:var(--c-ink);transform:rotate(-8deg);}
 
@@ -107,48 +131,57 @@
 <button class="pptx-btn" onclick="exportPPTX()">↓ PPTX</button>
 <div class="reveal"><div class="slides">
 
-<!-- 1. cover: 单焦点巨物 -->
-<section class="memphis-cover bg-terrazzo">
-<svg class="deco" style="top:90px;right:50px;" width="130" height="32" data-qa-ignore="decorative"><path d="M2,16 C14,2 26,30 38,16 S62,2 74,16 S98,30 110,16 S126,2 128,16" fill="none" stroke="var(--c-ink)" stroke-width="3" stroke-linecap="round"/></svg>
-<svg class="deco" style="top:150px;right:180px;" width="64" height="64" data-qa-ignore="decorative"><path d="M32,4 L39,24 L60,18 L44,32 L60,46 L39,40 L32,60 L25,40 L4,46 L20,32 L4,18 L25,24 Z" fill="var(--c-yellow)" stroke="var(--c-ink)" stroke-width="2.5"/></svg>
-<svg class="deco" style="bottom:180px;right:60px;" width="60" height="60" data-qa-ignore="decorative"><circle cx="30" cy="30" r="26" fill="var(--c-teal)" stroke="var(--c-ink)" stroke-width="3"/></svg>
-<svg class="deco" style="top:230px;right:30px;" width="44" height="44" data-qa-ignore="decorative"><polygon points="22,3 41,38 3,38" fill="var(--c-pink)" stroke="var(--c-ink)" stroke-width="2.5"/></svg>
-<svg class="deco" style="bottom:150px;left:50px;" width="90" height="60" data-qa-ignore="decorative"><circle cx="10" cy="10" r="4" fill="var(--c-pink)"/><rect x="30" y="35" width="6" height="6" fill="var(--c-teal)" transform="rotate(20 33 38)"/><circle cx="60" cy="15" r="3" fill="var(--c-yellow)"/><polygon points="75,45 81,55 69,55" fill="var(--c-ink)"/></svg>
+<!-- 1. cover: 单焦点巨物 + Memphis 虚线框 -->
+<section class="memphis-cover memphis-frame bg-terrazzo">
+<svg aria-hidden="true" data-qa-ignore="decorative" class="deco deco-float" style="top:140px;right:80px;" width="100" height="130"><path d="M50,8 C50,8 90,48 90,72 C90,100 72,118 50,118 C28,118 10,100 10,72 C10,48 50,8 50,8Z" fill="var(--c-coral)" stroke="var(--c-ink)" stroke-width="3"/></svg>
+<svg aria-hidden="true" data-qa-ignore="decorative" class="deco" style="bottom:220px;left:30px;" width="120" height="60"><path d="M0,60 A60,60 0 0,1 120,60Z" fill="var(--c-lime)" stroke="var(--c-ink)" stroke-width="2.5"/></svg>
+<svg aria-hidden="true" data-qa-ignore="decorative" class="deco" style="top:80px;right:260px;" width="140" height="28"><path d="M0,14 L12,2 L24,14 L36,2 L48,14 L60,2 L72,14 L84,2 L96,14 L108,2 L120,14 L132,2 L140,14" fill="none" stroke="var(--c-ink)" stroke-width="3" stroke-linecap="round"/></svg>
+<svg aria-hidden="true" data-qa-ignore="decorative" class="deco" style="top:200px;left:160px;" width="36" height="36"><path d="M12,0 L24,0 L24,12 L36,12 L36,24 L24,24 L24,36 L12,36 L12,24 L0,24 L0,12 L12,12Z" fill="var(--c-yellow)" stroke="var(--c-ink)" stroke-width="2"/></svg>
+<svg aria-hidden="true" data-qa-ignore="decorative" class="deco" style="bottom:150px;right:60px;" width="80" height="50"><circle cx="12" cy="12" r="5" fill="var(--c-pink)" stroke="var(--c-ink)" stroke-width="2"/><circle cx="40" cy="25" r="4" fill="var(--c-teal)" stroke="var(--c-ink)" stroke-width="2"/><circle cx="65" cy="14" r="6" fill="var(--c-yellow)" stroke="var(--c-ink)" stroke-width="2"/><circle cx="52" cy="42" r="3" fill="var(--c-ink)"/></svg>
+<!-- 底部锯齿三角带 -->
+<svg aria-hidden="true" data-qa-ignore="decorative" class="band" viewBox="0 0 1136 30"><defs><pattern id="b-teeth" width="36" height="30" patternUnits="userSpaceOnUse"><path d="M0,30 L18,2 L36,30Z" fill="var(--c-coral)" stroke="var(--c-ink)" stroke-width="2"/></pattern></defs><rect width="1136" height="30" fill="url(#b-teeth)"/></svg>
 <div class="nav"><span class="id">STUDIO · NO.047</span><span>2025 PORTFOLIO</span></div>
-<h1 class="poster-title" style="margin-top:70px;">MAKE<br><em>LOUD</em><br><span class="y">THINGS.</span></h1>
-<p class="poster-sub">反极简创意机构——为不害怕被看见的品牌做视觉系统、活动与短片。</p>
+<h1 class="poster-title" style="margin-top:104px !important;">MAKE<br><em>LOUD</em><br><span class="y">THINGS.</span></h1>
+<p class="poster-sub">反极简创意机构，为不害怕被看见的品牌做视觉系统、活动与短片。</p>
 <div style="margin-top:18px;position:relative;z-index:3;"><span class="stamp">47 PROJECTS · 2024-25</span></div>
 <div class="source">illustrative · studio record</div>
 <span class="pin">01 · cover · manifesto</span>
 </section>
 
-<!-- 2. manifesto: 拼贴散落（absolute rotate 重叠，无网格） -->
+<!-- 2. manifesto: 拼贴散落（闪电 + 十字 + 三角 + 水滴 + 圆点带） -->
 <section class="bg-stripes">
-<svg class="deco" style="top:50px;right:60px;" width="110" height="26" data-qa-ignore="decorative"><path d="M2,13 C14,2 26,24 38,13 S62,2 74,13 S98,24 108,13" fill="none" stroke="var(--c-ink)" stroke-width="3" stroke-linecap="round"/></svg>
-<svg class="deco" style="bottom:120px;right:100px;" width="56" height="56" data-qa-ignore="decorative"><path d="M28,3 L34,21 L54,16 L39,28 L54,40 L34,35 L28,53 L22,35 L2,40 L17,28 L2,16 L22,21 Z" fill="var(--c-pink)" stroke="var(--c-ink)" stroke-width="2"/></svg>
-<svg class="deco" style="top:280px;left:30px;" width="70" height="50" data-qa-ignore="decorative"><circle cx="10" cy="10" r="4" fill="var(--c-yellow)"/><rect x="30" y="30" width="6" height="6" fill="var(--c-pink)" transform="rotate(15 33 33)"/><circle cx="55" cy="40" r="3" fill="var(--c-teal)"/></svg>
+<svg aria-hidden="true" data-qa-ignore="decorative" class="deco" style="top:70px;right:80px;" width="36" height="68"><path d="M26,0 L8,30 L20,30 L14,68 L36,26 L22,26Z" fill="var(--c-yellow)" stroke="var(--c-ink)" stroke-width="2.5"/></svg>
+<svg aria-hidden="true" data-qa-ignore="decorative" class="deco deco-float" style="bottom:170px;right:160px;" width="52" height="52"><path d="M18,0 L34,0 L34,18 L52,18 L52,34 L34,34 L34,52 L18,52 L18,34 L0,34 L0,18 L18,18Z" fill="var(--c-coral)" stroke="var(--c-ink)" stroke-width="2.5"/></svg>
+<svg aria-hidden="true" data-qa-ignore="decorative" class="deco" style="bottom:200px;left:60px;" width="60" height="50"><path d="M10,40 L30,10 L50,40Z" fill="var(--c-teal)" stroke="var(--c-ink)" stroke-width="2"/><path d="M40,42 L55,20 L68,42Z" fill="var(--c-lime)" stroke="var(--c-ink)" stroke-width="2"/></svg>
+<svg aria-hidden="true" data-qa-ignore="decorative" class="deco" style="top:120px;left:180px;" width="40" height="52"><path d="M20,4 C20,4 36,22 36,34 C36,46 28,52 20,52 C12,52 4,46 4,34 C4,22 20,4 20,4Z" fill="var(--c-pink)" stroke="var(--c-ink)" stroke-width="2"/></svg>
+<!-- 底部圆点带 -->
+<svg aria-hidden="true" data-qa-ignore="decorative" class="band" viewBox="0 0 1136 30"><defs><pattern id="b-dots" width="28" height="30" patternUnits="userSpaceOnUse"><circle cx="14" cy="15" r="8" fill="var(--c-pink)" stroke="var(--c-ink)" stroke-width="2"/></pattern></defs><rect width="1136" height="30" fill="url(#b-dots)"/></svg>
 <div class="nav"><span class="id">MANIFESTO / 02</span><span>WHY LOUD</span></div>
-<div style="display:flex;flex-wrap:wrap;gap:14px;margin-top:50px;position:relative;z-index:3;align-items:flex-start;">
+<div style="display:flex;flex-wrap:wrap;gap:24px;margin-top:92px !important;position:relative;z-index:3;align-items:flex-start;">
 <div class="scatter-block pk" style="transform:rotate(-3deg);">吵闹是诚实</div>
 <div class="scatter-block yl" style="transform:rotate(2deg);">安静被淹没</div>
-<div class="scatter-block tl" style="transform:rotate(-1deg);">色彩决断</div>
-<div class="scatter-block pl" style="transform:rotate(3deg);">几何张力</div>
-<div class="scatter-block pk" style="transform:rotate(-2deg);font-size:1.2em;">一点点不合时宜的幽默</div>
+<div class="scatter-block cl" style="transform:rotate(-1deg);">色彩决断</div>
+<div class="scatter-block lm" style="transform:rotate(3deg);">几何张力</div>
+<div class="scatter-block pl" style="transform:rotate(-2deg);font-size:1.2em;">一点点不合时宜的幽默</div>
 </div>
 <div class="source">studio ethos · v3</div>
 <span class="pin">02 · manifesto · voice</span>
 </section>
 
-<!-- 3. works: 瀑布画廊（column-count 不等高错落） -->
+<!-- 3. works: 瀑布画廊（V 形 + 点阵 + 半圆 + 菱形 + 人字带） -->
 <section class="bg-dot">
-<svg class="deco" style="top:54px;right:74px;" width="100" height="26" data-qa-ignore="decorative"><path d="M2,13 C14,2 26,24 38,13 S62,2 74,13 S94,24 98,13" fill="none" stroke="var(--c-ink)" stroke-width="3" stroke-linecap="round"/></svg>
-<svg class="deco" style="bottom:80px;left:40px;" width="60" height="50" data-qa-ignore="decorative"><circle cx="10" cy="10" r="4" fill="var(--c-pink)"/><circle cx="40" cy="30" r="3" fill="var(--c-teal)"/><rect x="48" y="10" width="6" height="6" fill="var(--c-yellow)" transform="rotate(25 51 13)"/></svg>
+<svg aria-hidden="true" data-qa-ignore="decorative" class="deco" style="top:100px;right:60px;" width="44" height="70"><path d="M4,4 L22,35 L4,66 M40,4 L22,35 L40,66" fill="none" stroke="var(--c-ink)" stroke-width="3" stroke-linecap="round"/></svg>
+<svg aria-hidden="true" data-qa-ignore="decorative" class="deco deco-float" style="top:60px;right:160px;" width="80" height="40"><path d="M0,40 A40,40 0 0,1 80,40Z" fill="var(--c-coral)" stroke="var(--c-ink)" stroke-width="2.5"/></svg>
+<svg aria-hidden="true" data-qa-ignore="decorative" class="deco" style="bottom:180px;left:60px;" width="50" height="50"><path d="M25,2 L48,25 L25,48 L2,25Z" fill="var(--c-yellow)" stroke="var(--c-ink)" stroke-width="2.5"/></svg>
+<svg aria-hidden="true" data-qa-ignore="decorative" class="deco" style="bottom:150px;right:120px;" width="60" height="60"><circle cx="10" cy="10" r="3" fill="var(--c-pink)"/><circle cx="30" cy="10" r="3" fill="var(--c-ink)"/><circle cx="50" cy="10" r="3" fill="var(--c-teal)"/><circle cx="10" cy="30" r="3" fill="var(--c-ink)"/><circle cx="30" cy="30" r="3" fill="var(--c-lime)"/><circle cx="50" cy="30" r="3" fill="var(--c-pink)"/><circle cx="10" cy="50" r="3" fill="var(--c-teal)"/><circle cx="30" cy="50" r="3" fill="var(--c-yellow)"/><circle cx="50" cy="50" r="3" fill="var(--c-ink)"/></svg>
+<!-- 底部人字带 -->
+<svg aria-hidden="true" data-qa-ignore="decorative" class="band" viewBox="0 0 1136 30"><defs><pattern id="b-chev" width="32" height="30" patternUnits="userSpaceOnUse"><path d="M2,3 L16,22 L30,3" fill="none" stroke="var(--c-teal)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></pattern></defs><rect width="1136" height="30" fill="url(#b-chev)"/></svg>
 <div class="nav"><span class="id">WORKS / 03</span><span>2024 HIGHLIGHTS</span></div>
-<div style="position:relative;z-index:3;font-family:var(--f-display);font-weight:800;font-size:1.6em;margin-top:44px;">六个 <span style="background:var(--c-pink);padding:0 8px;box-shadow:3px 3px 0 var(--c-ink);">敢loud</span> 的项目。</div>
+<div style="position:relative;z-index:3;font-family:var(--f-display);font-weight:800;font-size:1.6em;margin-top:90px !important;">六个 <span style="background:var(--c-coral);padding:0 8px;box-shadow:3px 3px 0 var(--c-ink);">敢loud</span> 的项目。</div>
 <div class="gallery">
 <div class="item bg-yellow tall"><span class="wnum">01</span><h4>BAKERY × CITY</h4><p>连锁烘焙品牌重塑，撞色包装系统，销售 +63%。覆盖 200 家门店的视觉资产。</p></div>
 <div class="item bg-pink"><span class="wnum">02</span><h4>FESTIVAL 26</h4><p>音乐节视觉，票房破纪录。</p></div>
-<div class="item"><span class="wnum">03</span><h4>NEON BANK</h4><p>数字银行 launch，获客 -38%。</p></div>
+<div class="item bg-coral"><span class="wnum">03</span><h4>NEON BANK</h4><p>数字银行 launch，获客 -38%。</p></div>
 <div class="item bg-teal"><span class="wnum">04</span><h4>TEA LAB</h4><p>新茶饮 IP，3 月 40 店。</p></div>
 <div class="item bg-yellow"><span class="wnum">05</span><h4>TOY STORY</h4><p>手绘动画，2.1 亿播放。</p></div>
 <div class="item bg-pink"><span class="wnum">06</span><h4>MARKET HALL</h4><p>市集导视，客流 +120%。</p></div>
@@ -157,16 +190,20 @@
 <span class="pin">03 · works · portfolio</span>
 </section>
 
-<!-- 4. process: 路径流（squiggle 曲线 + 步骤沿路径） -->
+<!-- 4. process: 路径流（拱形 + 松树 + 十字 + 弧线 + 竖条带） -->
 <section class="bg-terrazzo">
-<svg class="deco" style="top:50px;right:90px;" width="100" height="24" data-qa-ignore="decorative"><path d="M2,12 C14,2 26,22 38,12 S62,2 74,12 S94,22 98,12" fill="none" stroke="var(--c-ink)" stroke-width="3" stroke-linecap="round"/></svg>
-<svg class="deco" style="top:340px;left:40px;" width="60" height="50" data-qa-ignore="decorative"><polygon points="30,8 36,18 24,18" fill="var(--c-yellow)" stroke="var(--c-ink)" stroke-width="1.5"/><circle cx="15" cy="35" r="3" fill="var(--c-pink)"/></svg>
+<svg aria-hidden="true" data-qa-ignore="decorative" class="deco" style="top:60px;right:60px;" width="80" height="50"><path d="M0,50 A40,40 0 0,1 80,50" fill="none" stroke="var(--c-ink)" stroke-width="3" stroke-linecap="round"/></svg>
+<svg aria-hidden="true" data-qa-ignore="decorative" class="deco deco-float" style="top:320px;left:50px;" width="44" height="60"><path d="M22,4 L40,28 L4,28Z M22,20 L44,52 L0,52Z" fill="var(--c-teal)" stroke="var(--c-ink)" stroke-width="2"/></svg>
+<svg aria-hidden="true" data-qa-ignore="decorative" class="deco" style="top:280px;right:100px;" width="34" height="34"><path d="M11,0 L23,0 L23,11 L34,11 L34,23 L23,23 L23,34 L11,34 L11,23 L0,23 L0,11 L11,11Z" fill="var(--c-lime)" stroke="var(--c-ink)" stroke-width="2"/></svg>
+<svg aria-hidden="true" data-qa-ignore="decorative" class="deco" style="bottom:150px;right:60px;" width="120" height="40"><path d="M0,20 Q30,0 60,20 Q90,40 120,20" fill="none" stroke="var(--c-pink)" stroke-width="3" stroke-linecap="round"/></svg>
+<!-- 底部竖条带 -->
+<svg aria-hidden="true" data-qa-ignore="decorative" class="band" viewBox="0 0 1136 30"><defs><pattern id="b-dash" width="26" height="30" patternUnits="userSpaceOnUse"><rect x="8" y="2" width="9" height="26" fill="var(--c-yellow)" stroke="var(--c-ink)" stroke-width="2"/></pattern></defs><rect width="1136" height="30" fill="url(#b-dash)"/></svg>
 <div class="nav"><span class="id">PROCESS / 04</span><span>HOW WE MAKE NOISE</span></div>
-<div style="position:relative;z-index:3;font-family:var(--f-display);font-weight:800;font-size:1.5em;margin-top:44px;">四步 <span style="background:var(--c-yellow);padding:0 8px;box-shadow:3px 3px 0 var(--c-ink);">沿着骚动走</span></div>
+<div style="position:relative;z-index:3;font-family:var(--f-display);font-weight:800;font-size:1.5em;margin-top:90px !important;">四步 <span style="background:var(--c-yellow);padding:0 8px;box-shadow:3px 3px 0 var(--c-ink);">沿着骚动走</span></div>
 <div class="path-canvas">
-<svg class="path-line" viewBox="0 0 1100 60" preserveAspectRatio="none"><path d="M40,30 C140,5 240,55 340,30 S540,5 640,30 S840,55 940,30 S1040,5 1060,30" fill="none" stroke="var(--c-ink)" stroke-width="3" stroke-linecap="round" stroke-dasharray="6 6"/></svg>
+<svg aria-hidden="true" data-qa-ignore="decorative" class="path-line" viewBox="0 0 1100 60" preserveAspectRatio="none"><path d="M40,30 C140,5 240,55 340,30 S540,5 640,30 S840,55 940,30 S1040,5 1060,30" fill="none" stroke="var(--c-ink)" stroke-width="3" stroke-linecap="round" stroke-dasharray="6 6"/></svg>
 <div class="path-step" style="top:0;left:20px;"><div class="pn">01</div><div class="pt">PROVOKE<br>挑衅</div></div>
-<div class="path-step bg-yellow" style="top:80px;left:260px;"><div class="pn">02</div><div class="pt">CRAFT<br>打磨</div></div>
+<div class="path-step bg-coral" style="top:80px;left:260px;"><div class="pn">02</div><div class="pt">CRAFT<br>打磨</div></div>
 <div class="path-step bg-pink" style="top:0;left:520px;"><div class="pn">03</div><div class="pt">AMPLIFY<br>放大</div></div>
 <div class="path-step bg-teal" style="top:80px;left:780px;"><div class="pn">04</div><div class="pt">GUARD<br>守护</div></div>
 </div>
@@ -174,52 +211,62 @@
 <span class="pin">04 · process · method</span>
 </section>
 
-<!-- 5. team: 层叠堆栈（absolute transform 深度偏移） -->
-<section class="bg-zig">
-<svg class="deco" style="top:54px;right:70px;" width="110" height="26" data-qa-ignore="decorative"><path d="M2,13 C14,2 26,24 38,13 S62,2 74,13 S98,24 108,13" fill="none" stroke="var(--c-ink)" stroke-width="3" stroke-linecap="round"/></svg>
-<svg class="deco" style="bottom:80px;right:90px;" width="50" height="50" data-qa-ignore="decorative"><path d="M25,3 L30,19 L48,15 L34,25 L48,35 L30,31 L25,47 L20,31 L2,35 L16,25 L2,15 L20,19 Z" fill="var(--c-yellow)" stroke="var(--c-ink)" stroke-width="2"/></svg>
+<!-- 5. team: 层叠堆栈（大菱形 + 半圆 + 水滴 + 扇贝带） -->
+<section class="bg-grid">
+<svg aria-hidden="true" data-qa-ignore="decorative" class="deco" style="top:80px;right:50px;" width="70" height="70"><path d="M35,4 L66,35 L35,66 L4,35Z" fill="var(--c-coral)" stroke="var(--c-ink)" stroke-width="2.5"/></svg>
+<svg aria-hidden="true" data-qa-ignore="decorative" class="deco" style="bottom:170px;right:140px;" width="100" height="50"><path d="M0,50 A50,50 0 0,1 100,50Z" fill="var(--c-yellow)" stroke="var(--c-ink)" stroke-width="2.5"/></svg>
+<svg aria-hidden="true" data-qa-ignore="decorative" class="deco deco-float" style="bottom:210px;left:200px;" width="50" height="66"><path d="M25,4 C25,4 46,28 46,42 C46,56 36,64 25,64 C14,64 4,56 4,42 C4,28 25,4 25,4Z" fill="var(--c-teal)" stroke="var(--c-ink)" stroke-width="2"/></svg>
+<!-- 底部扇贝带 -->
+<svg aria-hidden="true" data-qa-ignore="decorative" class="band" viewBox="0 0 1136 30"><defs><pattern id="b-scallop" width="40" height="30" patternUnits="userSpaceOnUse"><path d="M0,30 A20,20 0 0,1 40,30Z" fill="var(--c-lime)" stroke="var(--c-ink)" stroke-width="2"/></pattern></defs><rect width="1136" height="30" fill="url(#b-scallop)"/></svg>
 <div class="nav"><span class="id">TEAM / 05</span><span>12 PEOPLE</span></div>
-<div style="position:relative;z-index:3;font-family:var(--f-display);font-weight:800;font-size:1.5em;margin-top:44px;">小到每个人都能 <span style="background:var(--c-teal);padding:0 8px;box-shadow:3px 3px 0 var(--c-ink);">veto</span></div>
-<div style="position:relative;z-index:3;height:280px;margin-top:10px;">
+<div style="position:relative;z-index:3;font-family:var(--f-display);font-weight:800;font-size:1.5em;margin-top:90px !important;">小到每个人都能 <span style="background:var(--c-teal);padding:0 8px;box-shadow:3px 3px 0 var(--c-ink);">veto</span></div>
+<div style="position:relative;z-index:3;height:330px;margin-top:10px;">
 <div class="person" style="top:0;left:40px;z-index:3;"><span class="avatar" style="background:var(--c-pink);"></span><h4 style="display:inline;">STRATEGY · 3</h4><p style="margin-top:6px;">品牌策略 + 文案。前身：4A planner、独立作家。</p></div>
-<div class="person bg-yellow" style="top:50px;left:420px;z-index:2;"><span class="avatar" style="background:var(--c-teal);"></span><h4 style="display:inline;">DESIGN · 5</h4><p style="margin-top:6px;">平面 + 动效 + 空间。每人独立交付完整系统。</p></div>
-<div class="person bg-pink" style="top:100px;left:800px;z-index:1;"><span class="avatar" style="background:var(--c-yellow);"></span><h4 style="display:inline;">PRODUCTION · 4</h4><p style="margin-top:6px;">制片 + 开发 + 印刷管理。把设计变成现实。</p></div>
+<div class="person bg-yellow" style="top:68px;left:420px;z-index:2;"><span class="avatar" style="background:var(--c-teal);"></span><h4 style="display:inline;">DESIGN · 5</h4><p style="margin-top:6px;">平面 + 动效 + 空间。每人独立交付完整系统。</p></div>
+<div class="person bg-lime" style="top:136px;left:800px;z-index:1;"><span class="avatar" style="background:var(--c-coral);"></span><h4 style="display:inline;">PRODUCTION · 4</h4><p style="margin-top:6px;">制片 + 开发 + 印刷管理。把设计变成现实。</p></div>
 </div>
 <div class="source">studio roster · 2025</div>
 <span class="pin">05 · team · roster</span>
 </section>
 
-<!-- 6. impact: 单巨物 + 散点（一个超大 + 小数字散落） -->
+<!-- 6. impact: 单巨物 + 散点（水滴 + 闪电 + 弧线 + 之字带） -->
 <section class="bg-terrazzo">
-<svg class="deco" style="top:50px;right:60px;" width="110" height="24" data-qa-ignore="decorative"><path d="M2,12 C14,2 26,22 38,12 S62,2 74,12 S94,22 108,12" fill="none" stroke="var(--c-ink)" stroke-width="3" stroke-linecap="round"/></svg>
-<svg class="deco" style="bottom:120px;left:60px;" width="60" height="60" data-qa-ignore="decorative"><path d="M30,3 L36,22 L56,17 L41,30 L56,43 L36,38 L30,57 L24,38 L4,43 L19,30 L4,17 L24,22 Z" fill="var(--c-pink)" stroke="var(--c-ink)" stroke-width="2"/></svg>
-<svg class="deco" style="top:300px;left:40px;" width="70" height="50" data-qa-ignore="decorative"><circle cx="10" cy="10" r="4" fill="var(--c-teal)"/><polygon points="40,30 46,40 34,40" fill="var(--c-yellow)"/><circle cx="60" cy="15" r="3" fill="var(--c-ink)"/></svg>
+<svg aria-hidden="true" data-qa-ignore="decorative" class="deco deco-float" style="top:100px;right:200px;" width="70" height="92"><path d="M35,6 C35,6 62,36 62,54 C62,76 50,88 35,88 C20,88 8,76 8,54 C8,36 35,6 35,6Z" fill="var(--c-lime)" stroke="var(--c-ink)" stroke-width="2.5"/></svg>
+<svg aria-hidden="true" data-qa-ignore="decorative" class="deco" style="bottom:150px;right:100px;" width="32" height="60"><path d="M24,0 L6,26 L18,26 L12,60 L32,22 L20,22Z" fill="var(--c-coral)" stroke="var(--c-ink)" stroke-width="2.5"/></svg>
+<svg aria-hidden="true" data-qa-ignore="decorative" class="deco" style="bottom:120px;left:40px;" width="60" height="40"><circle cx="10" cy="20" r="5" fill="var(--c-pink)" stroke="var(--c-ink)" stroke-width="2"/><circle cx="30" cy="12" r="4" fill="var(--c-yellow)" stroke="var(--c-ink)" stroke-width="2"/><circle cx="50" cy="24" r="3" fill="var(--c-teal)"/></svg>
+<svg aria-hidden="true" data-qa-ignore="decorative" class="deco" style="bottom:170px;left:30px;" width="100" height="36"><path d="M0,18 Q25,0 50,18 Q75,36 100,18" fill="none" stroke="var(--c-ink)" stroke-width="3" stroke-linecap="round"/></svg>
+<!-- 底部之字带 -->
+<svg aria-hidden="true" data-qa-ignore="decorative" class="band" viewBox="0 0 1136 30"><defs><pattern id="b-zig" width="32" height="24" patternUnits="userSpaceOnUse" y="3"><path d="M0,12 L8,2 L16,12 L24,2 L32,12" fill="none" stroke="var(--c-coral)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></pattern></defs><rect width="1136" height="30" fill="url(#b-zig)"/></svg>
 <div class="nav"><span class="id">IMPACT / 06</span><span>2024 IN NUMBERS</span></div>
-<div style="margin-top:80px;max-width:58%;">
+<div style="margin-top:112px !important;max-width:58%;">
 <div class="mega"><span class="pk">+89%</span></div>
 <div class="mega-label">客户品牌搜索量中位数提升 · 被看见是有数字的</div>
 </div>
 <div class="scatter-num yl" style="top:110px;right:70px;transform:rotate(3deg);">2.1B<small>社媒曝光</small></div>
-<div class="scatter-num tl" style="bottom:90px;right:120px;transform:rotate(-2deg);">14<small>国际奖项</small></div>
+<div class="scatter-num cl" style="bottom:90px;right:120px;transform:rotate(-2deg);">14<small>国际奖项</small></div>
+<div class="scatter-num lm" style="top:200px;right:60px;transform:rotate(1deg);">47<small>项目交付</small></div>
 <div class="source">verified · agency year-end report</div>
 <span class="pin">06 · impact · metrics</span>
 </section>
 
-<!-- 7. voices: 对话双栏（左 VS 右） -->
+<!-- 7. voices: 对话双栏（十字 + 半圆 + 水滴 + 锯齿 + 十字带） -->
 <section class="bg-dot">
-<svg class="deco" style="top:50px;right:90px;" width="100" height="24" data-qa-ignore="decorative"><path d="M2,12 C14,2 26,22 38,12 S62,2 74,12 S94,22 98,12" fill="none" stroke="var(--c-ink)" stroke-width="3" stroke-linecap="round"/></svg>
-<svg class="deco" style="top:120px;right:60px;" width="50" height="50" data-qa-ignore="decorative"><polygon points="25,3 47,42 3,42" fill="var(--c-teal)" stroke="var(--c-ink)" stroke-width="2.5"/></svg>
-<svg class="deco" style="bottom:90px;left:60px;" width="60" height="60" data-qa-ignore="decorative"><path d="M30,3 L36,22 L56,17 L41,30 L56,43 L36,38 L30,57 L24,38 L4,43 L19,30 L4,17 L24,22 Z" fill="var(--c-yellow)" stroke="var(--c-ink)" stroke-width="2"/></svg>
+<svg aria-hidden="true" data-qa-ignore="decorative" class="deco" style="top:80px;right:60px;" width="40" height="40"><path d="M13,0 L27,0 L27,13 L40,13 L40,27 L27,27 L27,40 L13,40 L13,27 L0,27 L0,13 L13,13Z" fill="var(--c-coral)" stroke="var(--c-ink)" stroke-width="2.5"/></svg>
+<svg aria-hidden="true" data-qa-ignore="decorative" class="deco deco-float" style="bottom:170px;right:60px;" width="90" height="45"><path d="M0,45 A45,45 0 0,1 90,45Z" fill="var(--c-yellow)" stroke="var(--c-ink)" stroke-width="2.5"/></svg>
+<svg aria-hidden="true" data-qa-ignore="decorative" class="deco" style="bottom:200px;left:100px;" width="36" height="48"><path d="M18,4 C18,4 32,20 32,32 C32,42 26,48 18,48 C10,48 4,42 4,32 C4,20 18,4 18,4Z" fill="var(--c-teal)" stroke="var(--c-ink)" stroke-width="2"/></svg>
+<svg aria-hidden="true" data-qa-ignore="decorative" class="deco" style="bottom:150px;left:50px;" width="80" height="22"><path d="M0,11 L10,2 L20,11 L30,2 L40,11 L50,2 L60,11 L70,2 L80,11" fill="none" stroke="var(--c-ink)" stroke-width="2.5" stroke-linecap="round"/></svg>
+<!-- 底部十字带 -->
+<svg aria-hidden="true" data-qa-ignore="decorative" class="band" viewBox="0 0 1136 30"><defs><pattern id="b-cross" width="34" height="30" patternUnits="userSpaceOnUse"><path d="M13,3 L21,3 L21,11 L29,11 L29,19 L21,19 L21,27 L13,27 L13,19 L5,19 L5,11 L13,11Z" fill="var(--c-yellow)" stroke="var(--c-ink)" stroke-width="2"/></pattern></defs><rect width="1136" height="30" fill="url(#b-cross)"/></svg>
 <div class="nav"><span class="id">VOICES / 07</span><span>CLIENT WORDS</span></div>
-<div style="position:relative;z-index:3;font-family:var(--f-display);font-weight:800;font-size:1.4em;margin-top:44px;">两种 <span style="background:var(--c-pink);padding:0 8px;box-shadow:3px 3px 0 var(--c-ink);">被记住</span> 的方式</div>
+<div style="position:relative;z-index:3;font-family:var(--f-display);font-weight:800;font-size:1.4em;margin-top:90px !important;">两种 <span style="background:var(--c-coral);padding:0 8px;box-shadow:3px 3px 0 var(--c-ink);">被记住</span> 的方式</div>
 <div class="dialogue">
 <div class="side bg-yellow">
 <div class="qm">"</div>
-<div class="qt">"换了 5 家机构都在做'安全的设计'。Make Loud Things 第一稿就让我们吓一跳——然后卖爆了。"</div>
+<div class="qt">"换了 5 家机构都在做'安全的设计'。Make Loud Things 第一稿就让我们吓一跳，然后卖爆了。"</div>
 <div class="qw">— 品牌总监 · 烘焙（+63%）</div>
 </div>
 <div class="vs">VS</div>
-<div class="side bg-pink">
+<div class="side bg-lime">
 <div class="qm">"</div>
 <div class="qt">"他们不在乎'行业惯例'，只在乎你能不能被记住。这是我们 launch 成功的关键。"</div>
 <div class="qw">— CEO · 数字银行（-38%）</div>
@@ -229,16 +276,19 @@
 <span class="pin">07 · voices · testimonials</span>
 </section>
 
-<!-- 8. close: 号召巨物 + 散落联系 -->
-<section class="memphis-cover bg-terrazzo">
-<svg class="deco" style="top:80px;right:60px;" width="120" height="28" data-qa-ignore="decorative"><path d="M2,14 C14,2 26,26 38,14 S62,2 74,14 S98,26 110,14 S118,2 118,14" fill="none" stroke="var(--c-ink)" stroke-width="3" stroke-linecap="round"/></svg>
-<svg class="deco" style="top:140px;right:100px;" width="70" height="70" data-qa-ignore="decorative"><path d="M35,3 L42,26 L66,20 L48,35 L66,50 L42,44 L35,67 L28,44 L4,50 L22,35 L4,20 L28,26 Z" fill="var(--c-pink)" stroke="var(--c-ink)" stroke-width="2.5"/></svg>
-<svg class="deco" style="top:60px;left:80px;" width="56" height="56" data-qa-ignore="decorative"><circle cx="28" cy="28" r="24" fill="var(--c-teal)" stroke="var(--c-ink)" stroke-width="3"/></svg>
-<svg class="deco" style="bottom:110px;right:80px;" width="60" height="60" data-qa-ignore="decorative"><path d="M30,3 L36,22 L56,17 L41,30 L56,43 L36,38 L30,57 L24,38 L4,43 L19,30 L4,17 L24,22 Z" fill="var(--c-yellow)" stroke="var(--c-ink)" stroke-width="2"/></svg>
+<!-- 8. close: 号召巨物 + 散落联系（呼应封面 Memphis 框） -->
+<section class="memphis-cover memphis-frame bg-terrazzo">
+<svg aria-hidden="true" data-qa-ignore="decorative" class="deco deco-float" style="top:120px;right:100px;" width="80" height="105"><path d="M40,6 C40,6 70,40 70,60 C70,84 56,100 40,100 C24,100 10,84 10,60 C10,40 40,6 40,6Z" fill="var(--c-pink)" stroke="var(--c-ink)" stroke-width="3"/></svg>
+<svg aria-hidden="true" data-qa-ignore="decorative" class="deco" style="bottom:200px;left:40px;" width="100" height="50"><path d="M0,50 A50,50 0 0,1 100,50Z" fill="var(--c-lime)" stroke="var(--c-ink)" stroke-width="2.5"/></svg>
+<svg aria-hidden="true" data-qa-ignore="decorative" class="deco" style="top:60px;right:240px;" width="130" height="26"><path d="M0,13 C14,2 28,24 42,13 S70,2 84,13 S112,24 130,13" fill="none" stroke="var(--c-ink)" stroke-width="3" stroke-linecap="round"/></svg>
+<svg aria-hidden="true" data-qa-ignore="decorative" class="deco" style="top:200px;left:160px;" width="30" height="56"><path d="M22,0 L6,24 L16,24 L10,56 L28,20 L18,20Z" fill="var(--c-yellow)" stroke="var(--c-ink)" stroke-width="2"/></svg>
+<svg aria-hidden="true" data-qa-ignore="decorative" class="deco" style="bottom:170px;right:60px;" width="56" height="56"><path d="M28,4 L34,22 L54,16 L40,28 L54,40 L34,34 L28,52 L22,34 L2,40 L16,28 L2,16 L22,22Z" fill="var(--c-coral)" stroke="var(--c-ink)" stroke-width="2"/></svg>
+<!-- 底部锯齿三角带（呼应封面，换 lime） -->
+<svg aria-hidden="true" data-qa-ignore="decorative" class="band" viewBox="0 0 1136 30"><defs><pattern id="b-teeth2" width="36" height="30" patternUnits="userSpaceOnUse"><path d="M0,30 L18,2 L36,30Z" fill="var(--c-lime)" stroke="var(--c-ink)" stroke-width="2"/></pattern></defs><rect width="1136" height="30" fill="url(#b-teeth2)"/></svg>
 <div class="nav"><span class="id">CLOSE / 08</span><span>MAKE IT LOUD</span></div>
-<h2 class="cta-mega" style="margin-top:70px;">如果你的品牌<br><em>不被记住</em>，<br>那就是设计的问题。</h2>
-<div class="contact-scatter" style="bottom:90px;right:80px;transform:rotate(-2deg);background:var(--c-yellow);">hello@makeloudthings.studio</div>
-<div class="contact-scatter" style="bottom:160px;right:120px;transform:rotate(1deg);background:var(--c-pink);color:var(--c-bg);">+86 21 5555 0000</div>
+<h2 class="cta-mega" style="margin-top:104px !important;">如果你的品牌<br><em>不被记住</em>，<br>那就是设计的问题。</h2>
+<div class="contact-scatter" style="bottom:90px;right:80px;transform:rotate(-2deg);background:var(--c-coral);">hello@makeloudthings.studio</div>
+<div class="contact-scatter" style="bottom:160px;right:140px;transform:rotate(1deg);background:var(--c-pink);">+86 21 5555 0000</div>
 <div class="contact-scatter" style="bottom:120px;left:90px;transform:rotate(2deg);background:var(--c-teal);">上海 · 阿姆斯特丹</div>
 <div class="source">illustrative · studio 2025</div>
 <span class="pin">08 · close · contact</span>
@@ -248,7 +298,7 @@
 <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
 <script>
-Reveal.initialize({width:1280,height:720,margin:0.04,hash:true,slideNumber:'c/t',transition:'slide'});
+Reveal.initialize({width:1280,height:720,margin:0.04,hash:true,slideNumber:'c/t',transition:'fade'});
 function exportPPTX(){if(typeof PptxGenJS==='undefined'){alert('pptxgenjs 未加载');return;}var p=new PptxGenJS();p.defineLayout({name:'C',width:13.33,height:7.5});p.layout='C';Reveal.getSlides().forEach(function(s){var t=(s.querySelector('.nav .id')||{}).innerText||'';var h=(s.querySelector('.poster-title,.scatter-block,.cta-mega')||s.querySelector('div')||{}).innerText||'';p.addSlide().addText(h.split('\n')[0],{x:0.5,y:0.5,w:12,h:1.5,fontSize:28,bold:true}).addText(t,{x:0.5,y:0.2,w:12,h:0.3,fontSize:10,color:'999999'});});p.writeFile({fileName:'make-loud-things.pptx'});}
 </script>
 </body>

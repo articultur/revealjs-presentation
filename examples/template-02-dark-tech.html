@@ -268,6 +268,9 @@
     .signal-page .signal .delta.alarm { color: var(--c-alarm); }
     .signal-page .signal.featured { background: var(--c-accent); }
     .signal-page .signal.featured h4 { color: rgba(11, 15, 20, 0.7); }
+    /* "ms" unit goes dark on the light-teal featured tile to match the value
+       (default teal-on-teal = 1:1 invisible; light-on-teal ≈ 1.4:1, still failing). */
+    .signal-page .signal.featured .val em { color: #0b0f14; }
     .signal-page .signal.featured .val { color: var(--c-bg); }
     .signal-page .signal.featured .delta { color: rgba(11, 15, 20, 0.85); }
     .signal-page .signal.featured .spark svg { color: rgba(11, 15, 20, 0.5); }
@@ -395,7 +398,7 @@
           <span class="kicker">Edge platform · Q1 keynote</span>
           <h1 style="margin-top: 0.6em;">Run the edge<br>like a <em>cockpit</em>,<br>not a dashboard.</h1>
           <p class="cover-deck">
-            One screen. One on-call. One answer to "is it healthy now?" — built around incidents, not slideware.
+            One screen. One on-call. One answer to "is it healthy now?", built around incidents, not slideware.
           </p>
           <div class="cover-tags">
             <span class="active">runtime</span>
@@ -551,13 +554,13 @@
           <div class="signal" style="flex-direction: row; align-items: center;">
             <div style="flex:1;">
               <h4>What we removed from the screen</h4>
-              <p style="font-size: 0.62em; margin-top: 6px; max-width: 360px;">CPU%, RAM%, request count — none paged this year. Off the cockpit, on the audit page.</p>
+              <p style="font-size: 0.62em; margin-top: 6px; max-width: 360px;">CPU%, RAM%, request count: none paged this year. Off the cockpit, on the audit page.</p>
             </div>
           </div>
           <div class="signal" style="flex-direction: row; align-items: center; background: rgba(80, 227, 194, 0.10);">
             <div style="flex:1;">
               <h4>What earns screen time</h4>
-              <p style="font-size: 0.62em; margin-top: 6px; max-width: 360px;">Signals that paged in the last 12 months — with a runbook step on this screen.</p>
+              <p style="font-size: 0.62em; margin-top: 6px; max-width: 360px;">Signals that paged in the last 12 months, with a runbook step on this screen.</p>
             </div>
           </div>
         </div>
@@ -581,7 +584,7 @@
           </div>
           <h3>"Cut the region. Stay readable. Recover in 15."</h3>
           <p class="one-liner">
-            Isolate EU-North from the control plane; watch the fleet absorb traffic. Drill exists because the Sep 2025 cut took 27 minutes — too slow, too quiet.
+            Isolate EU-North from the control plane; watch the fleet absorb traffic. Drill exists because the Sep 2025 cut took 27 minutes. Too slow, too quiet.
           </p>
           <div class="impacts">
             <div>
@@ -638,7 +641,7 @@
         <span class="kicker">Argument · the cockpit thesis</span>
         <h2 style="font-size: 2.4em; font-weight: 300; line-height: 1.2; margin-top: 0.8em; max-width: 980px;">
           A platform is not "observable".<br>
-          It's <em style="color: var(--c-accent); font-style: normal; font-weight: 500;">page-able, drill-able, recoverable</em> — in this order, on this screen.
+          It's <em style="color: var(--c-accent); font-style: normal; font-weight: 500;">page-able, drill-able, recoverable</em>, in this order, on this screen.
         </h2>
         <p style="margin-top: 1.2em; max-width: 720px; font-size: 0.82em; line-height: 1.65;">
           Three properties earn screen time. Everything else is an audit artifact: it can live on a wiki, in a graph, or off the cockpit entirely. The brief for 2026 is to keep the cockpit small, sharp, and rehearsed.
