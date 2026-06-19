@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<title>Platform Architecture — Isometric Deck</title>
+<title>Platform Architecture · Isometric Deck</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.css">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
@@ -17,6 +17,7 @@
   --c-orange:oklch(72% 0.14 50);
   --c-orange-d:oklch(60% 0.15 50);
   --c-teal:oklch(70% 0.11 180);
+  --c-teal-d:oklch(58% 0.12 180);
   --c-grid:oklch(88% 0.006 240);
   --f-display:'Outfit',system-ui,sans-serif;
   --f-body:'Outfit',system-ui,sans-serif;
@@ -31,39 +32,43 @@
   color:var(--c-ink);font-family:var(--f-body);
   font-size:26px;line-height:1.4;text-align:left;
   padding:56px 72px 72px;overflow:hidden;position:relative;
+  height:720px;
 }
-.kicker{
-  font-family:var(--f-mono);font-size:0.5em;letter-spacing:0.16em;
-  text-transform:uppercase;color:var(--c-mute);
-  margin:0 0 0.9em;display:flex;justify-content:space-between;position:relative;z-index:3;
-}
+/* 垂直铺满：只对 present section 启用 flex 居中（!important 压过 reveal 的 inline display:block；
+   不碰 .past/.future，避免破坏 reveal 的隐藏堆叠）*/
+.reveal section.present{display:flex !important;flex-direction:column;justify-content:center;}
+/* === 契约原语（保留命名）=== */
+.kicker{font-family:var(--f-mono);font-size:0.5em;letter-spacing:0.16em;text-transform:uppercase;color:var(--c-mute);margin:0 0 0.7em;display:flex;justify-content:space-between;position:relative;z-index:3;}
 .coord{font-family:var(--f-mono);font-size:0.4em;letter-spacing:0.1em;color:var(--c-mute);}
-.at{
-  font-family:var(--f-display);font-weight:700;font-size:1.72em;line-height:1.1;
-  margin:0 0 0.7em;max-width:90%;position:relative;z-index:3;letter-spacing:-0.005em;
-}
+.at{font-family:var(--f-display);font-weight:700;font-size:1.6em;line-height:1.12;margin:0 0 0.5em;max-width:92%;position:relative;z-index:3;letter-spacing:-0.005em;}
 .at em{font-style:normal;color:var(--c-blue);font-weight:800;}
-.proof{position:relative;z-index:3;border:1px solid var(--c-line);background:var(--c-surface);padding:18px 22px;border-radius:4px;}
+.proof{position:relative;z-index:3;border:1px solid var(--c-line);background:var(--c-surface);padding:16px 20px;border-radius:3px;}
 .source{position:absolute;bottom:28px;right:72px;font-family:var(--f-mono);font-size:0.4em;letter-spacing:0.1em;text-transform:uppercase;color:var(--c-mute);z-index:3;}
 .pin{position:absolute;left:64px;bottom:28px;font-family:var(--f-mono);font-size:0.4em;letter-spacing:0.16em;text-transform:uppercase;color:var(--c-mute);z-index:3;}
-.big{font-family:var(--f-display);font-weight:800;font-size:3.6em;line-height:1;letter-spacing:-0.02em;color:var(--c-ink);}
-.display{font-family:var(--f-display);font-weight:800;font-size:3.1em;line-height:0.95;margin:0;letter-spacing:-0.01em;}
+/* === Isometric 极致化原语 === */
+.metric{font-family:var(--f-display);font-weight:800;font-size:3.4em;line-height:1;color:var(--c-blue);letter-spacing:-0.02em;position:relative;z-index:3;}
+.metric small{font-size:0.2em;font-family:var(--f-mono);letter-spacing:0.1em;display:block;margin-top:6px;font-weight:400;color:var(--c-mute);}
+.display{font-family:var(--f-display);font-weight:800;font-size:3em;line-height:0.98;margin:0;letter-spacing:-0.01em;position:relative;z-index:3;}
 .display em{font-style:normal;color:var(--c-blue);}
-.sub{font-family:var(--f-body);font-size:0.7em;color:var(--c-mute);margin-top:14px;max-width:55%;line-height:1.4;}
-.iso-stage{position:relative;z-index:3;display:flex;align-items:center;gap:28px;}
-.layer{font-family:var(--f-mono);font-size:0.48em;letter-spacing:0.1em;text-transform:uppercase;}
-.metric{font-family:var(--f-display);font-weight:800;font-size:2.8em;line-height:1;color:var(--c-blue);letter-spacing:-0.02em;}
-.metric small{font-size:0.22em;font-family:var(--f-mono);letter-spacing:0.1em;display:block;margin-top:6px;font-weight:400;color:var(--c-mute);}
-.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
-.card{border:1px solid var(--c-line);background:var(--c-surface);padding:12px;border-radius:4px;position:relative;overflow:hidden;}
-.card.blue{border-top:3px solid var(--c-blue);}
-.card.orange{border-top:3px solid var(--c-orange);}
-.card.teal{border-top:3px solid var(--c-teal);}
-.card h4{font-family:var(--f-display);font-weight:700;font-size:0.86em;margin:0 0 4px;}
-.card p{font-size:0.56em;margin:0;line-height:1.4;color:var(--c-mute);}
-.card .iso-mark{position:absolute;right:6px;bottom:4px;opacity:0.85;}
-.iso-deco{position:absolute;z-index:1;pointer-events:none;opacity:0.5;}
-.pptx-btn{position:fixed;top:16px;right:16px;z-index:100;font-family:var(--f-mono);font-size:12px;letter-spacing:0.1em;text-transform:uppercase;background:var(--c-ink);color:var(--c-bg);border:none;padding:8px 14px;cursor:pointer;opacity:0;transition:opacity .2s;border-radius:4px;}
+.sub{font-family:var(--f-body);font-size:0.66em;color:var(--c-mute);margin-top:12px;max-width:60%;line-height:1.45;position:relative;z-index:3;}
+/* 等距舞台：每页的核心 proof 都是等距立体图 */
+.stage{position:relative;z-index:3;display:flex;align-items:center;gap:26px;}
+.stage.grow{align-items:flex-end;}
+.layer-tag{font-family:var(--f-mono);font-size:0.46em;letter-spacing:0.1em;text-transform:uppercase;display:flex;align-items:center;gap:8px;}
+.layer-tag::before{content:'';width:14px;height:14px;display:inline-block;}
+.layer-tag.blue::before{background:var(--c-blue);}
+.layer-tag.teal::before{background:var(--c-teal);}
+.layer-tag.orange::before{background:var(--c-orange);}
+.leg{font-family:var(--f-mono);font-size:0.42em;letter-spacing:0.08em;text-transform:uppercase;color:var(--c-mute);}
+.anno{font-family:var(--f-mono);font-size:0.5em;color:var(--c-mute);line-height:1.5;}
+.anno b{color:var(--c-ink);font-weight:600;}
+/* 尺寸标注线（蓝图感） */
+.dim{font-family:var(--f-mono);font-size:0.38em;letter-spacing:0.08em;text-transform:uppercase;color:var(--c-mute);}
+.card{border:1px solid var(--c-line);background:var(--c-surface);padding:11px 13px;border-radius:3px;}
+.card h4{font-family:var(--f-display);font-weight:700;font-size:0.8em;margin:0 0 3px;}
+.card p{font-size:0.54em;margin:0;line-height:1.4;color:var(--c-mute);}
+.iso-deco{position:absolute;z-index:1;pointer-events:none;opacity:0.45;}
+.pptx-btn{position:fixed;top:16px;right:16px;z-index:100;font-family:var(--f-mono);font-size:12px;letter-spacing:0.1em;text-transform:uppercase;background:var(--c-ink);color:var(--c-bg);border:none;padding:8px 14px;cursor:pointer;opacity:0;transition:opacity .2s;border-radius:3px;}
 .pptx-btn:hover,.pptx-btn:focus{opacity:1;}
 </style>
 </head>
@@ -71,208 +76,211 @@
 <!-- Reveal.js PPTX 导出按钮 --><button class="pptx-btn" onclick="exportPPTX()">↓ PPTX</button>
 <div class="reveal"><div class="slides">
 
+<!-- 1. COVER —— 三层等距堆叠做主视觉 hero -->
 <section class="iso-cover">
-<svg class="iso-deco" style="top:40px;right:60px;" width="60" height="50" data-qa-ignore="decorative"><g style="stroke:var(--c-ink);stroke-width:1.2"><polygon points="30,4 56,16 30,28 4,16" style="fill:var(--c-teal)"/><polygon points="4,16 30,28 30,46 4,34" style="fill:var(--c-teal);opacity:0.65"/><polygon points="56,16 30,28 30,46 56,34" style="fill:var(--c-teal);opacity:0.85"/></g></svg>
+<svg class="iso-deco" style="top:40px;right:60px;" width="60" height="50" aria-hidden="true" data-qa-ignore="decorative"><g style="stroke:var(--c-ink);stroke-width:1.2"><polygon points="30,4 56,16 30,28 4,16" style="fill:var(--c-teal)"/><polygon points="4,16 30,28 30,46 4,34" style="fill:var(--c-teal);opacity:0.65"/><polygon points="56,16 30,28 30,46 56,34" style="fill:var(--c-teal);opacity:0.85"/></g></svg>
 <div class="kicker"><span>PLATFORM / 01 · COVER</span><span class="coord">ISO 30° · LAYER 0</span></div>
 <h1 class="display">三层架构，<br>承载 <em>10M</em> 用户。</h1>
-<p class="sub">一份关于我们如何在 18 个月内把单体重构为 Edge / Mesh / Data 三层、并保持 99.97% 可用的工程汇报。</p>
-<div class="iso-stage" style="margin-top:14px;">
-<svg width="260" height="150" viewBox="0 0 260 150">
-<g transform="translate(30,10)" style="stroke:var(--c-ink);stroke-width:1.5">
+<div class="stage" style="margin-top:10px;">
+<svg width="300" height="180" viewBox="0 0 300 180" aria-hidden="true" data-qa-ignore="decorative">
+<g transform="translate(40,10)" style="stroke:var(--c-ink);stroke-width:1.5">
 <polygon points="100,0 150,-20 200,0 150,20" style="fill:var(--c-blue)"/>
 <polygon points="100,0 100,40 150,60 150,20" style="fill:var(--c-blue-d)"/>
 <polygon points="200,0 200,40 150,60 150,20" style="fill:var(--c-blue);opacity:0.85"/>
 <polygon points="100,50 150,30 200,50 150,70" style="fill:var(--c-teal)"/>
-<polygon points="100,50 100,90 150,110 150,70" style="fill:var(--c-teal);opacity:0.8"/>
-<polygon points="200,50 200,90 150,110 150,70" style="fill:var(--c-teal);opacity:0.6"/>
+<polygon points="100,50 100,90 150,110 150,70" style="fill:var(--c-teal-d)"/>
+<polygon points="200,50 200,90 150,110 150,70" style="fill:var(--c-teal);opacity:0.8"/>
 <polygon points="100,100 150,80 200,100 150,120" style="fill:var(--c-orange)"/>
-<polygon points="100,100 100,140 150,160 150,120" style="fill:var(--c-orange);opacity:0.8"/>
-<polygon points="200,100 200,140 150,160 150,120" style="fill:var(--c-orange);opacity:0.6"/>
+<polygon points="100,100 100,140 150,160 150,120" style="fill:var(--c-orange-d)"/>
+<polygon points="200,100 200,140 150,160 150,120" style="fill:var(--c-orange);opacity:0.85"/>
 </g>
 </svg>
 <div>
-<div class="layer" style="color:var(--c-blue);">EDGE · 接入</div>
-<div class="layer" style="color:var(--c-teal);margin-top:8px;">MESH · 编排</div>
-<div class="layer" style="color:var(--c-orange);margin-top:8px;">DATA · 持久</div>
+<div class="layer-tag blue">EDGE · 接入</div>
+<div class="layer-tag teal" style="margin-top:10px;">MESH · 编排</div>
+<div class="layer-tag orange" style="margin-top:10px;">DATA · 持久</div>
+<div class="sub" style="margin-top:14px;">18 个月内把单体重构为三层，保持 99.97% 可用。</div>
 </div>
 </div>
 <div class="source">illustrative · 2025 Q1 architecture review</div>
 <span class="pin">01 · cover · architecture</span>
 </section>
 
+<!-- 2. OVERVIEW —— 爆炸图：三层拉开，标注各自职责 -->
 <section>
-<svg class="iso-deco" style="top:36px;right:50px;" width="70" height="58" data-qa-ignore="decorative"><g style="stroke:var(--c-ink);stroke-width:1.2"><polygon points="35,4 65,18 35,32 5,18" style="fill:var(--c-blue);opacity:0.3"/><polygon points="5,18 35,32 35,54 5,40" style="fill:var(--c-blue);opacity:0.2"/><polygon points="65,18 35,32 35,54 65,40" style="fill:var(--c-blue);opacity:0.28"/></g></svg>
-<div class="kicker"><span>PLATFORM / 02 · OVERVIEW</span><span class="coord">ISO · ALL LAYERS</span></div>
+<div class="kicker"><span>PLATFORM / 02 · OVERVIEW</span><span class="coord">ISO · EXPLODED</span></div>
 <h2 class="at">三层各司其职：<em>Edge</em> 接入、Mesh 编排、Data 持久。</h2>
-<div class="row3">
-<div class="card blue"><svg class="iso-mark" width="40" height="34" data-qa-ignore="decorative"><g style="stroke:var(--c-ink);stroke-width:1"><polygon points="20,3 37,11 20,19 3,11" style="fill:var(--c-blue)"/><polygon points="3,11 20,19 20,31 3,23" style="fill:var(--c-blue);opacity:0.65"/><polygon points="37,11 20,19 20,31 37,23" style="fill:var(--c-blue);opacity:0.85"/></g></svg><h4>EDGE LAYER</h4><p>全球 28 个 PoP，TLS 终止 + 鉴权 + 限流。P99 延迟 12ms。</p></div>
-<div class="card teal"><svg class="iso-mark" width="40" height="34" data-qa-ignore="decorative"><g style="stroke:var(--c-ink);stroke-width:1"><polygon points="20,3 37,11 20,19 3,11" style="fill:var(--c-teal)"/><polygon points="3,11 20,19 20,31 3,23" style="fill:var(--c-teal);opacity:0.65"/><polygon points="37,11 20,19 20,31 37,23" style="fill:var(--c-teal);opacity:0.85"/></g></svg><h4>MESH LAYER</h4><p>服务网格，gRPC + sidecar，自动熔断与重试。无单点。</p></div>
-<div class="card orange"><svg class="iso-mark" width="40" height="34" data-qa-ignore="decorative"><g style="stroke:var(--c-ink);stroke-width:1"><polygon points="20,3 37,11 20,19 3,11" style="fill:var(--c-orange)"/><polygon points="3,11 20,19 20,31 3,23" style="fill:var(--c-orange);opacity:0.65"/><polygon points="37,11 20,19 20,31 37,23" style="fill:var(--c-orange);opacity:0.85"/></g></svg><h4>DATA LAYER</h4><p>分片 KV + 列存 + 流。10PB，每日全量校验。</p></div>
-</div>
-<div class="proof" style="margin-top:12px;">
-<p style="font-size:0.62em;margin:0;line-height:1.5;">每一层可以独立演进、独立扩缩容、独立出故障——而不影响其他两层的契约。</p>
+<div class="stage" style="align-items:flex-start;">
+<svg width="360" height="290" viewBox="0 0 360 290" aria-hidden="true" data-qa-ignore="decorative">
+<g style="stroke:var(--c-ink);stroke-width:1.4">
+<!-- DATA 底层 -->
+<g transform="translate(0,200)"><polygon points="120,0 180,-30 240,0 180,30" style="fill:var(--c-orange)"/><polygon points="120,0 120,30 180,60 180,30" style="fill:var(--c-orange-d)"/><polygon points="240,0 240,30 180,60 180,30" style="fill:var(--c-orange);opacity:0.85"/></g>
+<!-- MESH 中层 -->
+<g transform="translate(0,110)"><polygon points="120,0 180,-30 240,0 180,30" style="fill:var(--c-teal)"/><polygon points="120,0 120,30 180,60 180,30" style="fill:var(--c-teal-d)"/><polygon points="240,0 240,30 180,60 180,30" style="fill:var(--c-teal);opacity:0.85"/></g>
+<!-- EDGE 顶层 -->
+<g transform="translate(0,20)"><polygon points="120,0 180,-30 240,0 180,30" style="fill:var(--c-blue)"/><polygon points="120,0 120,30 180,60 180,30" style="fill:var(--c-blue-d)"/><polygon points="240,0 240,30 180,60 180,30" style="fill:var(--c-blue);opacity:0.85"/></g>
+<!-- 虚线连接 -->
+<g style="stroke:var(--c-mute);stroke-width:1;stroke-dasharray:3 3;fill:none"><line x1="180" y1="80" x2="180" y2="110"/><line x1="180" y1="170" x2="180" y2="200"/></g>
+<!-- 标注引线 -->
+<g style="stroke:var(--c-line);stroke-width:1;fill:none"><path d="M240,50 L300,50"/><path d="M240,140 L300,140"/><path d="M240,230 L300,230"/></g>
+</g>
+<g style="font-family:var(--f-mono);font-size:11px;fill:var(--c-ink);letter-spacing:0.06em">
+<text x="305" y="48" style="fill:var(--c-blue)">EDGE</text><text x="305" y="62" style="fill:var(--c-mute);font-size:9px">接入 · 鉴权</text>
+<text x="305" y="138" style="fill:var(--c-teal-d)">MESH</text><text x="305" y="152" style="fill:var(--c-mute);font-size:9px">编排 · 弹性</text>
+<text x="305" y="228" style="fill:var(--c-orange-d)">DATA</text><text x="305" y="242" style="fill:var(--c-mute);font-size:9px">持久 · 校验</text>
+</g>
+</svg>
+<div class="anno" style="max-width:200px;">每一层 <b>独立演进、独立扩缩容、独立故障</b>——而不破坏其他两层的契约。</div>
 </div>
 <div class="source">illustrative · architecture spec</div>
 <span class="pin">02 · overview · layers</span>
 </section>
 
+<!-- 3. EDGE —— 等距 PoP 星阵 + 12ms -->
 <section>
-<svg class="iso-deco" style="bottom:70px;right:60px;" width="56" height="46" data-qa-ignore="decorative"><g style="stroke:var(--c-ink);stroke-width:1.2"><polygon points="28,3 52,14 28,25 4,14" style="fill:var(--c-blue);opacity:0.3"/><polygon points="4,14 28,25 28,43 4,32" style="fill:var(--c-blue);opacity:0.2"/><polygon points="52,14 28,25 28,43 52,32" style="fill:var(--c-blue);opacity:0.28"/></g></svg>
+<svg class="iso-deco" style="bottom:70px;right:60px;" width="56" height="46" aria-hidden="true" data-qa-ignore="decorative"><g style="stroke:var(--c-ink);stroke-width:1.2"><polygon points="28,3 52,14 28,25 4,14" style="fill:var(--c-blue);opacity:0.3"/><polygon points="4,14 28,25 28,43 4,32" style="fill:var(--c-blue);opacity:0.2"/><polygon points="52,14 28,25 28,43 52,32" style="fill:var(--c-blue);opacity:0.28"/></g></svg>
 <div class="kicker"><span>PLATFORM / 03 · EDGE</span><span class="coord">ISO · LAYER 1</span></div>
 <h2 class="at">Edge 层：<em>12ms</em> 内完成接入、鉴权、限流。</h2>
-<div class="iso-stage">
+<div class="stage">
 <div class="metric">12<small>MS · P99 LATENCY</small></div>
-<div style="flex:1;">
-<div class="row3" style="gap:10px;">
-<div class="card blue"><h4>28 PoPs</h4><p>全球边缘节点</p></div>
-<div class="card blue"><h4>4.2M RPS</h4><p>峰值吞吐</p></div>
-<div class="card blue"><h4>99.99%</h4><p>接入层可用</p></div>
+<svg width="380" height="196" viewBox="0 0 330 170" aria-hidden="true" data-qa-ignore="decorative">
+<g style="stroke:var(--c-blue);stroke-width:1;fill:none;opacity:0.4"><polygon points="165,140 305,80 165,20 25,80"/></g>
+<g style="fill:var(--c-blue);stroke:var(--c-ink);stroke-width:1.2">
+<circle cx="165" cy="80" r="9"/>
+<circle cx="165" cy="140" r="6"/><circle cx="165" cy="20" r="6"/>
+<circle cx="305" cy="80" r="6"/><circle cx="25" cy="80" r="6"/>
+<circle cx="240" cy="110" r="5"/><circle cx="90" cy="110" r="5"/>
+<circle cx="240" cy="50" r="5"/><circle cx="90" cy="50" r="5"/>
+</g>
+<g style="stroke:var(--c-blue);stroke-width:1.2;fill:none;opacity:0.6"><line x1="165" y1="80" x2="165" y2="140"/><line x1="165" y1="80" x2="305" y2="80"/><line x1="165" y1="80" x2="25" y2="80"/><line x1="165" y1="80" x2="165" y2="20"/><line x1="165" y1="80" x2="240" y2="110"/><line x1="165" y1="80" x2="90" y2="110"/><line x1="165" y1="80" x2="240" y2="50"/><line x1="165" y1="80" x2="90" y2="50"/></g>
+<text x="165" y="164" text-anchor="middle" style="font-family:var(--f-mono);font-size:11px;fill:var(--c-mute);letter-spacing:0.08em">28 PoPs · 全球边缘节点</text>
+</svg>
 </div>
-</div>
-</div>
+<div class="dim" style="margin-top:8px;position:relative;z-index:3;">4.2M RPS 峰值吞吐 · 99.99% 接入层可用</div>
 <div class="source">verified · edge telemetry 2025Q1</div>
 <span class="pin">03 · edge · latency</span>
 </section>
 
+<!-- 4. MESH —— 等距 sidecar 网格：每个服务立方体挂一个小 sidecar 立方体 -->
 <section>
 <div class="kicker"><span>PLATFORM / 04 · MESH</span><span class="coord">ISO · LAYER 2</span></div>
-<h2 class="at">Mesh 层：服务网格自动 <em>熔断 + 重试 + 负载均衡</em>。</h2>
-<div class="proof">
-<div style="display:flex;gap:18px;align-items:center;">
-<svg width="190" height="110" viewBox="0 0 190 110" style="flex:0 0 auto;">
-<g style="stroke:var(--c-line);stroke-width:1.5">
-<line x1="40" y1="55" x2="95" y2="35"/>
-<line x1="40" y1="55" x2="95" y2="75"/>
-<line x1="95" y1="35" x2="150" y2="55"/>
-<line x1="95" y1="75" x2="150" y2="55"/>
-<line x1="95" y1="35" x2="95" y2="75" style="stroke-dasharray:3 3"/>
+<h2 class="at">Mesh 层：每个服务注入 <em>sidecar</em>，弹性逻辑零侵入。</h2>
+<div class="stage" style="align-items:flex-start;">
+<svg width="420" height="222" viewBox="0 0 360 190" aria-hidden="true" data-qa-ignore="decorative">
+<defs>
+<g id="svc"><polygon points="20,0 40,-12 60,0 40,12" style="fill:var(--c-teal)"/><polygon points="20,0 20,24 40,36 40,12" style="fill:var(--c-teal-d)"/><polygon points="60,0 60,24 40,36 40,12" style="fill:var(--c-teal);opacity:0.85"/></g>
+<g id="side"><polygon points="8,0 16,-5 24,0 16,5" style="fill:var(--c-orange)"/><polygon points="8,0 8,10 16,15 16,5" style="fill:var(--c-orange-d)"/><polygon points="24,0 24,10 16,15 16,5" style="fill:var(--c-orange);opacity:0.85"/></g>
+</defs>
+<g style="stroke:var(--c-ink);stroke-width:1.1">
+<use href="#svc" x="30" y="50"/><use href="#side" x="86" y="66"/>
+<use href="#svc" x="150" y="30"/><use href="#side" x="206" y="46"/>
+<use href="#svc" x="150" y="110"/><use href="#side" x="206" y="126"/>
+<use href="#svc" x="270" y="70"/><use href="#side" x="326" y="86"/>
 </g>
-<g style="fill:var(--c-teal);stroke:var(--c-ink);stroke-width:1.5">
-<circle cx="40" cy="55" r="13"/>
-<circle cx="95" cy="35" r="13"/>
-<circle cx="95" cy="75" r="13"/>
-<circle cx="150" cy="55" r="13"/>
-</g>
+<g style="stroke:var(--c-mute);stroke-width:1;stroke-dasharray:3 3;fill:none"><path d="M70,62 Q120,40 150,42"/><path d="M190,42 Q230,50 270,82"/><path d="M70,62 Q120,90 150,122"/><path d="M190,122 Q230,110 270,82"/></g>
+<text x="40" y="40" style="font-family:var(--f-mono);font-size:10px;fill:var(--c-teal-d);letter-spacing:0.06em">SERVICE</text>
+<text x="92" y="96" style="font-family:var(--f-mono);font-size:9px;fill:var(--c-orange-d);letter-spacing:0.06em">SIDECAR</text>
 </svg>
-<div style="flex:1;font-size:0.66em;line-height:1.5;">
-<strong>sidecar 模式</strong>：每个服务实例注入一个 sidecar，统一处理 gRPC 调用、熔断器、重试预算、负载均衡。<br>服务代码只关心业务逻辑，不写一行弹性代码。
-</div>
-</div>
+<div class="anno" style="max-width:210px;"><b>sidecar 模式</b>：gRPC 调用、熔断器、重试预算、负载均衡全部在 sidecar 里。服务代码只关心业务逻辑，<b>不写一行弹性代码</b>。</div>
 </div>
 <div class="source">illustrative · mesh topology</div>
 <span class="pin">04 · mesh · sidecar</span>
 </section>
 
+<!-- 5. DATA —— 等距存储塔：分片堆叠 + 3 副本列 -->
 <section>
-<svg class="iso-deco" style="top:40px;right:60px;" width="60" height="50" data-qa-ignore="decorative"><g style="stroke:var(--c-ink);stroke-width:1.2"><polygon points="30,4 56,16 30,28 4,16" style="fill:var(--c-orange);opacity:0.3"/><polygon points="4,16 30,28 30,46 4,34" style="fill:var(--c-orange);opacity:0.2"/><polygon points="56,16 30,28 30,46 56,34" style="fill:var(--c-orange);opacity:0.28"/></g></svg>
+<svg class="iso-deco" style="top:40px;right:60px;" width="60" height="50" aria-hidden="true" data-qa-ignore="decorative"><g style="stroke:var(--c-ink);stroke-width:1.2"><polygon points="30,4 56,16 30,28 4,16" style="fill:var(--c-orange);opacity:0.3"/><polygon points="4,16 30,28 30,46 4,34" style="fill:var(--c-orange);opacity:0.2"/><polygon points="56,16 30,28 30,46 56,34" style="fill:var(--c-orange);opacity:0.28"/></g></svg>
 <div class="kicker"><span>PLATFORM / 05 · DATA</span><span class="coord">ISO · LAYER 3</span></div>
 <h2 class="at">Data 层：<em>10PB</em> 分片存储，每日全量校验。</h2>
-<div class="iso-stage">
-<div class="metric" style="color:var(--c-orange);">10<small>PETABYTES · SHARDED</small></div>
-<div style="flex:1;">
-<div class="row3" style="gap:10px;">
-<div class="card orange"><h4>3 副本</h4><p>跨可用区</p></div>
-<div class="card orange"><h4>24h</h4><p>校验周期</p></div>
-<div class="card orange"><h4>&lt; 60s</h4><p>PITR 恢复</p></div>
+<div class="stage">
+<div class="metric" style="color:var(--c-orange-d);">10<small>PETABYTES · SHARDED</small></div>
+<svg width="240" height="180" viewBox="0 0 240 180" aria-hidden="true" data-qa-ignore="decorative">
+<g style="stroke:var(--c-ink);stroke-width:1.3">
+<!-- 三列副本塔 -->
+<g transform="translate(20,40)"><polygon points="20,0 40,-12 60,0 40,12" style="fill:var(--c-orange)"/><polygon points="20,0 20,18 40,30 40,12" style="fill:var(--c-orange-d)"/><polygon points="60,0 60,18 40,30 40,12" style="fill:var(--c-orange);opacity:0.85"/><polygon points="20,30 40,18 60,30 40,42" style="fill:var(--c-orange);opacity:0.9"/><polygon points="20,30 20,48 40,60 40,42" style="fill:var(--c-orange-d)"/><polygon points="60,30 60,48 40,60 40,42" style="fill:var(--c-orange);opacity:0.8"/><polygon points="20,60 40,48 60,60 40,72" style="fill:var(--c-orange);opacity:0.9"/><polygon points="20,60 20,78 40,90 40,72" style="fill:var(--c-orange-d)"/><polygon points="60,60 60,78 40,90 40,72" style="fill:var(--c-orange);opacity:0.8"/></g>
+<g transform="translate(90,40)" style="opacity:0.6"><polygon points="20,0 40,-12 60,0 40,12" style="fill:var(--c-orange)"/><polygon points="20,0 20,18 40,30 40,12" style="fill:var(--c-orange-d)"/><polygon points="60,0 60,18 40,30 40,12" style="fill:var(--c-orange);opacity:0.85"/><polygon points="20,30 40,18 60,30 40,42" style="fill:var(--c-orange);opacity:0.9"/><polygon points="20,30 20,48 40,60 40,42" style="fill:var(--c-orange-d)"/><polygon points="60,30 60,48 40,60 40,42" style="fill:var(--c-orange);opacity:0.8"/></g>
+<g transform="translate(160,40)" style="opacity:0.4"><polygon points="20,0 40,-12 60,0 40,12" style="fill:var(--c-orange)"/><polygon points="20,0 20,18 40,30 40,12" style="fill:var(--c-orange-d)"/><polygon points="60,0 60,18 40,30 40,12" style="fill:var(--c-orange);opacity:0.85"/></g>
+</g>
+<text x="120" y="170" text-anchor="middle" style="font-family:var(--f-mono);font-size:10px;fill:var(--c-mute);letter-spacing:0.08em">3 副本 · 跨可用区 · 每日校验</text>
+</svg>
 </div>
-</div>
-</div>
-<div class="proof" style="margin-top:12px;">
-<p style="font-size:0.62em;margin:0;">列存用于分析（10× 压缩），流用于变更捕获（&lt; 200ms 端到端），分片 KV 用于热路径（&lt; 2ms 读）。</p>
-</div>
+<div class="dim" style="margin-top:6px;position:relative;z-index:3;">列存分析 10× 压缩 · 流捕获 &lt; 200ms · 分片 KV 读 &lt; 2ms · PITR &lt; 60s</div>
 <div class="source">verified · data layer SLO</div>
 <span class="pin">05 · data · storage</span>
 </section>
 
+<!-- 6. SECURITY —— 横切：盾牌立方体垂直穿过三层（横切隐喻） -->
 <section>
 <div class="kicker"><span>PLATFORM / 06 · SECURITY</span><span class="coord">ISO · CROSS-CUT</span></div>
 <h2 class="at">安全是 <em>横切</em> 的，不是某一层的事。</h2>
-<div class="row3">
-<div class="card blue"><h4>mTLS everywhere</h4><p>服务间双向 TLS，证书自动轮换 24h。</p></div>
-<div class="card teal"><h4>零信任鉴权</h4><p>每个请求带 token，mesh 校验权限，无隐式信任。</p></div>
-<div class="card orange"><h4>字段级加密</h4><p>PII 字段静态加密，密钥独立轮换。</p></div>
+<div class="stage" style="align-items:flex-start;">
+<svg width="300" height="220" viewBox="0 0 300 220" aria-hidden="true" data-qa-ignore="decorative">
+<g style="stroke:var(--c-ink);stroke-width:1.4">
+<!-- 三层横片（被穿透） -->
+<g transform="translate(0,30)"><polygon points="60,0 120,-20 240,0 180,20" style="fill:var(--c-blue);opacity:0.55"/><polygon points="60,0 60,16 180,36 180,20" style="fill:var(--c-blue-d);opacity:0.5"/></g>
+<g transform="translate(0,95)"><polygon points="60,0 120,-20 240,0 180,20" style="fill:var(--c-teal);opacity:0.55"/><polygon points="60,0 60,16 180,36 180,20" style="fill:var(--c-teal-d);opacity:0.5"/></g>
+<g transform="translate(0,160)"><polygon points="60,0 120,-20 240,0 180,20" style="fill:var(--c-orange);opacity:0.55"/><polygon points="60,0 60,16 180,36 180,20" style="fill:var(--c-orange-d);opacity:0.5"/></g>
+<!-- 垂直盾牌立方体穿透 -->
+<g transform="translate(120,0)"><polygon points="30,5 60,-10 90,5 60,20" style="fill:var(--c-ink)"/><polygon points="30,5 30,200 60,215 60,20" style="fill:oklch(15% 0.02 250)"/><polygon points="90,5 90,200 60,215 60,20" style="fill:var(--c-ink);opacity:0.8"/></g>
+</g>
+</svg>
+<div style="flex:1;">
+<div style="display:flex;flex-direction:column;gap:9px;">
+<div class="card" style="border-top:3px solid var(--c-blue);"><h4>mTLS everywhere</h4><p>服务间双向 TLS，证书自动轮换 24h。</p></div>
+<div class="card" style="border-top:3px solid var(--c-teal);"><h4>零信任鉴权</h4><p>每请求带 token，mesh 校验权限，无隐式信任。</p></div>
+<div class="card" style="border-top:3px solid var(--c-orange);"><h4>字段级加密</h4><p>PII 静态加密，密钥独立轮换。</p></div>
 </div>
-<div class="proof" style="margin-top:12px;border-left:3px solid var(--c-orange);">
-<p style="font-size:0.62em;margin:0;">2024 年通过 SOC2 Type II + 等保三级，零数据泄露事件。</p>
 </div>
+</div>
+<div class="proof" style="margin-top:10px;border-color:var(--c-orange-d);"><p style="font-size:0.6em;margin:0;line-height:1.5;">2024 年通过 <b>SOC2 Type II + 等保三级</b>，零数据泄露事件。</p></div>
 <div class="source">verified · security audit 2024</div>
 <span class="pin">06 · security · zero-trust</span>
 </section>
 
+<!-- 7. SCALE —— 等距增长阶梯：18 个月立体台阶上升 -->
 <section>
 <div class="kicker"><span>PLATFORM / 07 · SCALE</span><span class="coord">ISO · GROWTH STACK</span></div>
 <h2 class="at">18 个月：从 1M 到 <em>10M</em> 用户，架构零重写。</h2>
-<div class="proof">
-<svg width="100%" height="170" viewBox="0 0 600 170" data-qa-ignore="decorative" style="display:block;">
-<g style="stroke:var(--c-ink);stroke-width:1.5">
-<polygon points="50,150 90,130 130,150 90,170" style="fill:var(--c-blue)"/>
-<polygon points="50,150 90,170 90,170 50,150" style="fill:var(--c-blue);opacity:0.7"/>
-<polygon points="130,150 90,170 90,170 130,150" style="fill:var(--c-blue);opacity:0.85"/>
-<polygon points="50,150 90,130 90,98 50,118" style="fill:var(--c-blue);opacity:0.65"/>
-<polygon points="130,150 90,170 90,170 130,150" style="fill:var(--c-blue);opacity:0.85"/>
-<polygon points="50,118 90,98 90,130 50,150" style="fill:var(--c-blue);opacity:0.7"/>
-<polygon points="130,118 90,98 90,130 130,150" style="fill:var(--c-blue);opacity:0.85"/>
-<polygon points="50,118 90,98 90,66 50,86" style="fill:var(--c-blue);opacity:0.65"/>
-<polygon points="130,118 90,98 90,66 130,86" style="fill:var(--c-blue);opacity:0.85"/>
-<polygon points="50,86 90,66 90,98 50,118" style="fill:var(--c-blue);opacity:0.7"/>
-<polygon points="130,86 90,66 90,98 130,118" style="fill:var(--c-blue);opacity:0.85"/>
-<polygon points="170,140 215,116 260,140 215,164" style="fill:var(--c-blue)"/>
-<polygon points="170,140 215,164 215,164 170,140" style="fill:var(--c-blue);opacity:0.7"/>
-<polygon points="260,140 215,164 215,164 260,140" style="fill:var(--c-blue);opacity:0.85"/>
-<polygon points="170,108 215,84 215,116 170,140" style="fill:var(--c-blue);opacity:0.7"/>
-<polygon points="260,108 215,84 215,116 260,140" style="fill:var(--c-blue);opacity:0.85"/>
-<polygon points="170,108 215,84 215,84 170,108" style="fill:var(--c-blue)"/>
-<polygon points="260,108 215,84 215,84 260,108" style="fill:var(--c-blue);opacity:0.85"/>
-<polygon points="300,126 350,98 400,126 350,154" style="fill:var(--c-blue)"/>
-<polygon points="300,90 350,62 350,98 300,126" style="fill:var(--c-blue);opacity:0.7"/>
-<polygon points="400,90 350,62 350,98 400,126" style="fill:var(--c-blue);opacity:0.85"/>
-<polygon points="300,90 350,62 400,90 350,118" style="fill:var(--c-blue)"/>
-<polygon points="440,108 495,76 550,108 495,140" style="fill:var(--c-blue)"/>
-<polygon points="440,66 495,34 495,76 440,108" style="fill:var(--c-blue);opacity:0.7"/>
-<polygon points="550,66 495,34 495,76 550,108" style="fill:var(--c-blue);opacity:0.85"/>
-<polygon points="440,66 495,34 550,66 495,94" style="fill:var(--c-blue)"/>
-<polygon points="440,66 495,34 495,34 440,66" style="fill:var(--c-blue)"/>
+<div class="stage grow">
+<svg width="100%" height="250" viewBox="0 0 620 200" preserveAspectRatio="xMidYMid meet" aria-hidden="true" data-qa-ignore="decorative" style="display:block;flex:1;">
+<g style="stroke:var(--c-ink);stroke-width:1.4">
+<polygon points="40,170 80,150 120,170 80,190" style="fill:var(--c-blue)"/><polygon points="40,170 40,150 80,170 80,190" style="fill:var(--c-blue-d)"/><polygon points="120,170 120,150 80,170 80,190" style="fill:var(--c-blue);opacity:0.85"/>
+<polygon points="120,150 160,120 200,150 160,170" style="fill:var(--c-blue)"/><polygon points="120,150 120,110 160,130 160,170" style="fill:var(--c-blue-d)"/><polygon points="200,150 200,110 160,130 160,170" style="fill:var(--c-blue);opacity:0.85"/>
+<polygon points="200,120 245,85 290,120 245,150" style="fill:var(--c-blue)"/><polygon points="200,120 200,70 245,95 245,150" style="fill:var(--c-blue-d)"/><polygon points="290,120 290,70 245,95 245,150" style="fill:var(--c-blue);opacity:0.85"/>
+<polygon points="290,95 340,50 390,95 340,135" style="fill:var(--c-blue)"/><polygon points="290,95 290,40 340,65 340,135" style="fill:var(--c-blue-d)"/><polygon points="390,95 390,40 340,65 340,135" style="fill:var(--c-blue);opacity:0.85"/>
+<polygon points="390,70 445,20 500,70 445,115" style="fill:var(--c-orange)"/><polygon points="390,70 390,10 445,35 445,115" style="fill:var(--c-orange-d)"/><polygon points="500,70 500,10 445,35 445,115" style="fill:var(--c-orange);opacity:0.85"/>
 </g>
-<g style="stroke:var(--c-orange-d);stroke-width:1.5">
-<polygon points="90,80 150,40 210,80 150,120" style="fill:var(--c-orange)"/>
-<polygon points="90,80 150,120 150,160 90,120" style="fill:var(--c-orange-d)"/>
-<polygon points="210,80 150,120 150,160 210,120" style="fill:var(--c-orange);opacity:0.85"/>
-</g>
+<g style="stroke:var(--c-orange-d);stroke-width:1.4;fill:none"><path d="M80,180 L160,140 L245,105 L340,65 L445,35"/></g>
+<g style="font-family:var(--f-mono);font-size:11px;fill:var(--c-mute);letter-spacing:0.06em"><text x="80" y="184" text-anchor="middle">M3·1M</text><text x="160" y="154" text-anchor="middle">M7·3M</text><text x="245" y="119" text-anchor="middle">M11·5M</text><text x="340" y="79" text-anchor="middle">M15·7M</text><text x="445" y="29" text-anchor="middle" style="fill:var(--c-orange-d)">M18·10M</text></g>
 </svg>
-<div class="layer" style="margin-top:6px;color:var(--c-mute);text-align:center;">月活用户 · 18 个月增长（等距堆叠，Q6 突破 10M）</div>
 </div>
+<div class="leg" style="margin-top:6px;position:relative;z-index:3;">月活用户 · 18 个月立体阶梯增长 · 架构未重写</div>
 <div class="source">verified · growth metrics</div>
 <span class="pin">07 · scale · growth</span>
 </section>
 
+<!-- 8. CLOSE —— 等距 roadmap：三层各一条延伸的 30° 轨道 -->
 <section>
 <div class="kicker"><span>PLATFORM / 08 · CLOSE</span><span class="coord">ISO · ROADMAP</span></div>
 <h2 class="at">三层架构让我们 <em>演进</em>，不重写。</h2>
-<div style="position:relative;z-index:3;margin-bottom:12px;">
-<svg width="100%" height="56" viewBox="0 0 700 56" data-qa-ignore="decorative" style="display:block;">
-<g style="stroke:var(--c-line);stroke-width:1.5;fill:none">
-<line x1="60" y1="28" x2="240" y2="28"/>
-<line x1="300" y1="28" x2="480" y2="28"/>
-<line x1="540" y1="28" x2="660" y2="28" style="stroke-dasharray:4 4"/>
+<svg width="100%" height="120" viewBox="0 0 720 120" preserveAspectRatio="xMidYMid meet" aria-hidden="true" data-qa-ignore="decorative" style="display:block;position:relative;z-index:3;">
+<g style="stroke-width:1.3">
+<g style="stroke:var(--c-blue);fill:none"><path d="M40,40 L200,40 L320,70"/><polygon points="30,40 40,34 40,46" style="fill:var(--c-blue);stroke:var(--c-ink)"/></g>
+<g style="stroke:var(--c-teal);fill:none"><path d="M240,60 L360,60 L480,90"/><polygon points="230,60 240,54 240,66" style="fill:var(--c-teal);stroke:var(--c-ink)"/></g>
+<g style="stroke:var(--c-orange);fill:none"><path d="M440,80 L560,80 L660,50"/><polygon points="430,80 440,74 440,86" style="fill:var(--c-orange);stroke:var(--c-ink)"/></g>
+<g style="stroke:var(--c-mute);fill:none;stroke-dasharray:4 4"><path d="M320,70 L400,30"/><path d="M480,90 L560,50"/><path d="M660,50 L700,30"/></g>
 </g>
-<g style="stroke:var(--c-ink);stroke-width:1.2">
-<polygon points="40,10 60,20 40,30 20,20" style="fill:var(--c-blue)"/><polygon points="20,20 40,30 40,46 20,36" style="fill:var(--c-blue);opacity:0.65"/><polygon points="60,20 40,30 40,46 60,36" style="fill:var(--c-blue);opacity:0.85"/>
-<polygon points="280,10 300,20 280,30 260,20" style="fill:var(--c-teal)"/><polygon points="260,20 280,30 280,46 260,36" style="fill:var(--c-teal);opacity:0.65"/><polygon points="300,20 280,30 280,46 300,36" style="fill:var(--c-teal);opacity:0.85"/>
-<polygon points="520,10 540,20 520,30 500,20" style="fill:var(--c-orange)"/><polygon points="500,20 520,30 520,46 500,36" style="fill:var(--c-orange);opacity:0.65"/><polygon points="540,20 520,30 520,46 540,36" style="fill:var(--c-orange);opacity:0.85"/>
-<polygon points="660,10 680,20 660,30 640,20" style="fill:var(--c-bg);stroke-dasharray:3 3"/><polygon points="640,20 660,30 660,46 640,36" style="fill:var(--c-bg)"/><polygon points="680,20 660,30 660,46 680,36" style="fill:var(--c-bg)"/>
-</g>
-<g style="font-family:var(--f-mono);font-size:11px;fill:var(--c-mute);text-anchor:middle;letter-spacing:0.08em">
-<text x="40" y="60">EDGE 智能</text>
-<text x="280" y="60">MESH 自愈</text>
-<text x="520" y="60">DATA 实时</text>
-<text x="660" y="60">NEXT</text>
+<g style="font-family:var(--f-mono);font-size:11px;fill:var(--c-mute);letter-spacing:0.06em">
+<text x="40" y="60" style="fill:var(--c-blue-d)">EDGE</text><text x="240" y="80" style="fill:var(--c-teal-d)">MESH</text><text x="440" y="100" style="fill:var(--c-orange-d)">DATA</text>
+<text x="395" y="24" style="fill:var(--c-ink)">EDGE 智能</text>
+<text x="555" y="44" style="fill:var(--c-ink)">MESH 自愈</text>
+<text x="660" y="44" style="fill:var(--c-ink)">DATA 实时</text>
 </g>
 </svg>
-</div>
-<div class="row3">
-<div class="card blue"><h4>下一步 · Edge 智能</h4><p>推理下推到边缘，目标 P99 接入 6ms。</p></div>
-<div class="card teal"><h4>下一步 · Mesh 自愈</h4><p>基于 SLO 自动熔断与扩容，减少人工。</p></div>
-<div class="card orange"><h4>下一步 · Data 实时</h4><p>流处理统一，端到端目标 &lt; 100ms。</p></div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:10px;position:relative;z-index:3;">
+<div class="card" style="border-top:3px solid var(--c-blue);"><h4>下一步 · Edge 智能</h4><p>推理下推到边缘，目标 P99 接入 6ms。</p></div>
+<div class="card" style="border-top:3px solid var(--c-teal);"><h4>下一步 · Mesh 自愈</h4><p>基于 SLO 自动熔断与扩容，减少人工。</p></div>
+<div class="card" style="border-top:3px solid var(--c-orange);"><h4>下一步 · Data 实时</h4><p>流处理统一，端到端目标 &lt; 100ms。</p></div>
 </div>
 <div class="source">platform team · 2025 roadmap</div>
 <span class="pin">08 · close · roadmap</span>
@@ -282,8 +290,8 @@
 <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
 <script>
-Reveal.initialize({width:1280,height:720,margin:0.04,hash:true,slideNumber:'c/t',transition:'slide'});
-function exportPPTX(){if(typeof PptxGenJS==='undefined'){alert('pptxgenjs 未加载');return;}var p=new PptxGenJS();p.defineLayout({name:'C',width:13.33,height:7.5});p.layout='C';Reveal.getSlides().forEach(function(s){var t=(s.querySelector('.kicker')||{}).innerText||'';var h=(s.querySelector('.at,.display')||{}).innerText||'';p.addSlide().addText(h,{x:0.5,y:0.5,w:12,h:1.5,fontSize:28,bold:true}).addText(t,{x:0.5,y:0.2,w:12,h:0.3,fontSize:10,color:'999999'});});p.writeFile({fileName:'platform-architecture.pptx'});}
+Reveal.initialize({width:1280,height:720,margin:0.04,hash:true,slideNumber:'c/t',transition:'fade'});
+function exportPPTX(){if(typeof PptxGenJS==='undefined'){alert('pptxgenjs 未加载');return;}var p=new PptxGenJS();p.defineLayout({name:'C',width:13.33,height:7.5});p.layout='C';Reveal.getSlides().forEach(function(s){var t=(s.querySelector('.kicker')||{}).innerText||'';var h=(s.querySelector('.at,.display')||{}).innerText||'';p.addSlide().addText(h.split('\n')[0],{x:0.5,y:0.5,w:12,h:1.5,fontSize:28,bold:true}).addText(t,{x:0.5,y:0.2,w:12,h:0.3,fontSize:10,color:'999999'});});p.writeFile({fileName:'platform-architecture.pptx'});}
 </script>
 </body>
 </html>
