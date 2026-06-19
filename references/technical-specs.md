@@ -71,7 +71,7 @@ Reveal.initialize({
   controlsTutorial: false, // 禁用教程提示
 
   // 过渡效果
-  transition: 'fade',   // 页面过渡: fade/slide/convex/concave/zoom
+  transition: 'fade',   // 页面过渡：只用 fade/slide；禁 convex/concave/zoom（3D 透视扭曲 visual-check 画布测量，见 references/visual-check.md）
   transitionSpeed: 'default', // slow/default/fast
   backgroundTransition: 'fade', // 背景过渡
 

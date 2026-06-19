@@ -8,7 +8,7 @@ The system must generate decks whose structure, proof objects, typography, motio
 
 ## Evidence Surfaces
 
-- `examples/template-01-editorial-serif.html` through `examples/template-05-nature-fresh.html` are the current seed examples.
+- `examples/template-01-editorial-serif.html` through `examples/template-08-isometric.html` are the current seed examples (01-05 original grammars; 06-08 brutalist / memphis / isometric — three orthogonal styles added for maximum cross-template differentiation).
 - `SKILL.md` is the generation workflow contract.
 - `references/design-principles.md` and `references/design-polish.md` define the visual quality bar.
 - `references/layered-architecture.md` defines the six-layer generation contract across production, style, argument, taste, QA, and task governance.
@@ -82,12 +82,16 @@ Use a physical research table system:
 
 Do not use a sample ledger plus route board plus specimen claim in rigid columns on the cover.
 
+## Template 06-08 Methods
+
+Templates 06 (brutalist), 07 (memphis), 08 (isometric) each push one orthogonal style to its limit and give every page a distinct spatial primitive rather than repeating a single skeleton. See the seed table in `SKILL.md` and the per-template `designGrammar` / `coverObjects` / `deckObjects` in `references/template-invariants.json`. The same non-negotiable standard applies: after mentally removing colors and fonts, no two templates may share a skeleton.
+
 ## Verification Gate
 
 Before claiming a template improvement:
 
-1. Run `node scripts/grade-gate.js <file>` (all six gates: lint + validate + label-overlap + lint-main-claim + evidence-ledger + color-role).
+1. Run `node scripts/grade-gate.js <file>` (all eight gates: G1 lint + G2 validate + G3 label-overlap + G4 lint-main-claim + G5 evidence-ledger + G6 color-role + G7 contrast-aa + G8 canvas-fill).
 2. Run `node scripts/visual-qa.js <file> --annotate-overflow --out <dir>`.
 3. Compare contact sheets with colors mentally removed. Similar skeletons fail even if lint passes.
 
-Known current question: `scripts/test-reference-contract.js` still references the broader 15-template seed set. If the repo intentionally keeps only 5 examples, that contract should be revised separately; if the 15-template set is expected, restore or regenerate templates 06-15.
+Resolved: the seed set is `template-01..08` (8 implemented). `references/template-invariants.json` is the canonical machine-readable contract for all eight. The 10 design grammars in `references/design-polish.md` (financial-terminal, clinical-lab, …) are unimplemented references with logical chapter numbering — they do not correspond to `examples/` filenames.

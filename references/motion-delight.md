@@ -144,11 +144,11 @@ Reveal.initialize({
 
 | 效果 | 适用场景 |
 |------|---------|
-| `fade` | 通用，推荐默认 |
-| `slide` | 内容切换、线性流程 |
-| `convex` | 轻松活泼、创意演讲 |
-| `concave` | 强调深度、学术报告 |
-| `zoom` | 重点强调、戏剧化 |
+| `fade` | **默认，唯一推荐**。测量稳定 |
+| `slide` | 内容切换、线性流程（2D，安全） |
+| `convex` / `concave` / `zoom` | **避免** |
+
+**为什么禁 3D 过渡（convex / concave / zoom）**：它们给页面套透视变换，扭曲 `getBoundingClientRect` → `visual-check.js` 报画布尺寸混杂（如 1229×691 夹 1199×752），且会留残余透视。要"活泼"用 fragment 级动效（见下文「自定义页面进入动画」），**不要换页面过渡**。检测细节见 `references/visual-check.md`。
 
 ### 自定义页面进入动画
 

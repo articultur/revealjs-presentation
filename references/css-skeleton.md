@@ -40,6 +40,12 @@
   position: relative;             /* ⚠️ 切勿加 !important、切勿把选择器加强到 `.reveal .slides > section`：任一都会覆盖 reveal.css 的 `.reveal .slides>section{position:absolute}`（!important 强制 / 同特异性后加载赢）→ section 退回 relative 进文档流垂直堆叠 → .slides overflow:hidden 截断 → 除首页外全空白（实测 slide 3 top=1397，已回滚）。本弱选择器 `.reveal section`（0,1,1）被 reveal.css（0,2,1）覆盖，section 保持 absolute 正常堆叠，position: relative 仅 fallback 无害。pin/label 跨 slide 泄露待不破坏堆叠的方案。 */
 }
 
+/* ⚠️ section 背景渐变的 letterbox 色差坑（端到端实测）：
+   section 上加全幅 radial-gradient 会在边缘与 .reveal 的 letterbox 产生色差分界（section 边 ≠ letterbox，肉眼可见一条线）。
+   要"晕染"氛围又要无缝，二选一：
+   (a) `radial-gradient(closest-side at 50% 46%, <亮色>, var(--c-bg) 88%)` —— closest-side 让渐变在最近边之前 fade 到 --c-bg、88% 提前收口 → 所有边=纯 --c-bg(=letterbox) 无缝，中心微亮。
+   (b) 渐变放 `.reveal`（视口层）、section 设 `background:transparent` —— 整片连续渐变，也无接缝。
+   反例（制造色差）：`radial-gradient(at 28% -8%, <亮色>, transparent)` —— 亮点落在边缘、与 letterbox 不同色。*/
 /* Reveal 会把 present section 强制设为 block；section 级 flex/grid 必须加 deck-flex/deck-grid 类 */
 .reveal .slides > section.deck-flex.present { display: flex !important; top: 0 !important; }
 .reveal .slides > section.deck-grid.present { display: grid !important; top: 0 !important; }

@@ -36,6 +36,12 @@ validate.js 检测为 `VP_TOP: Npx`（元素 top < section boundary top）。**V
 
 实测：clinical v15.0 的 kicker "Chapter 05 · Safety" 因 section 内容溢出贴顶，文字顶部被裁 6px（用户肉眼可见"显示不全"）。validate.js 已能抓此问题——v15.3 起 P4 六门禁强制跑 grade-gate.js 即可拦截，关键是**不能漏跑 grade-gate.js**。
 
+## 跑马灯 / Marquee 文本（`validate.js` 必报，P0）
+
+循环跑马灯 / marquee（`@keyframes` 横移一个**内容比容器宽**的 `<span>`）天然和 G2 冲突：validate 量的是 `<span>` 的 bbox，跑马灯必须内容比画布宽才能循环 → bbox 必然超画布 → 报 `VP_LEFT/VP_RIGHT/CONTENT_W`。父级 `overflow:hidden` 或 `mask-image` 都救不了——它们只裁渲染、不裁 bbox。
+
+要"实时 feed / 打字流"的效果：用**静态单行**（内容 ≤ 画布宽），或把动效放在**光标闪烁 / fragment 逐字揭示**上，不要横移。（实测：Marrow 测试稿封面 ticker 第一稿即因此挂 G2，改静态单行后绿。）
+
 ## Flex Label 收缩
 
 **flex column 容器内的 inline label（kicker/eyebrow/小标题）必须 `align-self: flex-start`**：作为 flex 子项，`display:inline-flex/inline-block` 会被**块化为 `flex`/`block`**，`align-self:auto` 在交叉轴解析为 `stretch` → 撑满 section 宽度（实测 examples + clinical 的 kicker 从内容宽 ~233px 撑到 1037–1091px）。
