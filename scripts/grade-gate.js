@@ -22,13 +22,15 @@
  *   G4  test-lint-main-claim.js  exit 0            (pin-as-sole-claim detection)
  *   G5  test-evidence-ledger.js  exit 0            (unlabeled metrics)
  *   G6  test-color-role.js       exit 0            (main-claim contrast hierarchy)
+ *   G7  test-contrast-aa.js      exit 0            (absolute WCAG AA contrast)
+ *   G8  test-canvas-fill.js      exit 0            (sections fill the 720 canvas)
  *
  * Usage:
  *   node scripts/grade-gate.js <file.html> [<file2.html> ...]
  *   node scripts/grade-gate.js --json <file.html>   # JSON to stdout only
  *
  * Exit codes:
- *   0 — all files pass all six gates
+ *   0 — all files pass all eight gates
  *   1 — at least one gate failed on at least one file
  *   2 — usage error / missing dependency / file not found
  */
@@ -164,6 +166,38 @@ function runColorRole(filePath) {
   };
 }
 
+function runContrastAA(filePath) {
+  const result = spawnSync('node', [path.join(SCRIPTS_DIR, 'test-contrast-aa.js'), filePath], {
+    encoding: 'utf8',
+    timeout: 60_000,
+    env: { ...process.env, NODE_NO_WARNINGS: '1' },
+  });
+  if (result.error) return { passed: false, error: result.error.message };
+  const violationCount = (result.stdout.match(/^     slide \d+:/gm) || []).length;
+  return {
+    passed: result.status === 0,
+    violationCount,
+    exitCode: result.status,
+    stderr: result.stderr?.trim() || null,
+  };
+}
+
+function runCanvasFill(filePath) {
+  const result = spawnSync('node', [path.join(SCRIPTS_DIR, 'test-canvas-fill.js'), filePath], {
+    encoding: 'utf8',
+    timeout: 60_000,
+    env: { ...process.env, NODE_NO_WARNINGS: '1' },
+  });
+  if (result.error) return { passed: false, error: result.error.message };
+  const shortCount = (result.stdout.match(/^     slide \d+:/gm) || []).length;
+  return {
+    passed: result.status === 0,
+    shortCount,
+    exitCode: result.status,
+    stderr: result.stderr?.trim() || null,
+  };
+}
+
 // ─── Main ─────────────────────────────────────────────────────
 
 const results = [];
@@ -209,7 +243,19 @@ for (const file of files) {
     console.log(`  G6 color-role:        ${colorRole.passed ? '✓ main claims dominate' : fail('✗ pin out-contrasts claim')}${colorRole.error ? ` (${colorRole.error})` : ''}`);
   }
 
-  const allPassed = lint.passed && validate.passed && overlap.passed && mainClaim.passed && evidence.passed && colorRole.passed;
+  const contrast = runContrastAA(abs);
+  if (!jsonOnly) {
+    const vc = contrast.violationCount || 0;
+    console.log(`  G7 contrast-aa:       ${contrast.passed ? '✓ meets WCAG AA' : fail(`✗ ${vc} below AA`)}${contrast.error ? ` (${contrast.error})` : ''}`);
+  }
+
+  const canvas = runCanvasFill(abs);
+  if (!jsonOnly) {
+    const sc = canvas.shortCount || 0;
+    console.log(`  G8 canvas-fill:       ${canvas.passed ? '✓ sections fill canvas' : fail(`✗ ${sc} short`)}${canvas.error ? ` (${canvas.error})` : ''}`);
+  }
+
+  const allPassed = lint.passed && validate.passed && overlap.passed && mainClaim.passed && evidence.passed && colorRole.passed && contrast.passed && canvas.passed;
   if (!jsonOnly) console.log(`  → ${allPassed ? pass('PASS') : fail('FAIL')}`);
 
   results.push({
@@ -222,6 +268,8 @@ for (const file of files) {
       lintMainClaim: { passed: mainClaim.passed, violationCount: mainClaim.violationCount || 0, violations: mainClaim.violations || [], error: mainClaim.error || null },
       evidenceLedger: { passed: evidence.passed, error: evidence.error || null },
       colorRole: { passed: colorRole.passed, error: colorRole.error || null },
+      contrastAA: { passed: contrast.passed, violationCount: contrast.violationCount || 0, error: contrast.error || null },
+      canvasFill: { passed: canvas.passed, shortCount: canvas.shortCount || 0, error: canvas.error || null },
     },
   });
 }
@@ -246,7 +294,7 @@ if (jsonOnly) {
   } else {
     console.log(fail(`Grade Gate: ✗ FAIL`));
   }
-  console.log(`  ${summary.filesPassed}/${summary.filesChecked} files passed all six gates`);
+  console.log(`  ${summary.filesPassed}/${summary.filesChecked} files passed all eight gates`);
   if (!allPassed) {
     const failed = results.filter(r => !r.passed);
     for (const f of failed) {
@@ -258,6 +306,8 @@ if (jsonOnly) {
       if (!f.gates?.lintMainClaim?.passed) reasons.push(`lint-main-claim fail (${mcVc} slides)`);
       if (!f.gates?.evidenceLedger?.passed) reasons.push(`evidence-ledger fail`);
       if (!f.gates?.colorRole?.passed) reasons.push(`color-role fail`);
+      if (!f.gates?.contrastAA?.passed) reasons.push(`contrast-aa fail (${f.gates?.contrastAA?.violationCount || '?'} texts)`);
+      if (!f.gates?.canvasFill?.passed) reasons.push(`canvas-fill fail (${f.gates?.canvasFill?.shortCount || '?'} short)`);
       console.log(failDim(`  ✗ ${path.basename(f.file)}: ${reasons.join(', ') || f.error}`));
     }
   }

@@ -550,7 +550,7 @@ function checkGhostCards(html) {
     const hasShadow = /box-shadow\s*:/i.test(body);
 
     if (hasThinBorder && hasLargeRadius && hasShadow) {
-      addResult('p1', 'GHOST_CARD',
+      addResult('p0', 'GHOST_CARD',
         `Ghost card 模式：1px border + border-radius ≥16px + box-shadow（impeccable 禁令）`,
         null,
         `选择器: ${selector}。改为实色背景或移除 shadow`);
@@ -571,7 +571,7 @@ function checkOverRounding(html) {
     let m;
     while ((m = radiusRe.exec(css)) !== null) {
       if (parseFloat(m[1]) >= 32) {
-        addResult('p1', 'OVER_ROUNDING',
+        addResult('p0', 'OVER_ROUNDING',
           `border-radius ${m[1]}${m[2]} 过大（impeccable 禁令，上限 24px）`,
           null, source);
       }
@@ -602,8 +602,8 @@ function checkSideStripeBorder(html) {
     if (sideBorderMatch && parseInt(sideBorderMatch[2]) > 1) {
       // 如果颜色是 accent 或非中性色
       const color = sideBorderMatch[3];
-      if (/var\(--c-(?!bg|border|rule|grid|fg)/i.test(color) || /#[0-9a-fA-F]{3,8}/.test(color)) {
-        addResult('p1', 'SIDE_STRIPE_BORDER',
+      if (/var\(--c-(?!bg|ink|mute|text|divider|border|rule|grid|fg|line|paper|surface)/i.test(color) || /#[0-9a-fA-F]{3,8}/.test(color)) {
+        addResult('p0', 'SIDE_STRIPE_BORDER',
           `Side-stripe border: border-${sideBorderMatch[1]} ${sideBorderMatch[2]}px solid（impeccable 禁令）`,
           null,
           `选择器: ${selector}。用背景色差异代替边框强调`);
@@ -617,8 +617,8 @@ function checkSideStripeBorder(html) {
     const sideMatch = s.value.match(/border-(left|right)\s*:\s*(\d+)px\s+solid\s+([^;]+)/i);
     if (sideMatch && parseInt(sideMatch[2]) > 1) {
       const color = sideMatch[3];
-      if (/var\(--c-(?!bg|border|rule|grid|fg)/i.test(color) || /#[0-9a-fA-F]{3,8}/.test(color)) {
-        addResult('p1', 'SIDE_STRIPE_BORDER',
+      if (/var\(--c-(?!bg|ink|mute|text|divider|border|rule|grid|fg|line|paper|surface)/i.test(color) || /#[0-9a-fA-F]{3,8}/.test(color)) {
+        addResult('p0', 'SIDE_STRIPE_BORDER',
           `内联 side-stripe: border-${sideMatch[1]} ${sideMatch[2]}px solid（impeccable 禁令）`,
           getLineNumber(html, s.index));
       }
@@ -776,7 +776,7 @@ function checkGradientText(html) {
       if ((/background-clip\s*:\s*text/i.test(body) ||
            /-webkit-background-clip\s*:\s*text/i.test(body)) &&
           /gradient/i.test(body)) {
-        addResult('p1', 'GRADIENT_TEXT',
+        addResult('p0', 'GRADIENT_TEXT',
           `使用了渐变文字，建议改用纯色 + 排版层次`,
           null,
           `选择器: ${m[1].trim()}`);
@@ -896,7 +896,7 @@ function checkHeroMetric(html) {
     const hasSmallLabel = /font-size\s*:[^;]*(?:0\.[4-7]em|small|xs)/i.test(content);
     const hasGradientBg = /background\s*:\s*linear-gradient/i.test(content) || /background-image\s*:\s*linear-gradient/i.test(content);
     if (hasBigNumber && hasSmallLabel && hasGradientBg) {
-      addResult('p1', 'HERO_METRIC',
+      addResult('p0', 'HERO_METRIC',
         `Slide ${i + 1}: 大数字 + 小标签 + 渐变背景组合（hero-metric 反模式）`,
         getLineNumber(html, sec.index));
     }
