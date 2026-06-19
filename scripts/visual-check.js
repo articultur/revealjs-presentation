@@ -54,19 +54,29 @@ if (!file) { console.error('usage: node visual_check.js <file.html>'); process.e
           if (ix > 15 && iy > 10) pairs.push(`${(texts[a].innerText||'').trim().slice(0,14)} ⟷ ${(texts[c].innerText||'').trim().slice(0,14)}`);
         }
       }
+      // 视觉重点垂直分布（标题/卡片/proof，排除边缘 nav/source/pin/装饰）
+      const focus = els.filter(e => {
+        if (e.closest('.nav') || e.closest('.source') || e.closest('.pin') || e.closest('.deco')) return false;
+        const tag = e.tagName;
+        const cls = (typeof e.className === 'string' ? e.className : '');
+        return ['H1','H2','H3','H4'].includes(tag) || /poster-title|burst-line|work-cell|step-cell|roster|person|metric-cell|quote|cta|gallery|scatter-block|mega|dialogue/.test(cls);
+      });
+      let fMin=9999,fMax=0;
+      focus.forEach(e=>{const r=e.getBoundingClientRect();fMin=Math.min(fMin,r.top);fMax=Math.max(fMax,r.bottom);});
+      const focusCenter = fMax>fMin ? Math.round(((fMin+fMax)/2 - sr.top)/sr.height*100) : 0;
+      const focusSpan = fMax>fMin ? Math.round((fMax-fMin)/sr.height*100) : 0;
       return {
         canvas: `${Math.round(sr.width)}×${Math.round(sr.height)}`,
-        contentBox: `${Math.round(contentW)}×${Math.round(contentH)}`,
         fillH: Math.round(fillH * 100) + '%',
-        topWhite: Math.round(topWhite * 100) + '%',
-        botWhite: Math.round(botWhite * 100) + '%',
+        focusCenter: focusCenter + '%',
+        focusSpan: focusSpan + '%',
         overlaps: pairs.length,
         pairs: pairs.slice(0, 4),
       };
     });
     if (r) {
-      const flag = (parseInt(r.botWhite) > 30 ? ' ⚠️底留白' : '') + (parseInt(r.topWhite) > 25 ? ' ⚠️顶留白' : '') + (r.overlaps > 0 ? ' ⚠️重叠'+r.overlaps : '');
-      console.log(`slide ${i+1}: 画布=${r.canvas} 内容=${r.contentBox} 填充H=${r.fillH} 顶白=${r.topWhite} 底白=${r.botWhite} 重叠=${r.overlaps}${flag}`);
+      const flag = (parseInt(r.focusCenter) < 42 ? ` ⚠️重点偏上(${r.focusCenter})` : '') + (parseInt(r.focusSpan) < 55 ? ` ⚠️垂直跨度小(${r.focusSpan})` : '') + (r.overlaps > 0 ? ' ⚠️重叠'+r.overlaps : '');
+      console.log(`slide ${i+1}: 画布=${r.canvas} 填充H=${r.fillH} 重点重心=${r.focusCenter}(应≈50%) 重点跨度=${r.focusSpan}(应>55%)${flag}`);
       r.pairs.forEach(pp => console.log(`    重叠: ${pp}`));
     }
   }
