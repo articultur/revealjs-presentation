@@ -32,6 +32,7 @@ const skill = read('SKILL.md');
 requireToken(skill, 'references/launch-grade.md', 'SKILL.md');
 requireToken(skill, '发布会级模式', 'SKILL.md');
 requireToken(skill, 'node scripts/test-launch-grade-contract.js', 'SKILL.md');
+requireToken(skill, 'visual-verdict.js', 'SKILL.md');
 
 if (!exists('references/launch-grade.md')) {
   fail('references/launch-grade.md is missing.');
@@ -46,6 +47,7 @@ if (!exists('references/launch-grade.md')) {
     'Failure Gates',
     'PPTX',
     'visual-qa.js',
+    'visual-verdict.js',
     'validate.js',
     'lint-design.js',
     'deck-grid',

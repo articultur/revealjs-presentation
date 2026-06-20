@@ -2,7 +2,7 @@
 /**
  * Grade Gate — machine-enforced delivery verdict
  * ─────────────────────────────────────────────────────────────
- * Runs the six blocking gates and produces a machine-readable JSON
+ * Runs the blocking gates and produces a machine-readable JSON
  * verdict. NO human "I think it's minor" override — each gate passes
  * only when its objective threshold is met.
  *
@@ -24,13 +24,15 @@
  *   G6  test-color-role.js       exit 0            (main-claim contrast hierarchy)
  *   G7  test-contrast-aa.js      exit 0            (absolute WCAG AA contrast)
  *   G8  test-canvas-fill.js      exit 0            (sections fill the 720 canvas)
+ *   G9  check-overflow.js        issueCount = 0    (bbox overflow / overlap)
+ *   G10 test-spatial-integrity.js exit 0           (surface drift / clipped SVG text)
  *
  * Usage:
  *   node scripts/grade-gate.js <file.html> [<file2.html> ...]
  *   node scripts/grade-gate.js --json <file.html>   # JSON to stdout only
  *
  * Exit codes:
- *   0 — all files pass all eight gates
+ *   0 — all files pass all gates
  *   1 — at least one gate failed on at least one file
  *   2 — usage error / missing dependency / file not found
  */
@@ -219,6 +221,23 @@ function runCheckOverflow(filePath) {
   };
 }
 
+// ─── G10 · 空间完整性（proof object 与物理表面坐标系一致 + SVG 文字不被 viewBox 裁切） ───
+function runSpatialIntegrity(filePath) {
+  const result = spawnSync('node', [path.join(SCRIPTS_DIR, 'test-spatial-integrity.js'), filePath], {
+    encoding: 'utf8', timeout: 180_000,
+    env: { ...process.env, NODE_NO_WARNINGS: '1' },
+  });
+  if (result.error) return { passed: false, error: result.error.message };
+  const m = (result.stdout || '').match(/(\d+) spatial issue\(s\)/);
+  const issueCount = m ? parseInt(m[1], 10) : 0;
+  return {
+    passed: result.status === 0,
+    issueCount,
+    exitCode: result.status,
+    stderr: result.stderr?.trim() || null,
+  };
+}
+
 // ─── Main ─────────────────────────────────────────────────────
 
 const results = [];
@@ -281,7 +300,12 @@ for (const file of files) {
     console.log(`  G9 check-overflow:    ${overflow.passed ? '✓ no overflow/overlap' : fail(`✗ ${overflow.issueCount || '?'} issue(s)`)}${overflow.error ? ` (${overflow.error})` : ''}`);
   }
 
-  const allPassed = lint.passed && validate.passed && overlap.passed && mainClaim.passed && evidence.passed && colorRole.passed && contrast.passed && canvas.passed && overflow.passed;
+  const spatial = runSpatialIntegrity(abs);
+  if (!jsonOnly) {
+    console.log(`  G10 spatial-integrity:${spatial.passed ? '✓ surfaces aligned' : fail(`✗ ${spatial.issueCount || '?'} issue(s)`)}${spatial.error ? ` (${spatial.error})` : ''}`);
+  }
+
+  const allPassed = lint.passed && validate.passed && overlap.passed && mainClaim.passed && evidence.passed && colorRole.passed && contrast.passed && canvas.passed && overflow.passed && spatial.passed;
   if (!jsonOnly) console.log(`  → ${allPassed ? pass('PASS') : fail('FAIL')}`);
 
   results.push({
@@ -297,6 +321,7 @@ for (const file of files) {
       contrastAA: { passed: contrast.passed, violationCount: contrast.violationCount || 0, error: contrast.error || null },
       canvasFill: { passed: canvas.passed, shortCount: canvas.shortCount || 0, error: canvas.error || null },
       checkOverflow: { passed: overflow.passed, issueCount: overflow.issueCount || 0, exitCode: overflow.exitCode || 0, error: overflow.error || null },
+      spatialIntegrity: { passed: spatial.passed, issueCount: spatial.issueCount || 0, exitCode: spatial.exitCode || 0, error: spatial.error || null },
     },
   });
 }
@@ -321,7 +346,7 @@ if (jsonOnly) {
   } else {
     console.log(fail(`Grade Gate: ✗ FAIL`));
   }
-  console.log(`  ${summary.filesPassed}/${summary.filesChecked} files passed all eight gates`);
+  console.log(`  ${summary.filesPassed}/${summary.filesChecked} files passed all gates`);
   if (!allPassed) {
     const failed = results.filter(r => !r.passed);
     for (const f of failed) {
@@ -335,6 +360,8 @@ if (jsonOnly) {
       if (!f.gates?.colorRole?.passed) reasons.push(`color-role fail`);
       if (!f.gates?.contrastAA?.passed) reasons.push(`contrast-aa fail (${f.gates?.contrastAA?.violationCount || '?'} texts)`);
       if (!f.gates?.canvasFill?.passed) reasons.push(`canvas-fill fail (${f.gates?.canvasFill?.shortCount || '?'} short)`);
+      if (!f.gates?.checkOverflow?.passed) reasons.push(`check-overflow fail (${f.gates?.checkOverflow?.issueCount || '?'} issues)`);
+      if (!f.gates?.spatialIntegrity?.passed) reasons.push(`spatial-integrity fail (${f.gates?.spatialIntegrity?.issueCount || '?'} issues)`);
       console.log(failDim(`  ✗ ${path.basename(f.file)}: ${reasons.join(', ') || f.error}`));
     }
   }

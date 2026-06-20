@@ -16,7 +16,7 @@ description: |
 2. **确认 4 要素**：主题 · 观众 · 页数 · 语言（缺省：通用观众 / 8-12 页 / 中文）。页数是硬约束——用户给 N 页时最终偏差 ≤1（见 §8）
 3. **先搭骨架**：轻量 ghost deck（每页 role + action title + proof object）+ Theme-to-Design Router 六行说明
 4. **生成单个 HTML**：内联 CSS+JS、Reveal.js 4.6.0 CDN、1280×720 画布
-5. **自检（两层）**：`node scripts/grade-gate.js <file>` 全绿（地板）+ `node scripts/design-strength-check.js <file>` 四维达标（天花板：尺度≥3:1、有满版色块面板、有非对称分割、有主题原生形式）；若页数 ≥12 或含密集数据/图表布局，加跑 `visual-qa.js --annotate-overflow` 逐页审阅
+5. **自检（三层）**：`node scripts/grade-gate.js <file>` 全绿（地板，含溢出、对比度、pin、空间完整性）+ `node scripts/design-strength-check.js <file>` 四维达标（天花板：尺度≥3:1、有满版色块面板、有非对称分割、有主题原生形式）+ 视觉改动后跑 `node scripts/visual-verdict.js <file>`（LLM 视觉语义评审，抓图示不清/标签不可读/图表不解释主张）。若无视觉模型 key，至少跑 `visual-verdict.js --dry-run` 留下 prompt 和截图，并在最终说明未执行模型判定。
 6. **交付**：HTML 路径 + 运行/导出说明 + 验证状态
 
 需精细控制走 P0-P6 专业模式（下文）；发布会级先读 `references/launch-grade.md`。
@@ -43,7 +43,7 @@ CDN 加载 reveal.js + Google Fonts，用户**无需安装任何东西**。
 | 2. 风格系统层 | 主题原生设计语法、风格候选、图表样式、Bento / 页面原语 |
 | 3. 表达逻辑层 | ghost deck、action title、论证结构、图表注释、引用规范 |
 | 4. 审美约束层 | 反 AI 模板味、字体 / 色彩 / 布局变化、bolder / quieter / distill / polish |
-| 5. 质量审查层 | 层级、可读性、对齐、拥挤、可访问性、响应式 / 导出风险 |
+| 5. 质量审查层 | 层级、可读性、对齐、坐标系完整性、拥挤、可访问性、响应式 / 导出风险 |
 | 6. 任务治理层 | brief、goals、ledger、checkpoint、steering、final gate |
 
 ### 四套质量体系（何时用哪个）
@@ -52,16 +52,16 @@ CDN 加载 reveal.js + Google Fonts，用户**无需安装任何东西**。
 |------|------|-----------|--------|
 | 关键约束 | 8 项（§1-§5 由脚本联合检查，§6-§8 为流程指南） | 生成 HTML 前（P4 / 快速模式） | 硬约束 |
 | 设计硬规则 | 10 条 | `lint-design.js` 检查 | P0 必修，P1/P2 建议 |
-| 失败门禁 | 13 条 | 全流程质量底线 | 触发即阻断交付 |
+| 失败门禁 | 15 条 | 全流程质量底线 | 触发即阻断交付 |
 | Phase P0-P6 | 7 阶段 | 专业模式流程 | 每段 Gate 确认 |
 
-八门禁（G1 lint → G2 validate → G3 label-overlap → G4 lint-main-claim → G5 evidence-ledger → G6 color-role → G7 contrast-aa → G8 canvas-fill，详见 §验证）自动覆盖关键约束与设计硬规则；失败门禁由八门禁及 test-pin-collision / test-reference-contract 等专项脚本联合检查。三种模式的叠加关系见下表。
+十门禁（G1 lint → G2 validate → G3 label-overlap → G4 lint-main-claim → G5 evidence-ledger → G6 color-role → G7 contrast-aa → G8 canvas-fill → G9 check-overflow → G10 spatial-integrity，详见 §验证）自动覆盖关键约束与设计硬规则；失败门禁由十门禁及 test-pin-collision / test-reference-contract 等专项脚本联合检查。三种模式的叠加关系见下表。
 
 ### 三种工作模式
 
 | 模式 | 何时用 | 行为 |
 |------|--------|------|
-| **快速模式（默认）** | 用户只说"做个 PPT"或没具体要求 | 收集 4 要素 → 轻量 ghost deck + 设计语法 → 直接生成 HTML → 八门禁 → 交付说明；不强制 7 题访谈 |
+| **快速模式（默认）** | 用户只说"做个 PPT"或没具体要求 | 收集 4 要素 → 轻量 ghost deck + 设计语法 → 直接生成 HTML → 十门禁 → 交付说明；不强制 7 题访谈 |
 | **专业模式** | 用户要精细控制或明确要求评审 | 走 7 阶段 P0-P6，每段获 Gate 确认。详见 `references/pipeline-phases.md` |
 | **发布会级模式** | 用户说"发布会级"/Keynote/品牌开场/惊艳/顶级/public launch/产品发布，或要求接近品牌介绍页 / 发布会开场这种质量 | 先读 `references/launch-grade.md`。输出前必须完成：storyboard、golden-reference 对标、逐页截图审阅、PPTX 导出证明、`node scripts/test-launch-grade-contract.js` |
 
@@ -71,9 +71,9 @@ CDN 加载 reveal.js + Google Fonts，用户**无需安装任何东西**。
 | P1 | 需求+设计语法 | ● | 场景/时长/听众 + ghost deck + Theme-to-Design Router 六行说明 |
 | P2 | 输出方案 | ◐ | 内容结构、视觉方向 |
 | P3 | 设计评审 | ● | 反模式检查 + 优化方向 |
-| P4 | 生成初稿 | ● | HTML + **八门禁**（`grade-gate.js` 全绿 = G1-G8 全过，见 §验证；机器判 verdict，不可手动放行） |
+| P4 | 生成初稿 | ● | HTML + **十门禁**（`grade-gate.js` 全绿 = G1-G10 全过，见 §验证；机器判 verdict，不可手动放行） |
 | P5 | 优化迭代 | ● | 按规模执行优化（详见 references/pipeline-phases.md「Phase 5」） |
-| P6 | 最终检查 | ◐ | 专业/发布会级必跑；快速模式 ≥12 页或密集数据时跑 |
+| P6 | 最终检查 | ◐ | 专业/发布会级必跑；快速模式 ≥12 页、密集数据或视觉结构调整时跑 |
 
 ● 必须完成　◐ 可跳过　/　刷新已有演示：跳过 P1，从 P3 开始评审
 
@@ -93,7 +93,7 @@ CDN 加载 reveal.js + Google Fonts，用户**无需安装任何东西**。
 - **禁止 `vw`/`vh` 单位**：Reveal 用 `transform: scale()` 缩放，vw/vh 不受影响 → 大屏溢出/小屏不可读；字号用 `em`/`px`（详见 `references/technical-specs.md`）
 - **Reveal 配置**：`{ width: 1280, height: 720, margin: 0.04, hash: true, slideNumber: 'c/t', transition: 'fade' }`
 - **页面过渡只用 `fade`/`slide`，禁 `convex`/`concave`/`zoom`**：3D 过渡给页面套透视，扭曲 `getBoundingClientRect` → `visual-check.js` 报画布尺寸混杂（**实测同一 deck 出现 1229×691 夹 1199×752**）。所有页画布尺寸必须一致（**G8** `test-canvas-fill.js` 机器查）。要"活泼"用 fragment 动效，别换过渡（详见 `references/visual-check.md`、`references/motion-delight.md`）
-- **交付前必须过八门禁**：`grade-gate.js <file>` 全绿（见 §验证）。P4 生成后立刻跑，任一红灯 = 回 §2 拆页/降文字
+- **交付前必须过十门禁**：`grade-gate.js <file>` 全绿（见 §验证）。P4 生成后立刻跑，任一红灯 = 回 §2 拆页/降文字/重绑坐标系
 - **切勿破坏 reveal 的 section 堆叠/隐藏**：弱选择器 `.reveal section{position:relative}` 无害（被 reveal.css 覆盖 = dead fallback）；**真正危险的是 `!important` 或加强选择器强覆盖 `position`** → section 进文档流垂直堆叠 → overflow:hidden 截断 → 除首页外全空白（**v15.2 实测 slide 3 top=1397，已回滚**）。给 present 垂直居中用 `.reveal section.present{display:flex!important}`，别 blanket-force（详见 `references/css-skeleton.md`）
 - **Pin 定位上下文**：pin 相对最近 positioned 祖先（reveal 的 absolute section）；若 section 退回 static，pin 相对 BODY 全叠视口左下角 → `test-label-overlap` 报泄露
 
@@ -122,11 +122,25 @@ slide 画布 **1280×720px**，可用空间 ≈ 1120×580px，每页安全预算
 
 完整 CDN 链接、插件配置、代码高亮：`references/technical-specs.md`。
 
-### 6. 首稿配方速查（让一稿落地更近）
+### 6. Proof object 坐标系完整性
+
+有物理表面隐喻的页面（图纸、地图、仪表盘屏幕、白板、桌面、舞台屏幕）必须把**承载面**和**其上的 proof object**绑定到同一坐标系。不要让背景用一套 `top/right/bottom/left`，而图形、尺寸链、标注用另一套 section 百分比独立漂浮。
+
+优先级：
+
+1. 最稳：把 proof object、尺寸链、标注放进同一个表面容器内。
+2. 次稳：使用同一组 CSS 变量定义表面边界和内部对象边界。
+3. 禁止：表面是 absolute 背景，核心图形是 sibling 且用不相干的 `%` / `px` 混算定位。
+
+对于 SVG，所有 `<text>` 必须落在 SVG viewport 内；尺寸文字贴右边时用 `text-anchor="end"` 或扩大 viewBox，不要靠 `overflow:hidden` 截掉。`scripts/test-spatial-integrity.js <file>` 会阻断：图形漂出承载面、SVG 文字被 viewBox 裁切；对建筑图纸封面还会检查平面图比例未被拉伸、尺寸链左右端与外墙左右端对齐。
+
+维护种子模板时，把高风险物理版面写入 `references/template-invariants.json` 的 `physicalContract`，不要只写在 CSS 注释里。契约至少声明：surface owns what、哪些对象互斥、哪些边需要对齐、哪些标号/文字不得碰撞。`test-spatial-integrity.js` 会读取这些契约并阻断 surface drift、title-block intrusion、dimension drift、marker-label collision；同时阻断页标压 sheet-frame、north mark 压标题、pin 压图板/页脚信息。`test-reference-contract.js` 会阻断契约选择器失效或契约缺失。固定脚本无法判断“图示是否解释主张”时，必须补跑 `visual-verdict.js` 让视觉模型按 rubric 判定。
+
+### 7. 首稿配方速查（让一稿落地更近）
 
 常见内容 → 推荐布局映射表，先按配方落地再根据 lint/validate 反馈调整。详见 `references/first-draft-recipes.md`。
 
-### 7. 封面右侧平衡（editorial-serif / minimal 模板高频遗漏）
+### 8. 封面右侧平衡（editorial-serif / minimal 模板高频遗漏）
 
 左对齐封面常见问题：**主标题靠左下，右上 / 右半屏完全空白** → 视觉重心失衡。三选一补平衡——**装饰元素必须承载信息（编号/日期/类目/样本），绝不能是无意义图标**：
 
@@ -138,7 +152,7 @@ slide 画布 **1280×720px**，可用空间 ≈ 1120×580px，每页安全预算
 
 完整范本：`examples/template-01-editorial-serif.html` 封面（左主标 + 右色块墙 + 右下信封 + stamp）；配方见 `references/design-polish.md`。
 
-### 8. 页数目标对齐（用户说"N 页"就是 N 页，不是 N-3）
+### 9. 页数目标对齐（用户说"N 页"就是 N 页，不是 N-3）
 
 用户给页数时，最终 `<section>` 数与目标偏差必须 **≤1 页**。**内容预算（§2）管单页密度，不是总页数**——根因是"先紧后松"被误读成"页数也紧"；页数不够就拆页（多一页留白比挤一页强），不要靠删内容凑数。执行三步：
 
@@ -263,7 +277,7 @@ archetype 序列：每页分配一个 archetype（A1-A12，见 layout-archetypes
 | 地图、关系网络、桑基、热力日历 | 只有当 HTML-native 证明价值明确时才用 JS；否则做静态 SVG / 表格摘要，避免 PPTX 导出失真 |
 | 严格表格 / 公式 / 架构框 | 保持几何关系和阅读顺序，优先减少内容而不是缩字号 |
 
-### 失败模式门禁（13 条速查 / 完整说明见 `references/failure-gates.md`）
+### 失败模式门禁（15 条速查 / 完整说明见 `references/failure-gates.md`）
 
 | # | 门禁 | 一句话 |
 |---|------|--------|
@@ -277,9 +291,11 @@ archetype 序列：每页分配一个 archetype（A1-A12，见 layout-archetypes
 | 8 | fragment 首屏 | 初始截图必须有可读核心结论，不能全藏在 fragment 后 |
 | 9 | 骨架换皮门禁 | 同一套"左标题 + 右图形"换 5 套颜色 = 失败；class 名要反映主题对象 |
 | 10 | 跨模板相似度 | 5-10 张首页并排，去色后还像同一套 = 失败；金融像 cockpit，城市像 GIS |
-| 11 | 种子模板对象契约 | 维护已实现的 `examples/template-01..05` 必须通过 `test-reference-contract.js` |
+| 11 | 种子模板对象契约 | 维护已实现的 `examples/template-01..08` 必须通过 `test-reference-contract.js` |
 | 12 | 高风险布局预警 | 2×2 + 长标题、4-8 卡、密集时间线 + fragment 都易溢出，先用紧凑版 |
 | 13 | **Pin 安全区** | 必须跑 `test-pin-collision.js`，OK 才能交付；详见上文「关键约束 §3」 |
+| 14 | **空间完整性** | proof object 必须和承载面共享坐标系；尺寸链对齐外墙；SVG 文字不得被 viewBox 裁切 |
+| 15 | **视觉语义评审** | 图示/图表页跑 `visual-verdict.js`；blocker 必须修，dry-run 不等于模型通过 |
 
 ## 种子模板（8 套已实现）
 
@@ -304,10 +320,10 @@ archetype 序列：每页分配一个 archetype（A1-A12，见 layout-archetypes
 
 **四层防御**：
 
-1. **设计层** — `references/layout-archetypes.md` 加溢出防护规格；`examples/template-03-minimal-spatial.html` 强化种子范本
-2. **引导层** — SKILL.md 硬规则 + Theme-to-Design Router 设计契约（文字 `right ≤ 画布 - 24px` / 时间线节点 `≥ 200px` / 标线 `right ≤ 100%`）
+1. **设计层** — `references/layout-archetypes.md` 加溢出防护规格；`examples/template-03-minimal-spatial.html` 强化种子范本；物理表面必须声明“表面容器 + 内部对象”的坐标关系，并在 `template-invariants.json` 的 `physicalContract` 中登记
+2. **引导层** — SKILL.md 硬规则 + Theme-to-Design Router 设计契约（文字 `right ≤ 画布 - 24px` / 时间线节点 `≥ 200px` / 标线 `right ≤ 100%` / proof object 与承载面共享坐标系 / 标号不得覆盖文字）
 3. **harness 兜底** — `template-03` `<style>` 加 10 条全局 CSS（含 `overflow: hidden !important` + `html/body overflow-x: hidden` + `section padding 0 24px` + 时间线 `desc max-height: 3.6em` + `bar margin-top: 12px` + `svg max-width: 100%` 防 SVG 拉伸越界 + `focus-visible` a11y 强化）
-4. **js 脚本检查** — `scripts/check-overflow.js` 用 playwright 测每页 bbox（文字越界 / 元素重叠），集成 `grade-gate`（G9）失败阻断交付
+4. **js 脚本检查** — `scripts/check-overflow.js` 用 playwright 测每页 bbox（文字越界 / 元素重叠），集成 `grade-gate`（G9）；`scripts/test-spatial-integrity.js` 测物理表面 containment、manifest physicalContract、SVG text clipping，集成 `grade-gate`（G10）
 
 **impeccable false-positive 提示**：`template-03` 的 em-dash（—）与 PLATE 编号（PLATE I/II/III、01-06 section 标记）是 minimal-spatial 建筑制图风格的**固有产物**（图纸标注 / 图版编号），**非 AI cadence tell**。`/impeccable audit` 会标这两个，属已确认 false positive，无需修改——改了就不是建筑制图了。
 
@@ -359,17 +375,17 @@ archetype 序列：每页分配一个 archetype（A1-A12，见 layout-archetypes
 
 ## 验证
 
-三层模型，**完整脚本清单、阻断条件表、八门禁对照、impeccable 覆盖映射、G6/G7 分工、评估集成**见 `references/validation.md`：
+三层模型，**完整脚本清单、阻断条件表、十门禁对照、impeccable 覆盖映射、G6/G7 分工、评估集成**见 `references/validation.md`：
 
 | 层 | 脚本 | 性质 |
 |---|---|---|
-| **地板（合规）** | `node scripts/grade-gate.js <file>` 全绿（八门禁 G1-G8 合一） | 硬约束、**机器判 verdict，禁止人工放行**（案例见 `references/validation.md` G5 段） |
+| **地板（合规）** | `node scripts/grade-gate.js <file>` 全绿（十门禁 G1-G10 合一） | 硬约束、**机器判 verdict，禁止人工放行**（案例见 `references/validation.md` G5 段） |
 | **天花板（设计强度）** | `node scripts/design-strength-check.js <file>` 四维达标 + `node scripts/element-quality-check.js <file>` 元素子分 ≥70 | advisory，任一维不达标 = **回炉重做骨架**，不是微调 |
-| **视觉评审** | `node scripts/visual-qa.js <file> --annotate-overflow --show-fragments` 逐页审阅 | 专业/发布会级 P6 必跑；快速模式 ≥12 页或含密集数据时跑 |
+| **视觉评审** | `node scripts/visual-qa.js <file> --annotate-overflow --show-fragments` 逐页审阅 + `node scripts/visual-verdict.js <file>` LLM 视觉语义评审 | 专业/发布会级 P6 必跑；快速模式 ≥12 页、含密集数据、图表/图示或视觉结构调整时跑 |
 
 **关键认知**：门禁（地板）与设计强度（天花板）不可互替——合规但四维全默认 = 平庸；通过门禁要削弱设计时，找"既大胆又合规"的解（深化专色到 AA / 反相面板），不是改弱求合规。详见 `references/validation.md`、`references/design-fundamentals.md` §6。
 
-调垂直平衡另跑 `node scripts/visual-check.js <file>`（启发式、非阻断，与 visual-qa 冲突时信 visual-qa）。评估框架用 `grade-gate.js --json` 的 `passed` 字段作客观断言。如果未执行验证，在最终回复中**明确说明**。
+调垂直平衡另跑 `node scripts/visual-check.js <file>`（启发式、非阻断，与 visual-qa 冲突时信 visual-qa）。视觉语义问题（图示不清、标签虽未重叠但不可读、图表不解释主张）信 `visual-verdict.js`；若无 key 只跑了 `--dry-run`，最终回复必须写明“未执行模型判定”。评估框架用 `grade-gate.js --json` 的 `passed` 字段作客观断言。如果未执行验证，在最终回复中**明确说明**。
 
 ## 导出
 
@@ -408,8 +424,8 @@ bash scripts/setup.sh          # 仅环境检查
 | **加动效** | `references/motion-delight.md` | 时机、easing 曲线、6 种高级模式 |
 | **调垂直平衡** | `references/visual-check.md` | visual-check 指标（重心/跨度/画布）、可接受取舍、假阳性、和 visual-qa 的分工 |
 | **配 Reveal** | `references/technical-specs.md` | CDN、插件、三端适配、固定画布 |
-| **失败门禁详解** | `references/failure-gates.md` | 13 条门禁完整说明 + 真实重影案例 |
-| **验证脚本与门禁（总参考）** | `references/validation.md` | 三层模型、八门禁 G1-G8、完整脚本清单、阻断条件表、impeccable 覆盖映射、G6/G7 分工、评估集成 |
+| **失败门禁详解** | `references/failure-gates.md` | 15 条门禁完整说明 + 真实重影案例 |
+| **验证脚本与门禁（总参考）** | `references/validation.md` | 三层模型、十门禁 G1-G10、完整脚本清单、阻断条件表、impeccable 覆盖映射、G6/G7 分工、评估集成 |
 | **模板差异化审计** | `references/template-differentiation-audit.md` | 跨模板相似度审查证据、首页并排对比方法 |
 | **专业模式评审** | `references/pipeline-phases.md` | Phase Gate 检查表、发现访谈、P5 分层 |
 | **发布会级输出** | `references/launch-grade.md` | golden-reference 对标、页面原型、评分 rubric |
@@ -420,6 +436,7 @@ bash scripts/setup.sh          # 仅环境检查
 - [ ] 第一眼就是经过**设计意图**的（不是 AI 模板感）
 - [ ] P1 产出了 Theme-to-Design Router 六行说明 + **设计契约**（尺度预设/用色投入/archetype 序列/本主题发明变体），且不是直接套模板
 - [ ] 主骨架由 ≥3 种 archetype 组合（非种子原语原样填充），含 ≥1 个本主题发明变体
+- [ ] 物理表面型 proof object 与承载面共享坐标系；SVG 文字不靠裁切隐藏
 - [ ] `design-strength-check.js` 四维达标（尺度≥3:1 / 有满版色块面板 / 有非对称分割 / 有主题原生形式）；数字未被软化成"约/持平"
 - [ ] `element-quality-check.js` 元素子分达标（动画/图标/表格/流程图均 ≥70）；emoji 不当图标、图标 inline 且主题跟随、表格符合 data-ink
 - [ ] 发布会级任务通过了 `references/launch-grade.md` 的 golden-reference、截图和导出门禁

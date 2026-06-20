@@ -32,11 +32,12 @@
 3. 运行 `node scripts/lint-design.js <file> --json`，P0 必须为 0；P1 建议修复（发布会级可选 P1 清零，但门禁底线是 P0）；P2 不得出现重复模板感或过弱签名页。
 4. 运行 `node scripts/validate.js <file>`，无正文/图表/标题溢出。
 5. 运行 `node scripts/visual-qa.js <file> --out /private/tmp/<deck>-visual` 和 `node scripts/visual-qa.js <file> --show-fragments --out /private/tmp/<deck>-visual-all`，逐页审阅初始与满载状态。
-6. 做“页脚主题反查”：逐页读左下角 `pin`，确认其中的主题词已经在主视觉区域出现或被等价表达。`pin` 只能是索引，不能是本页唯一标题；否则把主题词升级到标题、色块、主图形、核心数据或 quote。
-7. 做“颜色角色反查”：主标题/主数字/主 proof object 是否使用最高层级颜色；来源、页码、脚注是否退到低层级。若强调色随机散落或页脚比主标题更像主题，返工。
-8. 对照 golden reference（`tests/fixtures/launch-grade-principles.html`）：新稿至少要有同等级的开场识别、布局变化、色彩决断和完整页密度；若看起来像普通汇报、模板页或报告页，回到 storyboard。
-9. 运行 `node scripts/export-pptx.js <file> -o /private/tmp/<deck>.pptx`，确认 PPTX 至少保留标题、核心结论、主图形和色彩层级。
-10. 运行 `node scripts/test-launch-grade-contract.js`，确保 skill 的发布会级流程、golden reference 和验证命令没有退化。
+6. 运行 `node scripts/visual-verdict.js <file> --out /private/tmp/<deck>-verdict`，让视觉模型按固定 rubric 判断图示是否解释主张、标签是否可读、页面家具是否干扰主体；任何 blocker 都回到 storyboard / P5 修复。若无模型 key，只能用 `--dry-run` 记录 prompt 与截图，不能声称模型判定通过。
+7. 做“页脚主题反查”：逐页读左下角 `pin`，确认其中的主题词已经在主视觉区域出现或被等价表达。`pin` 只能是索引，不能是本页唯一标题；否则把主题词升级到标题、色块、主图形、核心数据或 quote。
+8. 做“颜色角色反查”：主标题/主数字/主 proof object 是否使用最高层级颜色；来源、页码、脚注是否退到低层级。若强调色随机散落或页脚比主标题更像主题，返工。
+9. 对照 golden reference（`tests/fixtures/launch-grade-principles.html`）：新稿至少要有同等级的开场识别、布局变化、色彩决断和完整页密度；若看起来像普通汇报、模板页或报告页，回到 storyboard。
+10. 运行 `node scripts/export-pptx.js <file> -o /private/tmp/<deck>.pptx`，确认 PPTX 至少保留标题、核心结论、主图形和色彩层级。
+11. 运行 `node scripts/test-launch-grade-contract.js`，确保 skill 的发布会级流程、golden reference 和验证命令没有退化。
 
 ## Scoring Rubric
 
@@ -69,6 +70,6 @@
 最终回复或审阅记录至少包含：
 
 - HTML 文件路径。
-- lint / validate / visual-qa / export-pptx / test-launch-grade-contract 的命令和结果。
+- lint / validate / visual-qa / visual-verdict / export-pptx / test-launch-grade-contract 的命令和结果。
 - 截图目录和 PPTX 输出路径。
 - 与 golden reference（`tests/fixtures/launch-grade-principles.html`）的简短差距判断：已接近、仍偏普通、或不适用。

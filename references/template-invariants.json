@@ -42,6 +42,64 @@
         "mechanism": "matrix",
         "close": "void-page"
       },
+      "physicalContract": {
+        "version": 1,
+        "purpose": "Architectural plates are physical drawing sheets: the grid field, plan, dimensions, notes, bottom title band, and title block must use declared ownership and collision rules rather than independent absolute coordinates.",
+        "surfaceRules": [
+          {
+            "name": "blueprint-field-owns-drawing-objects",
+            "surface": ".blueprint-sheet",
+            "contents": [".plan-drawing", ".dimension-chain", ".plate-notes"],
+            "maxSpillPx": 2,
+            "requireOwnership": true
+          },
+          {
+            "name": "bottom-band-owns-title-objects",
+            "surface": ".cover-bottom",
+            "contents": [".cover-title-area", ".title-block"],
+            "maxSpillPx": 2,
+            "requireOwnership": true
+          }
+        ],
+        "exclusionRules": [
+          {
+            "name": "title-block-must-not-enter-grid-field",
+            "a": ".title-block",
+            "b": ".blueprint-sheet",
+            "maxIntersectionArea": 1
+          }
+        ],
+        "alignmentRules": [
+          {
+            "name": "dimension-chain-aligns-with-outer-wall",
+            "type": "horizontalEdges",
+            "subject": ".dimension-chain",
+            "target": ".plan-drawing svg rect[stroke-width=\"3\"]",
+            "maxDeltaPx": 10
+          }
+        ],
+        "placementRules": [
+          {
+            "name": "plan-stays-left-up-inside-grid-field",
+            "subject": ".plan-drawing",
+            "container": ".blueprint-sheet",
+            "maxLeftInsetPx": 150,
+            "maxTopInsetPx": 170,
+            "minBottomClearancePx": 40
+          }
+        ],
+        "collisionRules": [
+          {
+            "name": "plan-markers-do-not-cover-room-labels",
+            "scope": ".plan-drawing",
+            "a": "svg circle[fill=\"var(--c-accent)\"]",
+            "b": "svg text",
+            "bTextPattern": "FOYER|READING|CORE|STUDIO|WORK",
+            "maxIntersectionWidthPx": 2,
+            "maxIntersectionHeightPx": 2
+          }
+        ]
+      },
       "forbidden": ["block a", "block b", "block c"]
     },
     "examples/template-04-vibrant-gradient.html": {
@@ -77,16 +135,16 @@
       "designGrammar": "bare structure, hard borders, exposed grid, mono coordinates, acid-yellow accent, brutal display weight",
       "coverClass": "brutal-cover",
       "coverObjects": ["grid-deco", "display", "big", "coord"],
-      "deckObjects": ["proof", "bar", "flow", "num", "rule"],
+      "deckObjects": ["bbar", "proc", "mass", "ticks", "article"],
       "roleMarkers": {
         "cover": "brutal-cover",
-        "claim": "proof",
-        "proof": "bar",
-        "mechanism": "flow",
-        "comparison": "bar",
+        "claim": "rev",
+        "proof": "bbar",
+        "mechanism": "proc",
+        "comparison": "mass",
         "data": "big",
         "risk": "num",
-        "close": "rule"
+        "close": "article"
       },
       "forbidden": []
     },
@@ -114,19 +172,19 @@
       "domain": "platform architecture / system engineering",
       "designGrammar": "isometric 3d layers (edge/mesh/data), 30-degree stack, sidecar mesh, growth bars, cross-cut security",
       "coverClass": "iso-cover",
-      "coverObjects": ["iso-stage", "layer", "display", "coord"],
-      "deckObjects": ["iso-stage", "layer", "metric", "proof", "row3"],
+      "coverObjects": ["stage", "layer-tag", "display", "coord"],
+      "deckObjects": ["stage", "layer-tag", "metric", "proof", "roadmap-card"],
       "roleMarkers": {
         "cover": "iso-cover",
-        "overview": "layer",
+        "overview": "stage",
         "edge": "metric",
-        "mesh": "proof",
+        "mesh": "stage",
         "data": "metric",
-        "security": "layer",
-        "scale": "proof",
-        "proof": "proof",
-        "mechanism": "layer",
-        "close": "proof"
+        "security": "proof",
+        "scale": "stage",
+        "proof": "metric",
+        "mechanism": "stage",
+        "close": "roadmap-card"
       },
       "forbidden": []
     }

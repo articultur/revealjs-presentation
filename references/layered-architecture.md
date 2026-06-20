@@ -2,7 +2,7 @@
 
 这份文档记录对外部项目 / skill 思路的调研结论，并把真正适合本仓库的部分收敛成 PPT 生成流程。原则很简单：只吸收能提高交付质量、可验证性或生成稳定性的做法；不把外部项目当作必须安装的依赖。
 
-六门禁（lint + validate + label-overlap + lint-main-claim + evidence-ledger + color-role）自动覆盖关键约束与设计硬规则；失败门禁由六门禁及 test-pin-collision / test-reference-contract 等专项脚本联合检查。
+十门禁（lint + validate + label-overlap + lint-main-claim + evidence-ledger + color-role + contrast-aa + canvas-fill + check-overflow + spatial-integrity）自动覆盖关键约束与设计硬规则；失败门禁由十门禁及 test-pin-collision / test-reference-contract 等专项脚本联合检查。
 
 ## 调研结论
 
@@ -94,7 +94,7 @@ QA route: grade-gate + visual-qa 是否需要跑；若不能跑，说明原因
 | 概念 | 文件 | 用途 |
 |------|------|------|
 | 总流程 / 项目取舍 | `references/layered-architecture.md`（本文件） | 六层职责、调研结论 |
-| 失败门禁 | `references/failure-gates.md` | 13 条门禁完整说明 + 重影案例 |
+| 失败门禁 | `references/failure-gates.md` | 14 条门禁完整说明 + 重影案例 |
 | 专业模式 | `references/pipeline-phases.md` | Phase Gate 检查表、访谈、P5 分层 |
 | 模板差异审计 | `references/template-differentiation-audit.md` | 跨模板相似度审查方法 |
 | impeccable 集成 | `references/impeccable-integration.md` | 命令到演示场景的映射 |
@@ -104,4 +104,4 @@ QA route: grade-gate + visual-qa 是否需要跑；若不能跑，说明原因
 | 概念 | 文件 | 用途 |
 |------|------|------|
 | 种子模板 | `examples/template-01..05-*.html` | 5 套已实现模板 |
-| 模板契约 | `references/template-invariants.json` | 机器可读对象登记 |
+| 模板契约 | `references/template-invariants.json` | 机器可读对象登记 + 高风险物理版面 `physicalContract` |

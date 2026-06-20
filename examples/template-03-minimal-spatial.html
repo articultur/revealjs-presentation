@@ -132,6 +132,7 @@
     .north-mark {
       position: absolute; top: 36px; right: 36px;
       width: 60px; height: 60px;
+      z-index: 5;
     }
     .north-mark svg { width: 100%; height: 100%; }
     .north-mark .n {
@@ -142,23 +143,32 @@
 
     /* ─────────── SPATIAL COVER ─────────── */
     .spatial-cover { padding: 40px 56px; }
+    .spatial-cover .drawing-sheet {
+      position: absolute; top: 36px; right: 36px; bottom: 36px; left: 36px;
+      display: grid;
+      grid-template-rows: 1fr 112px;
+    }
     .spatial-cover .blueprint-sheet {
-      position: absolute; top: 36px; right: 36px; bottom: 200px; left: 36px;
+      position: relative;
       background: var(--c-bg-paper);
       background-image:
         linear-gradient(var(--c-rule) 1px, transparent 1px),
         linear-gradient(90deg, var(--c-rule) 1px, transparent 1px);
       background-size: 24px 24px;
       border: 1px solid var(--c-border);
+      overflow: hidden;
+    }
+    .spatial-cover .blueprint-sheet .north-mark {
+      top: 16px; right: 16px;
     }
     .spatial-cover .plan-drawing {
-      position: absolute; top: 32%; left: 8%; right: 36%; bottom: 12%;
+      position: absolute; top: 150px; left: 118px; width: 540px; height: 324px;
     }
     .spatial-cover .plan-drawing svg {
       width: 100%; height: 100%;
     }
     .spatial-cover .dimension-chain {
-      position: absolute; top: 18%; left: 8%; right: 36%; height: 26px;
+      position: absolute; top: 92px; left: 136px; width: 504px; height: 32px;
       display: flex; align-items: center; overflow: hidden;
       font-family: var(--f-narrow); font-size: 0.42em;
       color: var(--c-fg); letter-spacing: 0.04em;
@@ -168,6 +178,7 @@
       border-left: 1px solid var(--c-fg);
       border-right: 1px solid var(--c-fg);
       position: relative; text-align: center; padding-top: 6px;
+      box-sizing: border-box;
     }
     .spatial-cover .dimension-chain .dim::before {
       content: ''; position: absolute; top: 50%; left: 0; right: 0;
@@ -177,7 +188,7 @@
       position: relative; background: var(--c-bg-paper); padding: 0 4px;
     }
     .spatial-cover .plate-notes {
-      position: absolute; top: 18%; right: 8%; width: 22%;
+      position: absolute; top: 92px; right: 82px; width: 284px;
       font-family: var(--f-mono); font-size: 0.5em;
       line-height: 1.7; color: var(--c-fg-2);
     }
@@ -195,20 +206,23 @@
       color: var(--c-accent); font-family: var(--f-mono); font-weight: 700;
     }
     .spatial-cover .cover-bottom {
-      position: absolute; bottom: 40px; left: 36px; right: 36px;
-      height: 86px;
-      display: grid; grid-template-columns: 1.6fr 1fr;
+      position: relative;
+      display: grid; grid-template-columns: minmax(0, 1fr) 320px;
       gap: 0;
-    }
-    .spatial-cover .cover-title-area {
-      padding: 10px 22px;
+      min-height: 112px;
       background: var(--c-bg-paper);
       border: 1px solid var(--c-fg);
-      border-right: none;
+      border-top: none;
+    }
+    .spatial-cover .cover-title-area {
+      padding: 12px 22px 10px 22px;
+      background: var(--c-bg-paper);
+      border: none;
+      border-right: 1.5px solid var(--c-fg);
       display: flex; flex-direction: column; justify-content: space-between;
     }
     .spatial-cover .cover-title-area h1 {
-      font-size: 1.4em; line-height: 0.98;
+      font-size: 1.22em; line-height: 0.98;
     }
     .spatial-cover .cover-title-area h1 em {
       color: var(--c-accent); font-style: normal;
@@ -219,6 +233,39 @@
       letter-spacing: 0.1em; text-transform: uppercase; color: var(--c-fg-2);
     }
     .spatial-cover .cover-title-area .sub b { color: var(--c-fg); font-weight: 600; }
+    .spatial-cover .title-block {
+      position: static;
+      width: 100%;
+      height: calc(100% - 2px);
+      align-self: stretch;
+      box-sizing: border-box;
+      display: grid;
+      grid-template-columns: 1fr 1fr 74px;
+      grid-template-rows: 30px 1fr 1fr;
+      border: none;
+      background: var(--c-bg-paper);
+      font-size: 0.34em;
+    }
+    .spatial-cover .title-block .cell {
+      padding: 6px 10px;
+      border-right: 1px solid var(--c-fg);
+      border-bottom: 1px solid var(--c-fg);
+      min-width: 0;
+    }
+    .spatial-cover .title-block .cell:nth-child(1) { grid-column: 1; grid-row: 1; }
+    .spatial-cover .title-block .cell:nth-child(2) { grid-column: 2; grid-row: 1; }
+    .spatial-cover .title-block .cell:nth-child(4) { grid-column: 1; grid-row: 2; }
+    .spatial-cover .title-block .cell:nth-child(5) { grid-column: 2; grid-row: 2; }
+    .spatial-cover .title-block .cell:nth-child(6) { grid-column: 1; grid-row: 3; border-bottom: none; }
+    .spatial-cover .title-block .cell:nth-child(7) { grid-column: 2; grid-row: 3; border-bottom: none; }
+    .spatial-cover .title-block .cell:nth-child(3n) { border-right: 1px solid var(--c-fg); }
+    .spatial-cover .title-block .scale {
+      grid-column: 3;
+      grid-row: 1 / 4;
+      border: none;
+      border-left: 1px solid var(--c-fg);
+      font-size: 1.8em;
+    }
 
     /* ─────────── SECTION CUT (proof) ─────────── */
     .section-cut {
@@ -463,9 +510,77 @@
     /* === 第 5-8 条 · 系统化防溢出兜底（harness 层） === */
     .reveal .slides > section { overflow: hidden !important; }                                  /* !important 抗 reveal CSS (0,2,1) 选择器覆盖 */
     html, body { overflow-x: hidden; }                                                          /* 全局横向溢出物理兜底（即使 inline 元素越界也不可见） */
-    .reveal section { padding: 0 24px !important; }                                             /* 强制左右 24px padding · 防标签/文字贴画布右边缘 */
     .reveal .timeline-node .desc { max-height: 3.6em; line-height: 1.2; overflow: hidden; }       /* 时间线描述 ≤ 3 行 · 防压底部进度条 */
     .reveal .timeline-node .bar { margin-top: 12px; }                                            /* 时间线描述与底部进度条垂直间距 ≥ 12px */
+
+    /* Restore sheet-safe page gutters after the global overflow harness. */
+    .reveal .slides > section.spatial-cover { padding: 40px 56px !important; }
+    .reveal .slides > section.section-cut {
+      padding: 56px 56px 90px 56px !important;
+      grid-template-columns: 1.05fr 1.55fr;
+    }
+    .reveal .slides > section.cutaway,
+    .reveal .slides > section.matrix,
+    .reveal .slides > section.route {
+      padding: 58px 56px 90px 56px !important;
+    }
+    .reveal .slides > section.void-page { padding: 40px !important; }
+    .section-cut .drawing {
+      align-self: stretch;
+      min-height: 420px;
+      padding: 22px;
+    }
+    .section-cut .drawing svg .svg-label {
+      font-family: var(--f-narrow);
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-anchor: middle;
+    }
+    .section-cut .drawing svg .callout {
+      font-family: var(--f-mono);
+      font-size: 11px;
+      fill: var(--c-fg);
+      letter-spacing: 0.04em;
+    }
+    .route .head h2 {
+      max-width: calc(100% - 120px);
+    }
+    .route-board {
+      min-height: 390px;
+      padding: 44px 56px 52px;
+    }
+    .route-stops {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      align-items: start;
+    }
+    .route-stop {
+      padding: 42px 12px 0;
+    }
+    .route-stop h3 {
+      font-size: 0.68em;
+      line-height: 1.08;
+    }
+    .route-stop p {
+      font-size: 0.52em;
+      line-height: 1.3;
+      color: var(--c-fg-2);
+    }
+    .route-stop .num {
+      display: inline-block;
+      margin-bottom: 4px;
+      background: var(--c-bg-paper);
+      padding: 0 6px;
+    }
+    .route-stop .path-note {
+      display: block;
+      margin-top: 8px;
+      font-family: var(--f-mono);
+      font-size: 0.72em;
+      letter-spacing: 0.04em;
+      color: var(--c-accent);
+    }
+    .void-page .pin { display: none; }
   </style>
 </head>
 <body>
@@ -476,99 +591,101 @@
       <section class="spatial-cover deck-flex" data-background="#ebe6dc">
         <div class="sheet-frame" data-qa-ignore="decorative"></div>
 
-        <div class="north-mark">
-          <span class="n">N</span>
-          <svg viewBox="0 0 60 60" stroke="var(--c-fg)" fill="none" stroke-width="1.6">
-            <circle cx="30" cy="30" r="22"/>
-            <path d="M 30 8 L 36 30 L 30 26 L 24 30 Z" fill="var(--c-fg)"/>
-            <path d="M 30 52 L 36 30 L 30 34 L 24 30 Z" fill="var(--c-bg)"/>
-            <line x1="30" y1="4" x2="30" y2="14"/>
-            <line x1="30" y1="46" x2="30" y2="56"/>
-            <line x1="4" y1="30" x2="14" y2="30"/>
-            <line x1="46" y1="30" x2="56" y2="30"/>
-          </svg>
-        </div>
+        <div class="drawing-sheet">
+          <div class="blueprint-sheet">
+            <div class="north-mark">
+              <span class="n">N</span>
+              <svg viewBox="0 0 60 60" stroke="var(--c-fg)" fill="none" stroke-width="1.6">
+                <circle cx="30" cy="30" r="22"/>
+                <path d="M 30 8 L 36 30 L 30 26 L 24 30 Z" fill="var(--c-fg)"/>
+                <path d="M 30 52 L 36 30 L 30 34 L 24 30 Z" fill="var(--c-bg)"/>
+                <line x1="30" y1="4" x2="30" y2="14"/>
+                <line x1="30" y1="46" x2="30" y2="56"/>
+                <line x1="4" y1="30" x2="14" y2="30"/>
+                <line x1="46" y1="30" x2="56" y2="30"/>
+              </svg>
+            </div>
 
-        <div class="blueprint-sheet"></div>
+            <div class="dimension-chain">
+              <div class="dim"><span>4 800</span></div>
+              <div class="dim"><span>6 200</span></div>
+              <div class="dim"><span>4 800</span></div>
+              <div class="dim"><span>3 600</span></div>
+            </div>
 
-        <div class="dimension-chain" data-qa-ignore="decorative">
-          <div class="dim"><span>4 800</span></div>
-          <div class="dim"><span>6 200</span></div>
-          <div class="dim"><span>4 800</span></div>
-          <div class="dim"><span>3 600</span></div>
-        </div>
+            <div class="plate-notes">
+              <h4>Drawing notes</h4>
+              <div class="note"><b>A1</b><span>Load-bearing wall · 240mm</span></div>
+              <div class="note"><b>A2</b><span>Operable partition · 60mm</span></div>
+              <div class="note"><b>A3</b><span>Reading void · double height</span></div>
+              <div class="note"><b>A4</b><span>Service core · vertical</span></div>
+            </div>
 
-        <div class="plate-notes">
-          <h4>Drawing notes</h4>
-          <div class="note"><b>A1</b><span>Load-bearing wall · 240mm</span></div>
-          <div class="note"><b>A2</b><span>Operable partition · 60mm</span></div>
-          <div class="note"><b>A3</b><span>Reading void · double height</span></div>
-          <div class="note"><b>A4</b><span>Service core · vertical</span></div>
-        </div>
-
-        <div class="plan-drawing">
-          <svg viewBox="0 0 600 360" stroke="var(--c-fg)" fill="none" stroke-width="1.4">
-            <!-- outer wall -->
-            <rect x="20" y="20" width="560" height="320" stroke-width="3"/>
-            <!-- inner walls -->
-            <line x1="240" y1="20" x2="240" y2="220"/>
-            <line x1="240" y1="220" x2="440" y2="220"/>
-            <line x1="440" y1="220" x2="440" y2="340"/>
-            <line x1="380" y1="20" x2="380" y2="100"/>
-            <line x1="380" y1="100" x2="500" y2="100"/>
-            <!-- door swings -->
-            <path d="M 240 100 A 24 24 0 0 1 264 124" stroke-dasharray="3 3"/>
-            <path d="M 440 220 A 24 24 0 0 1 416 196" stroke-dasharray="3 3"/>
-            <!-- furniture / spaces -->
-            <rect x="60" y="60" width="140" height="80" fill="var(--c-fg)" opacity="0.06"/>
-            <rect x="60" y="180" width="140" height="120" fill="var(--c-accent)" opacity="0.14"/>
-            <rect x="280" y="60" width="80" height="120" fill="var(--c-fg)" opacity="0.06"/>
-            <rect x="280" y="260" width="120" height="60" fill="var(--c-fg)" opacity="0.06"/>
-            <rect x="460" y="120" width="100" height="80" fill="var(--c-fg)" opacity="0.06"/>
-            <!-- section cut indicator -->
-            <line x1="0" y1="220" x2="600" y2="220" stroke="var(--c-accent)" stroke-width="0.8" stroke-dasharray="6 3"/>
-            <circle cx="20" cy="220" r="8" fill="var(--c-accent)"/>
-            <circle cx="580" cy="220" r="8" fill="var(--c-accent)"/>
-            <!-- labels -->
-            <text x="130" y="105" fill="var(--c-fg)" font-family="var(--f-narrow)" font-size="14" text-anchor="middle" letter-spacing="0.04em">FOYER</text>
-            <text x="130" y="245" fill="var(--c-fg)" font-family="var(--f-narrow)" font-size="14" text-anchor="middle" letter-spacing="0.04em">READING</text>
-            <text x="320" y="125" fill="var(--c-fg)" font-family="var(--f-narrow)" font-size="14" text-anchor="middle" letter-spacing="0.04em">CORE</text>
-            <text x="340" y="295" fill="var(--c-fg)" font-family="var(--f-narrow)" font-size="14" text-anchor="middle" letter-spacing="0.04em">STUDIO</text>
-            <text x="510" y="165" fill="var(--c-fg)" font-family="var(--f-narrow)" font-size="14" text-anchor="middle" letter-spacing="0.04em">WORK</text>
-            <!-- A1 / A2 / A3 markers -->
-            <circle cx="240" cy="60" r="9" fill="var(--c-accent)"/>
-            <text x="240" y="64" fill="white" font-family="monospace" font-size="10" text-anchor="middle" font-weight="700">1</text>
-            <circle cx="380" cy="60" r="9" fill="var(--c-accent)"/>
-            <text x="380" y="64" fill="white" font-family="monospace" font-size="10" text-anchor="middle" font-weight="700">2</text>
-            <circle cx="130" cy="240" r="9" fill="var(--c-accent)"/>
-            <text x="130" y="244" fill="white" font-family="monospace" font-size="10" text-anchor="middle" font-weight="700">3</text>
-            <circle cx="510" cy="160" r="9" fill="var(--c-accent)"/>
-            <text x="510" y="164" fill="white" font-family="monospace" font-size="10" text-anchor="middle" font-weight="700">4</text>
-          </svg>
-        </div>
-
-        <div class="cover-bottom" data-qa-ignore="decorative">
-          <div class="cover-title-area">
-            <span class="kicker">Plate A · ground floor</span>
-            <h1>Architecture of<br>a <em>thinking studio</em>.</h1>
-            <div class="sub">
-              <span><b>Project</b> 2026.04 Studio</span>
-              <span><b>Scale</b> 1 : 50</span>
-              <span><b>Sheet</b> A-01 / 12</span>
+            <div class="plan-drawing">
+              <svg viewBox="0 0 600 360" stroke="var(--c-fg)" fill="none" stroke-width="1.4">
+                <!-- outer wall -->
+                <rect x="20" y="20" width="560" height="320" stroke-width="3"/>
+                <!-- inner walls -->
+                <line x1="240" y1="20" x2="240" y2="220"/>
+                <line x1="240" y1="220" x2="440" y2="220"/>
+                <line x1="440" y1="220" x2="440" y2="340"/>
+                <line x1="380" y1="20" x2="380" y2="100"/>
+                <line x1="380" y1="100" x2="500" y2="100"/>
+                <!-- door swings -->
+                <path d="M 240 100 A 24 24 0 0 1 264 124" stroke-dasharray="3 3"/>
+                <path d="M 440 220 A 24 24 0 0 1 416 196" stroke-dasharray="3 3"/>
+                <!-- furniture / spaces -->
+                <rect x="60" y="60" width="140" height="80" fill="var(--c-fg)" opacity="0.06"/>
+                <rect x="60" y="180" width="140" height="120" fill="var(--c-accent)" opacity="0.14"/>
+                <rect x="280" y="60" width="80" height="120" fill="var(--c-fg)" opacity="0.06"/>
+                <rect x="280" y="260" width="120" height="60" fill="var(--c-fg)" opacity="0.06"/>
+                <rect x="460" y="120" width="100" height="80" fill="var(--c-fg)" opacity="0.06"/>
+                <!-- section cut indicator -->
+                <line x1="0" y1="220" x2="600" y2="220" stroke="var(--c-accent)" stroke-width="0.8" stroke-dasharray="6 3"/>
+                <circle cx="20" cy="220" r="8" fill="var(--c-accent)"/>
+                <circle cx="580" cy="220" r="8" fill="var(--c-accent)"/>
+                <!-- labels -->
+                <text x="130" y="105" fill="var(--c-fg)" font-family="var(--f-narrow)" font-size="14" text-anchor="middle" letter-spacing="0.04em">FOYER</text>
+                <text x="130" y="245" fill="var(--c-fg)" font-family="var(--f-narrow)" font-size="14" text-anchor="middle" letter-spacing="0.04em">READING</text>
+                <text x="320" y="125" fill="var(--c-fg)" font-family="var(--f-narrow)" font-size="14" text-anchor="middle" letter-spacing="0.04em">CORE</text>
+                <text x="340" y="295" fill="var(--c-fg)" font-family="var(--f-narrow)" font-size="14" text-anchor="middle" letter-spacing="0.04em">STUDIO</text>
+                <text x="510" y="165" fill="var(--c-fg)" font-family="var(--f-narrow)" font-size="14" text-anchor="middle" letter-spacing="0.04em">WORK</text>
+                <!-- A1 / A2 / A3 markers -->
+                <circle cx="240" cy="60" r="9" fill="var(--c-accent)"/>
+                <text x="240" y="64" fill="white" font-family="monospace" font-size="10" text-anchor="middle" font-weight="700">1</text>
+                <circle cx="380" cy="60" r="9" fill="var(--c-accent)"/>
+                <text x="380" y="64" fill="white" font-family="monospace" font-size="10" text-anchor="middle" font-weight="700">2</text>
+                <circle cx="72" cy="240" r="9" fill="var(--c-accent)"/>
+                <text x="72" y="244" fill="white" font-family="monospace" font-size="10" text-anchor="middle" font-weight="700">3</text>
+                <circle cx="560" cy="160" r="9" fill="var(--c-accent)"/>
+                <text x="560" y="164" fill="white" font-family="monospace" font-size="10" text-anchor="middle" font-weight="700">4</text>
+              </svg>
             </div>
           </div>
-          <div class="title-block">
-            <div class="cell head">Project</div>
-            <div class="cell head">Drawn</div>
-            <div class="scale">A-01</div>
-            <div class="cell">Thinking Studio<span class="v">2026.04</span></div>
-            <div class="cell">Y. Lin<span class="v">2026.03.14</span></div>
-            <div class="cell">Drawing<span class="v">Plan</span></div>
-            <div class="cell">Sheet<span class="v">01 / 12</span></div>
+
+          <div class="cover-bottom">
+            <div class="cover-title-area">
+              <span class="kicker">Plate A · ground floor</span>
+              <h1>Architecture of<br>a <em>thinking studio</em>.</h1>
+              <div class="sub">
+                <span><b>Project</b> 2026.04 Studio</span>
+                <span><b>Scale</b> 1 : 50</span>
+                <span><b>Sheet</b> A-01 / 12</span>
+              </div>
+            </div>
+            <div class="title-block">
+              <div class="cell head">Project</div>
+              <div class="cell head">Drawn</div>
+              <div class="scale">A-01</div>
+              <div class="cell">Thinking Studio<span class="v">2026.04</span></div>
+              <div class="cell">Y. Lin<span class="v">2026.03.14</span></div>
+              <div class="cell">Drawing<span class="v">Plan</span></div>
+              <div class="cell">Sheet<span class="v">01 / 12</span></div>
+            </div>
           </div>
         </div>
 
-        <span class="pin" style="left: auto; right: 220px; bottom: 26px;">01 · plan · cover</span>
+        <span class="pin" style="display: none;" data-qa-ignore="decorative">01 · plan · cover</span>
       </section>
 
       <!-- 2: SECTION CUT (proof) -->
@@ -588,36 +705,53 @@
           <div class="source">drawing · A-04 section A-A · 1:75 · YL.2026.03</div>
         </div>
 
-        <div class="drawing">
-          <svg viewBox="0 0 600 380" stroke="var(--c-fg)" fill="none" stroke-width="1.4" preserveAspectRatio="xMidYMid meet">
-            <!-- ground -->
-            <line x1="20" y1="320" x2="580" y2="320" stroke-width="3"/>
-            <!-- left mass -->
-            <rect x="40" y="160" width="180" height="160" fill="var(--c-fg)" opacity="0.85"/>
-            <!-- right mass -->
-            <rect x="380" y="120" width="180" height="200" fill="var(--c-fg)" opacity="0.85"/>
-            <!-- bridge -->
-            <rect x="220" y="200" width="160" height="40" fill="var(--c-fg)" opacity="0.55"/>
-            <!-- void -->
-            <rect x="220" y="80" width="160" height="120" stroke-dasharray="6 4" stroke="var(--c-accent)" stroke-width="2"/>
-            <!-- roof line -->
-            <path d="M 40 160 L 220 80 L 380 120 L 560 120" stroke-width="2"/>
-            <!-- north light arrows -->
-            <line x1="80" y1="20" x2="240" y2="100" stroke="var(--c-accent)" stroke-dasharray="3 3"/>
-            <line x1="160" y1="20" x2="290" y2="100" stroke="var(--c-accent)" stroke-dasharray="3 3"/>
-            <line x1="240" y1="20" x2="340" y2="100" stroke="var(--c-accent)" stroke-dasharray="3 3"/>
-            <!-- floor labels -->
-            <text x="130" y="280" fill="white" font-family="var(--f-narrow)" font-size="13" text-anchor="middle" font-weight="600" letter-spacing="0.06em">CORE</text>
-            <text x="300" y="226" fill="white" font-family="var(--f-narrow)" font-size="12" text-anchor="middle" font-weight="600" letter-spacing="0.06em">MEZZANINE</text>
-            <text x="470" y="226" fill="white" font-family="var(--f-narrow)" font-size="13" text-anchor="middle" font-weight="600" letter-spacing="0.06em">STUDIO</text>
-            <text x="300" y="146" fill="var(--c-accent)" font-family="var(--f-narrow)" font-size="13" text-anchor="middle" font-weight="700" letter-spacing="0.06em">VOID · 6.2m</text>
+        <div class="drawing" data-qa-surface="section-drawing">
+          <svg viewBox="0 0 640 360" stroke="var(--c-fg)" fill="none" stroke-width="1.4" preserveAspectRatio="xMidYMid meet" data-qa-contained-by="section-drawing">
+            <defs>
+              <marker id="section-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1 L 7 4 L 0 7 Z" fill="var(--c-accent)"/>
+              </marker>
+            </defs>
+
+            <!-- datum and structural mass -->
+            <line x1="40" y1="300" x2="598" y2="300" stroke-width="3"/>
+            <rect x="58" y="176" width="170" height="124" fill="var(--c-fg)" opacity="0.9"/>
+            <rect x="406" y="138" width="164" height="162" fill="var(--c-fg)" opacity="0.9"/>
+            <rect x="228" y="220" width="178" height="34" fill="var(--c-fg)" opacity="0.48"/>
+
+            <!-- roof and void -->
+            <path d="M 58 176 L 228 98 L 406 138 L 570 138" stroke-width="2.2"/>
+            <rect x="228" y="98" width="178" height="122" fill="var(--c-bg-paper)" stroke="var(--c-accent)" stroke-width="2.2" stroke-dasharray="6 4"/>
+            <line x1="228" y1="220" x2="406" y2="220" stroke="var(--c-accent)" stroke-width="1.2" stroke-dasharray="5 4"/>
+
+            <!-- north light -->
+            <g stroke="var(--c-accent)" stroke-dasharray="4 4" marker-end="url(#section-arrow)">
+              <line x1="112" y1="44" x2="250" y2="116"/>
+              <line x1="212" y1="44" x2="314" y2="116"/>
+              <line x1="320" y1="44" x2="372" y2="116"/>
+            </g>
+            <text class="callout" x="104" y="34">north light, not heat</text>
+
+            <!-- paper labels keep the dark structural mass readable -->
+            <rect x="94" y="232" width="98" height="22" fill="var(--c-bg-paper)" opacity="0.94"/>
+            <rect x="266" y="232" width="102" height="22" fill="var(--c-bg-paper)" opacity="0.94"/>
+            <rect x="456" y="208" width="64" height="22" fill="var(--c-bg-paper)" opacity="0.94"/>
+            <text class="svg-label" x="143" y="248" fill="var(--c-fg)">CORE</text>
+            <text class="svg-label" x="317" y="248" fill="var(--c-fg)">MEZZANINE</text>
+            <text class="svg-label" x="488" y="224" fill="var(--c-fg)">STUDIO</text>
+            <text class="svg-label" x="317" y="158" fill="var(--c-accent)">READING VOID</text>
+            <text class="callout" x="286" y="178">double height · 6.2m</text>
+
             <!-- dimension chain right -->
-            <line x1="570" y1="120" x2="570" y2="320" stroke="var(--c-fg)" stroke-width="0.8"/>
-            <line x1="565" y1="120" x2="575" y2="120"/>
-            <line x1="565" y1="200" x2="575" y2="200"/>
-            <line x1="565" y1="320" x2="575" y2="320"/>
-            <text x="585" y="165" fill="var(--c-fg)" font-family="monospace" font-size="11">3.6m</text>
-            <text x="585" y="265" fill="var(--c-fg)" font-family="monospace" font-size="11">3.2m</text>
+            <line x1="588" y1="138" x2="588" y2="300" stroke="var(--c-fg)" stroke-width="1"/>
+            <line x1="582" y1="138" x2="596" y2="138"/>
+            <line x1="582" y1="220" x2="596" y2="220"/>
+            <line x1="582" y1="300" x2="596" y2="300"/>
+            <text class="callout" x="606" y="182" text-anchor="start">3.6m</text>
+            <text class="callout" x="606" y="264" text-anchor="start">3.2m</text>
+
+            <!-- keyed section cut -->
+            <path d="M 228 98 L 406 138 L 406 220 L 228 220 Z" stroke="var(--c-accent)" stroke-width="1.6" stroke-dasharray="8 5"/>
           </svg>
         </div>
         <span class="pin">02 · section · proof</span>
@@ -724,34 +858,41 @@
           <h2>From the street to the reading void — in five moves, on purpose.</h2>
         </div>
         <div class="route-board">
-          <svg viewBox="0 0 1000 80" preserveAspectRatio="none" stroke="var(--c-fg)" fill="none" stroke-width="2" data-qa-ignore="decorative">
-            <line x1="100" y1="40" x2="900" y2="40" stroke-dasharray="3 6"/>
+          <svg viewBox="0 0 1000 260" preserveAspectRatio="none" stroke="var(--c-fg)" fill="none" stroke-width="2" data-qa-ignore="decorative">
+            <path d="M 110 158 C 240 98, 360 98, 490 148 S 740 198, 890 128" stroke="var(--c-fg)" stroke-width="2.4"/>
+            <path d="M 500 148 C 548 128, 578 106, 612 70" stroke="var(--c-accent)" stroke-width="2" stroke-dasharray="8 5"/>
+            <line x1="110" y1="158" x2="890" y2="158" stroke="var(--c-rule)" stroke-dasharray="4 8"/>
           </svg>
           <div class="route-stops timeline">
             <div class="route-stop">
               <span class="num">— 01 —</span>
               <h3>Street</h3>
               <p>Open foyer · no reception desk.</p>
+              <span class="path-note">public</span>
             </div>
             <div class="route-stop">
               <span class="num">— 02 —</span>
               <h3>Display board</h3>
               <p>Today's reading, today's review.</p>
+              <span class="path-note">orient</span>
             </div>
             <div class="route-stop active">
               <span class="num">— 03 —</span>
               <h3>Threshold</h3>
               <p>Phone off, shoes optional.</p>
+              <span class="path-note">switch</span>
             </div>
             <div class="route-stop">
               <span class="num">— 04 —</span>
               <h3>Reading void</h3>
               <p>North-lit · double-height room.</p>
+              <span class="path-note">quiet</span>
             </div>
             <div class="route-stop">
               <span class="num">— 05 —</span>
               <h3>Mezzanine</h3>
               <p>Optional · review on the way out.</p>
+              <span class="path-note">return</span>
             </div>
           </div>
         </div>

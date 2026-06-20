@@ -11,6 +11,7 @@
     "lint": "node scripts/lint-design.js",
     "export-pptx": "node scripts/export-pptx.js",
     "visual-qa": "node scripts/visual-qa.js",
+    "visual-verdict": "node scripts/visual-verdict.js",
     "validate": "node scripts/validate.js",
     "test:validate-overflow": "node scripts/test-validate-overflow.js",
     "test:reference-contract": "node scripts/test-reference-contract.js",

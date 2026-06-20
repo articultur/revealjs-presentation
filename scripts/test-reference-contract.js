@@ -127,6 +127,83 @@ function cssClassSelectorExists(content, marker) {
   return new RegExp(`\\.${selector}(?![\\w-])`).test(content);
 }
 
+function selectorClassTokens(selector) {
+  return Array.from(String(selector || '').matchAll(/\.([A-Za-z_][\w-]*)/g), m => m[1]);
+}
+
+function selectorAnchorsExist(content, selector) {
+  const classTokens = selectorClassTokens(selector);
+  if (!classTokens.length) return true;
+  return classTokens.every(token => classMarkerExists(content, token) || cssClassSelectorExists(content, token));
+}
+
+function assertSelector(templatePath, template, selector, context) {
+  if (!selector || typeof selector !== 'string') {
+    fail(`${templatePath} physicalContract ${context} must define a CSS selector.`);
+  } else if (!selectorAnchorsExist(template, selector)) {
+    fail(`${templatePath} physicalContract ${context} selector "${selector}" references class(es) not found in the template.`);
+  }
+}
+
+function assertPhysicalContract(templatePath, template, invariant) {
+  const contract = invariant.physicalContract;
+  if (templatePath === 'examples/template-03-minimal-spatial.html' && !contract) {
+    fail(`${templatePath} must declare a physicalContract for the architectural drawing sheet.`);
+    return;
+  }
+  if (!contract) return;
+  if (contract.version !== 1 || !contract.purpose) {
+    fail(`${templatePath} physicalContract must define version=1 and purpose.`);
+  }
+
+  const surfaceRules = contract.surfaceRules || [];
+  if (!Array.isArray(surfaceRules) || surfaceRules.length === 0) {
+    fail(`${templatePath} physicalContract must define at least one surfaceRules entry.`);
+  }
+  for (const rule of surfaceRules) {
+    if (!rule.name) fail(`${templatePath} physicalContract surface rule is missing name.`);
+    assertSelector(templatePath, template, rule.surface, `surfaceRules.${rule.name || '?'}.surface`);
+    if (!Array.isArray(rule.contents) || rule.contents.length === 0) {
+      fail(`${templatePath} physicalContract surface rule "${rule.name || '?'}" must list contents.`);
+    } else {
+      for (const selector of rule.contents) {
+        assertSelector(templatePath, template, selector, `surfaceRules.${rule.name || '?'}.contents`);
+      }
+    }
+  }
+
+  for (const rule of contract.exclusionRules || []) {
+    if (!rule.name) fail(`${templatePath} physicalContract exclusion rule is missing name.`);
+    assertSelector(templatePath, template, rule.a, `exclusionRules.${rule.name || '?'}.a`);
+    assertSelector(templatePath, template, rule.b, `exclusionRules.${rule.name || '?'}.b`);
+  }
+
+  for (const rule of contract.alignmentRules || []) {
+    if (!rule.name) fail(`${templatePath} physicalContract alignment rule is missing name.`);
+    if (!['horizontalEdges'].includes(rule.type)) {
+      fail(`${templatePath} physicalContract alignment rule "${rule.name || '?'}" uses unsupported type "${rule.type}".`);
+    }
+    assertSelector(templatePath, template, rule.subject, `alignmentRules.${rule.name || '?'}.subject`);
+    assertSelector(templatePath, template, rule.target, `alignmentRules.${rule.name || '?'}.target`);
+  }
+
+  for (const rule of contract.placementRules || []) {
+    if (!rule.name) fail(`${templatePath} physicalContract placement rule is missing name.`);
+    assertSelector(templatePath, template, rule.subject, `placementRules.${rule.name || '?'}.subject`);
+    assertSelector(templatePath, template, rule.container, `placementRules.${rule.name || '?'}.container`);
+  }
+
+  for (const rule of contract.collisionRules || []) {
+    if (!rule.name) fail(`${templatePath} physicalContract collision rule is missing name.`);
+    assertSelector(templatePath, template, rule.scope, `collisionRules.${rule.name || '?'}.scope`);
+    assertSelector(templatePath, template, rule.a, `collisionRules.${rule.name || '?'}.a`);
+    assertSelector(templatePath, template, rule.b, `collisionRules.${rule.name || '?'}.b`);
+    if (!rule.bTextPattern) {
+      fail(`${templatePath} physicalContract collision rule "${rule.name || '?'}" must define bTextPattern to avoid broad decorative collisions.`);
+    }
+  }
+}
+
 function readTemplateInvariants() {
   const manifestPath = 'references/template-invariants.json';
   let parsed;
@@ -248,6 +325,8 @@ for (const templatePath of expectedTemplates) {
       fail(`${templatePath} still uses fallback cover object "${marker}"; use the stronger native composition instead.`);
     }
   }
+
+  assertPhysicalContract(templatePath, template, invariant);
 }
 
 if (!/Skeleton Reskin Gate|骨架换皮门禁/.test(skill)) {

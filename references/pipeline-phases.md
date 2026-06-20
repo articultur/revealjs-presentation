@@ -18,11 +18,11 @@
 | 1 | 需求+设计语法 | 场景、时长、听众、ghost deck、Theme-to-Design Router、模板/新语法判断 |
 | 2 | 方案 | 内容结构、视觉方向 |
 | 3 | 设计评审 | `/critique` 报告 + 优化方向确认 |
-| 4 | 生成初稿 | HTML 文件路径 + 六门禁全绿（参见 SKILL.md §验证） |
+| 4 | 生成初稿 | HTML 文件路径 + 十门禁全绿（参见 SKILL.md §验证） |
 | 5 | 优化迭代 | 执行的 skills 列表和结果 |
 | 6 | 最终检查 | Phase 6 检查报告 + 用户交付确认 |
 
-六门禁（lint + validate + label-overlap + lint-main-claim + evidence-ledger + color-role）自动覆盖关键约束与设计硬规则；失败门禁由六门禁及 test-pin-collision / test-reference-contract 等专项脚本联合检查。
+十门禁（lint + validate + label-overlap + lint-main-claim + evidence-ledger + color-role + contrast-aa + canvas-fill + check-overflow + spatial-integrity）自动覆盖关键约束与设计硬规则；失败门禁由十门禁及 test-pin-collision / test-reference-contract 等专项脚本联合检查。
 
 ## 各 Phase 对应 reference（流程闭环）
 
@@ -31,7 +31,7 @@
 | P0-6 总架构 | `references/layered-architecture.md` | 外部项目取舍、六层职责、轻量合同 |
 | P0-1 设计上下文/语法 | `references/design-polish.md` | Theme-to-Design Router 完整说明、页面原语、签名时刻 |
 | P0-1 色彩/字体 | `references/design-principles.md` | 配色方案、字体系统、反模式 |
-| P2-3 评审 | `references/failure-gates.md` + `references/impeccable-integration.md` | 13 条门禁、impeccable 命令映射 |
+| P2-3 评审 | `references/failure-gates.md` + `references/impeccable-integration.md` | 15 条门禁、impeccable 命令映射 |
 | P4 生成骨架 | `references/css-skeleton.md` + `references/technical-specs.md` | CSS 骨架、CDN/插件/三端适配 |
 | P4 布局/图表/图标/图片 | `references/layout-patterns.md` / `references/diagram-system.md` / `references/data-viz.md` / `references/icon-system.md` / `references/image-system.md` | 按需加载 |
 | P5 优化 | `references/impeccable-integration.md`（Phase×命令映射）+ `references/motion-delight.md` | 命令到演示场景、动效 |
@@ -68,6 +68,7 @@
 | `action title` | 完整句主命题，不是 topic label |
 | `proof object` | 图表、表格、地图、流程、产品界面、证据卡、引用墙等 |
 | `evidence status` | verified / user-provided / illustrative / needs-source |
+| `physical contract` | 有图纸/地图/屏幕/桌面/舞台等承载面时，声明 surface / owned objects / forbidden collisions |
 
 Gate 1 通过标准：只读 action titles 能讲完整故事；每页 role 清楚；每个 proof object 都服务主命题。读不通先改论证，不进入视觉设计。
 
@@ -81,6 +82,7 @@ P1 不能只给“选择了哪个模板”。必须先给 ghost deck，再给设
 设计隐喻：本 deck 像一个 ____，而不是一个普通 slide deck。
 页面骨架：主要使用 ____ / ____ / ____ / ____ 这些页面动作。
 Proof object：必须可视化证明 ____，不能只写成 bullet。
+物理契约：____ 是承载面；____ 必须在其中；____ 不得侵入/重叠；____ 必须对齐。
 禁止套路：不能使用 ____，因为它会把主题讲偏或变成通用模板。
 ```
 
@@ -225,6 +227,7 @@ node scripts/test-initial-slide-visible.js
 ```bash
 node scripts/visual-qa.js <HTML文件> --out /private/tmp/<deck>-visual
 node scripts/visual-qa.js <HTML文件> --show-fragments --out /private/tmp/<deck>-visual-all
+node scripts/visual-verdict.js <HTML文件> --out /private/tmp/<deck>-verdict
 ```
 
 必须人工审阅两组截图：
@@ -234,6 +237,7 @@ node scripts/visual-qa.js <HTML文件> --show-fragments --out /private/tmp/<deck
 - 设计质量：每页必须有清晰视觉重心；大字号 statement 不能互压；数据页必须可读且有来源或“示意”标注。
 - 原生语法 / Native Grammar：品牌、平台、产品类 deck 必须能看到对象自己的界面、行为或社群机制，例如 feed、播放器、搜索、评论、交易路径、控制台、仪表盘，而不是只有换色模板。
 - 证据台账 / Evidence Ledger：精确数字、排名、百分比、DAU/MAU/GMV 必须在页面或备注中对应 `verified/source URL`、`user-provided` 或 `illustrative`；“公开披露”不是可追溯来源。
+- LLM 视觉语义：`visual-verdict.js` 的 blocker 必须修复；若因无模型 key 只能 `--dry-run`，检查记录必须明确“未执行模型判定”，不能写成视觉通过。
 
 任何一页不达标，回到 Phase 5 修复，并重新执行 Step 1-4。
 
