@@ -1,7 +1,7 @@
 ---
 name: revealjs-presentation
 description: |
-  This skill should be used when the user asks to "做个 PPT / 幻灯片 / 课件 / 汇报 / keynote / pitch deck", "make a deck", or to turn a topic / outline / document / 数据 into slides. Covers common Chinese work scenarios: 做报告, 写课件, 年终总结, 述职, 答辩, 复盘, 融资 / BP / 提案, 架构评审, 产品发布, 技术分享, 路演, 营销方案. Also handles refreshing an existing reveal.js HTML, exporting to PPTX / PDF, and fixing slide overflow / pin-overlap / 文字被裁切 / 幻灯片显示不全, or generating decks in a specific visual style (editorial archive, dark-tech cockpit, architectural plate, live keynote, field notebook, brutalist, memphis, isometric — the 8 seed templates). Invoke even without the word "slides" when the ask is to communicate a structured argument visually. Output is a single self-contained HTML with a designed visual language, not a generic AI template.
+  Use this skill when the user wants a **presentation / slide deck** — a multi-slide, sequenced visual narrative shown to an audience (not a single chart, poster, hi-fi prototype, resume, or a Word/Markdown document). Trigger when they say "做个 PPT / 幻灯片 / 课件 / 汇报 / deck / slides", "make a deck", or ask to turn any content — a topic, outline, document, CSV / 数据, report — into slides for 述职 / 年终总结 / 复盘 / 答辩 / 架构评审 / 产品发布 / 技术分享 / 路演 / 融资 BP / pitch deck / 提案 / 营销方案. Also use when fixing or extending an existing reveal.js HTML (文字被裁切 / 元素重叠 / 投影显示不全 / overflow / pin overlap) or exporting an existing deck to PPTX / PDF. Output is one self-contained, designed HTML file, not a generic AI template.
 ---
 
 # Reveal.js 演示文稿
