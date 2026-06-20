@@ -447,6 +447,25 @@
     @media (prefers-reduced-motion: reduce) {
       .reveal .fragment { opacity: 1; transform: none; transition: opacity 200ms ease-out; }
     }
+
+    /* === minimal-spatial 文字溢出兜底（subagent 生成时常翻车：矩形标签溢出 + 表格关键字断词） === */
+    .reveal section { overflow: hidden; }                                                       /* 矩形内文字不溢出 section 边界 */
+    .reveal section * { overflow-wrap: anywhere; word-break: break-word; }                     /* 长英文不强制断词 */
+    .reveal table { table-layout: fixed; width: 100%; }                                           /* 表格列宽按比例而非内容撑开 */
+    .reveal table td:last-child, .reveal table th:last-child { min-width: 7em; }                  /* 末列（关键字列）至少容纳最长词 */
+
+    /* === 第 9 条 · focus-visible 强化（a11y：键盘演讲者导航）=== */
+    .reveal :focus-visible { outline: 3px solid var(--c-accent); outline-offset: 2px; border-radius: 2px; }
+
+    /* === 第 10 条 · SVG 防溢出（box-sizing:border-box 防 width:100% + padding 撑爆容器）=== */
+    .reveal svg { max-width: 100%; box-sizing: border-box; }
+
+    /* === 第 5-8 条 · 系统化防溢出兜底（harness 层） === */
+    .reveal .slides > section { overflow: hidden !important; }                                  /* !important 抗 reveal CSS (0,2,1) 选择器覆盖 */
+    html, body { overflow-x: hidden; }                                                          /* 全局横向溢出物理兜底（即使 inline 元素越界也不可见） */
+    .reveal section { padding: 0 24px !important; }                                             /* 强制左右 24px padding · 防标签/文字贴画布右边缘 */
+    .reveal .timeline-node .desc { max-height: 3.6em; line-height: 1.2; overflow: hidden; }       /* 时间线描述 ≤ 3 行 · 防压底部进度条 */
+    .reveal .timeline-node .bar { margin-top: 12px; }                                            /* 时间线描述与底部进度条垂直间距 ≥ 12px */
   </style>
 </head>
 <body>

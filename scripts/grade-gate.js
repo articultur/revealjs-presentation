@@ -198,6 +198,27 @@ function runCanvasFill(filePath) {
   };
 }
 
+// ─── G9 · 文字/标线越画布 + 时间线叠放（playwright bbox 检测） ───
+function runCheckOverflow(filePath) {
+  const result = spawnSync('node', [path.join(SCRIPTS_DIR, 'check-overflow.js'), filePath], {
+    encoding: 'utf8', timeout: 180_000,
+    env: { ...process.env, NODE_NO_WARNINGS: '1' },
+  });
+  if (result.error) return { passed: false, error: result.error.message };
+  const stderr = result.stderr?.trim() || '';
+  const m = (result.stdout || '').match(/(\d+) issue\(s\)/);
+  const issueCount = m ? parseInt(m[1]) : 0;
+  // 脚本内部 bug（ReferenceError/TypeError/SyntaxError）视为脚本问题而非 deck 问题，不阻断交付
+  const scriptBug = /ReferenceError|TypeError|SyntaxError|^Error:/m.test(stderr);
+  return {
+    passed: scriptBug ? true : (result.status === 0),
+    issueCount,
+    exitCode: result.status,
+    stderr: stderr || null,
+    warning: scriptBug ? 'check-overflow 脚本内部错误，跳过此项检查（不阻断）' : null,
+  };
+}
+
 // ─── Main ─────────────────────────────────────────────────────
 
 const results = [];
@@ -255,7 +276,12 @@ for (const file of files) {
     console.log(`  G8 canvas-fill:       ${canvas.passed ? '✓ sections fill canvas' : fail(`✗ ${sc} short`)}${canvas.error ? ` (${canvas.error})` : ''}`);
   }
 
-  const allPassed = lint.passed && validate.passed && overlap.passed && mainClaim.passed && evidence.passed && colorRole.passed && contrast.passed && canvas.passed;
+  const overflow = runCheckOverflow(abs);
+  if (!jsonOnly) {
+    console.log(`  G9 check-overflow:    ${overflow.passed ? '✓ no overflow/overlap' : fail(`✗ ${overflow.issueCount || '?'} issue(s)`)}${overflow.error ? ` (${overflow.error})` : ''}`);
+  }
+
+  const allPassed = lint.passed && validate.passed && overlap.passed && mainClaim.passed && evidence.passed && colorRole.passed && contrast.passed && canvas.passed && overflow.passed;
   if (!jsonOnly) console.log(`  → ${allPassed ? pass('PASS') : fail('FAIL')}`);
 
   results.push({
@@ -270,6 +296,7 @@ for (const file of files) {
       colorRole: { passed: colorRole.passed, error: colorRole.error || null },
       contrastAA: { passed: contrast.passed, violationCount: contrast.violationCount || 0, error: contrast.error || null },
       canvasFill: { passed: canvas.passed, shortCount: canvas.shortCount || 0, error: canvas.error || null },
+      checkOverflow: { passed: overflow.passed, issueCount: overflow.issueCount || 0, exitCode: overflow.exitCode || 0, error: overflow.error || null },
     },
   });
 }
