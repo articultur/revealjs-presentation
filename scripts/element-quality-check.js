@@ -228,7 +228,7 @@ function measureTable(html) {
 
 // ─── diagram 子分 ─────────────────────────────────────────────
 
-function measureDiagram(html) {
+function measureDiagram(html, sections) {
   // 流程图特征:连接线 SVG(line/path 带 arrow)+ 多节点块;或显式 class(flow/architecture/diagram)
   const hasFlowClass = /class="[^"]*\b(flow|diagram|arch|pipeline|process|sequence|lifecycle)\b/i.test(html);
   const connectors = html.match(/<svg[^>]*>[\s\S]*?<(?:path|line|polyline)\b[^>]*>/gi) || [];
@@ -251,14 +251,20 @@ function measureDiagram(html) {
     .filter(s => (s.match(/<(?:rect|circle|ellipse|g)\b/gi) || []).length > 8 && (s.match(/<(?:path|line|polyline)\b/gi) || []).length > 3);
   if (bigSvgs.length) { score -= Math.min(15, bigSvgs.length * 15); details.push(`D4 整张 SVG 画流程图 ×${bigSvgs.length}(应用 HTML+CSS)`); }
 
-  // D3 标签密度:启发式——单节点内文字标签(粗略,无精确节点边界则跳过扣分)
-  // D1/D5 需语义解析,静态难精确,保持中性(不滥扣)
+  // D1 流程层数(HTML+CSS 构建):flow section 内有 background 的节点 div 数;>7 才扣(宽松阈值,只抓极端堆叠,避免误判)
+  let nodeCount = 0;
+  const flowSection = sections ? sections.find(s => /class="[^"]*\b(?:flow|arch|diagram|pipeline|process|sequence|lifecycle)\b/i.test(s.attrs)) : null;
+  if (flowSection) {
+    nodeCount = (flowSection.html.match(/<div[^>]*style="[^"]*background[^"]*"[^>]*>/gi) || []).length;
+    if (nodeCount > 7) { score -= Math.min(15, (nodeCount - 7) * 5); details.push(`D1 流程层数 ${nodeCount}(>7 建议拆分)`); }
+  }
+  // D3 标签密度 / D5 墨水比:需 DOM 运行时或语义解析才能精确,静态保持中性(不滥扣)——见 iteration decision-log
 
   return {
     score: Math.max(0, Math.min(100, score)),
     details,
     present: true,
-    metrics: { connectors: connectors.length, dasharray: dasharray.length, arrows: arrows.length, bigSvgs: bigSvgs.length },
+    metrics: { connectors: connectors.length, dasharray: dasharray.length, arrows: arrows.length, bigSvgs: bigSvgs.length, nodes: nodeCount },
   };
 }
 
@@ -270,7 +276,7 @@ function measure(file) {
   const motion = measureMotion(html, sections);
   const icon = measureIcon(html, sections);
   const table = measureTable(html);
-  const diagram = measureDiagram(html);
+  const diagram = measureDiagram(html, sections);
   const overall = Math.round((motion.score + icon.score + table.score + diagram.score) / 4);
   return { file: path.basename(file), slides: sections.length, motion, icon, table, diagram, overall };
 }
