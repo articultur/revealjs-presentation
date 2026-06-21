@@ -46,6 +46,10 @@ if (!deck) { console.error('Usage: node check-overflow.js <deck.html>'); process
           x: r.x, y: r.y, w: r.width, h: r.height,
           right: r.right, bottom: r.bottom,
           text: (e.textContent || '').trim().slice(0, 30),
+          parentRight: e.parentElement ? e.parentElement.getBoundingClientRect().right : null,
+          parentCls: e.parentElement && e.parentElement.className
+            ? (e.parentElement.className.baseVal !== undefined ? e.parentElement.className.baseVal : (typeof e.parentElement.className === 'string' ? e.parentElement.className : '')).toString().slice(0, 30)
+            : '',
         };
       }) };
     });
@@ -84,6 +88,9 @@ if (!deck) { console.error('Usage: node check-overflow.js <deck.html>'); process
         issues.push({ slide: i + 1, kind: 'TEXT_OVERLAP_BAR', text: d.text, interY: Math.round(iy), interX: Math.round(ix) });
       }
     }
+    // 注：元素内文字溢出（如 terminal path 越代码框）曾尝试用「文字 right > 父 right」检测，
+    // 但父容器常随内容撑开（content-box），bbox 测不出视觉边框溢出，且误报固定宽度场景。
+    // 这类「元素内溢出 + 对比度感官 + 数据图语义」留给 visual-verdict（视觉模型判定），非 bbox 能可靠抓。
   }
   await browser.close();
 

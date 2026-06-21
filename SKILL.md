@@ -16,7 +16,7 @@ description: |
 2. **确认 4 要素**：主题 · 观众 · 页数 · 语言（缺省：通用观众 / 8-12 页 / 中文）。页数是硬约束——用户给 N 页时最终偏差 ≤1（见 §8）
 3. **先搭骨架**：轻量 ghost deck（每页 role + action title + proof object）+ Theme-to-Design Router 六行说明
 4. **生成单个 HTML**：内联 CSS+JS、Reveal.js 4.6.0 CDN、1280×720 画布
-5. **自检（三层）**：`node scripts/grade-gate.js <file>` 全绿（地板，含溢出、对比度、pin、空间完整性）+ `node scripts/design-strength-check.js <file>` 四维达标（天花板：尺度≥3:1、有满版色块面板、有非对称分割、有主题原生形式）+ 视觉改动后跑 `node scripts/visual-verdict.js <file>`（LLM 视觉语义评审，抓图示不清/标签不可读/图表不解释主张）。若无视觉模型 key，至少跑 `visual-verdict.js --dry-run` 留下 prompt 和截图，并在最终说明未执行模型判定。
+5. **自检（三层）**：`node scripts/grade-gate.js <file>` 全绿（地板，含溢出、对比度、pin、空间完整性）+ `node scripts/design-strength-check.js <file>` 四维达标（天花板：尺度≥3:1、有满版色块面板、有非对称分割、有主题原生形式）+ 视觉改动后跑 `node scripts/visual-verdict.js <file>`（LLM 视觉语义评审，抓图示不清/标签不可读/图表不解释主张）。若无视觉模型 key，跑 `visual-verdict.js --dry-run` 生成截图+prompt；**若会话模型有视觉（opus/sonnet 等），让 Claude Read dry-run 截图 + 按 prompt 的 rubric 判定**（blocker/warning/note），等价 visual-verdict 但用 Claude 视觉代替外部 API；若会话模型无视觉（纯文本），只能留截图并说明未执行视觉判定。
 6. **交付**：HTML 路径 + 运行/导出说明 + 验证状态
 
 需精细控制走 P0-P6 专业模式（下文）；发布会级先读 `references/launch-grade.md`。
@@ -385,7 +385,7 @@ archetype 序列：每页分配一个 archetype（A1-A12，见 layout-archetypes
 
 **关键认知**：门禁（地板）与设计强度（天花板）不可互替——合规但四维全默认 = 平庸；通过门禁要削弱设计时，找"既大胆又合规"的解（深化专色到 AA / 反相面板），不是改弱求合规。详见 `references/validation.md`、`references/design-fundamentals.md` §6。
 
-调垂直平衡另跑 `node scripts/visual-check.js <file>`（启发式、非阻断，与 visual-qa 冲突时信 visual-qa）。视觉语义问题（图示不清、标签虽未重叠但不可读、图表不解释主张）信 `visual-verdict.js`；若无 key 只跑了 `--dry-run`，最终回复必须写明“未执行模型判定”。评估框架用 `grade-gate.js --json` 的 `passed` 字段作客观断言。如果未执行验证，在最终回复中**明确说明**。
+调垂直平衡另跑 `node scripts/visual-check.js <file>`（启发式、非阻断，与 visual-qa 冲突时信 visual-qa）。视觉语义问题（图示不清、标签虽未重叠但不可读、图表不解释主张）信 `visual-verdict.js`；若无 key，跑 `--dry-run` 后**让有视觉的会话模型（opus/sonnet）Read 截图 + rubric 判定**；若会话模型无视觉，最终回复写明“未执行视觉判定”。评估框架用 `grade-gate.js --json` 的 `passed` 字段作客观断言。如果未执行验证，在最终回复中**明确说明**。
 
 ## 导出
 
