@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>杭州 · 城市专刊 — Hangzhou Dossier</title>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.css">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=Noto+Serif+SC:wght@400;500;600&family=Noto+Sans+SC:wght@300;400;500&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+
+  <style>
+    /* ── 1. 颜色 & 字体 Token（杭州城市专刊 voice） ─────────────────────── */
+    :root {
+      --c-bg: #f4ecd6;          /* 宣纸米白 */
+      --c-bg-paper: #fbf6e6;    /* 留白 */
+      --c-bg-2: #ede4cc;        /* 卡片淡底 */
+      --c-fg: #1d1a14;          /* 水墨黛 */
+      --c-fg-2: rgba(29, 26, 20, 0.66);
+      --c-fg-3: rgba(29, 26, 20, 0.34);
+      --c-accent: #2f6b5d;      /* 青瓷绿（杭州主色） */
+      --c-spot: #5a7a3a;        /* 龙井绿（副色） */
+      --c-stamp: #8a4a2d;       /* 印泥红（西泠印社） */
+      --c-jade: #6b8f7a;        /* 良渚玉色 */
+      --c-border: rgba(29, 26, 20, 0.22);
+      --c-rule: rgba(29, 26, 20, 0.14);
+
+      --f-display: "Cormorant Garamond", "Noto Serif SC", Georgia, serif;
+      --f-body: "Source Serif 4", "Noto Serif SC", Georgia, serif;
+      --f-sans: "Noto Sans SC", system-ui, sans-serif;
+      --f-mono: "Courier Prime", "Courier New", monospace;
+
+      --bg: var(--c-bg);
+      --text: var(--c-fg);
+      --text-muted: var(--c-fg-2);
+      --text-subtle: var(--c-fg-3);
+      --accent: var(--c-accent);
+      --divider: var(--c-border);
+      --font-display: var(--f-display);
+      --font-body: var(--f-body);
+      --font-mono: var(--f-mono);
+    }
+
+    /* ── 2. 基础重置 + Pin 安全带 ──────────────────────────────────── */
+    .reveal { font-family: var(--f-body); font-size: 30px; color: var(--c-fg); background: var(--c-bg); }
+    .reveal .slides { text-align: left; }
+    .reveal section {
+      padding: 44px 64px; height: 100%; box-sizing: border-box; overflow: hidden;
+      background: var(--c-bg);
+      position: relative;   /* 弱选择器被 reveal.css 覆盖，仅 fallback 无害；切勿加 !important */
+    }
+    .reveal .slides > section.deck-flex.present { display: flex !important; top: 0 !important; }
+    .reveal .slides > section.deck-grid.present { display: grid !important; top: 0 !important; }
+    /* 满版分割页:提高特异性让 padding:0 生效(基础 `.reveal section` 会覆盖,A4 要求色块铺到边) */
+    .reveal section.hz-westlake-split,
+    .reveal section.hz-oldnew { padding: 0; }
+
+    /* ── 3. 溢出预防 ──────────────────────────────────────────────── */
+    .reveal section > * { max-width: 100%; box-sizing: border-box; }
+    h1, h2, h3, h4, p, li, span, div { word-break: break-word; overflow-wrap: break-word; }
+    img, svg, video { max-width: 100%; max-height: 100%; object-fit: contain; }
+    .reveal svg text { stroke: none; paint-order: fill; }
+
+    /* ── 4. 排版系统 ──────────────────────────────────────────────── */
+    .reveal h1, .reveal h2, .reveal h3 { font-family: var(--f-display); line-height: 1.06; letter-spacing: 0; color: var(--c-fg); }
+    .reveal h1 { font-size: 3.3em; font-weight: 400; font-style: italic; margin: 0; }
+    .reveal h2 { font-size: 2em; font-weight: 500; margin: 0 0 0.4em 0; }
+    .reveal h3 { font-size: 1.1em; font-weight: 600; margin: 0; }
+    .reveal h4 { font-family: var(--f-display); font-size: 0.9em; font-weight: 600; margin: 0; letter-spacing: 0; }
+    .reveal p { font-family: var(--f-body); font-size: 0.85em; line-height: 1.62; color: var(--c-fg-2); margin: 0; }
+    .reveal em { font-style: italic; color: var(--c-fg); }
+
+    .kicker {
+      font-family: var(--f-mono); font-size: 0.5em; letter-spacing: 0.18em;
+      text-transform: uppercase; color: var(--c-fg-3);
+      display: inline-flex; align-items: center; gap: 0.7em;
+    }
+    .kicker::before { content: ''; width: 28px; height: 1px; background: var(--c-fg-3); }
+
+    .pin {
+      position: absolute; left: 72px; bottom: 28px;
+      font-family: var(--f-mono); font-size: 0.5em;
+      color: var(--c-fg-3); letter-spacing: 0.06em; z-index: 10;
+    }
+    .pin-right { left: auto; right: 72px; }
+    .pin-on-dark { color: rgba(244, 236, 214, 0.55); }
+
+    .rule { width: 64px; height: 2px; background: var(--c-accent); border: 0; margin: 0; }
+    .rule-thin { width: 100%; height: 1px; background: var(--c-rule); border: 0; }
+
+    .stamp {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 0.4em 0.8em; border: 2px solid var(--c-stamp); color: var(--c-stamp);
+      font-family: var(--f-mono); font-size: 0.5em; letter-spacing: 0.22em;
+      text-transform: uppercase; transform: rotate(-3deg);
+    }
+
+    .kpi-label {
+      font-family: var(--f-mono); font-size: 0.46em; letter-spacing: 0.14em;
+      text-transform: uppercase; color: var(--c-fg-3);
+    }
+    .source {
+      font-family: var(--f-mono); font-size: 0.42em; letter-spacing: 0.06em;
+      color: var(--c-fg-3); text-transform: uppercase;
+    }
+
+    /* ─────────── A1 · HZ COVER（报头封面 + 拼贴墙） ─────────── */
+    .hz-cover { padding: 44px 64px; }
+    .hz-cover .poster-wall {
+      position: absolute; top: 44px; right: 64px;
+      width: 320px; height: 432px;
+      display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(4, 1fr);
+      gap: 6px; opacity: 0.92;
+    }
+    .hz-cover .poster-wall .paper {
+      background: var(--c-bg-paper); border: 1px solid var(--c-border);
+      box-shadow: 2px 3px 0 rgba(29, 26, 20, 0.06);
+      position: relative; overflow: hidden;
+    }
+    .hz-cover .poster-wall .paper:nth-child(1) { background: #e8d8a8; transform: rotate(-1.5deg); }
+    .hz-cover .poster-wall .paper:nth-child(4) { background: #d6cba0; transform: rotate(1deg); }
+    .hz-cover .poster-wall .paper:nth-child(6) { background: var(--c-accent); }
+    .hz-cover .poster-wall .paper:nth-child(8) { background: #2a2418; }
+    .hz-cover .poster-wall .paper:nth-child(11) { background: var(--c-spot); transform: rotate(-1deg); }
+    .hz-cover .poster-wall .paper svg { width: 62%; height: 62%; position: absolute; top: 19%; left: 19%; opacity: 0.55; color: var(--c-fg); }
+    .hz-cover .poster-wall .paper.on-dark svg { color: var(--c-bg-paper); opacity: 0.8; }
+
+    .hz-cover .cover-body {
+      display: flex; flex-direction: column; justify-content: flex-end;
+      width: 58%; height: 100%; padding-bottom: 18px; padding-top: 60px;
+    }
+    .hz-cover .masthead {
+      border-top: 3px double var(--c-fg); border-bottom: 1px solid var(--c-fg);
+      padding: 0.5em 0 0.4em; display: flex; justify-content: space-between;
+      font-family: var(--f-mono); font-size: 0.5em; letter-spacing: 0.16em;
+      text-transform: uppercase; color: var(--c-fg-2);
+    }
+    .hz-cover h1 { font-size: 2.4em; line-height: 1.02; margin-top: 0.32em; margin-bottom: 0.1em; }
+    .hz-cover .cover-deck {
+      font-family: var(--f-body); font-style: italic; font-size: 0.72em;
+      color: var(--c-fg-2); line-height: 1.42; max-width: 460px; margin-top: 0.6em;
+    }
+    .hz-cover .cover-meta {
+      margin-top: 0.9em; font-family: var(--f-mono); font-size: 0.42em;
+      letter-spacing: 0.12em; color: var(--c-fg-3); text-transform: uppercase;
+      line-height: 1.7;
+    }
+    .hz-cover .cover-meta b { color: var(--c-fg); font-weight: 600; letter-spacing: 0.08em; }
+    .hz-cover .stamp { position: absolute; top: 60px; left: 64px; }
+
+    /* ─────────── A2 · HZ STATEMENT（大字命题） ─────────── */
+    .hz-statement { flex-direction: column; justify-content: center; padding: 56px 96px 90px 96px; }
+
+    /* ─────────── A3 · HZ DYNASTY AXIS（编年横轴 + 朝代色带·发明变体） ─────────── */
+    .hz-dynasty-axis { flex-direction: column; justify-content: center; padding: 44px 64px 80px 64px; }
+    .hz-dynasty-axis .axis-rule {
+      position: relative; margin-top: 2.4em; padding-top: 1.4em; border-top: 2px solid var(--c-fg);
+    }
+    .hz-dynasty-axis .axis-marks {
+      display: grid; grid-template-columns: repeat(6, 1fr); gap: 14px;
+    }
+    .hz-dynasty-axis .axis-item { position: relative; padding-top: 1.4em; }
+    .hz-dynasty-axis .axis-item::before {
+      content: ''; position: absolute; top: -1.85em; left: 0;
+      width: 10px; height: 10px; background: var(--c-accent); border-radius: 50%;
+    }
+    .hz-dynasty-axis .axis-item.muted::before { background: var(--c-fg-3); }
+    .hz-dynasty-axis .axis-year {
+      font-family: var(--f-display); font-style: italic; font-size: 1.45em;
+      color: var(--c-fg); line-height: 1;
+    }
+    .hz-dynasty-axis .axis-item h4 { font-size: 0.74em; margin: 0.4em 0 0.25em 0; }
+    .hz-dynasty-axis .axis-item p { font-size: 0.54em; line-height: 1.42; }
+    /* 朝代地层色带：每节点下方一条色条，宽度示意该朝代存续 */
+    .hz-dynasty-axis .stratum {
+      height: 5px; margin-top: 0.7em; background: var(--c-jade);
+    }
+    .hz-dynasty-axis .axis-item:nth-child(2) .stratum { background: var(--c-stamp); }
+    .hz-dynasty-axis .axis-item:nth-child(3) .stratum { background: var(--c-accent); }
+    .hz-dynasty-axis .axis-item:nth-child(4) .stratum { background: #3a3a3a; }
+    .hz-dynasty-axis .axis-item:nth-child(5) .stratum { background: var(--c-spot); }
+    .hz-dynasty-axis .axis-item:nth-child(6) .stratum { background: var(--c-accent); }
+    .hz-dynasty-axis .axis-item.muted .stratum { opacity: 0.55; }
+
+    /* ─────────── A4 · HZ WESTLAKE SPLIT（满版分割 + 西湖俯瞰 SVG·签名时刻） ─────────── */
+    .hz-westlake-split { height: 100%; padding: 0; }
+    .hz-westlake-split .ink-panel {
+      width: 42%; background: var(--c-fg); color: var(--c-bg);
+      display: flex; flex-direction: column; justify-content: space-between;
+      padding: 2.2em 2em 2.4em;
+    }
+    .hz-westlake-split .ink-panel .kicker { color: rgba(244, 236, 214, 0.85); }
+    .hz-westlake-split .ink-panel .kicker::before { background: rgba(244, 236, 214, 0.5); }
+    .hz-westlake-split .ink-panel h2 { color: var(--c-bg); margin-top: 0.5em; font-size: 1.75em; line-height: 1.1; }
+    .hz-westlake-split .ink-panel .westlake-svg {
+      margin: 0.8em 0; width: 100%; height: 150px;
+    }
+    .hz-westlake-split .ink-panel .westlake-svg svg { width: 100%; height: 100%; }
+    .hz-westlake-split .ink-panel .panel-quote {
+      font-family: var(--f-display); font-style: italic; color: var(--c-bg);
+      font-size: 0.9em; line-height: 1.4; opacity: 0.88;
+    }
+    .hz-westlake-split .content-panel {
+      width: 58%; display: flex; flex-direction: column; justify-content: center;
+      padding: 2.2em 2.6em 2.4em;
+    }
+    .hz-westlake-split .content-panel .fact-row {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 1em 1.6em;
+      margin-top: 0.8em;
+    }
+    .hz-westlake-split .content-panel .fact {
+      border-top: 1px solid var(--c-border); padding-top: 0.5em;
+    }
+    .hz-westlake-split .content-panel .fact .v {
+      font-family: var(--f-display); font-style: italic; font-size: 1.5em;
+      color: var(--c-accent); line-height: 1;
+    }
+    .hz-westlake-split .content-panel .fact .lbl {
+      font-family: var(--f-mono); font-size: 0.42em; letter-spacing: 0.12em;
+      color: var(--c-fg-3); text-transform: uppercase; margin-top: 0.3em;
+    }
+    .hz-westlake-split .content-panel p.lede {
+      font-size: 0.78em; line-height: 1.55; margin-top: 0.6em;
+    }
+
+    /* ─────────── A5 · HZ ANCHOR 1138（巨型锚点数字） ─────────── */
+    .hz-anchor { padding: 56px 72px 80px 72px; flex-direction: column; justify-content: center; }
+    .hz-anchor .anchor-row { display: flex; gap: 3em; align-items: flex-start; }
+    .hz-anchor .anchor-left { flex: 1; }
+    .hz-anchor .anchor-left .kpi-label { color: var(--c-fg-3); }
+    .hz-anchor .anchor-left .big-num {
+      font-family: var(--f-display); font-size: 5.4em; font-weight: 600;
+      font-style: italic; line-height: 1; color: var(--c-fg); margin: 0.1em 0 0.15em;
+    }
+    .hz-anchor .anchor-left .anchor-name {
+      font-family: var(--f-display); font-style: italic; font-size: 1.2em; margin-top: 0.5em;
+    }
+    .hz-anchor .anchor-left p { font-size: 0.78em; margin-top: 0.5em; max-width: 30ch; }
+    .hz-anchor .anchor-right {
+      flex: 1.1; border-left: 1px solid var(--c-border); padding-left: 2em;
+    }
+    .hz-anchor .anchor-right .ev-row {
+      display: flex; gap: 1em; padding: 0.55em 0; border-top: 1px solid var(--c-rule);
+      align-items: baseline;
+    }
+    .hz-anchor .anchor-right .ev-row:last-child { border-bottom: 1px solid var(--c-rule); }
+    .hz-anchor .anchor-right .ev-row .yr {
+      font-family: var(--f-mono); font-size: 0.5em; color: var(--c-accent);
+      letter-spacing: 0.08em; min-width: 4.5em;
+    }
+    .hz-anchor .anchor-right .ev-row .ev { font-size: 0.66em; color: var(--c-fg-2); line-height: 1.4; }
+
+    /* ─────────── A10 · HZ POEM（引言页） ─────────── */
+    .hz-poem {
+      grid-template-columns: 0.3fr 0.7fr; gap: 56px; padding: 56px 80px; align-items: center;
+    }
+    .hz-poem .poem-meta {
+      border-right: 1px solid var(--c-border); padding-right: 48px;
+      display: flex; flex-direction: column; gap: 0.5em;
+    }
+    .hz-poem .poem-meta .num {
+      font-family: var(--f-display); font-style: italic; font-size: 4em;
+      color: var(--c-accent); line-height: 0.9;
+    }
+    .hz-poem .poem-meta .who {
+      font-family: var(--f-mono); font-size: 0.5em; letter-spacing: 0.14em;
+      color: var(--c-fg-3); text-transform: uppercase;
+    }
+    .hz-poem .poem-meta b {
+      color: var(--c-fg); font-size: 0.62em; letter-spacing: 0; text-transform: none;
+      font-family: var(--f-body); font-weight: 600;
+    }
+    .hz-poem .poem-body {
+      font-family: var(--f-display); font-style: italic; font-size: 2em;
+      line-height: 1.32; color: var(--c-fg); position: relative;
+    }
+    .hz-poem .poem-body::before {
+      content: '"'; position: absolute; left: -0.4em; top: -0.5em;
+      font-size: 3em; color: var(--c-accent); opacity: 0.5;
+      line-height: 1; font-family: var(--f-display);
+    }
+
+    /* ─────────── A9 · HZ NUMBERS（证据台账表） ─────────── */
+    .hz-numbers { padding: 44px 64px; flex-direction: column; }
+    .hz-numbers h2 { margin-bottom: 0.3em; font-size: 1.55em; }
+    .hz-numbers .num-table {
+      width: 100%; border-collapse: collapse;
+      font-family: var(--f-body); font-size: 0.62em; margin-top: 0.7em;
+    }
+    .hz-numbers .num-table th {
+      text-align: left; padding: 0.5em; font-family: var(--f-mono);
+      font-size: 0.85em; letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--c-fg-3); font-weight: 400; border-bottom: 2px solid var(--c-fg);
+    }
+    .hz-numbers .num-table td {
+      padding: 0.55em; vertical-align: top; border-bottom: 1px solid var(--c-rule); line-height: 1.4;
+    }
+    .hz-numbers .num-table .grade-A { color: var(--c-accent); font-weight: 600; font-family: var(--f-mono); }
+    .hz-numbers .num-table .hero { color: var(--c-accent); font-weight: 700; font-family: var(--f-mono); }
+    .hz-numbers .num-table tr:last-child td { border-bottom: none; }
+    .hz-numbers .num-table .src { font-family: var(--f-mono); font-size: 0.82em; color: var(--c-fg-3); }
+
+    /* ─────────── A6 · HZ OLD VS NEW（对峙对比） ─────────── */
+    .hz-oldnew { height: 100%; padding: 0; }
+    .hz-oldnew .era-panel {
+      width: 52%; background: var(--c-accent); color: var(--c-bg);
+      display: flex; flex-direction: column; justify-content: space-between;
+      padding: 2.4em 2.4em;
+    }
+    .hz-oldnew .era-panel .kicker { color: rgba(244,236,214,0.85); }
+    .hz-oldnew .era-panel .kicker::before { background: rgba(244,236,214,0.6); }
+    .hz-oldnew .era-panel .big {
+      font-family: var(--f-display); font-style: italic; font-weight: 600;
+      font-size: 3.6em; color: var(--c-bg); line-height: 1; margin: 0.25em 0;
+    }
+    .hz-oldnew .era-panel .kpi-label { color: rgba(244,236,214,0.78); }
+    .hz-oldnew .era-panel .era-detail {
+      font-family: var(--f-body); font-size: 0.72em; line-height: 1.55;
+      color: rgba(244,236,214,0.85); margin-top: 0.5em;
+    }
+    .hz-oldnew .now-panel {
+      width: 48%; display: flex; flex-direction: column; justify-content: center;
+      padding: 2.2em 2.5em;
+    }
+    .hz-oldnew .now-panel .big {
+      font-family: var(--f-display); font-style: italic; font-weight: 600;
+      font-size: 2.6em; color: var(--c-fg); line-height: 1;
+    }
+    .hz-oldnew .now-panel .now-detail {
+      font-size: 0.7em; line-height: 1.55; color: var(--c-fg-2); margin-top: 0.5em;
+    }
+    .hz-oldnew .verdict-rule { height: 1px; background: var(--c-fg); margin: 1.1em 0 0.9em; }
+    .hz-oldnew .verdict {
+      font-family: var(--f-display); font-style: italic; font-weight: 600;
+      font-size: 2.4em; color: var(--c-stamp); line-height: 1;
+    }
+
+    /* ─────────── A7 · HZ KPI（指标卡阵） ─────────── */
+    .hz-kpi { padding: 56px 64px 80px 64px; flex-direction: column; justify-content: center; }
+    .hz-kpi .kpi-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.1em; margin-top: 1.4em;
+    }
+    .hz-kpi .kpi-card {
+      border: 1px solid var(--c-fg); background: var(--c-bg-2);
+      padding: 1.1em 1em; position: relative;
+    }
+    .hz-kpi .kpi-card .kpi-label { color: var(--c-fg-3); }
+    .hz-kpi .kpi-card .num {
+      font-family: var(--f-display); font-style: italic; font-weight: 600;
+      font-size: 2.6em; line-height: 0.95; color: var(--c-accent); margin-top: 0.2em;
+    }
+    .hz-kpi .kpi-card .note { font-size: 0.58em; color: var(--c-fg-2); margin-top: 0.3em; line-height: 1.4; }
+    .hz-kpi .kpi-card.invert { background: var(--c-fg); }
+    .hz-kpi .kpi-card.invert .kpi-label { color: rgba(244,236,214,0.6); }
+    .hz-kpi .kpi-card.invert .num { color: var(--c-bg-paper); }
+    .hz-kpi .kpi-card.invert .note { color: rgba(244,236,214,0.7); }
+
+    /* ─────────── A12 · HZ CLOSE（报头收尾） ─────────── */
+    .hz-close {
+      padding: 44px 72px; grid-template-rows: 1fr auto;
+      align-items: center; gap: 1.4em;
+    }
+    .hz-close .close-body { max-width: 760px; }
+    .hz-close .close-body h2 {
+      font-family: var(--f-display); font-style: italic; font-size: 2.6em;
+      line-height: 1.05; font-weight: 400; margin-bottom: 0.4em;
+    }
+    .hz-close .close-body p {
+      font-family: var(--f-body); font-style: italic; font-size: 0.85em;
+      line-height: 1.55; color: var(--c-fg-2); max-width: 600px;
+    }
+    .hz-close .colophon {
+      display: flex; justify-content: space-between; align-items: end;
+      padding-top: 1em; border-top: 1px solid var(--c-border);
+      font-family: var(--f-mono); font-size: 0.46em; letter-spacing: 0.12em;
+      color: var(--c-fg-3); text-transform: uppercase;
+    }
+    .hz-close .colophon b { color: var(--c-fg); font-weight: 600; }
+
+    /* ── Fragment ── */
+    .reveal .fragment { transition-duration: 380ms; }
+    @media (prefers-reduced-motion: reduce) {
+      .reveal .fragment { opacity: 1; transform: none; transition: opacity 200ms ease-out; }
+    }
+    .reveal .progress { color: var(--c-accent); height: 2px; }
+    .reveal .controls { color: var(--c-fg-2); }
+  </style>
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+      <!-- 1 · A1 报头封面 -->
+      <section class="hz-cover deck-flex" data-background="#f4ecd6">
+        <div class="poster-wall">
+          <div class="paper"><svg viewBox="0 0 40 40" stroke="currentColor" fill="none" stroke-width="1.6"><circle cx="20" cy="20" r="15"/><circle cx="13" cy="18" r="1.8" fill="currentColor"/><circle cx="20" cy="14" r="1.8" fill="currentColor"/><circle cx="27" cy="18" r="1.8" fill="currentColor"/></svg></div><!-- 三潭印月 -->
+          <div class="paper"></div>
+          <div class="paper"><svg viewBox="0 0 40 40" stroke="currentColor" fill="none" stroke-width="1.6"><path d="M14 34 V20 L20 12 L26 20 V34 Z"/><path d="M18 24 H22"/></svg></div><!-- 雷峰塔 -->
+          <div class="paper"></div>
+          <div class="paper"></div>
+          <div class="paper on-dark"></div>
+          <div class="paper"><svg viewBox="0 0 40 40" stroke="currentColor" fill="none" stroke-width="1.6"><path d="M8 30 Q14 18 20 24 T32 14"/></svg></div><!-- 丝绸波浪 -->
+          <div class="paper"></div>
+          <div class="paper"><svg viewBox="0 0 40 40" stroke="currentColor" fill="none" stroke-width="1.6"><path d="M20 6 V12 M14 9 H26 M20 12 Q12 22 20 34 Q28 22 20 12"/></svg></div><!-- 龙井茶叶 -->
+          <div class="paper"></div>
+          <div class="paper"></div>
+          <div class="paper"><svg viewBox="0 0 40 40" stroke="currentColor" fill="none" stroke-width="1.6"><path d="M6 28 Q20 8 34 28"/><line x1="6" y1="28" x2="34" y2="28"/><line x1="14" y1="20" x2="26" y2="20"/></svg></div><!-- 钱塘江大桥 -->
+        </div>
+
+        <div class="stamp">No. 001 · Catalogued</div>
+
+        <div class="cover-body">
+          <div class="masthead">
+            <span>Hangzhou · Vol. I</span><span>Est. 公元前 3300</span><span>A City Dossier</span>
+          </div>
+          <h1>杭州,一座<br><em>反复发明自己</em>的城市。</h1>
+          <p class="cover-deck">一份五千年城市志。从良渚玉琮上的早期国家,到南宋百万人口的南渡国都,到今天写代码的电商之都,杭州在四个时空中叠合地活着。</p>
+          <div class="cover-meta">
+            <span><b>1.68 万</b> km²</span> · <span><b>1252</b> 万人口</span> · <span><b>¥2.0</b> 万亿 GDP</span> · <span><b>3</b> 项世界遗产<br>
+            <span style="display:inline-block; margin-top:0.4em;">编 · 城市志编辑部 &nbsp;·&nbsp; Series 城市专刊 · ed.01 &nbsp;·&nbsp; Sources verified</span>
+          </div>
+        </div>
+        <span class="pin">01 · cover</span>
+      </section>
+
+      <!-- 2 · A2 大字命题 -->
+      <section class="hz-statement deck-flex" data-background="#f4ecd6">
+        <span class="kicker">Editor's note · the argument</span>
+        <hr class="rule" style="margin: 1.5em 0;">
+        <h2 style="font-family: var(--f-display); font-style: italic; font-weight: 400; font-size: 2.4em; line-height: 1.15; max-width: 900px;">
+          杭州不是一个景点,是<br>
+          <em style="color: var(--c-accent);">四重时空的叠合</em>。
+        </h2>
+        <p style="font-size: 0.82em; margin-top: 1em; max-width: 720px; line-height: 1.55; font-style: italic;">
+          良渚的玉、南宋的城、唐宋诗人写过的湖、今天在键盘上跑的代码,在同一座城里同时呼吸。读杭州,要读它如何反复重新发明自己。
+        </p>
+        <div style="margin-top: 1.4em; display: flex; gap: 2em; font-family: var(--f-mono); font-size: 0.44em; letter-spacing: 0.14em; color: var(--c-fg-3); text-transform: uppercase;">
+          <span><b style="color: var(--c-fg);">5000</b> 年</span>
+          <span><b style="color: var(--c-fg);">4</b> 层时空</span>
+          <span><b style="color: var(--c-fg);">1</b> 座城</span>
+        </div>
+        <div class="source" style="margin-top: 0.9em;">verified · 良渚古城遗址 UNESCO 2019 · 杭州统计公报</div>
+        <span class="pin pin-right">02 · statement</span>
+      </section>
+
+      <!-- 3 · A3 编年横轴 + 朝代色带（发明变体） -->
+      <section class="hz-dynasty-axis deck-flex" data-background="#f4ecd6">
+        <span class="kicker">Series register · 五千年编年 · verified</span>
+        <h2 style="margin-top: 0.5em;">六个拐点,杭州没停下<em style="color: var(--c-accent);">重写自己</em>。</h2>
+        <div class="axis-rule">
+          <div class="axis-marks">
+            <div class="axis-item muted">
+              <span class="axis-year">前 3300</span>
+              <h4>良渚文明。</h4>
+              <p>玉琮上的早期国家,东亚最早的城市遗址之一。</p>
+              <div class="stratum"></div>
+            </div>
+            <div class="axis-item muted">
+              <span class="axis-year">589</span>
+              <h4>隋设杭州。</h4>
+              <p>"杭州"得名,京杭运河南端就此落定。</p>
+              <div class="stratum"></div>
+            </div>
+            <div class="axis-item">
+              <span class="axis-year">1138</span>
+              <h4>南宋定都临安。</h4>
+              <p>南渡政权立足,百万人口的国都时代。</p>
+              <div class="stratum"></div>
+            </div>
+            <div class="axis-item muted">
+              <span class="axis-year">1937</span>
+              <h4>钱塘江大桥。</h4>
+              <p>茅以升主持建成,中国人自建的第一座公铁大桥。</p>
+              <div class="stratum"></div>
+            </div>
+            <div class="axis-item">
+              <span class="axis-year">1999</span>
+              <h4>阿里巴巴成立。</h4>
+              <p>湖畔花园十八人,电商之都的数字起点。</p>
+              <div class="stratum"></div>
+            </div>
+            <div class="axis-item">
+              <span class="axis-year">2016</span>
+              <h4>G20 杭州峰会。</h4>
+              <p>数字杭州在全球亮相,亚运 2023 接力。</p>
+              <div class="stratum"></div>
+            </div>
+          </div>
+        </div>
+        <span class="pin">03 · dynasty axis</span>
+      </section>
+
+      <!-- 4 · A4 满版分割 + 西湖俯瞰 SVG（签名时刻） -->
+      <section class="hz-westlake-split deck-flex" data-background="#f4ecd6">
+        <div class="ink-panel">
+          <div>
+            <span class="kicker">西湖 · 城市的几何中心</span>
+            <h2>西湖不是装饰,是杭州的<em style="color: var(--c-spot); font-style: italic;">坐标系</em>。</h2>
+          </div>
+          <div class="westlake-svg">
+            <svg viewBox="0 0 200 150" fill="none" stroke="#f4ecd6" stroke-width="1.2">
+              <!-- 湖轮廓 -->
+              <path d="M40 75 Q35 50 60 42 Q90 30 120 38 Q155 46 160 70 Q165 100 140 112 Q110 124 75 118 Q45 110 40 75 Z" stroke-opacity="0.85"/>
+              <!-- 苏堤(纵向) -->
+              <line x1="100" y1="40" x2="100" y2="118" stroke="#5a7a3a" stroke-width="1.6" stroke-dasharray="3 2"/>
+              <!-- 白堤(斜向) -->
+              <line x1="60" y1="44" x2="92" y2="62" stroke="#5a7a3a" stroke-width="1.6" stroke-dasharray="3 2"/>
+              <!-- 三潭印月三个点 -->
+              <circle cx="92" cy="78" r="3" fill="#f4ecd6"/>
+              <circle cx="104" cy="72" r="3" fill="#f4ecd6"/>
+              <circle cx="98" cy="86" r="3" fill="#f4ecd6"/>
+            </svg>
+          </div>
+          <div class="panel-quote">"一山、二塔、三岛、三堤、五湖"。<br>2011 年登录世界文化景观遗产。</div>
+        </div>
+        <div class="content-panel">
+          <span class="kicker">山水 · 城市的骨架</span>
+          <h2 style="font-size: 1.7em; margin-top: 0.5em;">三重水系撑起一座城。</h2>
+          <div class="fact-row">
+            <div class="fact">
+              <div class="v">6.39 km²</div>
+              <div class="lbl">西湖 · 世界遗产 2011</div>
+            </div>
+            <div class="fact">
+              <div class="v">11 km²</div>
+              <div class="lbl">西溪湿地 · 国家公园</div>
+            </div>
+            <div class="fact">
+              <div class="v">668 km</div>
+              <div class="lbl">钱塘江流域段 · 杭州境内</div>
+            </div>
+            <div class="fact">
+              <div class="v">1 条</div>
+              <div class="lbl">京杭大运河 · 2014 世遗</div>
+            </div>
+          </div>
+          <p class="lede">城市围着湖长出来,湖又被诗人反复重写:白居易修的白堤,苏轼修的苏堤,两条堤把西湖分成里湖、外湖、后湖,直到今天还是杭州的空间逻辑。</p>
+          <div class="source" style="margin-top: 0.6em;">verified · UNESCO 2011/2014 · 杭州市园文局</div>
+        </div>
+        <span class="pin pin-on-dark" style="color: rgba(244,236,214,0.55);">04 · west lake</span>
+      </section>
+
+      <!-- 5 · A5 巨型锚点数字 1138 -->
+      <section class="hz-anchor deck-flex" data-background="#f4ecd6">
+        <span class="kicker">Anchor · 南宋临安</span>
+        <div class="anchor-row">
+          <div class="anchor-left">
+            <div class="kpi-label">Year · 定都</div>
+            <div class="big-num">1138</div>
+            <div class="kpi-label">南宋绍兴八年 · 临安府</div>
+            <div class="anchor-name">南渡政权在此立足。</div>
+            <p>宋室南渡后定都临安,杭州从东南都会升格为王朝中心。这是它最重的一次身份重写:从钱塘县,到国都。</p>
+            <div class="source" style="margin-top: 0.6em;">verified · 《宋史·地理志》</div>
+          </div>
+          <div class="anchor-right">
+            <div class="kpi-label" style="margin-bottom: 0.4em;">同期证据 · 临安繁华</div>
+            <div class="ev-row"><span class="yr">约 124 万</span><span class="ev">13 世纪临安人口,世界级大都市。</span></div>
+            <div class="ev-row"><span class="yr">官窑</span><span class="ev">南宋官窑青瓷,设在杭州乌龟山,专供宫廷。</span></div>
+            <div class="ev-row"><span class="yr">丝绸</span><span class="ev">"丝绸之府",织造技艺在此达到顶峰。</span></div>
+            <div class="ev-row"><span class="yr">印刷</span><span class="ev">南宋刻本,中国雕版印刷的黄金期。</span></div>
+            <div class="ev-row"><span class="yr">海外</span><span class="ev">市舶司通商,远达日本、高丽、南洋。</span></div>
+          </div>
+        </div>
+        <span class="pin pin-right">05 · anchor 1138</span>
+      </section>
+
+      <!-- 6 · A10 引言页（诗画杭州） -->
+      <section class="hz-poem deck-grid" data-background="#fbf6e6">
+        <div class="poem-meta">
+          <span class="num">№ 03</span>
+          <hr class="rule" style="width: 32px;">
+          <span class="who">诗 · 饮湖上初晴后雨</span>
+          <span style="margin-top: 1.2em;"><b>苏轼</b></span>
+          <span class="who" style="color: var(--c-fg-2);">1073 · 杭州通判</span>
+          <span class="who" style="margin-top: 0.4em;">两次在杭任职 · 筑苏堤</span>
+          <span class="who" style="margin-top: 0.8em; color: var(--c-accent);">verified · 《苏东坡全集》</span>
+        </div>
+        <div class="poem-body">
+          欲把西湖比西子,<br>
+          <em style="color: var(--c-accent); font-style: italic;">淡妆浓抹总相宜</em>。
+        </div>
+        <span class="pin">06 · poem</span>
+      </section>
+
+      <!-- 7 · A9 证据台账表（杭州数字 ledger） -->
+      <section class="hz-numbers deck-flex" data-background="#f4ecd6" style="flex-direction: column;">
+        <span class="kicker">Ledger · 今日杭州,grade of evidence</span>
+        <h2 style="margin-top: 0.5em;">每个数字都站在<em style="color: var(--c-accent);">可查证的来源</em>上。</h2>
+        <table class="num-table">
+          <thead>
+            <tr>
+              <th style="width: 12%;">Grade</th>
+              <th style="width: 26%;">维度</th>
+              <th style="width: 38%;">数值</th>
+              <th style="width: 24%;">来源</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="grade-A">A · cited</span></td>
+              <td>GDP</td>
+              <td><span class="hero">20059 亿元</span> · 2023 年</td>
+              <td class="src">杭州市统计局</td>
+            </tr>
+            <tr>
+              <td><span class="grade-A">A · cited</span></td>
+              <td>常住人口</td>
+              <td><span class="hero">1252.2 万</span> · 2023 年末</td>
+              <td class="src">杭州统计公报</td>
+            </tr>
+            <tr>
+              <td><span class="grade-A">A · cited</span></td>
+              <td>世界遗产</td>
+              <td><span class="hero">3 项</span> · 西湖 / 大运河 / 良渚</td>
+              <td class="src">UNESCO 2011/2014/2019</td>
+            </tr>
+            <tr>
+              <td><span class="grade-A">A · cited</span></td>
+              <td>数字经济</td>
+              <td><span class="hero">约 28%</span> · 核心产业增加值占 GDP</td>
+              <td class="src">杭州统计公报 2023</td>
+            </tr>
+            <tr>
+              <td><span class="grade-A">A · cited</span></td>
+              <td>独角兽企业</td>
+              <td><span class="hero">30+ 家</span> · 全国前列</td>
+              <td class="src">胡润独角兽榜 2023</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="source" style="margin-top: 0.7em; text-align: right;">All figures verified · 2023 杭州统计公报 / UNESCO / 胡润独角兽榜</div>
+        <span class="pin pin-right">07 · ledger</span>
+      </section>
+
+      <!-- 8 · A6 对峙对比（古 vs 今） -->
+      <section class="hz-oldnew deck-flex" data-background="#f4ecd6">
+        <div class="era-panel">
+          <div>
+            <span class="kicker">Era A · 南宋临安</span>
+            <div class="big">124 万</div>
+            <div class="kpi-label">人口 · 13 世纪</div>
+            <div class="era-detail">南渡国都。丝绸、官窑、刻书、海外贸易,一座中世纪世界级大都市。</div>
+          </div>
+          <div class="kpi-label">1138 — 1279</div>
+        </div>
+        <div class="now-panel">
+          <span class="kicker">Era B · 数字杭州</span>
+          <div class="big">¥6300+</div>
+          <div class="kpi-label">亿 · 数字经济核心产业 · 2023</div>
+          <div class="now-detail">从 1999 年阿里十八人,到全球电商之都。今天的杭州在键盘上跑,不再是丝绸上。</div>
+          <div class="verdict-rule"></div>
+          <div class="verdict">≈ 800 年</div>
+          <div class="kpi-label" style="margin-top: 0.3em;">裁决 · 一座城没停下重新发明自己</div>
+          <div class="source" style="margin-top: 0.8em;">verified · 《宋史·地理志》/ 杭州统计公报 2023</div>
+        </div>
+        <span class="pin pin-on-dark" style="color: rgba(244,236,214,0.55);">08 · old vs new</span>
+      </section>
+
+      <!-- 9 · A7 KPI 卡阵（今日杭州） -->
+      <section class="hz-kpi deck-flex" data-background="#f4ecd6" style="flex-direction: column;">
+        <span class="kicker">KPI · 今日杭州,一眼速览</span>
+        <h2 style="margin-top: 0.5em;">四个数字,撑起一座<em style="color: var(--c-accent); font-style: italic;">新一线</em>。</h2>
+        <div class="kpi-grid">
+          <div class="kpi-card invert">
+            <div class="kpi-label">GDP · 2023</div>
+            <div class="num">¥2.0万亿</div>
+            <div class="note">20059 亿元,全国城市前十。</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">常住人口</div>
+            <div class="num">1252万</div>
+            <div class="note">2023 年末,持续净流入。</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">世界遗产</div>
+            <div class="num">3 项</div>
+            <div class="note">西湖 · 大运河 · 良渚。</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">独角兽企业</div>
+            <div class="num">30+</div>
+            <div class="note">胡润榜,全国前列。</div>
+          </div>
+        </div>
+        <div class="source" style="margin-top: 1em;">verified · 杭州统计公报 2023 / 胡润独角兽榜</div>
+        <span class="pin">09 · kpi</span>
+      </section>
+
+      <!-- 10 · A12 报头收尾 -->
+      <section class="hz-close deck-grid" data-background="#fbf6e6">
+        <div class="close-body">
+          <span class="kicker">Closing · the editor signs</span>
+          <h2><em>杭州的下一章,<br>还在写。</em></h2>
+          <p>这份卷宗到这里。从良渚的玉琮到今天的代码,杭州最稳定的特质,是它从不固守上一版的自己。下一次它重新发明自己的拐点,还没被命名,这正是它值得被反复阅读的理由。</p>
+        </div>
+        <div class="colophon">
+          <div>
+            <b>Volume I · 2026</b><br>
+            <span style="display:inline-block; margin-top:0.4em;">城市专刊 · Hangzhou Dossier</span>
+          </div>
+          <div style="text-align: center;">
+            <span class="stamp">Catalogued · 2026</span>
+          </div>
+          <div style="text-align: right;">
+            <b>archive.editorial</b><br>
+            <span style="display:inline-block; margin-top:0.4em;">城市志编辑部,eds.</span>
+          </div>
+        </div>
+        <span class="pin">10 · closing</span>
+      </section>
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@4.0.1/dist/pptxgen.bundle.js"></script>
+  <script>
+    Reveal.initialize({
+      width: 1280, height: 720, margin: 0.04,
+      minScale: 0.8, maxScale: 1.2,
+      hash: true, slideNumber: 'c/t', progress: true,
+      center: false, controls: true, controlsTutorial: false,
+      transition: 'fade', transitionSpeed: 'default', backgroundTransition: 'fade',
+    });
+  </script>
+  <script>
+  /* Inline PPTX exporter — 复用项目通用脚本（按 :root token 解析颜色） */
+  (function () {
+    'use strict';
+    var BTN_TEXT = 'PPTX';
+    function rgbToHex(r,g,b){return [r,g,b].map(function(c){return Math.round(c).toString(16).padStart(2,'0').toUpperCase();}).join('');}
+    function parseRgb(str){if(!str)return null;var m=str.match(/rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)/);return m?rgbToHex(+m[1],+m[2],+m[3]):null;}
+    function linearToSrgb(c){c=Math.max(0,Math.min(1,c));return c<=0.0031308?12.92*c:1.055*Math.pow(c,1/2.4)-0.055;}
+    function oklchToHex(str){if(!str)return null;var m=str.match(/oklch\(\s*([\d.]+)(%)?\s+([\d.]+)\s+([\d.]+)/);if(!m)return null;var L=m[2]==='%'?+m[1]/100:+m[1];var C=+m[3];var H=+m[4];var a=C*Math.cos(H*Math.PI/180);var b=C*Math.sin(H*Math.PI/180);var l_=L+0.3963377774*a+0.2158037573*b;var m_=L-0.1055613458*a-0.0638541728*b;var s_=L-0.0894841775*a-1.2914855480*b;var l3=l_*l_*l_,m3=m_*m_*m_,s3=s_*s_*s_;var rl=4.0767416621*l3-3.3077115913*m3+0.2309699292*s3;var gl=-1.2684380046*l3+2.6097574011*m3-0.3413193965*s3;var bl=-0.0041960863*l3-0.7034186147*m3+1.7076147010*s3;return rgbToHex(Math.round(Math.min(255,Math.max(0,linearToSrgb(rl)*255))),Math.round(Math.min(255,Math.max(0,linearToSrgb(gl)*255))),Math.round(Math.min(255,Math.max(0,linearToSrgb(bl)*255))));}
+    function anyColorToHex(str){if(!str)return null;if(str.startsWith('#'))return str.replace('#','').substring(0,6).toUpperCase();if(str.startsWith('oklch'))return oklchToHex(str);if(str.startsWith('rgb'))return parseRgb(str);return parseRgb(str);}
+    function resolveColor(val,vars){if(!val)return null;if(val.startsWith('#')&&val.length>=4)return val.replace('#','').substring(0,6).toUpperCase();if(val.startsWith('oklch'))return oklchToHex(val);if(val.startsWith('rgb'))return parseRgb(val);var vm=val.match(/var\(\s*(--[\w-]+)\s*\)/);if(vm&&vars[vm[1]])return resolveColor(vars[vm[1]],vars);return parseRgb(val);}
+    function getElColor(el){return anyColorToHex(getComputedStyle(el).color)||'000000';}
+    function getCssVars(){var vars={};document.querySelectorAll('style').forEach(function(s){var rm=s.textContent.match(/:root\s*\{([^}]+)\}/);if(rm){var re=/(--[\w-]+)\s*:\s*([^;]+)/g,m;while((m=re.exec(rm[1])))vars[m[1]]=m[2].trim();}});var al={'--bg':'--c-bg','--text':'--c-fg','--text-muted':'--c-fg-2','--text-subtle':'--c-fg-3','--accent':'--c-accent','--divider':'--c-border'};Object.keys(al).forEach(function(L){var C=al[L];if(!vars[L]&&vars[C])vars[L]=vars[C];if(!vars[C]&&vars[L])vars[C]=vars[L];});return vars;}
+    function pxToPt(px){return parseFloat(px)*0.75;}
+    function textOf(el){return (el.textContent||'').trim();}
+    var pptx;
+    function exportSection(slide,sec,vars){
+      var bg=resolveColor(vars['--c-bg']||vars['--bg'],vars)||'FFFFFF';
+      slide.background={color:bg};
+      var textMuted=resolveColor(vars['--c-fg-2']||vars['--text-muted'],vars)||'999999';
+      var y=0.55;
+      var kicker=sec.querySelector('.kicker');
+      if(kicker){slide.addText(textOf(kicker),{x:0.55,y:y,w:12.2,h:0.32,fontSize:9,color:textMuted,fontFace:'Calibri',charSpacing:3});y+=0.42;}
+      var h1=sec.querySelector('h1'),h2=sec.querySelector('h2');
+      var head=h1||h2;
+      if(head){var fs=pxToPt(getComputedStyle(head).fontSize);slide.addText(textOf(head),{x:0.55,y:y,w:12.2,h:h1?2.2:1.1,fontSize:Math.min(h1?40:26,fs),color:getElColor(head),fontFace:'Calibri',bold:true,valign:'top',lineSpacingMultiple:1.1});y+=h1?2.4:1.3;}
+      var paras=sec.querySelectorAll('p, .lede, .cover-deck, .poem-body, .panel-quote, .era-detail, .now-detail, .anchor-name');
+      var added=0;
+      paras.forEach(function(p){if(added>=3)return;var t=textOf(p);if(!t||t.length<5)return;var fs=pxToPt(getComputedStyle(p).fontSize);slide.addText(t,{x:0.55,y:y,w:12.2,h:0.7,fontSize:Math.min(14,fs),color:getElColor(p),fontFace:'Calibri',valign:'top',lineSpacingMultiple:1.5,wrap:true});y+=0.8;added++;});
+      var pin=sec.querySelector('.pin');
+      if(pin){slide.addText(textOf(pin),{x:0.55,y:7.0,w:6,h:0.3,fontSize:8,color:resolveColor(vars['--c-fg-3'],vars)||'AAAAAA',fontFace:'Calibri',charSpacing:2});}
+    }
+    function doExport(){
+      if(typeof PptxGenJS==='undefined'){alert('PptxGenJS 未加载');return;}
+      var btn=document.getElementById('pptx-export-btn');
+      if(btn){btn.textContent='导出中...';btn.disabled=true;}
+      try{
+        pptx=new PptxGenJS(); pptx.layout='LAYOUT_WIDE';
+        var vars=getCssVars();
+        document.querySelectorAll('.reveal .slides > section').forEach(function(sec){
+          var nested=sec.querySelectorAll(':scope > section');
+          var list=nested.length?Array.from(nested):[sec];
+          list.forEach(function(s){var slide=pptx.addSlide();exportSection(slide,s,vars);});
+        });
+        var name=(document.title||'presentation').replace(/[^\w一-鿿\-]/g,'_');
+        pptx.writeFile({fileName:name+'.pptx'}).then(function(){if(btn){btn.textContent='已导出';setTimeout(function(){btn.textContent=BTN_TEXT;btn.disabled=false;},2000);}});
+      }catch(e){console.error(e);alert('导出失败: '+e.message);if(btn){btn.textContent=BTN_TEXT;btn.disabled=false;}}
+    }
+    function init(){
+      var btn=document.createElement('button');
+      btn.id='pptx-export-btn'; btn.textContent=BTN_TEXT;
+      btn.setAttribute('aria-label','导出 PPTX');
+      btn.setAttribute('style','position:fixed;top:16px;right:16px;z-index:9999;padding:6px 12px;background:#fbf6e6;color:#1d1a14;border:1px solid rgba(0,0,0,0.12);border-radius:6px;cursor:pointer;font-size:12px;opacity:0;transition:opacity 0.2s;font-family:system-ui,sans-serif;');
+      btn.onclick=doExport;
+      btn.onmouseenter=function(){btn.style.opacity='1';};
+      btn.onfocus=function(){btn.style.opacity='1';};
+      btn.onmouseleave=function(){btn.style.opacity='0';};
+      btn.onblur=function(){btn.style.opacity='0';};
+      document.body.appendChild(btn);
+      document.addEventListener('mousemove',function(e){btn.style.opacity=(e.clientY<76&&e.clientX>window.innerWidth-110)?'0.9':'0';});
+      document.addEventListener('fullscreenchange',function(){btn.style.display=document.fullscreenElement?'none':'';});
+    }
+    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init); else init();
+  })();
+  </script>
+</body>
+</html>

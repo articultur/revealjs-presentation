@@ -92,6 +92,7 @@ const expectedTemplates = [
   'examples/template-06-brutalist.html',
   'examples/template-07-memphis.html',
   'examples/template-08-isometric.html',
+  'examples/template-09-editorial-photo.html',
 ];
 
 const genericMarkerRe = /^(?:hero|card|panel|section|content|block|item|box)$/i;
