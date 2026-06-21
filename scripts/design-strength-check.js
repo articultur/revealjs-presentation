@@ -100,24 +100,52 @@ function measure(file) {
   const maxDisplay = sizes.length ? Math.max(...sizes) : 0;
   const scaleContrast = maxDisplay; // vs 1em 基线；≥3 为达标
 
-  // 2 & 3. 满版色块面板 + 非对称分割（逐 section 扫内联样式）
-  let fullBleedSlides = 0;
+  // 2 & 3. 用色投入 + 非对称分割（扫全 deck CSS：<style> 块 + inline style）
+  // ── 架构修正（2026-06）：原实现逐 section 扫 section.innerHTML 内联样式，但 95%+ 的
+  //    CSS 在 <style> 块里（section 标签外），导致 colorCommit/tension 对所有种子假阴性
+  //    （实测 template-04 有满版 gradient/spot 却报 0%，诊断脚本确认 7/7 section bg=0）。
+  //    改为扫全 deck 的 CSS 文本（<style> 块 + inline style）。scaleContrast / metaphor
+  //    本就扫整份 html，故一直正常；只有这两维错扫了 section 内部。
   let panelCount = 0;
   let asymSplits = 0;
-  for (const s of sections) {
-    const inner = s.html;
-    // 满版色块面板：background 指向 fg/ink/accent 或深 hex 的块级元素
-    const panelRe = /background\s*:\s*(?:var\(--c-(?:fg|ink|accent)\b|var\(--accent\b|#[0-9a-f]{3,6})/gi;
-    const panels = inner.match(panelRe) || [];
-    // 真正的"满版"：section padding:0 或子元素 width:N%
-    const isFullBleed = /padding\s*:\s*0\b/.test(inner) && panels.length > 0;
-    if (isFullBleed) fullBleedSlides++;
-    panelCount += panels.length;
-    // 非对称分割：width 非 50% 的百分比
-    const widths = inner.match(/width\s*:\s*(4[0-9]|5[1-9]|[67][0-9])\s*%/g) || [];
-    asymSplits += widths.length;
+  const styleBlocks = [...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/gi)].map(m => m[1]).join('\n');
+  const inlineStyles = [...html.matchAll(/style\s*=\s*"([^"]+)"/g)].map(m => m[1]).join('\n');
+  const cssText = styleBlocks + '\n' + inlineStyles;
+  // commit background：深色 / 强调 token / 渐变；排除默认浅底（--c-bg/--c-surface/--c-paper）
+  const commitBg = (val) => {
+    if (/var\(--c-(?:bg|surface|paper)\b|var\(--bg\b/i.test(val)) return false;
+    // 任何 --c-* 非底色 token 都算用色投入（yellow/pink/coral/teal/lime/orange/blue/ink/fg/accent/spot…）。
+    // 旧版只认 fg/ink/accent/spot/deep/brand 六个，memphis/isometric 的具名颜色 token 全部漏判。
+    if (/var\(--c-\w/i.test(val) || /var\(--(?:accent|spot|brand)\b/i.test(val)) return true;
+    if (/(?:linear|radial|conic)-gradient/i.test(val)) return true;
+    const hex = val.match(/#([0-9a-f]{6})/i);
+    if (hex) {
+      const n = parseInt(hex[1], 16);
+      const lum = 0.299 * ((n >> 16) & 255) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255);
+      return lum < 120; // 深色阈值：低于 120 亮度算"用色投入"
+    }
+    return false;
+  };
+  // colorCommit：全 deck commit background 出现次数（面板计数）
+  const allBgVals = [...cssText.matchAll(/background(?:-color)?\s*:\s*([^;"'}]+)/gi)].map(m => m[1]);
+  const commitBgs = allBgVals.filter(commitBg);
+  panelCount = commitBgs.length;
+  // tension：全 deck 非对称分割信号
+  //   (a) grid-template-columns 含不同 fr 比（如 2fr 1fr，最常用的非对称手法）
+  const gridRules = [...cssText.matchAll(/grid-template-columns\s*:\s*([^;"'}]+)/gi)].map(m => m[1]);
+  for (const g of gridRules) {
+    const frs = (g.match(/(\d+(?:\.\d+)?)\s*fr/gi) || []).map(x => parseFloat(x));
+    if (frs.length >= 2 && frs.some(v => v !== frs[0])) asymSplits++;
   }
-  const colorCommitPct = sections.length ? (fullBleedSlides / sections.length) : 0;
+  //   (b) width/max-width 非 50% 的百分比（25-75 区间，排除正中对称）
+  const wPct = [...cssText.matchAll(/(?:max-|min-)?width\s*:\s*(2[5-9]|[3-6][0-9]|7[0-5])\s*%/gi)].map(m => m[0]);
+  asymSplits += wPct.filter(w => !/:50%/.test(w)).length;
+  //   (c) 负 margin 错位（brutalist/memphis 散落手法）
+  asymSplits += (cssText.match(/margin-(?:left|right)\s*:\s*-\d/i) || []).length;
+  // colorCommitPct：每页平均 commit background 数映射到 0-100（每页 ≥1.5 个 = 满分）
+  const avgCommitPerPage = sections.length ? commitBgs.length / sections.length : 0;
+  const colorCommitPct = Math.min(100, Math.round(avgCommitPerPage / 1.5 * 100));
+  const fullBleedSlides = Math.min(sections.length, commitBgs.length); // 等效页数（显示用）
 
   // 4. 隐喻贯彻：布局多样性 + 主题原生形式信号
   const layouts = sections.map(s => classOf(s.attrs));
@@ -147,7 +175,8 @@ function measure(file) {
     slides: sections.length,
     scaleContrast: +maxDisplay.toFixed(2),
     fullBleedSlides,
-    colorCommitPct: +(colorCommitPct * 100).toFixed(0),
+    colorCommitPct,
+    avgCommitPerPage: +avgCommitPerPage.toFixed(2),
     asymSplits,
     layoutVariety: +layoutVariety.toFixed(2),
     distinctLayouts: distinct,
@@ -163,7 +192,7 @@ function measure(file) {
 function score(m) {
   // 各维 0–100，加权合成。阈值参考 design-fundamentals.md
   const sScale = Math.min(100, (m.scaleContrast / 3) * 100);          // 3:1 = 满分
-  const sCommit = Math.min(100, (m.colorCommitPct / 20) * 100);       // 20% 页满版 = 满分
+  const sCommit = m.colorCommitPct;                                   // 已是 0-100（每页平均 commit bg 密度，1.5/页=满分）
   const sTension = Math.min(100, (m.asymSplits / 3) * 100);           // 3 处非对称 = 满分
   const sMetaphor = Math.min(100, ((m.nativePrimitives / 4) * 60) + (m.layoutVariety * 40)); // 4 原语 + 多样性
   const overall = Math.round(sScale * 0.3 + sCommit * 0.25 + sTension * 0.2 + sMetaphor * 0.25);
@@ -175,7 +204,7 @@ function report(m) {
   const signals = Object.entries(m.nativeSignals).filter(([, v]) => v).map(([k]) => k).join(', ') || '—';
   console.log(`\n  ${m.file}  (${m.slides} slides)`);
   console.log(`    尺度对比 scaleContrast : ${m.scaleContrast}:1   (${s.sScale}/100)  ${m.scaleContrast >= 3 ? '✓' : '⚠ <3:1 太平'}`);
-  console.log(`    用色投入 colorCommit    : ${m.colorCommitPct}% 满版页 (${m.fullBleedSlides}页)  (${s.sCommit}/100)  ${m.colorCommitPct >= 15 ? '✓' : '⚠ 无满版面板=显平'}`);
+  console.log(`    用色投入 colorCommit    : 每页均 ${m.avgCommitPerPage} 个色块 (${m.fullBleedSlides} 处)  (${s.sCommit}/100)  ${s.sCommit >= 60 ? '✓' : '⚠ 用色偏平'}`);
   console.log(`    构图张力 tension        : ${m.asymSplits} 处非对称分割  (${s.sTension}/100)  ${m.asymSplits >= 2 ? '✓' : '⚠ 全对称'}`);
   console.log(`    隐喻贯彻 metaphor       : ${m.nativePrimitives} 原语 / ${m.distinctLayouts} 种布局  (${s.sMetaphor}/100)`);
   console.log(`      └ 原生形式: ${signals}`);
