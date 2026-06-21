@@ -5,8 +5,9 @@
  * Uses a vision-capable model to review rendered slide screenshots for
  * semantic/design failures that deterministic bbox checks miss:
  * unreadable labels, unclear proof objects, weak hierarchy, page markers
- * that feel visually wrong, and chart/diagram pages that do not explain
- * the action title.
+ * that feel visually wrong, chart/diagram pages that do not explain
+ * the action title, and image-driven decks whose photos feel repeated,
+ * low-grade, semantically mismatched, or stylistically fragmented.
  *
  * Usage:
  *   node scripts/visual-verdict.js deck.html --out output/deck-verdict
@@ -119,6 +120,7 @@ function systemPrompt() {
     'You are a strict visual QA reviewer for launch-grade Reveal.js presentations.',
     'Judge only from rendered screenshots and the provided slide text. Do not assume the source code is correct.',
     'Your job is to catch failures deterministic geometry scripts miss: unclear diagrams, unreadable labels, weak hierarchy, ambiguous proof objects, decorative noise, and page furniture that visually collides with the content.',
+    'For image-driven decks, photos are evidence, not decoration. Judge whether the image choice, crop, overlay, and repetition support the slide claim and deck theme.',
     'Be concrete and evidence-based. A beautiful style is not enough if the proof object does not explain the action title.',
     'Return JSON only, matching the schema.',
   ].join('\n');
@@ -137,10 +139,15 @@ function userPrompt(slides) {
     '5. Visual hierarchy must make the main claim and proof object obvious within three seconds.',
     '6. Dense tables, routes, timelines, architectural drawings, and dashboards must have enough breathing room and meaningful encoding.',
     '7. Do not fail harmless domain-native notation, but do fail notation that obscures content.',
+    '8. Image-driven slides: the photo must be a specific proof object for this slide, not a generic landmark/stock image.',
+    '9. Image-driven slides: reject visibly soft, muddy, over-darkened, over-cropped, or cheap-looking full-bleed photos.',
+    '10. Image-driven decks: reject cover/chapter/closing photos that repeat the same image or create a fragmented theme.',
+    '11. Image-driven decks: reject practical-info/route/data pages whose image does not clarify the information architecture.',
+    '12. Design impact: flag ordinary, split, template-like, or low-drama compositions when the stated deck is photo-led/editorial.',
     '',
     'Severity rules:',
-    '- blocker: user-visible overlap/cropping, unreadable key label, diagram does not explain the claim, or page furniture obstructs content.',
-    '- warning: readable but weak hierarchy, mildly ambiguous diagram, cramped but usable content.',
+    '- blocker: user-visible overlap/cropping, unreadable key label, diagram/photo does not explain the claim, repeated hero image, theme-breaking page, or page furniture obstructs content.',
+    '- warning: readable but weak hierarchy, mildly ambiguous diagram/photo, generic but usable image, mildly cramped content, or low visual impact.',
     '- note: polish suggestion only.',
     '',
     'Slides to review:',
@@ -173,6 +180,11 @@ const schema = {
               'unclear-proof-object',
               'weak-visual-hierarchy',
               'chart-does-not-explain-claim',
+              'photo-does-not-explain-claim',
+              'repeated-photo',
+              'low-quality-photo',
+              'theme-fragmentation',
+              'weak-design-impact',
               'decorative-noise',
               'crowding',
               'other',

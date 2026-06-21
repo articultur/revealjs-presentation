@@ -213,7 +213,7 @@ node scripts/test-spatial-integrity.js <file>
 
 ## 15. 视觉语义评审门禁 / LLM Visual Verdict Gate
 
-固定脚本适合稳定检测 bbox、溢出、对比度、坐标系和已知碰撞；但它们不擅长判断“这张图到底有没有讲清楚”。当 slide 包含建筑图、路线图、图表、机制图、仪表盘、流程图或任何复杂 proof object 时，必须补跑视觉模型评审：
+固定脚本适合稳定检测 bbox、溢出、对比度、坐标系和已知碰撞；但它们不擅长判断“这张图到底有没有讲清楚”。当 slide 包含建筑图、路线图、图表、机制图、仪表盘、流程图、照片型 proof object 或任何复杂 proof object 时，必须补跑视觉模型评审：
 
 ```bash
 node scripts/visual-verdict.js <file> --out /tmp/<deck>-verdict
@@ -224,8 +224,21 @@ node scripts/visual-verdict.js <file> --out /tmp/<deck>-verdict
 - `unclear-proof-object`：图示不知道在表达什么，或只是装饰。
 - `unreadable-label`：标签没有几何重叠，但投影尺度不可读。
 - `chart-does-not-explain-claim`：图表和标题主张脱节。
+- `photo-does-not-explain-claim`：照片没有解释本页 action title，只是泛泛氛围或地标。
+- `repeated-photo`：封面 / 章节 / 结尾复用同一张大图或同一视觉角度。
+- `low-quality-photo`：关键照片低清、糊、过暗、过裁、廉价。
+- `theme-fragmentation`：照片、背景、滤镜或专色让整套 deck 像几套主题拼在一起。
+- `weak-design-impact`：图片型 deck 退化为普通暗罩图文页，没有一个强主视觉决定。
 - `weak-visual-hierarchy`：三秒内读不出主张与证据关系。
 - `frame-collision` / `navigation-collision`：页面家具在视觉上干扰主体，即使脚本未判定相交。
+
+图像驱动 deck 在视觉模型前还要先跑图片资产硬检：
+
+```bash
+node scripts/audit-image-assets.js <file>
+```
+
+阻断项：断图、满版图被放大、满版图低于 1280×720、超宽低高图硬塞 16:9 hero、重复 hero/chapter/close 大图。警告项：满版图非 retina、支撑图重复、背景主题漂移。脚本负责客观事实；视觉模型负责语义和审美判断，两者不能互相替代。
 
 无 `OPENAI_API_KEY` 时可以运行 `--dry-run` 生成同一套截图和 prompt：
 

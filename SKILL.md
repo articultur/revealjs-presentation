@@ -1,7 +1,7 @@
 ---
 name: revealjs-presentation
 description: |
-  Use this skill when the user wants a **presentation / slide deck** — a multi-slide, sequenced visual narrative shown to an audience (not a single chart, poster, hi-fi prototype, resume, or a Word/Markdown document). Trigger when they say "做个 PPT / 幻灯片 / 课件 / 汇报 / deck / slides", "make a deck", or ask to turn any content — a topic, outline, document, CSV / 数据, report — into slides for 述职 / 年终总结 / 复盘 / 答辩 / 架构评审 / 产品发布 / 技术分享 / 路演 / 融资 BP / pitch deck / 提案 / 营销方案. Also use when fixing or extending an existing reveal.js HTML (文字被裁切 / 元素重叠 / 投影显示不全 / overflow / pin overlap) or exporting an existing deck to PPTX / PDF. Output is one self-contained, designed HTML file, not a generic AI template.
+  Use this skill to create or edit a **slide deck / presentation / PPT** — a sequenced set of multiple slides (幻灯片 / N页) designed to be shown to an audience, delivered as one self-contained HTML file (opens in a browser, exports to PPTX / PDF). This is the default for ANY "make slides" intent: phrases like "做个 PPT / 幻灯片 / 课件 / 汇报 / deck / slides", "turn this into N pages / 做成 N 页", or "make a deck" — i.e. turning a topic, outline, docx, CSV / 数据, report, architecture, incident postmortem, or a city / food / travel photo deck into multi-page slides for an audience (述职 / 年终总结 / 复盘 / 答辩 / 架构评审 / 产品发布 / 技术分享 / 路演 / 融资 BP / pitch deck / 提案 / 营销方案 / 课件 / tech talk). Also use to fix or extend an existing reveal.js HTML (文字被裁切 / 元素重叠 / 投影显示不全 / overflow / pin overlap), or export an existing deck to PPTX / PDF. NOT for a single chart or graph, a poster, a landing page, a resume, or a plain Word / Markdown / Excel / PDF document.
 ---
 
 # Reveal.js 演示文稿
@@ -16,7 +16,7 @@ description: |
 2. **确认 4 要素**：主题 · 观众 · 页数 · 语言（缺省：通用观众 / 8-12 页 / 中文）。页数是硬约束——用户给 N 页时最终偏差 ≤1（见 §8）
 3. **先搭骨架**：轻量 ghost deck（每页 role + action title + proof object）+ Theme-to-Design Router 六行说明。**图像驱动主题（城市/旅游/美食/产品实拍，见主题形状表 09 行）骨架前先按 `references/image-driven-deck.md` §4 工作流：列关键词清单 → Wikimedia Commons 搜图 → 选图，再搭骨架（每页绑一张 CC-BY 图）**
 4. **生成单个 HTML**：内联 CSS+JS、Reveal.js 4.6.0 CDN、1280×720 画布
-5. **自检（三层）**：`node scripts/grade-gate.js <file>` 全绿（地板，含溢出、对比度、pin、空间完整性）+ `node scripts/design-strength-check.js <file>` 四维达标（天花板：尺度≥3:1、有满版色块面板、有非对称分割、有主题原生形式）+ **P4 生成后必跑 `node scripts/visual-verdict.js <file>`（LLM 视觉语义评审，抓图示不清/标签不可读/图表不解释主张/同 line 文字撞/装饰盒压 page furniture）**——这一步是 G1–G10 之外唯一抓感官类问题的门禁，**任何视觉调整后必须重跑**。若无视觉模型 key，跑 `visual-verdict.js --dry-run` 生成截图+prompt；**若会话模型有视觉（opus/sonnet 等），让 Claude Read dry-run 截图 + 按 prompt 的 rubric 判定**（blocker/warning/note），等价 visual-verdict 但用 Claude 视觉代替外部 API；若会话模型无视觉（纯文本），只能留截图并说明未执行视觉判定。
+5. **自检（三层 + 图片门禁）**：`node scripts/grade-gate.js <file>` 全绿（地板，含溢出、对比度、pin、空间完整性）+ `node scripts/design-strength-check.js <file>` 四维达标（天花板：尺度≥3:1、有满版色块面板、有非对称分割、有主题原生形式）+ **图像驱动 deck 额外跑 `node scripts/audit-image-assets.js <file>`**（断图、低清/放大满版图、超宽低高图、封面/章节重复、背景主题漂移）+ **P4 生成后必跑 `node scripts/visual-verdict.js <file>`（LLM 视觉语义评审，抓图示不清/标签不可读/图表不解释主张/图片廉价或错配/重复大图/主题割裂/装饰盒压 page furniture）**——这一步是 G1–G10 之外唯一抓感官类问题的门禁，**任何视觉调整后必须重跑**。若无视觉模型 key，跑 `visual-verdict.js --dry-run` 生成截图+prompt；**若会话模型有视觉（opus/sonnet 等），让 Claude Read dry-run 截图 + 按 prompt 的 rubric 判定**（blocker/warning/note），等价 visual-verdict 但用 Claude 视觉代替外部 API；若会话模型无视觉（纯文本），只能留截图并说明未执行视觉判定。
 6. **交付**：HTML 路径 + 运行/导出说明 + 验证状态
 
 需精细控制走 P0-P6 专业模式（下文）；发布会级先读 `references/launch-grade.md`。
@@ -238,7 +238,7 @@ archetype 序列：每页分配一个 archetype（A1-A12，见 layout-archetypes
 本主题发明变体：≥1 个为本主题调参/改结构的 archetype（不是照抄）
 ```
 
-**退化拦截**：生成后跑 `node scripts/design-strength-check.js <file>`。四维（尺度对比/用色投入/构图张力/隐喻贯彻）任一不达标，**回炉重做骨架，不是微调**。典型退化信号：全 deck display ≤2.5em（尺度太平）、无任何满版色块面板（用色显平）、全是通用卡片无主题原生形式（隐喻没贯彻）。
+**退化拦截**：生成后跑 `node scripts/design-strength-check.js <file>`。四维（尺度对比/用色投入/构图张力/隐喻贯彻）任一不达标，**回炉重做骨架，不是微调**。典型退化信号：全 deck display ≤2.5em（尺度太平）、无任何满版色块面板（用色显平）、全是通用卡片无主题原生形式（隐喻没贯彻）。**图像 deck 特别注意**：满版照片不算色块——colorCommit 扫的是 commit background 声明密度（÷ 页数），照片顶替不了。图像 deck 要 colorCommit ≥60 得靠**色块密度**：≥1 页满版色块锚点（`image-driven-deck.md` IP6）+ 数据 / 标签实色 chip + kicker 色带一起上（实测北京 deck 仅 +1 页 IP6 只到 36/100，再加 3 个数据 chip 才到 55/100）。
 
 ### 匹配规则
 
@@ -359,10 +359,13 @@ archetype 序列：每页分配一个 archetype（A1-A12，见 layout-archetypes
 | **地板（合规）** | `node scripts/grade-gate.js <file>` 全绿（十门禁 G1-G10 合一） | 硬约束、**机器判 verdict，禁止人工放行**（案例见 `references/validation.md` G5 段） |
 | **天花板（设计强度）** | `node scripts/design-strength-check.js <file>` 四维达标 + `node scripts/element-quality-check.js <file>` 元素子分 ≥70 | advisory，任一维不达标 = **回炉重做骨架**，不是微调 |
 | **视觉评审** | `node scripts/visual-qa.js <file> --annotate-overflow --show-fragments` 逐页审阅 + `node scripts/visual-verdict.js <file>` LLM 视觉语义评审 | **P4 生成后必跑、任何视觉改动后必跑**（快速模式也跑）。无视觉模型 key 时：`visual-verdict.js --dry-run` 生成截图+prompt → Claude（有视觉的会话模型）Read 截图 + 按 prompt rubric 判定 blocker/warning/note → 写入 `/tmp/manual-visual-verdict.json` 备查 |
+| **图片资产门禁** | `node scripts/audit-image-assets.js <file>` | 图像驱动 deck 必跑；阻断断图、满版图被放大、满版图低于画布、超宽低高图硬塞 hero、封面/章节/结尾重复大图；警告支撑图重复与背景主题漂移 |
 
 **关键认知**：门禁（地板）与设计强度（天花板）不可互替——合规但四维全默认 = 平庸；通过门禁要削弱设计时，找"既大胆又合规"的解（深化专色到 AA / 反相面板），不是改弱求合规。详见 `references/validation.md`、`references/design-fundamentals.md` §6。
 
 调垂直平衡另跑 `node scripts/visual-check.js <file>`（启发式、非阻断，与 visual-qa 冲突时信 visual-qa）。视觉语义问题（图示不清、标签虽未重叠但不可读、图表不解释主张）信 `visual-verdict.js`；若无 key，跑 `--dry-run` 后**让有视觉的会话模型（opus/sonnet）Read 截图 + rubric 判定**；若会话模型无视觉，最终回复写明“未执行视觉判定”。评估框架用 `grade-gate.js --json` 的 `passed` 字段作客观断言。如果未执行验证，在最终回复中**明确说明**。
+
+图像驱动 deck 的设计问题不能只靠固定脚本：`audit-image-assets.js` 先拦硬伤，`visual-verdict.js` 再用视觉模型判断照片是否讲清楚页面主张、是否重复、是否廉价、是否主题割裂、是否缺乏视觉冲击。两者都要跑；一个抓事实，一个抓感受和语义。
 
 ## 导出
 
@@ -398,7 +401,7 @@ bash scripts/setup.sh          # 仅环境检查
 | **需数据图** | `references/data-viz.md` | 环形/柱状/进度环/迷你折线/对比条/堆叠条/数字看板/数据表 |
 | **需表格** | `references/table-system.md` | data-ink 原则、6 类表格模板、列对齐/行列阈值、chartjunk 反例（系统级，data-viz §8 是单组件） |
 | **需图片** | `references/image-system.md` | 6 种滤镜、5 种裁切、设备框、混合模式 |
-| **图像驱动主题（城市/旅游/地产/美食/产品摄影）** | `references/image-driven-deck.md` | 图源指南（Wikimedia/Openverse）、选图标准、5 种图像 archetype、工作流（配合 image-system.md 落地） |
+| **图像驱动主题（城市/旅游/地产/美食/产品摄影）** | `references/image-driven-deck.md` | 图源指南（Wikimedia/Openverse）、选图标准、照片角色台账、6 种图像 archetype、图片资产门禁与视觉模型 rubric（配合 image-system.md 落地） |
 | **加动效** | `references/motion-delight.md` | 时机、easing 曲线、6 种高级模式 |
 | **调垂直平衡** | `references/visual-check.md` | visual-check 指标（重心/跨度/画布）、可接受取舍、假阳性、和 visual-qa 的分工 |
 | **配 Reveal** | `references/technical-specs.md` | CDN、插件、三端适配、固定画布 |
@@ -421,5 +424,6 @@ bash scripts/setup.sh          # 仅环境检查
 - [ ] 匹配观众和语气，远距离可读
 - [ ] reveal.js 运行无布局问题，逐页截图无残影/裁切/按钮污染
 - [ ] `test-pin-collision.js` 输出 `OK: all pin regions clear.`
+- [ ] 图像驱动 deck 已跑 `audit-image-assets.js`：无断图、无低清/放大满版图、无重复封面/章节大图、无非意图背景主题漂移
 - [ ] **`visual-verdict.js` 已跑（无 key 则 Claude 读 dry-run 截图判定）且无 blocker**——感官类问题只能视觉抓，G1–G10 兜不住
 - [ ] 包含运行/导出说明和验证状态
