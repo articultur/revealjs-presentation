@@ -31,7 +31,7 @@
 | **G6** | `test-color-role.js` | 颜色角色（**相对**层级：主命题对比度必须高于 pin/页脚，OKLCH L 近似亮度） | 退出码 1 = 主命题对比度弱于 pin/页脚文本 |
 | **G7** | `test-contrast-aa.js` | **绝对** WCAG AA（真 oklch→sRGB 相对亮度，遍历祖先 bg，大字阈值） | 退出码 1 = 文本 <4.5:1 / 大字 <3:1 |
 | **G8** | `test-canvas-fill.js` | section 占满画布（对齐 visual-check 画布一致性） | 退出码 1 = section 未占满画布（内容高度矮盒 / 页间画布不一致） |
-| **G9** | `check-overflow.js` | Playwright bbox 溢出/叠放专项（文本越右界、元素越画布、时间线文字压条） | 退出码 1 = bbox issueCount > 0 |
+| **G9** | `check-overflow.js` | Playwright bbox 溢出/叠放专项：①文本越右界 ②元素越画布 ③时间线文字压条 ④**元素内文字溢出父容器**（`scrollWidth > clientWidth` + 父容器有显式宽度约束，抓 terminal/code/span 等 inline 文字越界；纯感官类如黑字黑底、装饰盒压 page furniture 留给 visual-verdict） | 退出码 1 = bbox issueCount > 0 |
 | **G10** | `test-spatial-integrity.js` | proof object 与物理表面坐标系一致；读取 `template-invariants.json` 的 `physicalContract`；页标/北向标/pin 不压关键对象；图纸尺寸链对齐外墙；SVG `<text>` 不被 viewport 裁切 | 退出码 1 = surface containment / physicalContract drift / page-label frame collision / north-mark heading collision / pin-object collision / plan aspect drift / dimension-wall mismatch / marker-label collision / SVG text clipping |
 
 **G6 vs G7 分工**：G6 是**相对**层级检查——主命题对比度必须高于 pin/页脚，保证「最重要的事最醒目」；G7 是**绝对** WCAG AA——任何文本对它的实际底色必须 ≥4.5:1（大字 ≥3:1）。两者互补、不可互替：G6 过了不代表无障碍达标（这正是 2.96:1 白字粉卡能绿过的原因），G7 补上这个洞。
