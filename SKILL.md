@@ -14,7 +14,7 @@ description: |
 
 1. **触发**：用户说"做个 PPT / 幻灯片 / 课件"或给出主题
 2. **确认 4 要素**：主题 · 观众 · 页数 · 语言（缺省：通用观众 / 8-12 页 / 中文）。页数是硬约束——用户给 N 页时最终偏差 ≤1（见 §8）
-3. **先搭骨架**：轻量 ghost deck（每页 role + action title + proof object）+ Theme-to-Design Router 六行说明
+3. **先搭骨架**：轻量 ghost deck（每页 role + action title + proof object）+ Theme-to-Design Router 六行说明。**图像驱动主题（城市/旅游/美食/产品实拍，见主题形状表 09 行）骨架前先按 `references/image-driven-deck.md` §4 工作流：列关键词清单 → Wikimedia Commons 搜图 → 选图，再搭骨架（每页绑一张 CC-BY 图）**
 4. **生成单个 HTML**：内联 CSS+JS、Reveal.js 4.6.0 CDN、1280×720 画布
 5. **自检（三层）**：`node scripts/grade-gate.js <file>` 全绿（地板，含溢出、对比度、pin、空间完整性）+ `node scripts/design-strength-check.js <file>` 四维达标（天花板：尺度≥3:1、有满版色块面板、有非对称分割、有主题原生形式）+ **P4 生成后必跑 `node scripts/visual-verdict.js <file>`（LLM 视觉语义评审，抓图示不清/标签不可读/图表不解释主张/同 line 文字撞/装饰盒压 page furniture）**——这一步是 G1–G10 之外唯一抓感官类问题的门禁，**任何视觉调整后必须重跑**。若无视觉模型 key，跑 `visual-verdict.js --dry-run` 生成截图+prompt；**若会话模型有视觉（opus/sonnet 等），让 Claude Read dry-run 截图 + 按 prompt 的 rubric 判定**（blocker/warning/note），等价 visual-verdict 但用 Claude 视觉代替外部 API；若会话模型无视觉（纯文本），只能留截图并说明未执行视觉判定。
 6. **交付**：HTML 路径 + 运行/导出说明 + 验证状态
@@ -132,7 +132,7 @@ slide 画布 **1280×720px**，可用空间 ≈ 1120×580px，每页安全预算
 2. 次稳：使用同一组 CSS 变量定义表面边界和内部对象边界。
 3. 禁止：表面是 absolute 背景，核心图形是 sibling 且用不相干的 `%` / `px` 混算定位。
 
-对于 SVG，所有 `<text>` 必须落在 SVG viewport 内；尺寸文字贴右边时用 `text-anchor="end"` 或扩大 viewBox，不要靠 `overflow:hidden` 截掉。`scripts/test-spatial-integrity.js <file>` 会阻断：图形漂出承载面、SVG 文字被 viewBox 裁切；对建筑图纸封面还会检查平面图比例未被拉伸、尺寸链左右端与外墙左右端对齐。
+对于 SVG，所有 `<text>` 必须落在 SVG viewport 内；尺寸文字贴右边时用 `text-anchor="end"` 或扩大 viewBox，不要靠 `overflow:hidden` 截掉。SVG 根节点/父 `<g>` 带 `stroke` 时，必须给 `<text>` 取消描边：`.reveal svg text { stroke:none; paint-order:fill; }`。数据趋势线不要用 `T` 平滑二次贝塞尔，末端会继承上一段切线而上翘；用 `polyline` 或显式 `C` 三次贝塞尔。`scripts/test-spatial-integrity.js <file>` 会阻断：图形漂出承载面、SVG 文字被 viewBox 裁切/继承描边、数据图使用 `T` 曲线；对建筑图纸封面还会检查平面图比例未被拉伸、尺寸链左右端与外墙左右端对齐。
 
 维护种子模板时，把高风险物理版面写入 `references/template-invariants.json` 的 `physicalContract`，不要只写在 CSS 注释里。契约至少声明：surface owns what、哪些对象互斥、哪些边需要对齐、哪些标号/文字不得碰撞。`test-spatial-integrity.js` 会读取这些契约并阻断 surface drift、title-block intrusion、dimension drift、marker-label collision；同时阻断页标压 sheet-frame、north mark 压标题、pin 压图板/页脚信息。`test-reference-contract.js` 会阻断契约选择器失效或契约缺失。固定脚本无法判断“图示是否解释主张”时，必须补跑 `visual-verdict.js` 让视觉模型按 rubric 判定。
 
@@ -206,8 +206,9 @@ slide 画布 **1280×720px**，可用空间 ≈ 1120×580px，每页安全预算
 | 讲**宣言 / 批判 / 对抗 / 反潮流** | **06** brutalist |
 | 讲**创意 / 活动 / 作品集 / 复古文化** | **07** memphis |
 | 讲**平台 / 路线图 / 分层 / 阶段规划** | **08** isometric |
+| 讲**城市 / 旅游 / 美食 / 产品实拍**（图像即内容，实景是 proof object） | **09** editorial-photo |
 
-**歧义判据**（一行沾两样时，看主命题动词）：讲发展/讲故事 → 历程(01)；讲怎么跑/排障 → 系统(02)；讲怎么搭/组成 → 结构(03)；讲登场/亮相 → 发布(04)。
+**歧义判据**（一行沾两样时，看主命题动词）：讲发展/讲故事 → 历程(01)；讲怎么跑/排障 → 系统(02)；讲怎么搭/组成 → 结构(03)；讲登场/亮相 → 发布(04)；**看长什么样（实景是 proof）→ 图像(09)，看多大/多少/怎么跑（数据/论证是 proof）→ 版式(01-08)**。同名主题看主命题：杭州风光→09，杭州经济/历史→01/03；产品实拍→09，产品架构→03；餐厅品牌册→09，餐厅经营数据→02。图像驱动先读 `references/image-driven-deck.md` 按 §4 工作流搜图（Wikimedia Commons），再排版。
 
 **worked example**：`AI 大模型发展史` → 历程 → **01**（不是 02：虽是技术，主干是"编年"不是"系统运行"）；`单体→三层架构迁移` → 结构 → **03**；`新产品发布会` → 发布 → **04**；`SRE 故障复盘` → 系统 → **02**。
 
@@ -255,27 +256,11 @@ archetype 序列：每页分配一个 archetype（A1-A12，见 layout-archetypes
 
 ### 设计强度三拨盘（density / variance / motion）
 
-每份演示在生成前明确三个维度的强度（1-5），决定布局、动效、密度的基调，写进 Theme-to-Design Router 的"页面骨架"行。这是从 taste-skill 的 VARIANCE / MOTION / DENSITY 思路收敛来的 slide 版本：
-
-| 拨盘 | 低（1-2） | 高（4-5） |
-|------|----------|----------|
-| **DENSITY 密度** | 留白多、单页单论点 | 信息密集、对比矩阵 |
-| **VARIANCE 多样性** | 统一节奏、重复结构 | 布局多变、≥4 种页面原语 |
-| **MOTION 动效** | 静态、仅 fade | fragment 编排、签名时刻动效 |
-
-模式对应参考：快速模式 = 中 density + 中 variance + 低 motion；专业模式 = 按主题调；发布会级 = 中 density + 高 variance + 高 motion。拨盘是**对现有内容预算（≤14em）/布局多样性（≥4 种）/动效规则的参数化抽象**，不是新约束。
+每份演示在生成前明确 density / variance / motion 三个维度强度（1-5），写进 Theme-to-Design Router 的"页面骨架"行。完整拨盘表（低/高对照）+ 模式对应（快速=中中低 / 专业=按主题 / 发布会级=中高高）见 `references/design-fundamentals.md` §设计强度三拨盘。
 
 ### 图表 / Bento 取舍
 
-借鉴 `ppt-agent-skill` 的图表分层，但本项目优先保持单文件 HTML 和导出稳定：
-
-| 场景 | 选择 |
-|---|---|
-| KPI、比例、趋势、对比 | 纯 HTML/CSS/SVG：进度条、环形、迷你折线、对比柱、指标行 |
-| 流程、机制、系统关系 | `references/diagram-system.md`：流程图、关系图、时序图、状态图 |
-| 密集经营数据 | 先拆页或转成 2-3 个 proof objects；Bento 只作为一页页面原语，不做全 deck 默认 |
-| 地图、关系网络、桑基、热力日历 | 只有当 HTML-native 证明价值明确时才用 JS；否则做静态 SVG / 表格摘要，避免 PPTX 导出失真 |
-| 严格表格 / 公式 / 架构框 | 保持几何关系和阅读顺序，优先减少内容而不是缩字号 |
+本项目优先保持单文件 HTML 和导出稳定。场景 → 选择映射表（KPI/趋势 → 纯 CSS-SVG；流程/系统 → diagram-system；密集数据 → 拆页,Bento 只作单页原语；地图/网络 → 静态 SVG 避免导出失真；严格表格 → 减内容不缩字号）见 `references/data-viz.md` §图表/Bento 取舍。
 
 ### 失败模式门禁（15 条速查 / 完整说明见 `references/failure-gates.md`）
 
@@ -294,7 +279,7 @@ archetype 序列：每页分配一个 archetype（A1-A12，见 layout-archetypes
 | 11 | 种子模板对象契约 | 维护已实现的 `examples/template-01..08` 必须通过 `test-reference-contract.js` |
 | 12 | 高风险布局预警 | 2×2 + 长标题、4-8 卡、密集时间线 + fragment 都易溢出，先用紧凑版 |
 | 13 | **Pin 安全区** | 必须跑 `test-pin-collision.js`，OK 才能交付；详见上文「关键约束 §3」 |
-| 14 | **空间完整性** | proof object 必须和承载面共享坐标系；尺寸链对齐外墙；SVG 文字不得被 viewBox 裁切 |
+| 14 | **空间完整性** | proof object 必须和承载面共享坐标系；SVG 文字不得裁切/继承描边；数据趋势线禁用会反射上翘的 `T` |
 | 15 | **视觉语义评审** | 图示/图表页跑 `visual-verdict.js`；blocker 必须修，dry-run 不等于模型通过 |
 
 ## 种子模板（8 套已实现）
@@ -311,21 +296,13 @@ archetype 序列：每页分配一个 archetype（A1-A12，见 layout-archetypes
 | `template-06-brutalist` | 野兽派 / 反模板（裸露硬边框、粗黑线、Archivo Black、荧光黄绿警示、错位坐标） | AI 批判、先锋创意、宣言式、反潮流品牌 |
 | `template-07-memphis` | 80s Memphis 复古（撞色色块、几何三角/圆/波浪、粗描边、不对称散落） | 创意机构、活动、作品集、文化品牌、营销 |
 | `template-08-isometric` | 等距 3D 信息图（30° 立体层叠、Edge/Mesh/Data 架构栈、侧视网格） | 平台架构、系统流程、路线图、阶段规划 |
+| `template-09-editorial-photo` | 杂志大片 / 城市画册（满版照片封面、图文对开、网格画廊、图+数据锚点） | 城市、旅游、地产、美食、产品摄影、活动纪实 |
 
 > 另有 10 套设计语法（金融终端、临床实验室、城市基建、法律案卷、奢侈工坊、影视分镜、动画节奏、系统流程、代码走查、数据可视化）登记在 `references/design-polish.md` 作扩展参考，**尚未落地为种子 HTML**——其 "Template 06-15" 是逻辑章节序号，不对应 `examples/` 文件；需要时新建，别引用不存在的 `template-09..15`。
 
 ### 已知局限（高几何精度风格 + 全局防溢出）
 
-建筑制图/紧凑 dark-tech 风格对几何精度要求高，subagent 生成时反复出现叠放：长英文标签溢出矩形、表格关键字列太窄断词（`Controll/er`/`Reposito/ry`）、行内文字越画布右边界被截、absolute 标线越画布消失、时间线描述文字与底部进度条重叠。
-
-**四层防御**：
-
-1. **设计层** — `references/layout-archetypes.md` 加溢出防护规格；`examples/template-03-minimal-spatial.html` 强化种子范本；物理表面必须声明“表面容器 + 内部对象”的坐标关系，并在 `template-invariants.json` 的 `physicalContract` 中登记
-2. **引导层** — SKILL.md 硬规则 + Theme-to-Design Router 设计契约（文字 `right ≤ 画布 - 24px` / 时间线节点 `≥ 200px` / 标线 `right ≤ 100%` / proof object 与承载面共享坐标系 / 标号不得覆盖文字）
-3. **harness 兜底** — `template-03` `<style>` 加 10 条全局 CSS（含 `overflow: hidden !important` + `html/body overflow-x: hidden` + `section padding 0 24px` + 时间线 `desc max-height: 3.6em` + `bar margin-top: 12px` + `svg max-width: 100%` 防 SVG 拉伸越界 + `focus-visible` a11y 强化）
-4. **js 脚本检查** — `scripts/check-overflow.js` 用 playwright 测每页 bbox（文字越界 / 元素重叠），集成 `grade-gate`（G9）；`scripts/test-spatial-integrity.js` 测物理表面 containment、manifest physicalContract、SVG text clipping，集成 `grade-gate`（G10）
-
-**impeccable false-positive 提示**：`template-03` 的 em-dash（—）与 PLATE 编号（PLATE I/II/III、01-06 section 标记）是 minimal-spatial 建筑制图风格的**固有产物**（图纸标注 / 图版编号），**非 AI cadence tell**。`/impeccable audit` 会标这两个，属已确认 false positive，无需修改——改了就不是建筑制图了。
+建筑制图 / 紧凑 dark-tech 风格的几何精度溢出风险用**四层防御**（设计层 / 引导层 / harness 兜底 / js 脚本检查）系统化拦截。完整四层说明 + impeccable false-positive 提示（template-03 的 em-dash 与 PLATE 编号是建筑制图固有产物,非 AI tell）见 `references/failure-gates.md` §四层防御。
 
 ## 设计规则（lint 自动检查）
 
@@ -421,6 +398,7 @@ bash scripts/setup.sh          # 仅环境检查
 | **需数据图** | `references/data-viz.md` | 环形/柱状/进度环/迷你折线/对比条/堆叠条/数字看板/数据表 |
 | **需表格** | `references/table-system.md` | data-ink 原则、6 类表格模板、列对齐/行列阈值、chartjunk 反例（系统级，data-viz §8 是单组件） |
 | **需图片** | `references/image-system.md` | 6 种滤镜、5 种裁切、设备框、混合模式 |
+| **图像驱动主题（城市/旅游/地产/美食/产品摄影）** | `references/image-driven-deck.md` | 图源指南（Wikimedia/Openverse）、选图标准、5 种图像 archetype、工作流（配合 image-system.md 落地） |
 | **加动效** | `references/motion-delight.md` | 时机、easing 曲线、6 种高级模式 |
 | **调垂直平衡** | `references/visual-check.md` | visual-check 指标（重心/跨度/画布）、可接受取舍、假阳性、和 visual-qa 的分工 |
 | **配 Reveal** | `references/technical-specs.md` | CDN、插件、三端适配、固定画布 |
@@ -436,7 +414,7 @@ bash scripts/setup.sh          # 仅环境检查
 - [ ] 第一眼就是经过**设计意图**的（不是 AI 模板感）
 - [ ] P1 产出了 Theme-to-Design Router 六行说明 + **设计契约**（尺度预设/用色投入/archetype 序列/本主题发明变体），且不是直接套模板
 - [ ] 主骨架由 ≥3 种 archetype 组合（非种子原语原样填充），含 ≥1 个本主题发明变体
-- [ ] 物理表面型 proof object 与承载面共享坐标系；SVG 文字不靠裁切隐藏
+- [ ] 物理表面型 proof object 与承载面共享坐标系；SVG 文字不靠裁切隐藏、不继承描边；数据趋势线不用 `T`
 - [ ] `design-strength-check.js` 四维达标（尺度≥3:1 / 有满版色块面板 / 有非对称分割 / 有主题原生形式）；数字未被软化成"约/持平"
 - [ ] `element-quality-check.js` 元素子分达标（动画/图标/表格/流程图均 ≥70）；emoji 不当图标、图标 inline 且主题跟随、表格符合 data-ink
 - [ ] 发布会级任务通过了 `references/launch-grade.md` 的 golden-reference、截图和导出门禁

@@ -188,7 +188,7 @@ node scripts/test-pin-collision.js examples/*.html
 
 所有建筑制图页还必须保留三个安全区：页标 `.kicker` 不得贴/压 sheet-frame 顶线；`.north-mark` 不得压主标题；可见 `.pin` 不得压 `.route-board` / `.matrix-grid` / `.void-foot` / `.cover-bottom`。
 
-SVG 内部也算坐标系：`<text>` 不能贴着 viewBox 右边靠默认裁切“省略”；右侧尺寸标注应使用 `text-anchor="end"`、扩大 viewBox，或把坐标移回 viewport 内。
+SVG 内部也算坐标系：`<text>` 不能贴着 viewBox 右边靠默认裁切“省略”；右侧尺寸标注应使用 `text-anchor="end"`、扩大 viewBox，或把坐标移回 viewport 内。若 SVG 根节点或父 `<g>` 设置了 `stroke`，所有 `<text>` 必须显式 `stroke:none; paint-order:fill;`，否则文字会继承描边，在投影尺度发糊。
 
 **必须运行**：
 
@@ -206,6 +206,8 @@ node scripts/test-spatial-integrity.js <file>
 - 建筑图纸封面中的尺寸链左右端未贴齐外墙左右边界
 - 建筑图纸封面中的序号 marker 与房间 label 重叠
 - SVG `<text>` 的实际渲染 bbox 超出 SVG viewport，被 viewBox 裁切
+- SVG `<text>` 继承可见 `stroke`，导致架构图/图表标签变糊
+- 数据图 SVG 中使用 `T` 平滑二次贝塞尔，导致趋势线末端反射上翘或非数据形态
 
 机器只能抓典型几何错误；仍需看 `visual-qa` 截图确认：网格线、标注、proof object 的“物理世界”是否是同一张纸/同一块屏/同一张地图。
 
@@ -242,3 +244,16 @@ node scripts/visual-verdict.js <file> --dry-run
 5. **ops-copy + kicker**：statement 页 `position:absolute` 的 ops-copy 与 flex 居中的 kicker 同 y 坐标 → 删除冗余 ops-copy，简化为只用 kicker
 
 这五处是 SKILL.md 主线"先紧后松、留出安全带"指引的**反面教材**。
+
+## 四层防御（高几何精度风格 + 全局防溢出）
+
+建筑制图 / 紧凑 dark-tech 风格对几何精度要求高，subagent 生成时反复出现叠放：长英文标签溢出矩形、表格关键字列太窄断词（`Controll/er`/`Reposito/ry`）、行内文字越画布右边界被截、absolute 标线越画布消失、时间线描述文字与底部进度条重叠。
+
+**四层防御**：
+
+1. **设计层** — `references/layout-archetypes.md` 加溢出防护规格；`examples/template-03-minimal-spatial.html` 强化种子范本；物理表面必须声明“表面容器 + 内部对象”的坐标关系，并在 `template-invariants.json` 的 `physicalContract` 中登记
+2. **引导层** — SKILL.md 硬规则 + Theme-to-Design Router 设计契约（文字 `right ≤ 画布 - 24px` / 时间线节点 `≥ 200px` / 标线 `right ≤ 100%` / proof object 与承载面共享坐标系 / 标号不得覆盖文字）
+3. **harness 兜底** — `template-03` `<style>` 加 10 条全局 CSS（含 `overflow: hidden !important` + `html/body overflow-x: hidden` + `section padding 0 24px` + 时间线 `desc max-height: 3.6em` + `bar margin-top: 12px` + `svg max-width: 100%` 防 SVG 拉伸越界 + `focus-visible` a11y 强化）
+4. **js 脚本检查** — `scripts/check-overflow.js` 用 playwright 测每页 bbox（文字越界 / 元素重叠），集成 `grade-gate`（G9）；`scripts/test-spatial-integrity.js` 测物理表面 containment、manifest physicalContract、SVG text clipping/stroke、数据曲线 `T` 命令，集成 `grade-gate`（G10）
+
+**impeccable false-positive 提示**：`template-03` 的 em-dash（—）与 PLATE 编号（PLATE I/II/III、01-06 section 标记）是 minimal-spatial 建筑制图风格的**固有产物**（图纸标注 / 图版编号），**非 AI cadence tell**。`/impeccable audit` 会标这两个，属已确认 false positive，无需修改——改了就不是建筑制图了。
