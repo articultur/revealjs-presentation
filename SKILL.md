@@ -16,7 +16,7 @@ description: |
 2. **确认 4 要素**：主题 · 观众 · 页数 · 语言（缺省：通用观众 / 8-12 页 / 中文）。页数是硬约束——用户给 N 页时最终偏差 ≤1（见 §8）
 3. **先搭骨架**：轻量 ghost deck（每页 role + action title + proof object）+ Theme-to-Design Router 六行说明
 4. **生成单个 HTML**：内联 CSS+JS、Reveal.js 4.6.0 CDN、1280×720 画布
-5. **自检（三层）**：`node scripts/grade-gate.js <file>` 全绿（地板，含溢出、对比度、pin、空间完整性）+ `node scripts/design-strength-check.js <file>` 四维达标（天花板：尺度≥3:1、有满版色块面板、有非对称分割、有主题原生形式）+ 视觉改动后跑 `node scripts/visual-verdict.js <file>`（LLM 视觉语义评审，抓图示不清/标签不可读/图表不解释主张）。若无视觉模型 key，跑 `visual-verdict.js --dry-run` 生成截图+prompt；**若会话模型有视觉（opus/sonnet 等），让 Claude Read dry-run 截图 + 按 prompt 的 rubric 判定**（blocker/warning/note），等价 visual-verdict 但用 Claude 视觉代替外部 API；若会话模型无视觉（纯文本），只能留截图并说明未执行视觉判定。
+5. **自检（三层）**：`node scripts/grade-gate.js <file>` 全绿（地板，含溢出、对比度、pin、空间完整性）+ `node scripts/design-strength-check.js <file>` 四维达标（天花板：尺度≥3:1、有满版色块面板、有非对称分割、有主题原生形式）+ **P4 生成后必跑 `node scripts/visual-verdict.js <file>`（LLM 视觉语义评审，抓图示不清/标签不可读/图表不解释主张/同 line 文字撞/装饰盒压 page furniture）**——这一步是 G1–G10 之外唯一抓感官类问题的门禁，**任何视觉调整后必须重跑**。若无视觉模型 key，跑 `visual-verdict.js --dry-run` 生成截图+prompt；**若会话模型有视觉（opus/sonnet 等），让 Claude Read dry-run 截图 + 按 prompt 的 rubric 判定**（blocker/warning/note），等价 visual-verdict 但用 Claude 视觉代替外部 API；若会话模型无视觉（纯文本），只能留截图并说明未执行视觉判定。
 6. **交付**：HTML 路径 + 运行/导出说明 + 验证状态
 
 需精细控制走 P0-P6 专业模式（下文）；发布会级先读 `references/launch-grade.md`。
@@ -381,7 +381,7 @@ archetype 序列：每页分配一个 archetype（A1-A12，见 layout-archetypes
 |---|---|---|
 | **地板（合规）** | `node scripts/grade-gate.js <file>` 全绿（十门禁 G1-G10 合一） | 硬约束、**机器判 verdict，禁止人工放行**（案例见 `references/validation.md` G5 段） |
 | **天花板（设计强度）** | `node scripts/design-strength-check.js <file>` 四维达标 + `node scripts/element-quality-check.js <file>` 元素子分 ≥70 | advisory，任一维不达标 = **回炉重做骨架**，不是微调 |
-| **视觉评审** | `node scripts/visual-qa.js <file> --annotate-overflow --show-fragments` 逐页审阅 + `node scripts/visual-verdict.js <file>` LLM 视觉语义评审 | 专业/发布会级 P6 必跑；快速模式 ≥12 页、含密集数据、图表/图示或视觉结构调整时跑 |
+| **视觉评审** | `node scripts/visual-qa.js <file> --annotate-overflow --show-fragments` 逐页审阅 + `node scripts/visual-verdict.js <file>` LLM 视觉语义评审 | **P4 生成后必跑、任何视觉改动后必跑**（快速模式也跑）。无视觉模型 key 时：`visual-verdict.js --dry-run` 生成截图+prompt → Claude（有视觉的会话模型）Read 截图 + 按 prompt rubric 判定 blocker/warning/note → 写入 `/tmp/manual-visual-verdict.json` 备查 |
 
 **关键认知**：门禁（地板）与设计强度（天花板）不可互替——合规但四维全默认 = 平庸；通过门禁要削弱设计时，找"既大胆又合规"的解（深化专色到 AA / 反相面板），不是改弱求合规。详见 `references/validation.md`、`references/design-fundamentals.md` §6。
 
@@ -443,4 +443,5 @@ bash scripts/setup.sh          # 仅环境检查
 - [ ] 匹配观众和语气，远距离可读
 - [ ] reveal.js 运行无布局问题，逐页截图无残影/裁切/按钮污染
 - [ ] `test-pin-collision.js` 输出 `OK: all pin regions clear.`
+- [ ] **`visual-verdict.js` 已跑（无 key 则 Claude 读 dry-run 截图判定）且无 blocker**——感官类问题只能视觉抓，G1–G10 兜不住
 - [ ] 包含运行/导出说明和验证状态

@@ -9,6 +9,16 @@
  * absolute floor, so a 2.96:1 white-on-pink ships green. This gate adds the
  * missing absolute AA check.
  *
+ * Two complementary probes:
+ *   1. CSS-background walk — for HTML text elements, walks ancestors to the
+ *      nearest opaque solid background-color. Catches the typical "div with
+ *      background + text inside" case.
+ *   2. SVG-aware probe — for SVG <text> elements, finds the sibling <rect>/
+ *      <path>/<g> with solid fill that contains the text bbox, OR walks
+ *      ancestors for a solid `fill` style. Catches the "black callout box
+ *      with cream text" diagram-label case that probe 1 misses because
+ *      ancestor CSS background-color is empty inside SVG.
+ *
  * The math and thresholds are aligned with impeccable's `low-contrast` rule
  * (detector/shared/color.mjs + rules/checks.mjs):
  *   • real sRGB relative luminance (no OKLCH-L approximation)
@@ -121,6 +131,71 @@ const PROBE = ([LARGE_PX, LARGE_BOLD_PX]) => {
       out.push({ ratio: +r.toFixed(2), thr, text: (el.innerText || '').trim().slice(0, 22), fg: hex(text), bg: hex(bg), src: bgSrc });
     }
   }
+
+  // ── SVG-aware probe ─────────────────────────────────────────────
+  // SVG <text> elements are skipped by the main loop (`closest('svg')`).
+  // But SVG is the typical carrier for "black callout box with cream text"
+  // diagram labels (e.g. eval-2 slide 3's "NO BUSINESS LOGIC HERE" on a
+  // `fill="var(--c-fg)"` rect). Resolve the text's "background" ONLY by
+  // finding a sibling <rect>/<path> with solid fill that contains the text
+  // bbox — this is the actual visual background. Do NOT walk ancestors for
+  // `fill`: in SVG, ancestor `fill` is the INHERITED TEXT COLOR (e.g.
+  // `<g fill="#1d1a14">` makes child text dark), not a background. Treating
+  // it as bg produces 1:1 false positives for any text inside a styled <g>.
+  const svgTexts = Array.from(sec.querySelectorAll('svg text')).filter(t => {
+    const cs = getComputedStyle(t);
+    if (cs.display === 'none' || parseFloat(cs.opacity) < 0.15) return false;
+    if (t.closest('[aria-hidden="true"], .deco')) return false;
+    if (!(parseFloat(cs.fontSize) > 0)) return false;
+    return true;
+  });
+  // Cache all SVG solid-fill rects/paths (NOT <g>: g has no own bbox to
+  // contain text, and its fill is the inherited text color). Skip shapes
+  // with opacity/fill-opacity < 0.5 — those are decorative shadows/tints
+  // (e.g. `fill="var(--c-fg)" opacity="0.06"` is 6% dark, visually the
+  // background is still the page color, not the shape).
+  const fillShapes = Array.from(sec.querySelectorAll('svg rect, svg path')).filter(s => {
+    const cs = getComputedStyle(s);
+    const f = parseRgb(cs.fill);
+    if (!f || f.a < 0.95) return false;
+    if (parseFloat(cs.opacity) < 0.5) return false;
+    if (parseFloat(cs.fillOpacity) < 0.5) return false;
+    return true;
+  });
+  for (const t of svgTexts) {
+    const tcs = getComputedStyle(t);
+    const text = parseRgb(tcs.fill);
+    if (!text || text.a < 1) continue;
+    const fs = parseFloat(tcs.fontSize);
+    const fw = parseInt(tcs.fontWeight, 10) || 400;
+    const isLarge = fs >= LARGE_PX || (fs >= LARGE_BOLD_PX && fw >= 700);
+    const thr = isLarge ? 3.0 : 4.5;
+    const tr = t.getBoundingClientRect();
+    // Find smallest sibling <rect>/<path> whose bbox fully contains the text
+    let bg = null;
+    let bestArea = Infinity;
+    for (const s of fillShapes) {
+      const sr = s.getBoundingClientRect();
+      if (sr.width < 2 || sr.height < 2) continue;
+      if (sr.left <= tr.left + 0.5 && sr.right >= tr.right - 0.5 &&
+          sr.top <= tr.top + 0.5 && sr.bottom >= tr.bottom - 0.5) {
+        const area = sr.width * sr.height;
+        if (area < bestArea) {
+          const f = parseRgb(getComputedStyle(s).fill);
+          if (f && f.a >= 0.95) { bg = f; bestArea = area; }
+        }
+      }
+    }
+    // If no containing shape, the text sits on the page background (already
+    // checked by the main HTML probe via ancestor background-color walk)
+    // → skip rather than guess. A blocking gate must not cry wolf.
+    if (!bg) continue;
+    const r = ratio(text, bg);
+    if (r < thr) {
+      out.push({ ratio: +r.toFixed(2), thr, text: (t.textContent || '').trim().slice(0, 22), fg: hex(text), bg: hex(bg), src: 'svg-fill' });
+    }
+  }
+
   return out;
 };
 
