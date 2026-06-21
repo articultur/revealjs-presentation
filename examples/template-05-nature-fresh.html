@@ -49,6 +49,7 @@
     .reveal section > * { max-width: 100%; box-sizing: border-box; }
     h1, h2, h3, h4, p, li, span, div { word-break: break-word; overflow-wrap: break-word; }
     img, svg, video { max-width: 100%; max-height: 100%; object-fit: contain; }
+    .reveal svg text { stroke: none; paint-order: fill; }
 
     /* ── Type ───────────────────────────────────────── */
     .reveal h1, .reveal h2, .reveal h3 {
@@ -393,27 +394,27 @@
     .harvest .head .kicker { color: var(--c-clay); }
     .harvest .head .kicker::before { background: var(--c-clay); }
     .harvest .h-body {
-      display: grid; grid-template-columns: 0.58fr 0.42fr;
-      gap: 28px; align-items: center;
+      display: grid; grid-template-columns: 0.56fr 0.44fr;
+      gap: 24px; align-items: center;
     }
     .harvest .h-body h2 {
-      font-size: 2.2em; font-weight: 500; line-height: 1.02;
+      font-size: 1.95em; font-weight: 500; line-height: 1.02;
       color: var(--c-fg);
     }
     .harvest .h-body h2 em { color: var(--c-accent); font-style: normal; }
     .harvest .h-body h2 .hand {
       display: block; font-size: 0.5em; margin-top: 0.2em;
-      transform: rotate(-2deg) translateX(8px);
+      transform: rotate(-2deg);
       transform-origin: left;
     }
     .harvest .h-body .summary p {
-      font-size: 0.78em; line-height: 1.55; max-width: 420px;
+      font-size: 0.74em; line-height: 1.55; max-width: 380px;
     }
     .harvest .envelope-stack {
       position: relative; height: 180px;
     }
     .harvest .envelope-stack .specimen-envelope {
-      position: absolute; width: 86%; height: 110px;
+      position: absolute; width: 78%; height: 110px;
       background: var(--c-bg-card);
       border: 1px solid var(--c-border);
       box-shadow: 4px 6px 0 rgba(42, 36, 24, 0.10);
@@ -428,12 +429,12 @@
       border-right: 64px solid transparent;
       border-bottom: 24px solid var(--c-bg-paper);
     }
-    .harvest .envelope-stack .specimen-envelope.e1 { top: 0; right: 0; transform: rotate(-3deg); }
-    .harvest .envelope-stack .specimen-envelope.e2 { top: 26px; right: 22px; transform: rotate(2deg); background: #faf0d8; }
-    .harvest .envelope-stack .specimen-envelope.e3 { top: 50px; right: 8px; transform: rotate(-1deg); background: #f3e8c8; }
+    .harvest .envelope-stack .specimen-envelope.e1 { top: 0; right: 18px; transform: rotate(-3deg); }
+    .harvest .envelope-stack .specimen-envelope.e2 { top: 26px; right: 34px; transform: rotate(2deg); background: #faf0d8; }
+    .harvest .envelope-stack .specimen-envelope.e3 { top: 50px; right: 22px; transform: rotate(-1deg); background: #f3e8c8; }
     .harvest .envelope-stack .se-head {
       font-family: var(--f-body); font-size: 0.38em;
-      letter-spacing: 0.14em; text-transform: uppercase;
+      letter-spacing: 0.08em; text-transform: uppercase;
       color: var(--c-fg-3); margin-top: 18px;
     }
     .harvest .envelope-stack .se-head b { color: var(--c-fg); font-weight: 600; display: block; }
@@ -510,7 +511,7 @@
             <circle cx="180" cy="70" r="4" fill="var(--c-clay)"/>
             <circle cx="220" cy="40" r="4" fill="var(--c-clay)"/>
             <!-- labels -->
-            <text x="20" y="115" font-family="var(--f-mono)" font-size="6" fill="var(--c-fg-2)">Start · 06:40</text>
+            <text x="20" y="115" font-family="var(--f-mono)" font-size="5.5" fill="var(--c-fg-2)">Start · 06:40</text>
             <text x="140" y="50" font-family="var(--f-mono)" font-size="6" fill="var(--c-accent)" font-weight="700">Sample · A3</text>
             <text x="236" y="32" font-family="var(--f-mono)" font-size="6" fill="var(--c-fg-2)" text-anchor="end">Camp · 11:20</text>
           </svg>

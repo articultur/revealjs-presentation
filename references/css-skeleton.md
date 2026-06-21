@@ -54,6 +54,8 @@
 .reveal section > * { max-width: 100%; box-sizing: border-box; }
 h1, h2, h3, h4, p, li, span, div { word-break: break-word; overflow-wrap: break-word; }
 img, svg, video { max-width: 100%; max-height: 100%; object-fit: contain; }
+/* 图形 SVG 常在根节点设置 stroke；文字必须取消继承描边，否则投影时会发糊。 */
+.reveal svg text { stroke: none; paint-order: fill; }
 
 /* ── 4. 排版系统 ── */
 .reveal h1, .reveal h2, .reveal h3 {

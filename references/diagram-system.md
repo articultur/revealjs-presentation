@@ -115,6 +115,7 @@
 - 颜色 `var(--c-fg-3)`，透明度 0.4-0.5
 - 箭头：小三角，宽 8px 高 6px
 - 连线使用直线或贝塞尔曲线，不用锯齿折线
+- 图形 SVG 若在根节点或 `<g>` 上设置 `stroke`，必须加 `.reveal svg text { stroke:none; paint-order:fill; }` 或给每个 `<text stroke="none">`；文字继承描边会在投影时发糊。
 - 每条连线只传达 1 种关系
 - 连线标签 ≤4 字，放在线的中点
 

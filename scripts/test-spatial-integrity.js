@@ -7,6 +7,8 @@
  *      (for example a floor plan sliding below its blueprint sheet).
  *   2. SVG text whose rendered bbox extends outside the SVG viewport,
  *      producing clipped dimension labels while the outer SVG still passes.
+ *   3. SVG text inheriting a visible stroke from a parent SVG/group,
+ *      making diagram labels look muddy at projection scale.
  *
  * Usage:
  *   node scripts/test-spatial-integrity.js <file.html> [<file2.html> ...]
@@ -117,6 +119,27 @@ function readPhysicalContract(file) {
           const tag = el.tagName.toLowerCase();
           const text = (el.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 36);
           return `${tag}${cls ? '.' + cls : ''}${text ? ` "${text}"` : ''}`;
+        }
+
+        function hasVisibleStroke(el) {
+          const cs = getComputedStyle(el);
+          const width = parseFloat(cs.strokeWidth || '0');
+          const stroke = (cs.stroke || '').trim().toLowerCase();
+          if (!Number.isFinite(width) || width <= 0.05) return false;
+          if (!stroke || stroke === 'none' || stroke === 'transparent') return false;
+          if (/rgba?\([^)]*,\s*0(?:\.0+)?\s*\)$/.test(stroke)) return false;
+          return true;
+        }
+
+        function isDataCurveSvg(svg) {
+          const haystack = [
+            svg.getAttribute('aria-label') || '',
+            svg.getAttribute('class') || '',
+            svg.closest('section')?.className || '',
+            svg.closest('[class]')?.className || '',
+            svg.textContent || '',
+          ].join(' ').toLowerCase();
+          return /chart|trend|curve|sparkline|loss|scale|scaling|slope|parameter|metric|kpi|axis|数据|趋势|曲线|参数|指标/.test(haystack);
         }
 
         function spill(inner, outer) {
@@ -551,6 +574,15 @@ function readPhysicalContract(file) {
         for (const text of Array.from(present.querySelectorAll('svg text')).filter(isVisible)) {
           const svg = text.ownerSVGElement;
           if (!svg || text.closest('[data-qa-ignore="decorative"]')) continue;
+          if (hasVisibleStroke(text)) {
+            results.push({
+              slide: slideIndex + 1,
+              kind: 'SVG_TEXT_STROKE',
+              item: label(text),
+              surface: label(svg),
+              spill: {},
+            });
+          }
           const textRect = rect(text);
           const svgRect = rect(svg);
           const s = spill(textRect, svgRect);
@@ -567,6 +599,22 @@ function readPhysicalContract(file) {
                 bottom: Math.round(s.bottom),
               },
             });
+          }
+        }
+
+        for (const svg of Array.from(present.querySelectorAll('svg')).filter(isVisible)) {
+          if (svg.closest('[data-qa-ignore="decorative"]') || !isDataCurveSvg(svg)) continue;
+          for (const path of Array.from(svg.querySelectorAll('path'))) {
+            const d = path.getAttribute('d') || '';
+            if (/(^|[\s,])T[\s,.-]*\d/i.test(d)) {
+              results.push({
+                slide: slideIndex + 1,
+                kind: 'SVG_DATA_CURVE_SMOOTH_T',
+                item: label(path),
+                surface: label(svg),
+                spill: {},
+              });
+            }
           }
         }
 
