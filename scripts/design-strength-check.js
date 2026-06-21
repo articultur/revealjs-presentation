@@ -161,7 +161,9 @@ function measure(file) {
     pullquote: /pullquote|border-top:[^;]*border-bottom:[^;]*padding/i.test(html),
     kpiCard: /kpi-card|\.kpi\b/i.test(html),
     registerAxis: /register|timeline-marks|\.tl-node\b/i.test(html),
-    faceOff: /≈|1\/[0-9]|\/\s*对比/i.test(html),
+    // 收紧（2026-06）：原 `1\/[0-9]` 误命中比例/章节号（实测北京 deck 无 A6 对峙页却被判 true，
+    //   命中 "1/2" 等非对峙语境）。改为要求 A6 标志性结构——带 ≈ 的比率裁决或 class 标记。
+    faceOff: /class="[^"]*\b(?:face-off|faceoff|versus|compare)\b|≈\s*\d+\s*\/\s*\d/.test(html),
     evidenceTable: /<table[\s\S]*accent[\s\S]*<\/table>/i.test(html) || /class="[^"]*ledger\b/i.test(html),
   };
   const nativeCount = Object.values(nativeSignals).filter(Boolean).length;
@@ -169,6 +171,84 @@ function measure(file) {
   // + 内容具体度：硬数字 vs 软化词
   const hardNumbers = (html.match(/¥\s*[\d.]+|\$\s*[\d.]+|\d+\.\d{1,2}\b|\d+\s*[KMB]\b|-\d{1,2}\.\d%/g) || []).length;
   const hedges = (html.match(/\b(?:约|示意|持平|大致|左右|量级示意|相对量级)\b/g) || []).length;
+
+  // 5. archetype 节奏（2026-06）：归一化每页 archetype，检测过度使用 + 连续重复
+  //    修"分数虚高但节奏平庸"——北京 deck 97 分但 IP2 出现 3 次、全深底无呼吸。
+  const archetypes = sections.map(s => {
+    const cls = classOf(s.attrs);
+    const ph = cls.match(/\bph-[\w-]+/);            // image-driven deck: ph-cover/ph-spread/...
+    if (ph) return ph[0];
+    const toks = cls.split(/\s+/).filter(t => t && !/^(deck-(flex|grid)|present|stack)$/.test(t));
+    return toks[0] || '';                             // 版式驱动 deck: 取首个语义 class
+  });
+  const archCounts = {};
+  let maxArchCount = 0, maxArch = '';
+  for (const a of archetypes) {
+    if (!a) continue;
+    archCounts[a] = (archCounts[a] || 0) + 1;
+    if (archCounts[a] > maxArchCount) { maxArchCount = archCounts[a]; maxArch = a; }
+  }
+  let maxConsecutive = 0, curRun = 0, curArch = '', runArch = '';
+  for (const a of archetypes) {
+    if (a && a === curArch) curRun++;
+    else { curArch = a; curRun = a ? 1 : 0; }
+    if (curRun > maxConsecutive) { maxConsecutive = curRun; runArch = a; }
+  }
+  const archetypeMaxShare = sections.length ? maxArchCount / sections.length : 0;
+
+  // 6. 深浅呼吸（2026-06）：扫 data-background，全深/全浅 = 缺反相页 = 视觉偏平。
+  //    静态推断（无浏览器）：仅认带 hex 的 data-background；样本 < 4 页不评，避免误伤。
+  const sectionTones = sections.map(s => {
+    const m = s.attrs.match(/data-background\s*=\s*"([^"]+)"/);
+    if (!m) return null;
+    const hex = m[1].match(/#([0-9a-f]{6})/i);
+    if (!hex) return null;
+    const n = parseInt(hex[1], 16);
+    const lum = 0.299 * ((n >> 16) & 255) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255);
+    return lum < 120 ? 'dark' : 'light';
+  }).filter(Boolean);
+  const darkTones = sectionTones.filter(t => t === 'dark').length;
+  const lightTones = sectionTones.length - darkTones;
+  // -1 = 样本不足（< 4 页），不评；0 = 全深或全浅；100 = 深浅交替
+  const lightDarkBreath = sectionTones.length >= 4
+    ? (darkTones > 0 && lightTones > 0 ? 100 : 0)
+    : -1;
+
+  // 7. 色彩对比 colorContrast（2026-06）：voice token 关键配对 WCAG 对比度
+  //    补"校验 vs 视觉"的缝——视觉模型能判"色彩对比弱"，这里机械化。
+  //    实测杭州青墨 accent #3a6b5a on 深底 #11100d ≈ 3.1:1，视觉模型评"对比弱"，机械验证一致；
+  //    北京朱红 #a92a18 on 深底 ≈ 2.8:1 更低，但北京 accent 只做背景+浅字不做深底字色，故无碍——
+  //    因此本子分独立报告，不进 overall，避免对"accent 不做深底字色"的 voice 误判。
+  const srgbLin = c => { c /= 255; return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); };
+  const lumOf = hex => {
+    const m = hex.match(/#?([0-9a-f]{6})/i);
+    if (!m) return null;
+    const n = parseInt(m[1], 16);
+    return 0.2126 * srgbLin((n >> 16) & 255) + 0.7152 * srgbLin((n >> 8) & 255) + 0.0722 * srgbLin(n & 255);
+  };
+  const ratioOf = (h1, h2) => { const l1 = lumOf(h1), l2 = lumOf(h2); if (l1 == null || l2 == null) return null; const hi = Math.max(l1, l2), lo = Math.min(l1, l2); return (hi + 0.05) / (lo + 0.05); };
+  const rootBlock = (html.match(/:root\s*\{([^}]+)\}/) || [])[1] || '';
+  const tokVal = name => { const m = rootBlock.match(new RegExp(name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*:\\s*([^;]+)')); return m ? m[1].trim() : null; };
+  const accent = tokVal('--c-accent'), bg = tokVal('--c-bg'), paper = tokVal('--c-bg-paper'), hot = tokVal('--c-hot'), accent2 = tokVal('--c-accent-2');
+  // 检测 accent 是否真的做深底字色:若 CSS 把深底 kicker/em 改用 hot/accent-2/米白 覆盖,
+  // 则 accent × 深底 是"潜在能力"而非"实际暴露"——不进 minRatio,避免对 v2/北京这类 voice 误判。
+  const darkAccentOverridden = /(?:\.kicker\.on-dark|\.ph-(?:spread|stat|faceoff|grid-page|invite|cover|section)\b[^{]*\b(?:kicker|em\b))[^{]*\{[^}]*color\s*:\s*(?:var\(--c-(?:hot|accent-2|bg-paper|stamp)\b|rgba\([^)]*(?:244\s*,\s*236\s*,\s*214|238\s*,\s*228\s*,\s*206))/i.test(cssText);
+  const contrastPairs = [
+    { name: 'accent 字 × 深底 bg', a: accent, b: bg, use: 'kicker/em on dark', exposed: !darkAccentOverridden },
+    { name: 'accent 底 × paper 字', a: accent, b: paper, use: 'stamp/roman/yr-chip 面板', exposed: true },
+    { name: 'hot 字 × 深底', a: hot, b: bg, use: '数字 .v/.num', exposed: true },
+    { name: 'accent-2 字 × 深底', a: accent2, b: bg, use: '封面 em/章节 em', exposed: true },
+  ].filter(p => p.a && p.b)
+    .map(p => ({ ...p, ratio: ratioOf(p.a, p.b) }))
+    .filter(p => p.ratio != null);
+  // minRatio 只计"实际暴露"的配对(潜在风险单独报告,不拉低分数)
+  const exposedRatios = contrastPairs.filter(p => p.exposed).map(p => p.ratio);
+  const minContrastRatio = exposedRatios.length ? Math.min(...exposedRatios) : null;
+  const colorContrast = minContrastRatio == null ? null
+    : minContrastRatio >= 4.5 ? 100
+    : minContrastRatio >= 3 ? 75
+    : minContrastRatio >= 2 ? 40
+    : 15;
 
   return {
     file: path.basename(abs),
@@ -184,6 +264,17 @@ function measure(file) {
     nativeSignals,
     hardNumbers,
     hedges,
+    archetypeMaxShare: +archetypeMaxShare.toFixed(2),
+    maxArchetypeCount: maxArchCount,
+    maxArchetype: maxArch,
+    maxConsecutiveArch: maxConsecutive,
+    consecutiveArch: runArch,
+    lightDarkBreath,
+    darkTones,
+    lightTones,
+    colorContrast,
+    minContrastRatio: minContrastRatio == null ? null : +minContrastRatio.toFixed(2),
+    contrastPairs: contrastPairs.map(p => ({ name: p.name, use: p.use, ratio: +p.ratio.toFixed(2), exposed: p.exposed })),
   };
 }
 
@@ -194,9 +285,15 @@ function score(m) {
   const sScale = Math.min(100, (m.scaleContrast / 3) * 100);          // 3:1 = 满分
   const sCommit = m.colorCommitPct;                                   // 已是 0-100（每页平均 commit bg 密度，1.5/页=满分）
   const sTension = Math.min(100, (m.asymSplits / 3) * 100);           // 3 处非对称 = 满分
-  const sMetaphor = Math.min(100, ((m.nativePrimitives / 4) * 60) + (m.layoutVariety * 40)); // 4 原语 + 多样性
+  let sMetaphor = Math.min(100, ((m.nativePrimitives / 4) * 60) + (m.layoutVariety * 40)); // 4 原语 + 多样性
+  // 节奏惩罚（2026-06）：archetype 过度使用 / 连续重复 / 缺深浅呼吸——堵"高分但平庸"
+  let metaphorPenalty = 0;
+  if (m.maxArchetypeCount >= 3 && m.archetypeMaxShare >= 0.25) metaphorPenalty += 8;   // 单页型 ≥3 次且 ≥25%
+  if (m.maxConsecutiveArch >= 2) metaphorPenalty += 10;                                 // 连续 ≥2 页同 archetype（layout-archetypes.md 硬规则）
+  if (m.lightDarkBreath === 0) metaphorPenalty += 10;                                   // 全深/全浅，缺反相呼吸
+  sMetaphor = Math.max(0, sMetaphor - metaphorPenalty);
   const overall = Math.round(sScale * 0.3 + sCommit * 0.25 + sTension * 0.2 + sMetaphor * 0.25);
-  return { sScale: Math.round(sScale), sCommit: Math.round(sCommit), sTension: Math.round(sTension), sMetaphor: Math.round(sMetaphor), overall };
+  return { sScale: Math.round(sScale), sCommit: Math.round(sCommit), sTension: Math.round(sTension), sMetaphor: Math.round(sMetaphor), metaphorPenalty, overall };
 }
 
 function report(m) {
@@ -206,9 +303,32 @@ function report(m) {
   console.log(`    尺度对比 scaleContrast : ${m.scaleContrast}:1   (${s.sScale}/100)  ${m.scaleContrast >= 3 ? '✓' : '⚠ <3:1 太平'}`);
   console.log(`    用色投入 colorCommit    : 每页均 ${m.avgCommitPerPage} 个色块 (${m.fullBleedSlides} 处)  (${s.sCommit}/100)  ${s.sCommit >= 60 ? '✓' : '⚠ 用色偏平'}`);
   console.log(`    构图张力 tension        : ${m.asymSplits} 处非对称分割  (${s.sTension}/100)  ${m.asymSplits >= 2 ? '✓' : '⚠ 全对称'}`);
-  console.log(`    隐喻贯彻 metaphor       : ${m.nativePrimitives} 原语 / ${m.distinctLayouts} 种布局  (${s.sMetaphor}/100)`);
+  console.log(`    隐喻贯彻 metaphor       : ${m.nativePrimitives} 原语 / ${m.distinctLayouts} 种布局  (${s.sMetaphor}/100)${s.metaphorPenalty ? `  ⚠ 节奏惩罚 -${s.metaphorPenalty}` : ''}`);
   console.log(`      └ 原生形式: ${signals}`);
+  if (m.maxArchetypeCount >= 3 && m.archetypeMaxShare >= 0.25) {
+    console.log(`      ⚠ archetype 过度使用: "${m.maxArchetype}" ×${m.maxArchetypeCount} (${Math.round(m.archetypeMaxShare * 100)}%)  → -8  建议:该页型占比过高,用 A6/A2/A10 打断`);
+  }
+  if (m.maxConsecutiveArch >= 2) {
+    console.log(`      ⚠ archetype 连续: "${m.consecutiveArch}" 连 ${m.maxConsecutiveArch} 页  → -10  (layout-archetypes.md: 连续 2 页同 archetype = 失败)`);
+  }
+  if (m.lightDarkBreath === 0) {
+    console.log(`      ⚠ 深浅呼吸: 全 deck ${m.darkTones} 深 / ${m.lightTones} 浅,缺反相页  → -10  建议:插 1 页 A2 命题/A10 引言做浅底呼吸`);
+  } else if (m.lightDarkBreath === 100) {
+    console.log(`      ✓ 深浅呼吸: 深 ${m.darkTones} / 浅 ${m.lightTones} 交替`);
+  }
   console.log(`    内容具体度 specificity  : ${m.hardNumbers} 硬数 vs ${m.hedges} 软化词  ${m.hedges > m.hardNumbers / 3 && m.hedges > 0 ? '⚠ 软化过多' : '✓'}`);
+  if (m.colorContrast != null) {
+    const tag = m.colorContrast >= 75 ? '✓' : m.colorContrast >= 40 ? '⚠ 偏低' : '✗ 不足';
+    console.log(`    色彩对比 colorContrast : 最低 ${m.minContrastRatio}:1  (${m.colorContrast}/100)  ${tag}  [仅计实际暴露配对 · WCAG ≥3 AA-大字 / ≥4.5 AAA · 不进总分]`);
+    for (const p of m.contrastPairs) {
+      const t = p.ratio >= 4.5 ? '✓ AAA ' : p.ratio >= 3 ? '◐ AA-大字' : p.ratio >= 2 ? '⚠ 偏低 ' : '✗ 不足 ';
+      const exp = p.exposed ? '' : '  · 潜在(深底已用 hot 覆盖,未暴露)';
+      console.log(`      ${t}  ${String(p.ratio).padStart(5)}:1  ${p.name}${exp}`);
+    }
+    if (m.colorContrast < 75) {
+      console.log(`      💡 实际暴露的配对 < 3:1 → 提亮 accent(如青墨 #3a6b5a→#4a8a72),或把深底字色改用 hot(已暴露的 deck 说明没做这层覆盖)`);
+    }
+  }
   console.log(`    ${'─'.repeat(48)}`);
   console.log(`    设计强度总分: ${s.overall}/100   (尺度 30% · 用色 25% · 张力 20% · 隐喻 25%)`);
   return s;

@@ -8,9 +8,10 @@
 1. [何时用图像驱动](#何时用图像驱动)
 2. [§1 去哪找图](#1-去哪找图)
 3. [§2 找怎样的图](#2-找怎样的图)
-4. [§3 怎么排版(5 种图像 archetype)](#3-怎么排版)
-5. [§4 工作流](#4-工作流)
-6. [§5 杭州 worked example](#5-杭州-worked-example)
+4. [§2.5 图片角色台账](#25-图片角色台账)
+5. [§3 怎么排版(7 种图像 archetype)](#3-怎么排版)
+6. [§4 工作流](#4-工作流)
+7. [§5 杭州 worked example](#5-杭州-worked-example)
 
 ---
 
@@ -104,7 +105,7 @@
 ### 必要条件(硬筛,不过滤掉)
 
 - **横构图 16:9 或更宽**:适配 1280×720 满版;纯竖图只能侧栏,不要满版
-- **分辨率 ≥ 1920×1080**:满版铺 1280×720 不糊;缩略图(几百 px)别用
+- **满版照片用原图 URL,不用 thumb 缩略图**:Wikimedia 两种直链——`/wikipedia/commons/<哈希>/<文件名>` 是**原图**(通常 2-5MB,全分辨率),`/wikipedia/commons/thumb/<哈希>/<文件名>/<宽>px-<文件名>` 是**压缩缩略图**(200-700KB)。满版封面 / 章节页 / 大片对开铺 1280×720,**必须用原图 URL**——thumb 被压缩过,放大满版会糊(实测故宫同图:1920px thumb 仅 216KB,原图 4.45MB,差 20 倍,满版观感差一档)。判别:**URL 带 `/thumb/` = 缩略图;删掉 `/thumb/` 和 `<宽>px-` 前缀即得原图**。thumb 仅留给 IP3 缩略图网格的小图位
 - **CC 协议清晰**:Wikimedia / Openverse 每图都标;避开"来源不明"的网图
 
 ### 质量条件(优选,拉开档次)
@@ -121,6 +122,40 @@
 - ❌ stock photo 摆拍感(假笑人群、摆拍手势、合成背景)
 - ❌ 主体杂乱(游客乱入、电线穿插、杂物堆)
 - ❌ 全 deck 色调不统一(冷蓝夹暖橙混搭)→ 后期用 Tinted 滤镜统一
+- ❌ 封面 / 章节 / 结尾重复同一张图(第一眼廉价,像素材不够)
+- ❌ 超宽低高图硬塞 16:9 满版(例如 1920×333 天际线),会被裁成一条雾带或拉低质感
+- ❌ 实用信息 / 路线 / 数据页随便放地标照:图没有解释页面任务,只是在"证明这座城市存在"
+
+## §2.5 图片角色台账
+
+图像驱动 deck 先做**照片角色台账**,再写 HTML。每张大图必须回答"为什么是这张,不是另一张"。
+
+| 页型 | 图片角色 | 选择标准 | 禁止 |
+|---|---|---|---|
+| Cover | 建立世界观 | 最强、最高分辨率、最有负空间的一张;不要和正文重复 | 低清、暗糊、和第 1 页重复 |
+| Chapter | 切换场景 / 情绪 | 与章节动作相关,和 cover 有色调连续但构图不同 | 随机地标、重复 cover |
+| Proof | 证明 action title | 图中主体必须直接支持标题里的动词或结论 | 只因"好看"而放 |
+| Route / Practical | 解释路径 / 使用方式 | 中轴线、地图感、街道动线、交通或人流;能辅助信息结构 | 景点照冒充路线说明 |
+| Gallery | 建立样本集 | 多张图统一裁切/滤镜,每张有不同样本意义 | 同一建筑角度反复出现 |
+| Close | 收束记忆点 | 与主命题形成回环,但不能复用封面 | Thank-you 空页或重复封面 |
+
+**生成前必填**:
+
+```text
+Slide 01 · cover · image role: establishing shot · why_this_image: ____ · source/license: ____
+Slide 02 · proof · image role: landmark detail · why_this_image: ____ · source/license: ____
+...
+```
+
+**硬规则**:
+
+1. Cover / chapter / close 三类大图之间不得重复同一源图。
+2. 支撑图可以重复,但只能作为刻意的 recurring motif;否则换图。
+3. 每页图必须绑定 action title 中的名词或动词。绑定不出来,说明这页不是图片驱动页,应改为数据/路线/色块锚点页。
+4. 满版图优先原图 URL 或 ≥2200px 长边、≥900px 短边;低于 1280×720 或被放大显示 = 阻断。
+5. 若需要用暗 overlay 保文字,overlay 只能服务可读性;不能把低清、杂乱、语义不匹配的图"压黑藏起来"。
+6. **同一地标/主体不得多页同角度重复(2026-06)**:封面用了天际线,章节页/画廊就换角度(俯瞰/街景/特写)。实测北京 deck slide 1 封面 + slide 8 画廊都用 CBD 天际线 → 触发 audit `repeated-support-image`。台账补一列"拍摄角度/时段",撞了换图。
+7. **满版图 URL 禁 `/thumb/`(2026-06 硬)**:Wikimedia 满版必须原图 URL(`/wikipedia/commons/<哈希>/<文件名>`,无 `/thumb/` 无 `<w>px-` 前缀)。`audit-image-assets.js` 已把 `/thumb/` 满版标为 `hero-thumb-not-original` warning。3840px 的 thumb 虽够清,但技术上仍是缩略图,原图更稳(实测 1280px thumb 与原图差 20 倍体积)。
 
 ---
 
@@ -128,7 +163,7 @@
 
 配合 [image-system.md](image-system.md) 的滤镜 + [layout-archetypes.md](layout-archetypes.md) 的版式引擎。核心原则:**图是设计元素,不是插入物**——每张图经处理融入配色,绝不裸放(裸放 = 旅游册,失败门禁 #1)。
 
-### 5 种图像 archetype(IP = Image-Photo)
+### 7 种图像 archetype(IP = Image-Photo)
 
 #### IP1 · 满版照片封面(Hero Overlay)
 图占满 1280×720,hero overlay 压暗(`brightness 0.35-0.5` + 底部 gradient),标题压在留白区。
@@ -164,6 +199,24 @@
 - 适合:**城市数据页**(天际线 + GDP)、**产品页**(实物 + 参数)
 - 反模式:图和数字各占一半对称(用 52:48);数字 <4em(无锚点引力)
 
+#### IP6 · 色块锚点页(Color Anchor,非照片为主)
+满版品牌专色色块占主视觉,照片退为缩略图网格 / 单张小图 / 数据锚点。**这是图像 deck 里唯一"色块为主"的版式,用来打破"全 deck 照片 + 遮罩"的用色偏平**——照片再震撼也顶替不了专色色块的张力对比,缺了它 deck 就"平、不惊艳"。
+- 满版专色(`var(--c-accent)` 或 voice 深色)压 action title + 巨型数字 / 引言,右侧 35-40% 或底部一条照片缩略图带(3-4 张 96×96px Muted 小图)
+- 或:左 60% 满版色块(巨型数字 + takeaway),右 40% 单张竖图 `object-fit:cover`
+- 适合:**数据总结页 / takeaway / 章节高潮**——照片 deck 最容易在这些页退化成"又一张满版照",IP6 给它一个色块支点
+- 反模式:色块 + 照片仍 50:50 对称(无张力);色块上压小字(浪费满版色);全 deck 都是 IP6(那就不是图像 deck 了,1-2 页足够)
+- **主题色贯穿(colorCommit 偏平的正解,硬)**:`design-strength-check.js` 的 colorCommit 扫的是全 deck **commit background 声明数**(深色 / `var(--c-accent)` / gradient,排除 `--c-bg` 浅底)÷ 页数;照片不算色块。**最常见的偏平根因:主题色只作 `color` / `border` 文字色,没作 `background` 实色**——colorCommit 不认 color/border,视觉上主题色也显得"不实、没贯穿"(单页 IP6 再好也是孤岛)。正解是把主题 accent 作为**实色 background** 铺到每页关键元素:① **1 页 IP6 满版色块锚点**;② **印章 / 序号 chip**——stamp、card 的 i/ii/iii 序号、plate 编号用 `background:var(--c-accent)` 实色填充(不是 border/color);③ **年份 / 标签 chip**——ev-row 年份、kicker 分类压在 accent chip 上;④ **封面印章**。主题色既贯穿全 deck 成统一视觉语言,每处又都是 commit background。实测北京 deck 四阶段:33(仅 5 处,主题色全是 color)→ +1 页 IP6(36)→ +3 数据 chip(55)→ **主题色贯穿 stamp / 序号 / 年份 / 封面印章(79/100 ✓,总分 80→92,grade-gate 全绿)**。判别:翻遍 deck,主题 accent 出现时是 `background:` 实色(算 commit)还是 `color:`/`border:`(不算)——后者就是"主题色没贯穿"。色块要承载信息(编号 / 分类 / 层级 / 数字),不是无意义堆色——后者变"花",触发反模式
+
+#### IP7 · 照片对峙（Photo Face-Off,图像版 A6 · 2026-06 新增）
+两个对照值正面对峙 + 巨型比率裁决(`≈ 1/X`)。**图像 deck 最缺的戏剧页型**——照片擅长"长什么样",但没法直接表达"全貌 vs 你能接触的"这种规模落差,IP7 用对峙 + 裁决把它压成一眼震撼。
+- 左侧 accent 实色面板(52%):巨型数字 A(全长/总量/全部)+ 标签 + 一句分量说明
+- 右侧深底(48%):数字 B(本地段/可见量/你能走到的)+ `≈ 1/X` 比率裁决 + 取舍说明
+- 典型场景:**长城全长 21,196km vs 北京段 520km ≈ 1/40**、**故宫 9000 间 vs 开放 ~1500 间 ≈ 1/6**、**地铁全网 N 站 vs 游客用到 M 站 ≈ 1/X**
+- 适合:**规模落差页 / "你以为的 vs 真实的"页 / 章节高潮**——比单纯 IP5 数据锚点多一层"裁决"张力
+- 反模式:两侧都浅底(无对峙);无 `≈ 1/X` 裁决(对峙没结论);比率数字 < 2.5em(没分量);两侧数字同级(要用 5em+ vs 3em+ 的尺度差体现"全貌 vs 局部")
+- **和 IP5 的分工**:IP5 是"一个数字 + 证据列"(单向证明),IP7 是"两个数字 + 裁决"(双向对峙)。规模主题用 IP7,单一物证用 IP5,不要混
+- 种子示范:`examples/template-09-editorial-photo.html` slide 5(`.ph-faceoff`)
+
 ### 排版铁律
 
 1. **全 deck 统一 1 种滤镜**(Muted 或 Tinted),不要每页换滤镜 → 花
@@ -172,27 +225,70 @@
 4. **文字压在留白区**,不压画面主体(压塔尖 / 人脸 = 糊)
 5. **图色调对齐 voice token**:editorial cream voice → 暖色低饱和图;dark-tech → 冷暗图;vibrant → 高饱和(但统一)
 6. **小字在角落 + 配色随底**(避免文字遮图 / 互相重叠):`pin` 左下、`photo-credit` 右下,**分占两角不撞**;**浅底深字 / 深底浅字**——深底(满版图 / 深色面板)用 `.pin.on-dark` + `.photo-credit`(米白半透明),浅底用 `.pin` + `.photo-credit.light`(墨色)。大标题(action title)可以压图,但只压在**留白区**(底部 gradient 压暗区),不压图主体(塔尖 / 人脸 / 视觉中心);小字(kicker / source / caption)优先角落或文字侧,不在图主体上漂浮。
+7. **深浅呼吸(硬,2026-06 升级)**:全深或全浅 deck = 视觉偏平。**必须插 ≥1 页反相页**做呼吸——深底 deck 插 1 页浅底 A2 命题/A10 引言,浅底 deck 插 1 页深底 IP4 章节/IP6 色块。判据:翻遍全 deck,data-background 是否全是同一色调?是 → 必加反相页。`design-strength-check.js` 已把"全深/全浅"列为 metaphor **-10 惩罚**(深浅呼吸子分)。实测:北京 deck 10 页全深 → colorCommit 虚高 100 但 breath=0 扣 10;原种子 3 深 5 浅 → breath ✓ 但 colorCommit 42。**两者兼得才是正解**(新 template-09 v2:9 深 1 浅,breath ✓ 且 colorCommit 100)。
+8. **archetype 节奏(硬,2026-06 升级)**:同类 archetype **不得连续 ≥2 页**,单一 archetype **不得 ≥3 次**(占比 ≥25%)。图像 deck 最容易 IP2 大片对开连用——视觉骨架同构 = 平。生成后台账对照下方"节奏表"自检。`design-strength-check.js` 已把"过度使用 -8 / 连续 -10"列为惩罚。
+
+### 图像 deck 节奏表(10 页金骨架 · 2026-06 新增)
+
+经校验验证(新 template-09 v2 实测 design-strength **99/100**、grade-gate pass)的 10 页节奏,生成时按主题套内容即可:
+
+| 页 | archetype | 底 | 角色 | 设计动作 |
+|---|---|---|---|---|
+| 1 | IP1 封面 | 深 | establishing | 满版图 + hero overlay + cover-code 竖排水印 + cover-stamp |
+| 2 | IP4 章节页 I | 深 | 切场景 | section-dim + 横向 gradient + kicker+h2 |
+| 3 | IP2 对开 | 深 | 单景深描 | 59:41 图文 + stat-row 三数据 |
+| 4 | IP3 画廊(featured) | 深 | 样本集 | 主景占 2×1 大格 + 4 小格,统一 muted |
+| 5 | **IP7 对峙** | 深 | 规模落差 | accent 实色面板 × 深底,`≈ 1/X` 裁决 |
+| 6 | IP5 数据锚点 | 深 | 单物证 | 巨型数字(accent 实色)+ 年份 chip 台账 |
+| 7 | **A2 命题** | **浅** | 主张/呼吸 | 大字主张 + 极端留白(全 deck 唯一浅底) |
+| 8 | IP2 flip 对开 | 深 | 现代深描 | flip 布局,与 slide 3 区分 |
+| 9 | IP4 章节页 II | 深 | 切实用 | 同 IP4 骨架,内容转实用信息 |
+| 10 | A12 收尾 | 深 | 邀请闭环 | 报头双线 + 三件事卡 + stamp,呼应封面 |
+
+节奏要点:① **IP2 只 2 次**(slide 3/8),不超 25%;② **A2 浅底插在中段**(slide 7)做呼吸;③ **IP7 对峙 + IP5 数据相邻但分工**(对峙 vs 单证);④ 首尾闭环(IP1 cover-stamp ↔ A12 stamp)。
 
 ---
 
 ## §4 工作流(生成图像驱动 deck)
 
 1. **列关键词清单**:主题的核心 proof object 各一个关键词
-2. **搜图**:每关键词去首选图库搜(Wikimedia 用于城市 / 地标),选 1-2 张候选
-3. **选图**:按 §2 标准(横构图 / 高分辨率 / 负空间 / CC 协议)硬筛
-4. **取 URL**:从 `File:` 页取原图 URL,或 API 拿 `thumburl`(≥1280px)
-5. **排版**:按 §3 archetype 分配(封面 IP1 / 章节 IP4 / 主景 IP2 / 速览 IP3 / 数据 IP5)
-6. **处理**:全 deck 统一 Muted 滤镜,封面 / 章节页加 hero overlay
-7. **标注**:每图标图源(作者 + 协议),数据图加 verified,末页 credits 汇总
-8. **自检**:`grade-gate`(G5 查图源 / 数字标注)+ `design-strength` + `visual-verdict`(P4 必跑)
+2. **写照片角色台账**:先分配 cover / chapter / proof / route / gallery / close,每页写 `why_this_image`
+3. **搜图**:每关键词去首选图库搜(Wikimedia 用于城市 / 地标),选 1-2 张候选
+4. **选图**:按 §2 + §2.5 标准(横构图 / 高分辨率 / 负空间 / CC 协议 / 角色不重复 / 语义绑定)硬筛
+5. **取 URL(满版用原图)**:从 `File:` 页取**原图 URL**(`/wikipedia/commons/<哈希>/<文件名>`,非 `/thumb/`);只有 IP3 缩略图网格的小图位用 `thumburl`。用 API 时取 `url`(原图)字段,不要默认取 `thumburl`
+6. **验证每张图可达(防 404 裂图,必做)**:选定 URL 后**逐张验证**,任一非 200 立即换图——Wikimedia 上同一主题常有多张序列号图(`_13` / `_22`),部分会被删除或重命名,直接热链会 404 裂图(实测 `Nanluoguxiang_..._22.jpg` 已 404,同主题 `_13.jpg` 正常 200)。验证方式任一:
+   - `curl -s -o /dev/null -w "%{http_code} %{url_effective}\n" "<url>"`(看是否 `200`)
+   - 或浏览器直接打开 URL 看是否出图
+   - 批量验已生成的 deck:`for u in $(grep -oE 'https://upload\.wikimedia[^"]*' deck.html | sort -u); do printf "%s " "$u"; curl -s -o /dev/null -w "%{http_code}\n" "$u"; done` —— 出现非 200 的回 §2 换图
+7. **排版**:按 §3 archetype 分配 + 对照"节奏表"(封面 IP1 / 章节 IP4 / 主景 IP2 / 速览 IP3 / **规模落差用 IP7 对峙** / 数据 IP5 / **中段插 A2 浅底命题做呼吸** / **数据总结用 IP6 色块锚点** / 收尾 A12)。**节奏自检:同类 archetype 不连续 ≥2 页、单一 archetype 不 ≥3 次、必须有 ≥1 浅底呼吸页**——不满足回 step 3 重排
+8. **处理**:全 deck 统一 Muted/Tinted 滤镜,封面 / 章节页加 hero overlay;背景主题不漂移,除非是刻意章节反差
+9. **标注**:每图标图源(作者 + 协议),数据图加 verified,末页 credits 汇总
+10. **资产硬检**:`node scripts/audit-image-assets.js <file>`。阻断:断图、满版图被放大、满版低于 1280×720、超宽低高图硬塞 16:9、cover/chapter/close 大图重复。警告:满版图非 retina、支撑图重复、背景主题漂移
+11. **视觉语义检**:`node scripts/visual-verdict.js <file>`。要求视觉模型明确判:图片是否解释标题、是否廉价/低质/过暗、照片是否重复、主题是否割裂、是否有设计冲击力。blocker 必须改
+12. **综合自检**:`grade-gate`(G5 查图源 / 数字标注)+ `design-strength`(**图像 deck 重点看 5 个子分**:① colorCommit 主题色贯穿,至少 1 页 IP6 否则"用色偏平"; ② 深浅呼吸,全深/全浅 metaphor -10; ③ archetype 节奏,连续≥2 页 -10、单页型≥3 次 -8; ④ colorContrast token 字色 WCAG 对比,accent 做深底字色<3:1 则提亮或改用 hot 覆盖; ⑤ scaleContrast≥3:1)+ `audit-image-assets`(查 broken/upscaled + **`/thumb/` 满版缩略图 warning**)+ `visual-verdict`(视觉模型评整体冲击)
+
+### 视觉模型辅助判定提示词(手工复核用)
+
+当无 `OPENAI_API_KEY` 只能 `visual-verdict.js --dry-run` 时,让有视觉能力的会话模型读取截图,使用下面的补充 rubric:
+
+```text
+请作为严苛的图片驱动 PPT 视觉评审,逐页判断:
+1. 这张图是否直接解释本页 action title? 若只是泛泛地标/氛围图,标 blocker 或 warning。
+2. 封面、章节、结尾是否重复同一图片或同一视觉角度? 重复大图为 blocker。
+3. 满版图是否显得低清、糊、过暗、裁切廉价、主体被文字压住? 关键页为 blocker。
+4. 全 deck 是否像同一套视觉系统? 背景、滤镜、专色、文字位置是否割裂?
+5. 页面是否有一个眼前一亮的主视觉决定? 若都是普通图文对开/暗罩文字,标 weak-design-impact。
+6. 路线/实用信息/数据页的图是否帮助理解路径、结构或数字? 若不能,标 photo-does-not-explain-claim。
+输出 blocker / warning / note,每条写 slide、证据、修法。
+```
 
 ### 单文件自包含 vs 外链 URL
 
-- **外链 URL**(推荐):`<img src="https://upload.wikimedia.org/...">` —— HTML 小,图稳定(Wikimedia CDN),但离线不可用
+- **外链 URL**(默认):`<img src="https://upload.wikimedia.org/...">` —— HTML 小,但有两个运行时风险:① 离线不可用;② **并发限流(429)**——同一 deck 并发拉 >10 张 upload.wikimedia.org 图可能触发 Too Many Requests,部分图间歇性加载失败(curl 批量测 18 张有 4 张 429;浏览器加载多图页也是并发请求,封面/章节页若图失败 = 第一眼就垮)
 - **base64 内联**:`<img src="data:image/jpeg;base64,...">` —— 真正单文件自包含,但 HTML 膨胀(每图 200KB-2MB,10 张 = 2-20MB)
 - **本地 images/ 目录**:HTML + 同目录 images/ 文件夹交付,折中
 
-默认用**外链 URL**(演示场景都在线),交付时说明"图依赖 Wikimedia CDN,离线需下载内联"。
+默认用**外链 URL**(演示场景都在线),交付时说明"图依赖 Wikimedia CDN,离线/限流时需下载内联"。**防限流**:IP3 网格 ≤6 张;关键页(封面 IP1 / 章节页 IP4)的图优先 base64 内联或本地化,确保首屏必现;全 deck >12 张外链图时,考虑把半数关键图内联。
 
 ---
 
