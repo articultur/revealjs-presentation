@@ -16,3 +16,5 @@ examples/*-overflow*.png
 revealjs-presentation-workspace/*/screenshots/
 revealjs-presentation-workspace/**/skill-snapshot/
 revealjs-presentation-workspace/*/*/
+# 临时输出目录,不入库
+output/
