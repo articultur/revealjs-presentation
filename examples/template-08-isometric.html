@@ -24,12 +24,12 @@
   --f-mono:'JetBrains Mono',monospace;
 }
 *{box-sizing:border-box;}
-.reveal,.reveal h1,.reveal h2,.reveal h3{font-family:var(--f-display);}
+.reveal,.reveal h1,.reveal h2,.reveal h3{font-family:var(--f-display),'Arial Narrow',sans-serif;}
 .reveal section{
   background-color:var(--c-bg);
   background-image:linear-gradient(var(--c-grid) 1px, transparent 1px),linear-gradient(90deg,var(--c-grid) 1px, transparent 1px);
   background-size:32px 28px;
-  color:var(--c-ink);font-family:var(--f-body);
+  color:var(--c-ink);font-family:var(--f-body),'Arial Narrow',sans-serif;
   font-size:26px;line-height:1.4;text-align:left;
   padding:56px 72px 72px;overflow:hidden;position:relative;
   height:720px;
@@ -37,14 +37,16 @@
 /* 垂直铺满：只对 present section 启用 flex 居中（!important 压过 reveal 的 inline display:block；
    不碰 .past/.future，避免破坏 reveal 的隐藏堆叠）*/
 .reveal section.present{display:flex !important;flex-direction:column;justify-content:center;}
+/* a11y:尊重 reduced-motion(technicalCraft + readability)*/
+@media (prefers-reduced-motion: reduce){.reveal *{transition:none !important;animation:none !important;}}
 /* === 契约原语（保留命名）=== */
 .kicker{font-family:var(--f-mono);font-size:0.5em;letter-spacing:0.16em;text-transform:uppercase;color:var(--c-mute);margin:0 0 0.7em;display:flex;justify-content:space-between;position:relative;z-index:3;}
-.coord{font-family:var(--f-mono);font-size:0.4em;letter-spacing:0.1em;color:var(--c-mute);}
+.coord{font-family:var(--f-mono);font-size:0.5em;letter-spacing:0.1em;color:var(--c-mute);}
 .at{font-family:var(--f-display);font-weight:700;font-size:1.6em;line-height:1.12;margin:0 0 0.5em;max-width:92%;position:relative;z-index:3;letter-spacing:-0.005em;}
 .at em{font-style:normal;color:var(--c-blue);font-weight:800;}
 .proof{position:relative;z-index:3;border:1px solid var(--c-line);background:var(--c-surface);padding:16px 20px;border-radius:3px;}
-.source{position:absolute;bottom:28px;right:72px;font-family:var(--f-mono);font-size:0.4em;letter-spacing:0.1em;text-transform:uppercase;color:var(--c-mute);z-index:3;}
-.pin{position:absolute;left:64px;bottom:28px;font-family:var(--f-mono);font-size:0.4em;letter-spacing:0.16em;text-transform:uppercase;color:var(--c-mute);z-index:3;}
+.source{position:absolute;bottom:28px;right:72px;font-family:var(--f-mono);font-size:0.5em;letter-spacing:0.1em;text-transform:uppercase;color:var(--c-mute);z-index:3;}
+.pin{position:absolute;left:64px;bottom:28px;font-family:var(--f-mono);font-size:0.5em;letter-spacing:0.16em;text-transform:uppercase;color:var(--c-mute);z-index:3;}
 /* === Isometric 极致化原语 === */
 .metric{font-family:var(--f-display);font-weight:800;font-size:3.4em;line-height:1;color:var(--c-blue);letter-spacing:-0.02em;position:relative;z-index:3;}
 .metric small{font-size:0.2em;font-family:var(--f-mono);letter-spacing:0.1em;display:block;margin-top:6px;font-weight:400;color:var(--c-mute);}

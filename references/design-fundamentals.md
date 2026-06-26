@@ -222,3 +222,45 @@
 | **MOTION 动效** | 静态、仅 fade | fragment 编排、签名时刻动效 |
 
 模式对应参考：快速模式 = 中 density + 中 variance + 低 motion；专业模式 = 按主题调；发布会级 = 中 density + 高 variance + 高 motion。拨盘是**对现有内容预算（≤14em）/布局多样性（≥4 种）/动效规则的参数化抽象**，不是新约束。
+
+## 7. 6 维品质 rubric（二期,对标顶级评选）
+
+四维（§5）是"设计强度"的内部度量；6 维 rubric 是**对外对标顶级评选**（Apple Design Awards / Awwwards / UX Design Awards 共性）的完整品质框架。`design-strength-check.js` 的 `qualityScore` 是 6 维均分（达标 ≥75，二期 rubric）。
+
+### 三层理论支撑
+
+| 层 | 理论 | 落到 rubric |
+|---|---|---|
+| 简洁 + 故事 + 受众先行 | Presentation Zen / Duarte | Communication + Audience |
+| 设计感十原则 | Dieter Rams（彻底/持久/创新/少设计） | Visual + Cohesion + Innovation |
+| 排版四要素 + 数据墨水 | Robin Williams CRAP + Tufte data-ink | Visual + Communication |
+
+### 6 维（每维有机器/视觉/主观对应）
+
+| 维度 | 机器代理（design-strength） | 视觉/主观 | 达标 |
+|---|---|---|---|
+| Visual Excellence 视觉卓越 | visualExcellence（尺度+用色+张力）/3 | 视觉模型 design-impact | ≥75 |
+| Cohesion 一致连贯 | cohesion（布局多样性+节奏呼吸+对比度） | 视觉模型 theme-fragmentation | ≥75 |
+| Communication 沟通清晰 | communication（action-title 完整性） | 视觉模型 chart-explain-claim | ≥70 |
+| Audience 受众体验 | audience（正文字号+对比度） | 视觉 + 主观（受众先行） | ≥70 |
+| Innovation 原创性 | innovation（反 AI tell） | 视觉模型 ai-template-tell | ≥80 |
+| Technical Craft 技术工艺 | technicalCraft（overflow+字体+无 vw） | 机器（代码/导出） | ≥80 |
+
+### Innovation 四重保证（spec Round 8）
+
+Innovation（非 AI 模板）单靠机器不够，四重联合：
+1. **反 AI lint** — `lint-design.js` 检测 indigo/gradient text/ghost card/side-stripe/hero-metric/emoji/骨架换皮（SKELETON_RESKIN）
+2. **主题原生形式强制** — `design-strength metaphor` 维 + `nativeSignals`；失败门禁 #9 换皮拦截
+3. **视觉模型判 AI 味** — `visual-verdict.js` 加 ai-template-tell / weak-native-form category
+4. **对标 ≥1 签名时刻** — `lint-design checkSignatureMoment`（P2-9）+ design-strength metaphor 要求 ≥1 独特设计决定
+
+### 9 种子模板 qualityScore 实测（2026-06）
+
+| 模板 | qualityScore | 信号 |
+|---|---|---|
+| 01 editorial-serif / 02 dark-tech / 03 minimal-spatial / 04 vibrant-gradient / 05 nature-fresh / 09 editorial-photo | 95-100 | 6 维均衡强 |
+| 06 brutalist | 78 | communication 略低（宣言体 topic label） |
+| 07 memphis | 73 | communication/audience 偏弱 |
+| 08 isometric | 66 | action-title 完整性低（信息图 topic label 多） |
+
+低分模板（07/08）是 advisory 真实信号——memphis/isometric 信息图天然 topic label 多，communication 子分严。生成新 deck 时若主题匹配这些形状，别因 qualityScore 偏低误判（回归 §5"四维里 ≥2 维不达标才回炉"）。

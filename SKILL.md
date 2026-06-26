@@ -12,9 +12,13 @@ description: |
 
 生成一个演示的最短路径（快速模式，适合"做个 PPT"类需求）：
 
-1. **触发**：用户说"做个 PPT / 幻灯片 / 课件"或给出主题
+1. **触发**：用户说"做个 PPT / 幻灯片 / 课件"或给出主题。**触发时立刻判别模式**：args/消息含"专业模式 / professional / P0-P6 / 发布会级 / keynote / 惊艳"→ 标记 **Gate 模式**（P1/P3 后强制 STOP 等确认，见下文「Gate 模式硬约束」）；否则快速模式。**Gate 模式必须在回复开头声明**："检测到『专业模式』→ 进 Gate 流程，本阶段输出设计语法后我会停下等你确认，不直接生成。"
 2. **确认 4 要素**：主题 · 观众 · 页数 · 语言（缺省：通用观众 / 8-12 页 / 中文）。页数是硬约束——用户给 N 页时最终偏差 ≤1（见 §8）
-3. **先搭骨架**：轻量 ghost deck（每页 role + action title + proof object）+ Theme-to-Design Router 六行说明。**图像驱动主题（城市/旅游/美食/产品实拍，见主题形状表 09 行）骨架前先按 `references/image-driven-deck.md` §4 工作流：列关键词清单 → Wikimedia Commons 搜图 → 选图，再搭骨架（每页绑一张 CC-BY 图）**
+3. **判断双条件 + 搭骨架**（防"方向完全错了"大返工——BLACKPINK 教训;跑 `node scripts/generate-ghost-deck.js --json '{...}'` 可机器判）：
+   - **AUTO（一键自动,不确认）**：明确需求（主题+页数+观众+要点 全给）**且**指定模板/风格（"参照 xxx" / template-0X）→ 直接生成 HTML
+   - **GHOST（轻骨架预览,5 秒可扫能喊停）**：双条件任一不满足 → 先生成 ghost deck（每页 role + action title + proof object）+ Theme-to-Design Router 六行说明,等用户"继续 / 改 X"才生成 HTML。**Ghost Deck Test**：只读 action titles 应能讲完整故事——读不通先改论证,不进视觉设计
+
+   **图像驱动主题**（城市/旅游/美食/产品实拍,见主题形状表 09 行）骨架前先按 `references/image-driven-deck.md` §4 工作流:列关键词清单 → Wikimedia Commons 搜图 → 选图,再搭骨架（每页绑一张 CC-BY 图）
 4. **生成单个 HTML**：内联 CSS+JS、Reveal.js 4.6.0 CDN、1280×720 画布
 5. **自检（三层 + 图片门禁）**：`node scripts/grade-gate.js <file>` 全绿（地板，含溢出、对比度、pin、空间完整性）+ `node scripts/design-strength-check.js <file>` 四维达标（天花板：尺度≥3:1、有满版色块面板、有非对称分割、有主题原生形式）+ **图像驱动 deck 额外跑 `node scripts/audit-image-assets.js <file>`**（断图、低清/放大满版图、超宽低高图、封面/章节重复、背景主题漂移）+ **P4 生成后必跑 `node scripts/visual-verdict.js <file>`（LLM 视觉语义评审，抓图示不清/标签不可读/图表不解释主张/图片廉价或错配/重复大图/主题割裂/装饰盒压 page furniture）**——这一步是 G1–G10 之外唯一抓感官类问题的门禁，**任何视觉调整后必须重跑**。若无视觉模型 key，跑 `visual-verdict.js --dry-run` 生成截图+prompt；**若会话模型有视觉（opus/sonnet 等），让 Claude Read dry-run 截图 + 按 prompt 的 rubric 判定**（blocker/warning/note），等价 visual-verdict 但用 Claude 视觉代替外部 API；若会话模型无视觉（纯文本），只能留截图并说明未执行视觉判定。
 6. **交付**：HTML 路径 + 运行/导出说明 + 验证状态
@@ -68,14 +72,29 @@ CDN 加载 reveal.js + Google Fonts，用户**无需安装任何东西**。
 | 专业模式 Phase | 名称 | 类型 | 核心任务 |
 |:-----:|------|:----:|------|
 | P0 | 设计上下文 | ● | 风格、色彩、字体方向 |
-| P1 | 需求+设计语法 | ● | 场景/时长/听众 + ghost deck + Theme-to-Design Router 六行说明 |
+| P1 | 需求+设计语法 | ● | 场景/时长/听众 + ghost deck + Theme-to-Design Router 六行说明。**⚠ 输出后必须 STOP，等用户"继续 / 进 P4 / 改 X"才能生成 HTML——擅自生成 = 违规** |
 | P2 | 输出方案 | ◐ | 内容结构、视觉方向 |
-| P3 | 设计评审 | ● | 反模式检查 + 优化方向 |
+| P3 | 设计评审 | ● | 反模式检查 + 优化方向。**⚠ Gate 模式下输出后必须 STOP，等用户确认优化方向** |
 | P4 | 生成初稿 | ● | HTML + **十门禁**（`grade-gate.js` 全绿 = G1-G10 全过，见 §验证；机器判 verdict，不可手动放行） |
 | P5 | 优化迭代 | ● | 按规模执行优化（详见 references/pipeline-phases.md「Phase 5」） |
 | P6 | 最终检查 | ◐ | 专业/发布会级必跑；快速模式 ≥12 页、密集数据或视觉结构调整时跑 |
 
 ● 必须完成　◐ 可跳过　/　刷新已有演示：跳过 P1，从 P3 开始评审
+
+### Gate 模式硬约束（防跳步 · 2026-06 新增）
+
+**判别**：args / 用户消息含"专业模式 / professional / P0-P6 / 发布会级 / keynote / 惊艳"→ 标记为 **Gate 模式**。
+
+**硬约束**——Gate 模式下：
+
+- **P1 输出设计语法（六行 + 契约 + ghost）后必须 STOP**，等用户显式确认（"继续 / 进 P4 / OK / 改 X"）才能进 P4 生成 HTML
+- **P3 设计评审后必须 STOP**，等用户确认优化方向
+- **擅自生成 HTML 或一口气跑完 P0-P6 = 违规失败**，无论 deck 质量多高
+- 快速模式（默认）不 STOP，一次产出
+
+**触发时声明**：Gate 模式被触发，回复开头必须声明判别结果 + "本阶段输出后会停下等确认"，让用户知道掌握控制权。
+
+> **这条是元规则**：我（Claude）曾在专业模式下跳过 Gate，一口气生成 + 自行改门禁，把用户控制权吃掉。本节就是为防止再犯而设——下次 Gate 模式触发，撞见这条必须 STOP。
 
 ## 关键约束（生成 HTML 前必须先确认）
 
@@ -96,6 +115,7 @@ CDN 加载 reveal.js + Google Fonts，用户**无需安装任何东西**。
 - **交付前必须过十门禁**：`grade-gate.js <file>` 全绿（见 §验证）。P4 生成后立刻跑，任一红灯 = 回 §2 拆页/降文字/重绑坐标系
 - **切勿破坏 reveal 的 section 堆叠/隐藏**：弱选择器 `.reveal section{position:relative}` 无害（被 reveal.css 覆盖 = dead fallback）；**真正危险的是 `!important` 或加强选择器强覆盖 `position`** → section 进文档流垂直堆叠 → overflow:hidden 截断 → 除首页外全空白（**v15.2 实测 slide 3 top=1397，已回滚**）。给 present 垂直居中用 `.reveal section.present{display:flex!important}`，别 blanket-force（详见 `references/css-skeleton.md`）
 - **Pin 定位上下文**：pin 相对最近 positioned 祖先（reveal 的 absolute section）；若 section 退回 static，pin 相对 BODY 全叠视口左下角 → `test-label-overlap` 报泄露
+- **字体 fallback 防 FOUT 重叠**（BP logo-stamp 8px 重叠根因,2026-06 加）：所有 `font-family` 栈**在 generic fallback（`sans-serif`/`serif`）前**带窄体 fallback（`'Arial Narrow'` / `'Helvetica Neue Condensed'`）；大字（logo/标题/大数字 ≥3em）与角元素（stamp/pin/photo-credit/角标）水平间距 **≥ 50px**。字体未加载时 fallback 到窄体而非默认宽体,防加载前/后布局跳变致重叠。`scripts/test-font-loading.js` 机器检测（宽度差 >15% 或间距 <50px = blocker）,`scripts/auto-fix.js` 兜底注入窄体 fallback
 
 ### 2. 内容预算（生成 section 前先算）
 
@@ -414,6 +434,7 @@ bash scripts/setup.sh          # 仅环境检查
 
 ## 成功标准
 
+- [ ] **Gate 模式守门（元规则）**：若用户指定专业/发布会模式，P1 设计语法输出后**已停下等确认**（没停 = 违规失败，无论 deck 质量多高；规则见 §流程「Gate 模式硬约束」）
 - [ ] 第一眼就是经过**设计意图**的（不是 AI 模板感）
 - [ ] P1 产出了 Theme-to-Design Router 六行说明 + **设计契约**（尺度预设/用色投入/archetype 序列/本主题发明变体），且不是直接套模板
 - [ ] 主骨架由 ≥3 种 archetype 组合（非种子原语原样填充），含 ≥1 个本主题发明变体

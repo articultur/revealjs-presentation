@@ -32,6 +32,19 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 ```
 
+### 字体 fallback 安全清单（防 FOUT 重叠,2026-06 MVP 新增）
+
+字体未加载时 fallback 到默认宽体，大字撑到相邻元素致重叠（BLACKPINK logo-stamp 8px 重叠根因）。所有 `font-family` 栈**在 generic fallback（`sans-serif`/`serif`）前**带窄体 fallback：
+
+| 字体类型 | 安全 fallback 栈 |
+|---------|-----------------|
+| Display/标题（Bebas Neue/Anton/Archivo Black 等） | `'Bebas Neue', 'Anton', 'Arial Narrow', sans-serif` |
+| Sans 正文 | `'Noto Sans SC', 'Arial Narrow', sans-serif` |
+| Serif 正文 | `'Noto Serif SC', 'Arial Narrow', serif` |
+| Mono | `'JetBrains Mono', 'Courier New', monospace` |
+
+**大字与角元素水平间距 ≥ 50px**：logo/标题/大数字（≥3em）与 stamp/pin/photo-credit/角标保持 ≥ 50px 水平间距，字体宽度波动时不撞。`scripts/test-font-loading.js` 机器检测（宽度差 >15% 或间距 <50px = blocker），`scripts/auto-fix.js` 兜底注入窄体 fallback（在 generic 前，FOUT 时优先用窄体）。
+
 ### Reveal.js 主题
 
 推荐使用的主题（`dist/theme/` 下）：
