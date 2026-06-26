@@ -270,3 +270,42 @@ node scripts/visual-verdict.js <file> --dry-run
 4. **js 脚本检查** — `scripts/check-overflow.js` 用 playwright 测每页 bbox（文字越界 / 元素重叠），集成 `grade-gate`（G9）；`scripts/test-spatial-integrity.js` 测物理表面 containment、manifest physicalContract、SVG text clipping/stroke、数据曲线 `T` 命令，集成 `grade-gate`（G10）
 
 **impeccable false-positive 提示**：`template-03` 的 em-dash（—）与 PLATE 编号（PLATE I/II/III、01-06 section 标记）是 minimal-spatial 建筑制图风格的**固有产物**（图纸标注 / 图版编号），**非 AI cadence tell**。`/impeccable audit` 会标这两个，属已确认 false positive，无需修改——改了就不是建筑制图了。
+
+## 16. 自愈边界门禁 / Auto-Fix Bounds Gate（2026-06 MVP 新增）
+
+`scripts/auto-fix.js` 自愈引擎只做兜底，**主策略是生成时防错**（font-family 窄体 fallback + 大字安全间距 + archetype 防重叠 + ghost 判断）。自愈边界 a+b+c（spec Round 7）：
+
+- **a 迭代上限**：单轮应用（SAFE 幂等 + ATTEMPT 一次性），超过转人工
+- **b 只修确定性**：字体窄体 fallback / pin 泄漏 `display:none` / 溢出缩字（--aggressive）。对比度、视觉语义、设计感**不修**——避免伤 voice
+- **c 升分才保留**：修完重跑 `grade-gate` + `validate` + `test-label-overlap`，issues 数必须降/平，否则回退原版
+
+```bash
+node scripts/auto-fix.js <file>                  # SAFE 修复(字体 fallback + pin 泄漏)
+node scripts/auto-fix.js <file> --aggressive     # 加 ATTEMPT(溢出缩字 / pin 移右下)
+```
+
+对比度失败、视觉语义 blocker、设计感平庸——自愈不碰，分别走 `design-strength-check.js` 的 `colorContrast` 子分、`visual-verdict.js` 的 category、`references/design-fundamentals.md` §5。
+
+## 17. AI 味门禁 / AI Template Tell Gate（2026-06 MVP 新增）
+
+spec Innovation 四重保证（反 AI 模板）——机器 + 视觉模型 + lint + 原生形式强制联合，不单靠机器：
+
+1. **反 AI lint**：`lint-design.js` 已检测 indigo accent / gradient text / ghost card / side-stripe / hero-metric / emoji 图标 / duotone 渐变 / 骨架换皮（`SKELETON_RESKIN`，失败门禁 #9 机器化）
+2. **主题原生形式强制**：`design-strength-check.js` 的 `metaphor` 维 + `nativeSignals` 检测主题原生原语（masthead/stamp/anchor-numeral…）；缺失回炉重做骨架
+3. **视觉模型判 AI 味**：`visual-verdict.js` 加 `ai-template-tell` / `weak-native-form` category（primary check 13），视觉模型判"这页像通用 AI 模板吗?有主题原生形式吗?"
+4. **对标"≥1 签名时刻"**：`lint-design.js` 的 `checkSignatureMoment`（P2-9）+ `design-strength metaphor` 维要求 ≥1 个独特设计决定
+
+`design-strength-check.js` 的 `innovation` 子分（6 维代理）：数 AI tell（0 个 = 100/100，每个 −20）。
+
+## 18. 字体闪烁门禁 / Font Flicker Gate（2026-06 MVP 新增）
+
+BLACKPINK deck 的 logo 大字与右上印章 8px 重叠根因：字体未加载时 fallback 到默认宽体，logo 撑到印章位置；字体加载后布局跳变。两道机器检测（`scripts/test-font-loading.js`，遍历每页）：
+
+- **font-flicker-width**：大字（≥60px / 3em）在 fallback 字体（Google Fonts 被 abort）vs 真实字体加载后的宽度差 **> 15%** = 字体闪烁风险（加载前可能撑到相邻元素）
+- **large-text-clearance**：大字（logo/标题/大数字）与角元素（stamp/pin/photo-credit/角标）水平间距 **< 50px** = 字体宽度波动时易撞（0px = blocker 已重叠）
+
+```bash
+node scripts/test-font-loading.js <file>          # 遍历每页,exit 1 = blocker
+```
+
+**生成时防错**（主策略，见 SKILL.md 关键约束 §1）：`font-family` 栈在 generic fallback（`sans-serif`/`serif`）前带窄体 fallback（`'Arial Narrow'`），大字与角元素水平间距 ≥ 50px。`auto-fix.js` 兜底注入窄体 fallback（在 generic 前，FOUT 时优先用窄体）。

@@ -250,6 +250,52 @@ function measure(file) {
     : minContrastRatio >= 2 ? 40
     : 15;
 
+  // 8. Communication(6 维代理):action-title 完整性——section 有 h1/h2 且非 topic label
+  //    Presentation Zen/视觉叙事主张:每页一个完整命题,不是"背景/方法/结果"topic label。
+  const topicLabels = /^(?:背景|方法|结果|总结|概述|目录|前言|引言|介绍|方法论|总结与展望|谢谢|thank\s+you|thanks|overview|background|introduction|agenda)$/i;
+  let claimSlides = 0;
+  for (const s of sections) {
+    const h = s.html.match(/<h[12][^>]*>([\s\S]*?)<\/h[12]>/i);
+    if (h) {
+      const text = h[1].replace(/<[^>]+>/g, '').trim();
+      if (text.length >= 4 && !topicLabels.test(text)) claimSlides++;
+    }
+  }
+  const communication = sections.length ? Math.min(100, Math.round(claimSlides / sections.length * 100)) : 0;
+
+  // 9. Innovation(6 维代理):反 AI lint——数 AI tell,0 个=满分(spec Innovation 四重之一)
+  const aiTells = [
+    /#6366f1|#4f46e5|#8b5cf6|#7c3aed|#4338ca/i.test(styleBlocks),  // Tailwind indigo/紫
+    /background-clip\s*:\s*text/i.test(styleBlocks),                 // gradient text
+    /border-(?:left|right)\s*:\s*[2-9]\d?\s*px\s+solid/i.test(styleBlocks), // side-stripe
+    /[\u{1F300}-\u{1F6FF}\u{1F900}-\u{1F9FF}]/u.test(html),         // emoji 当图标
+  ];
+  const aiTellCount = aiTells.filter(Boolean).length;
+  const innovation = Math.max(0, 100 - aiTellCount * 20);
+
+  // 10. TechnicalCraft(6 维代理):静态代码工艺信号(Rams 彻底 + 导出稳定)
+  const hasOverflowHidden = /\.reveal\s+section\s*\{[^}]*overflow\s*:\s*hidden/is.test(styleBlocks);
+  const hasVwVh = /\b\d+(?:\.\d+)?v[wh]\b/i.test(styleBlocks);
+  const hasReducedMotion = /@media\s*\(\s*prefers-reduced-motion/i.test(styleBlocks);
+  const hasFontFallback = /font-family\s*:[^;]*Arial Narrow/i.test(html)
+    || /font-family\s*:[^;]*sans-serif/i.test(html);
+  let craftScore = 0;
+  if (hasOverflowHidden) craftScore += 30;
+  if (!hasVwVh) craftScore += 25;
+  if (hasReducedMotion) craftScore += 20;
+  if (hasFontFallback) craftScore += 25;
+  const technicalCraft = Math.min(100, craftScore);
+
+  // 11. Audience(6 维代理):readability——正文字号基线 + 对比度(Presentation Zen 受众先行)
+  // 过滤 [0.4em, 2em):<0.4em 是装饰性极小标注(metric small/coord 微标/9-11px px 标注),
+  // ≥2em 是大标题(display/logo/metric)——两者都不是"正文 readability"测量对象,排除避免拉偏均值(review I3)
+  const bodySizes11 = sizes.filter(s => s >= 0.4 && s < 2);
+  const avgBodyEm = bodySizes11.length ? bodySizes11.reduce((a, b) => a + b, 0) / bodySizes11.length : 0;
+  const bodyPx = avgBodyEm * BASE_PX;
+  const readableSize = bodyPx >= 18 ? 60 : bodyPx >= 15 ? 30 : 10;
+  const readableContrast = colorContrast == null ? 20 : (colorContrast >= 75 ? 40 : colorContrast >= 40 ? 25 : 5);
+  const audience = Math.min(100, readableSize + readableContrast);
+
   return {
     file: path.basename(abs),
     slides: sections.length,
@@ -275,6 +321,13 @@ function measure(file) {
     colorContrast,
     minContrastRatio: minContrastRatio == null ? null : +minContrastRatio.toFixed(2),
     contrastPairs: contrastPairs.map(p => ({ name: p.name, use: p.use, ratio: +p.ratio.toFixed(2), exposed: p.exposed })),
+    communication,
+    claimSlides,
+    innovation,
+    aiTellCount,
+    technicalCraft,
+    audience,
+    bodyPx: +bodyPx.toFixed(1),
   };
 }
 
@@ -293,7 +346,11 @@ function score(m) {
   if (m.lightDarkBreath === 0) metaphorPenalty += 10;                                   // 全深/全浅，缺反相呼吸
   sMetaphor = Math.max(0, sMetaphor - metaphorPenalty);
   const overall = Math.round(sScale * 0.3 + sCommit * 0.25 + sTension * 0.2 + sMetaphor * 0.25);
-  return { sScale: Math.round(sScale), sCommit: Math.round(sCommit), sTension: Math.round(sTension), sMetaphor: Math.round(sMetaphor), metaphorPenalty, overall };
+  // 6 维 rubric(advisory,对标 Apple Design Awards / Awwwards / UX Design Awards)
+  const visualExcellence = Math.round((sScale + sCommit + sTension) / 3);
+  const cohesion = Math.min(100, Math.round((m.layoutVariety * 100 + Math.max(0, 100 - metaphorPenalty) + (m.colorContrast ?? 50)) / 3));
+  const qualityScore = Math.round((visualExcellence + cohesion + m.communication + m.audience + m.innovation + m.technicalCraft) / 6);
+  return { sScale: Math.round(sScale), sCommit: Math.round(sCommit), sTension: Math.round(sTension), sMetaphor: Math.round(sMetaphor), metaphorPenalty, overall, visualExcellence, cohesion, qualityScore };
 }
 
 function report(m) {
@@ -329,8 +386,19 @@ function report(m) {
       console.log(`      💡 实际暴露的配对 < 3:1 → 提亮 accent(如青墨 #3a6b5a→#4a8a72),或把深底字色改用 hot(已暴露的 deck 说明没做这层覆盖)`);
     }
   }
+  console.log(`    沟通清晰 communication: ${m.claimSlides}/${m.slides} 页有完整 action title  (${m.communication}/100)  ${m.communication >= 70 ? '✓' : '⚠ topic label 太多'}`);
+  console.log(`    原创性 innovation    : ${m.aiTellCount} 个 AI tell  (${m.innovation}/100)  ${m.innovation >= 80 ? '✓' : '⚠ 有 AI 模板指纹'}`);
+  console.log(`    技术工艺 techCraft   : (${m.technicalCraft}/100)  ${m.technicalCraft >= 80 ? '✓' : '⚠ 代码工艺缺防错(overflow/无 vw/字体 fallback)'}`);
   console.log(`    ${'─'.repeat(48)}`);
   console.log(`    设计强度总分: ${s.overall}/100   (尺度 30% · 用色 25% · 张力 20% · 隐喻 25%)`);
+  console.log(`    6 维 rubric(advisory,对标 Apple/Awwwards/UX Design Awards):`);
+  console.log(`      视觉卓越 visualExcellence : ${s.visualExcellence}/100  (尺度+用色+张力)`);
+  console.log(`      一致连贯 cohesion         : ${s.cohesion}/100  (布局多样性+节奏呼吸+对比度)`);
+  console.log(`      沟通清晰 communication     : ${m.communication}/100  (action-title 完整性)`);
+  console.log(`      受众体验 audience          : ${m.audience}/100  (正文字号 ${m.bodyPx}px + 对比度)`);
+  console.log(`      原创性 innovation          : ${m.innovation}/100  (反 AI tell,${m.aiTellCount} 个)`);
+  console.log(`      技术工艺 technicalCraft    : ${m.technicalCraft}/100  (overflow+字体+无 vw)`);
+  console.log(`      品质总分 qualityScore      : ${s.qualityScore}/100  (6 维均分,二期 rubric;达标 ≥75)`);
   return s;
 }
 

@@ -86,6 +86,19 @@
 **Openverse**:
 - 网页搜:`openverse.org`(可按 license 筛 CC0 / CC-BY)
 - API:`https://api.openverse.org/v1/images/?q=west+lake+hangzhou`(匿名,无需 key)
+- **自动化(G003 三期,2026-06)**:`node scripts/fetch-assets.js --query "..." --limit 5 --json`——脚本封装 Openverse + Wikimedia,输出 JSON(url/license/source/creator)供 skill 消费,带缓存 + 退避 + 占位降级
+
+### 限流兜底三道(G003,2026-06)
+
+图源 API 限流/超时常见（Wikimedia SSL handshake timeout / 429 / Openverse 匿名限 ~100 req/day；BLACKPINK 教训：重试多次仍拿不到 3840 高清）。`scripts/fetch-assets.js` 三道兜底：
+
+| 兜底 | 机制 | 触发 |
+|------|------|------|
+| 1. 本地缓存 | `.cache/assets/<hash>.json`（7 天 TTL） | 同 query 二次搜 |
+| 2. 指数退避重试 | 3 次：1s/2s/4s | 429 / 超时 / 网络抖动 |
+| 3. 占位降级 | Picsum 随机图 + 标注"换官方照" | Openverse 0 结果 / 全失败 |
+
+**占位降级铁律**：占位图必须标注"换官方照"（Picsum 是随机图，非主题素材）。明星/特定人物 CC-BY 天花板（Openverse/Wikimedia 不收），直接占位 + 用户手动换——不浪费时间重试拿不到的图。
 
 ### License 规范(必须遵守)
 

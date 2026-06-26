@@ -57,6 +57,19 @@
 | **视觉锚点** | 有没有你**特别喜欢**的演示/品牌/网站？或**绝对不要**的风格？ | 锁定视觉方向，避免试错 |
 | **HTML-native 价值** | 这份演示有没有必须用网页能力证明的点：复杂图表、3D、地图、物理互动、可交互动画？ | 决定是否调用 ECharts/Three.js/Mapbox/Matter.js 等前端能力 |
 
+### 双条件判断（P1 入口,2026-06 MVP 新增）
+
+进入 P1 先判"是否需要 ghost 预览"（防"方向完全错了"大返工,BLACKPINK 教训）：
+
+| 条件 | 判据 | 跑 |
+|------|------|------|
+| **A 明确需求** | 主题 + 页数 + 观众 + 要点(≥3) 全给 | — |
+| **B 指定模板** | "参照 xxx" / template-0X / 明确风格名 | — |
+| **A && B → AUTO** | 一键自动,不确认,直接生成 HTML | `node scripts/generate-ghost-deck.js --json '{...}'` exit 0 |
+| **否则 → GHOST** | 生成轻骨架预览,5 秒可扫能喊停 | 同脚本 exit 1,输出 ghost 表 |
+
+GHOST 模式下：输出 ghost deck 后**必须 STOP**，等用户"继续 / 改 X"才进 P4 生成 HTML（Gate 模式硬约束，见 SKILL.md）。
+
 ### Ghost Deck（必产出）
 
 在 Theme-to-Design Router 前先给出轻量 ghost deck：

@@ -1259,6 +1259,37 @@ function checkLayoutDiversity(html) {
 }
 
 /**
+ * P1: 骨架换皮检测（失败门禁 #9 / spec Innovation 反 AI 模板）
+ * 多数页面用通用 class（slide/card/panel/section...）且无主题原生 class
+ * = 「左标题 + 右图形」5 套换色式 AI 模板感。
+ */
+function checkSkeletonReskin(html) {
+  const sections = extractSections(html);
+  const topLevel = sections.filter(sec =>
+    !/<section[\s>]/i.test(sec.content.trim().substring(0, 50))
+  );
+  if (topLevel.length < 4) return;   // 小 deck 不评
+
+  const genericRe = /\b(?:slide|section|page|card|panel|content|container|wrapper|block|item|row|col-|grid-item|feature|box|tile|unit|layer|module|segment)\b/i;
+  // 主题原生 class 词根(反映领域对象,种子模板已用):纸上看到这类命名 = 有原生形式
+  const nativeRe = /\b(?:blueprint|sheet|dimension|terminal|cockpit|stage|lane|board|wall|rail|strip|stack|ledger|ladder|mechanism|editor|bench|specimen|envelope|masthead|lookbook|cue-|beat-|kinetic|frame-|score-|command|civic|handoff|issue-|sample-|endpoint|ritual|totem|flywheel|swimlane|node-grid|flow-board|material-board|swatch|case-grid|chart-wall|slope|heatmap|newsroom|archive|catalog|dossier|manifesto|arena|exchange|workshop|studio|gallery|observatory|price-|market-|court-|field-|lab-)\b/i;
+
+  let generic = 0, native = 0;
+  topLevel.forEach(sec => {
+    const cls = (sec.attrs.match(/class="([^"]*)"/) || [])[1] || '';
+    if (nativeRe.test(cls)) native++;
+    else if (genericRe.test(cls)) generic++;
+  });
+
+  if (native === 0 && generic >= topLevel.length * 0.6) {
+    addResult('p1', 'SKELETON_RESKIN',
+      `骨架换皮风险:${generic}/${topLevel.length} 页用通用 class,无主题原生 class(失败门禁 #9)`,
+      null,
+      `class 命名要反映主题对象(如 blueprint-sheet / terminal-shell / price-ladder / civic-command),不只换颜色字体`);
+  }
+}
+
+/**
  * P2-11: 微细节多样性检查（规则 15: ≥3 种微细节润色）
  */
 function checkMicroDetails(html) {
@@ -1611,6 +1642,7 @@ checkTextShadow(html);
 checkHeroMetric(html);
 checkWordCountDensity(html);
 checkPinMainClaimHierarchy(html);
+checkSkeletonReskin(html);
 
 // P2（锦上添花）
 checkEverythingCentered(html);

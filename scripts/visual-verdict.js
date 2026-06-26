@@ -38,7 +38,7 @@ const dryRun = args.includes('--dry-run');
 const skipCapture = args.includes('--skip-capture');
 const modelArg = args.find(arg => arg.startsWith('--model='));
 const waitArg = args.find(arg => arg.startsWith('--wait='));
-const waitMs = waitArg ? Number(waitArg.split('=')[1]) : 900;
+const waitMs = waitArg ? Number(waitArg.split('=')[1]) : 1500;  // 字体加载需 ≥1.5s,防 FOUT 闪烁致截图中字体未就位(误判)
 
 if (!htmlFile) {
   console.error('Usage: node scripts/visual-verdict.js <html-file> [--out dir] [--slides 2,5] [--dry-run] [--model=name]');
@@ -122,6 +122,7 @@ function systemPrompt() {
     'Your job is to catch failures deterministic geometry scripts miss: unclear diagrams, unreadable labels, weak hierarchy, ambiguous proof objects, decorative noise, and page furniture that visually collides with the content.',
     'For image-driven decks, photos are evidence, not decoration. Judge whether the image choice, crop, overlay, and repetition support the slide claim and deck theme.',
     'Be concrete and evidence-based. A beautiful style is not enough if the proof object does not explain the action title.',
+    'AI 味/模板感是高品质的死敌(spec Innovation 维)。对每页追问:这页像通用 AI 模板吗?有没有本主题原生形式(只有这个主题才该有的版面/对象/notation)?原生形式缺失或纯通用骨架(indigo 渐变/圆角卡/gradient text/side-stripe/「左标题+右图形」换色)= blocker。',
     'Return JSON only, matching the schema.',
   ].join('\n');
 }
@@ -144,6 +145,8 @@ function userPrompt(slides) {
     '10. Image-driven decks: reject cover/chapter/closing photos that repeat the same image or create a fragmented theme.',
     '11. Image-driven decks: reject practical-info/route/data pages whose image does not clarify the information architecture.',
     '12. Design impact: flag ordinary, split, template-like, or low-drama compositions when the stated deck is photo-led/editorial.',
+    '13. AI 味/模板感(spec Innovation 维):这页像通用 AI 模板吗(indigo→紫渐变 / 圆角卡 + 左色边 / gradient text / side-stripe / emoji 图标 / 「左标题 + 右图形」换色骨架)?有没有只有本主题才该有的原生形式(版面/对象/notation)?纯通用骨架或原生形式缺失 = blocker(ai-template-tell / weak-native-form)。',
+    '14. 字体闪烁重叠风险:大字(logo / 标题 / 大数字)与角元素(stamp / pin / photo-credit / 角标)是否贴得太近(<50px)?字体宽度波动(FOUT)时会撞 = blocker(font-flicker-overlap)。',
     '',
     'Severity rules:',
     '- blocker: user-visible overlap/cropping, unreadable key label, diagram/photo does not explain the claim, repeated hero image, theme-breaking page, or page furniture obstructs content.',
@@ -187,6 +190,9 @@ const schema = {
               'weak-design-impact',
               'decorative-noise',
               'crowding',
+              'ai-template-tell',
+              'weak-native-form',
+              'font-flicker-overlap',
               'other',
             ],
           },
