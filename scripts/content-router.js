@@ -43,6 +43,17 @@ const ARCHETYPE_MAP = {
   closing:         { code: 'A12', name: 'Masthead Closing',   reason: '报头收尾,呼应封面' },
 };
 
+// ── archetype 变体规则(对应失败门禁 #9:≥1 主题发明变体)──
+// 返回 string = 变体建议;null = 该段不变体(照原 archetype)。
+// layout-archetypes.md 第 412 行手则的自动化:不只选 A1-A12,还要调参数成主题变体。
+const VARIANT_RULES = {
+  'data-anchor': s => { const m = s.match(/(\d+(?:\.\d+)?)%/); return (m && parseFloat(m[1]) >= 50) ? '锚点数字放大到 5.6em 占视觉中心(显著数据变体)' : null; },
+  comparison:      s => /差距|大幅|远低于|远高于|显著优于|提升到|降低到/.test(s) ? '满版 accent 面板 + 裁决比率放大(对峙变体)' : null,
+  chronology:      s => /关键|转折|里程碑|突破|读出/.test(s) ? '非均匀节点,关键节点密集 + accent(编年变体)' : null,
+  mechanism:       () => '后栏 accent 满版高亮 + 量化减少%(机制变体)',
+  'evidence-table': () => '主角列 accent 高亮 + 数据列右对齐(台账变体)',
+};
+
 // ── content-type 自动检测(按优先级:语义强 → 数字特征 → 兜底)──
 const DETECT_RULES = [
   { type: 'takeaways',      test: s => /要点|启示|结论是|建议:|小结/.test(s) || /\n\s*[1-9][.、)]/.test(s) || /^[1-9][.、]\s/.test(s) },
@@ -69,17 +80,22 @@ function detectContentType(section) {
 }
 
 function routeSection(section) {
+  const text = `${section.title || ''} ${section.body || ''}`.trim();
   const ct = (!section.content_type || section.content_type === 'auto')
     ? detectContentType(section)
     : section.content_type;
   const arch = ARCHETYPE_MAP[ct] || ARCHETYPE_MAP.chapter;
+  const variantFn = VARIANT_RULES[ct];
+  const variant_hint = variantFn ? variantFn(text) : null;
   return {
     index: section.index,
     title: (section.title || '').slice(0, 28),
+    body: section.body || '',
     content_type: ct,
     archetype: arch.code,
     archetype_name: arch.name,
     reason: arch.reason,
+    variant_hint,
   };
 }
 
@@ -87,17 +103,21 @@ function routeDeck(input) {
   const total = input.sections.length;
   const routes = input.sections.map((s, i) => routeSection({ ...s, index: i, total }));
   const codes = [...new Set(routes.map(r => r.archetype))];
+  const variantCount = routes.filter(r => r.variant_hint).length;
+  const min3 = codes.length >= 3;
+  const varOk = variantCount >= 1;
   return {
     topic: input.topic,
-    voice: input.voice || '(未指定)',
+    voice: input.voice || 'editorial-serif',
     routes,
     deck_check: {
       archetype_count: codes.length,
       archetype_codes: codes.join(' '),
-      min_3_satisfied: codes.length >= 3,
-      hint: codes.length >= 3
-        ? `✅ 满足「主骨架 ≥3 种 archetype」(失败门禁 #9 换皮,共 ${codes.length} 种)`
-        : '⚠️ 不足 3 种 archetype,主骨架过单薄,有「换皮」风险',
+      min_3_satisfied: min3,
+      variant_invented: varOk,
+      variant_count: variantCount,
+      hint: (min3 ? `✅ ≥3 archetype(${codes.length} 种)` : '⚠️ 不足 3 种 archetype(换皮风险)')
+        + ' · ' + (varOk ? `✅ ≥1 主题变体(${variantCount} 处)` : '⚠️ 无主题变体(门禁 #9 未满足)'),
     },
   };
 }
@@ -132,13 +152,16 @@ function main() {
   const r = routeDeck(input);
   console.log(`主题:${r.topic}`);
   console.log(`voice:${r.voice}\n`);
-  console.log('── 每段路由(内容特征 → archetype)──');
+  console.log('── 每段路由(内容特征 → archetype + 变体)──');
   r.routes.forEach(x => {
     console.log(`  [${String(x.index).padStart(2)}] ${x.archetype} ${x.archetype_name.padEnd(20)} ← ${x.content_type.padEnd(15)} │ ${x.title}`);
+    if (x.variant_hint) console.log(`        ↳ 变体:${x.variant_hint}`);
   });
   console.log('\n── 全 deck 多样性检查(失败门禁 #9 换皮)──');
   console.log(`  archetype 数:${r.deck_check.archetype_count} 种 → ${r.deck_check.archetype_codes}`);
   console.log(`  ${r.deck_check.hint}`);
 }
 
-main();
+if (require.main === module) main();
+
+module.exports = { routeDeck, routeSection, detectContentType, ARCHETYPE_MAP, VARIANT_RULES };

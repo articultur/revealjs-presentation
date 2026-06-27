@@ -26,8 +26,8 @@
      字体 fallback 安全约束见 references/technical-specs.md
      「字体 fallback 安全清单」(大字需窄体 fallback + ≥50px 间距)。
   ──────────────────────────────────────────────────────── */
-  --f-display: "Cormorant Garamond", "Noto Serif SC", Georgia, serif;
-  --f-body:    "Source Serif 4", "Noto Serif SC", Georgia, serif;
-  --f-mono:    "Courier Prime", "Courier New", monospace;
-  --f-sans:    "Noto Sans SC", system-ui, sans-serif;
+  --f-display: "Cormorant Garamond", "Noto Serif SC", 'Arial Narrow', Georgia, serif;
+  --f-body:    "Source Serif 4", "Noto Serif SC", 'Arial Narrow', serif;
+  --f-mono:    "Courier Prime", 'Courier New', monospace;
+  --f-sans:    "Noto Sans SC", 'Arial Narrow', system-ui, sans-serif;
 }

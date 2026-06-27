@@ -75,7 +75,7 @@ CDN 加载 reveal.js + Google Fonts，用户**无需安装任何东西**。
 | P1 | 需求+设计语法 | ● | 场景/时长/听众 + ghost deck + Theme-to-Design Router 六行说明。**⚠ 输出后必须 STOP，等用户"继续 / 进 P4 / 改 X"才能生成 HTML——擅自生成 = 违规** |
 | P2 | 输出方案 | ◐ | 内容结构、视觉方向 |
 | P3 | 设计评审 | ● | 反模式检查 + 优化方向。**⚠ Gate 模式下输出后必须 STOP，等用户确认优化方向** |
-| P4 | 生成初稿 | ● | HTML + **十门禁**（`grade-gate.js` 全绿 = G1-G10 全过，见 §验证；机器判 verdict，不可手动放行） |
+| P4 | 生成初稿 | ● | **两条路径**:**内容在 9 template 覆盖** → 套 template;**不在覆盖** → `scripts/content-router.js` 路由 archetype(A1-A12 + 主题变体)→ `scripts/generate-archetype-deck.js` 生成(四层架构闭合,见 [tokens/README.md](tokens/README.md))。两种都过 **十门禁**(`grade-gate.js` 全绿 = G1-G10 全过;机器判 verdict,不可手动放行) |
 | P5 | 优化迭代 | ● | 按规模执行优化（详见 references/pipeline-phases.md「Phase 5」） |
 | P6 | 最终检查 | ◐ | 专业/发布会级必跑；快速模式 ≥12 页、密集数据或视觉结构调整时跑 |
 

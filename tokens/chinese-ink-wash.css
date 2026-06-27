@@ -26,8 +26,8 @@
      中文衬线(宋体)传达书法感。Noto Serif SC 由 deck 的 Google Fonts
      link 加载。fallback 安全约束见 references/technical-specs.md。
   ──────────────────────────────────────────────────────── */
-  --f-display: "Noto Serif SC", "Songti SC", Georgia, serif;
-  --f-body:    "Noto Serif SC", "Songti SC", Georgia, serif;
-  --f-mono:    "Courier Prime", "Courier New", monospace;
-  --f-sans:    "Noto Sans SC", system-ui, sans-serif;
+  --f-display: "Noto Serif SC", "Songti SC", 'Arial Narrow', Georgia, serif;
+  --f-body:    "Noto Serif SC", "Songti SC", 'Arial Narrow', serif;
+  --f-mono:    "Courier Prime", 'Courier New', monospace;
+  --f-sans:    "Noto Sans SC", 'Arial Narrow', system-ui, sans-serif;
 }
