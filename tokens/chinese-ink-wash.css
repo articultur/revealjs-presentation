@@ -1,0 +1,33 @@
+/* ============================================================
+   chinese-ink-wash.css — 水墨 / 东方美学 primitive
+   ============================================================
+   风格空白扩库试点:不属于原 9 template 覆盖(东方美学,西方设计中
+   心的 template 集合的已知盲区)。验证「加一个 token 文件 + 复用
+   现有 layout = 新风格」,无需新 template HTML。
+
+   配色:宣纸白 + 浓淡墨 + 朱砂印。字体:中文衬线(宋体 = 书法感)。
+   对应 references/inspiration/ 风格表可补「东方美学 / 水墨」行。
+   semantic 映射由 tokens/base.css 提供。
+   ============================================================ */
+
+:root {
+  /* ── 颜色(primitive)────────────────────────────── */
+  --c-bg:       #f5f1e8;   /* 宣纸白 */
+  --c-bg-paper: #ede5d0;   /* 旧宣纸 */
+  --c-fg:       #1a1a1a;   /* 浓墨 */
+  --c-fg-2:     rgba(26, 26, 26, 0.62);  /* 淡墨 */
+  --c-fg-3:     rgba(26, 26, 26, 0.30);  /* 飞白 */
+  --c-accent:   #a02828;   /* 朱砂红(印章/点题) */
+  --c-stamp:    #8a1a1a;   /* 印泥红 */
+  --c-border:   rgba(26, 26, 26, 0.18);
+  --c-rule:     rgba(26, 26, 26, 0.12);
+
+  /* ── 字体(primitive)──────────────────────────────
+     中文衬线(宋体)传达书法感。Noto Serif SC 由 deck 的 Google Fonts
+     link 加载。fallback 安全约束见 references/technical-specs.md。
+  ──────────────────────────────────────────────────────── */
+  --f-display: "Noto Serif SC", "Songti SC", Georgia, serif;
+  --f-body:    "Noto Serif SC", "Songti SC", Georgia, serif;
+  --f-mono:    "Courier Prime", "Courier New", monospace;
+  --f-sans:    "Noto Sans SC", system-ui, sans-serif;
+}

@@ -44,7 +44,7 @@ CDN 加载 reveal.js + Google Fonts，用户**无需安装任何东西**。
 | 层 | 责任 |
 |---|---|
 | 1. 生产管线层 | 结构化内容 → 单文件 Reveal.js HTML → 浏览器 PPTX / PDF |
-| 2. 风格系统层 | 主题原生设计语法、风格候选、图表样式、Bento / 页面原语 |
+| 2. 风格系统层 | 主题原生设计语法、风格候选(先翻 [`references/inspiration/`](references/inspiration/) 15 风格分类选 1-2 个,查 case 借技法 → 落 [`tokens/`](tokens/) primitive;**风格不在覆盖时新建 token override,不新建 template**,见 tokens/README.md)、图表样式、Bento / 页面原语 |
 | 3. 表达逻辑层 | ghost deck、action title、论证结构、图表注释、引用规范 |
 | 4. 审美约束层 | 反 AI 模板味、字体 / 色彩 / 布局变化、bolder / quieter / distill / polish |
 | 5. 质量审查层 | 层级、可读性、对齐、坐标系完整性、拥挤、可访问性、响应式 / 导出风险 |
@@ -71,7 +71,7 @@ CDN 加载 reveal.js + Google Fonts，用户**无需安装任何东西**。
 
 | 专业模式 Phase | 名称 | 类型 | 核心任务 |
 |:-----:|------|:----:|------|
-| P0 | 设计上下文 | ● | 风格、色彩、字体方向 |
+| P0 | 设计上下文 | ● | 风格(先翻 [`references/inspiration/`](references/inspiration/) 选 1-2 个 → 查 [`tokens/`](tokens/) 有无对应 primitive,无则新建 token override)、色彩、字体方向 |
 | P1 | 需求+设计语法 | ● | 场景/时长/听众 + ghost deck + Theme-to-Design Router 六行说明。**⚠ 输出后必须 STOP，等用户"继续 / 进 P4 / 改 X"才能生成 HTML——擅自生成 = 违规** |
 | P2 | 输出方案 | ◐ | 内容结构、视觉方向 |
 | P3 | 设计评审 | ● | 反模式检查 + 优化方向。**⚠ Gate 模式下输出后必须 STOP，等用户确认优化方向** |

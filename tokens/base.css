@@ -1,0 +1,42 @@
+/* ============================================================
+   base.css — Design Token 契约层(所有风格共享)
+   ============================================================
+   这一层定义「语义映射」——把 primitive(--c-* 与 --f-*,由各风格
+   token 文件提供)映射到统一的语义名(--bg / --text / --accent)。
+
+   换风格 = 换 primitive token 文件,semantic 契约不变。
+   风格空白时新增主题 = 加一个 tokens/<style>.css,无需新 template。
+   详见 tokens/README.md 与 references/inspiration/
+   ============================================================ */
+
+:root {
+  /* ── 颜色语义映射(primitive → semantic)──────────────
+     每个风格 token 文件必须提供这些 primitive:
+     --c-bg / --c-fg / --c-fg-2 / --c-fg-3 / --c-accent / --c-border
+  ──────────────────────────────────────────────────────── */
+  --bg:          var(--c-bg);
+  --text:        var(--c-fg);
+  --text-muted:  var(--c-fg-2);
+  --text-subtle: var(--c-fg-3);
+  --accent:      var(--c-accent);
+  --divider:     var(--c-border);
+
+  /* ── 字体语义映射 ──────────────────────────────────
+     每个风格 token 文件必须提供:--f-display / --f-body / --f-mono
+  ──────────────────────────────────────────────────────── */
+  --font-display: var(--f-display);
+  --font-body:    var(--f-body);
+  --font-mono:    var(--f-mono);
+
+  /* ── 通用设计 token(跨风格共享的设计语言)────────────
+     风格可在自己的 primitive 文件里覆盖这些值。
+  ──────────────────────────────────────────────────────── */
+  --space-1: 0.25em;
+  --space-2: 0.5em;
+  --space-3: 1em;
+  --space-4: 1.5em;
+  --space-5: 2.5em;
+
+  --rule-w: 1px;          /* 分隔线粗细 */
+  --ease:   cubic-bezier(0.4, 0, 0.2, 1);
+}

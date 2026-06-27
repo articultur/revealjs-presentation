@@ -1,0 +1,33 @@
+/* ============================================================
+   editorial-serif.css — Editorial / Magazine 风格 primitive
+   ============================================================
+   对应 references/inspiration/ 风格表「Editorial / Magazine」行
+   与 02-stripe-press-editorial.md 案例。
+
+   primitive 定义这个风格的原始色值与字体栈。
+   semantic 映射由 tokens/base.css 提供(--bg:var(--c-bg) 等)。
+
+   我们的实现:template-01 editorial-serif
+   ============================================================ */
+
+:root {
+  /* ── 颜色(primitive)────────────────────────────── */
+  --c-bg:       #f3ecd9;
+  --c-bg-paper: #fbf6e6;
+  --c-fg:       #1d1a14;
+  --c-fg-2:     rgba(29, 26, 20, 0.66);
+  --c-fg-3:     rgba(29, 26, 20, 0.34);
+  --c-accent:   #6e2a18;
+  --c-stamp:    #8a2b1d;
+  --c-border:   rgba(29, 26, 20, 0.22);
+  --c-rule:     rgba(29, 26, 20, 0.14);
+
+  /* ── 字体(primitive)──────────────────────────────
+     字体 fallback 安全约束见 references/technical-specs.md
+     「字体 fallback 安全清单」(大字需窄体 fallback + ≥50px 间距)。
+  ──────────────────────────────────────────────────────── */
+  --f-display: "Cormorant Garamond", "Noto Serif SC", Georgia, serif;
+  --f-body:    "Source Serif 4", "Noto Serif SC", Georgia, serif;
+  --f-mono:    "Courier Prime", "Courier New", monospace;
+  --f-sans:    "Noto Sans SC", system-ui, sans-serif;
+}
