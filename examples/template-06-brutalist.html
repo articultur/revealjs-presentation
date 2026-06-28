@@ -16,6 +16,13 @@
   --f-display:'Archivo Black',system-ui,sans-serif;
   --f-body:'IBM Plex Sans',system-ui,sans-serif;
   --f-mono:'JetBrains Mono',ui-monospace,monospace;
+  /* 字号阶梯：brutalist 的尺度张力靠不均匀阶差；token 命名化而非均匀化 */
+  --fs-mega:8.4em;
+  --fs-display:4.2em;
+  --fs-big:3.4em;
+  --fs-num:2.2em;
+  --fs-at:1.62em;
+  --fs-sub:0.54em;
 }
 *{box-sizing:border-box;}
 .reveal,.reveal h1,.reveal h2,.reveal h3,.reveal p{font-family:var(--f-body);}
@@ -42,8 +49,8 @@
   position:relative;z-index:3;
 }
 .coord{font-family:var(--f-mono);font-size:0.4em;letter-spacing:0.14em;color:var(--c-mute);}
-.at{
-  font-family:var(--f-display);font-size:1.62em;line-height:1.06;
+.reveal .at{
+  font-family:var(--f-display);font-size:var(--fs-at);line-height:1.06;
   letter-spacing:0;margin:0 0 0.6em;max-width:94%;position:relative;z-index:3;
 }
 .at.shift{margin-left:0.4em;}
@@ -51,11 +58,11 @@
 .source{position:absolute;bottom:28px;right:72px;font-family:var(--f-mono);font-size:0.4em;letter-spacing:0.12em;text-transform:uppercase;color:var(--c-mute);z-index:3;}
 .pin{position:absolute;left:64px;bottom:28px;font-family:var(--f-mono);font-size:0.4em;letter-spacing:0.18em;text-transform:uppercase;color:var(--c-mute);z-index:3;}
 /* === Brutalist 极致化原语 === */
-.display{font-family:var(--f-display);font-size:4.2em;line-height:0.86;letter-spacing:-0.02em;margin:0;position:relative;z-index:3;}
+.reveal .display{font-family:var(--f-display);font-size:var(--fs-display);line-height:0.86;letter-spacing:-0.02em;margin:0;position:relative;z-index:3;}
 .display.shift{margin-left:0.3em;}
-.mega{font-family:var(--f-display);font-size:8.4em;line-height:0.82;letter-spacing:-0.03em;margin:0;position:relative;z-index:3;}
+.reveal .mega{font-family:var(--f-display);font-size:var(--fs-mega);line-height:0.82;letter-spacing:-0.03em;margin:0;position:relative;z-index:3;}
 .mega.bleed{margin-left:-10px;}
-.big{font-family:var(--f-display);font-size:3.4em;line-height:0.9;letter-spacing:-0.02em;}
+.reveal .big{font-family:var(--f-display);font-size:var(--fs-big);line-height:0.9;letter-spacing:-0.02em;}
 .big small{font-family:var(--f-mono);font-size:0.17em;letter-spacing:0.1em;display:block;margin-top:6px;color:var(--c-mute);font-weight:400;}
 .hi{background:var(--c-accent);color:var(--c-ink);padding:1px 8px;display:inline-block;}
 .hi-block{background:var(--c-accent);color:var(--c-ink);padding:4px 16px;display:inline-block;}
@@ -67,7 +74,7 @@
 .slab.paper{background:var(--c-paper);border:2px solid var(--c-line);}
 .label{font-family:var(--f-mono);font-size:0.42em;letter-spacing:0.1em;text-transform:uppercase;color:var(--c-mute);}
 .label.on-dark{color:oklch(78% 0.004 85);}
-.num{font-family:var(--f-display);font-size:2.2em;line-height:1;letter-spacing:-0.02em;}
+.reveal .num{font-family:var(--f-display);font-size:var(--fs-num);line-height:1;letter-spacing:-0.02em;}
 .num.accent{color:var(--c-accent);}
 /* 满宽黑条柱（proof 页）—— 粗黑块，非细线 */
 .bbar{background:var(--c-ink);position:relative;z-index:3;}
@@ -94,9 +101,18 @@
 .grid-deco{position:absolute;inset:20px;pointer-events:none;z-index:2;display:grid;grid-template-columns:repeat(4,1fr);}
 .grid-deco span{border-right:1px dashed oklch(80% 0.003 85);}
 .grid-deco span:last-child{border-right:none;}
-.sub{font-family:var(--f-mono);font-size:0.54em;letter-spacing:0.04em;color:var(--c-mute);margin-top:12px;max-width:64%;line-height:1.4;position:relative;z-index:3;}
+.sub{font-family:var(--f-mono);font-size:var(--fs-sub);letter-spacing:0.04em;color:var(--c-mute);margin-top:12px;max-width:64%;line-height:1.4;position:relative;z-index:3;}
 .pptx-btn{position:fixed;top:16px;right:16px;z-index:100;font-family:var(--f-mono);font-size:12px;letter-spacing:0.1em;text-transform:uppercase;background:var(--c-ink);color:var(--c-bg);border:none;padding:8px 14px;cursor:pointer;opacity:0;transition:opacity .2s;}
 .pptx-btn:hover,.pptx-btn:focus{opacity:1;}
+/* thorough：状态完备 —— reduced-motion 尊重 + 打印归档（brutalist 的"档案感"契合纸本归档）*/
+@media (prefers-reduced-motion: reduce){
+  .reveal,.reveal .slides section{transition:none !important;}
+  *{animation-duration:0.01ms !important;animation-iteration-count:1 !important;}
+}
+@media print{
+  .pptx-btn{display:none !important;}
+  .reveal section{page-break-after:always;overflow:visible !important;height:auto !important;box-shadow:none !important;}
+}
 </style>
 </head>
 <body>
@@ -114,7 +130,7 @@
 <span class="label on-dark" style="display:block;margin-top:4px;">AVERAGE RESIDUE PER SWITCH · MARK 2008</span>
 </div>
 <p class="sub">每次切换，注意力都在漏水。一份关于上下文切换真实代价的批判性报告。</p>
-<div class="source">illustrative · based on Mark 2008</div>
+<div class="source">verified · Gloria Mark, UC Irvine, 2008</div>
 <span class="pin">01 · cover · residue</span>
 </section>
 
@@ -230,13 +246,15 @@
 </section>
 
 </div></div>
-<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.js" integrity="sha384-1BgZRI35wIBSv5NogsksvIdAsgAPqwRFj4SJUH7dDP14i/J8zwleEEcTA1TTHId3" crossorigin="anonymous"></script>
+<!-- pptxgenjs (~300KB) 改为点击 PPTX 按钮时动态加载（见 ensurePptx），避免初始包开销 -->
 <script>
 Reveal.initialize({width:1280,height:720,margin:0.04,hash:true,slideNumber:'c/t',transition:'fade'});
 // 节拍 tick 阵：60 个跳动，每 12 个一个荧光高峰（视觉化"每 11 秒"的密度）
 (function(){var t=document.getElementById('ticks');if(!t)return;for(var i=0;i<60;i++){var d=document.createElement('i');d.style.height=(30+Math.round(Math.abs(Math.sin(i*0.5))*16))+'px';if(i%12===11)d.className='loud';t.appendChild(d);}})();
-function exportPPTX(){if(typeof PptxGenJS==='undefined'){alert('pptxgenjs 未加载');return;}var p=new PptxGenJS();p.defineLayout({name:'C',width:13.33,height:7.5});p.layout='C';Reveal.getSlides().forEach(function(s){var t=(s.querySelector('.kicker')||{}).innerText||'';var h=(s.querySelector('.at,.display,.mega')||{}).innerText||'';p.addSlide().addText(h.split('\n')[0],{x:0.5,y:0.5,w:12,h:1.5,fontSize:28,bold:true}).addText(t,{x:0.5,y:0.2,w:12,h:0.3,fontSize:10,color:'999999'});});p.writeFile({fileName:'attention-residue.pptx'});}
+var PPTX_SRC='https://cdn.jsdelivr.net/npm/pptxgenjs@4.0.1/dist/pptxgen.bundle.js';var PPTX_INTEGRITY='sha384-qb0Xhi7LLYpvW1HCK6oMrmDLSY9sy7vwm6ZlV6KjtrlL9yg30+YN4neTwnmX+Kp8';
+function ensurePptx(cb){if(typeof PptxGenJS!=='undefined'){cb();return;}var s=document.createElement('script');s.src=PPTX_SRC;s.crossOrigin='anonymous';s.integrity=PPTX_INTEGRITY;s.onload=function(){cb();};s.onerror=function(){alert('pptxgenjs 加载失败,请检查网络');};document.head.appendChild(s);}
+function exportPPTX(){ensurePptx(function(){var p=new PptxGenJS();p.defineLayout({name:'C',width:13.33,height:7.5});p.layout='C';Reveal.getSlides().forEach(function(s){var t=(s.querySelector('.kicker')||{}).innerText||'';var h=(s.querySelector('.at,.display,.mega')||{}).innerText||'';p.addSlide().addText(h.split('\n')[0],{x:0.5,y:0.5,w:12,h:1.5,fontSize:28,bold:true}).addText(t,{x:0.5,y:0.2,w:12,h:0.3,fontSize:10,color:'999999'});});p.writeFile({fileName:'attention-residue.pptx'});});}
 </script>
 </body>
 </html>

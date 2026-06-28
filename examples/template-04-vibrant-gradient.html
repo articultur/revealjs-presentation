@@ -20,6 +20,7 @@
       --c-fg-2: rgba(250, 245, 255, 0.62);
       --c-fg-3: rgba(250, 245, 255, 0.30);
       --c-accent: #ff3e7f;
+      --c-accent-deep: #c12158;
       --c-accent-soft: rgba(255, 62, 127, 0.18);
       --c-beam: rgba(255, 62, 127, 0.10);
       --c-spot: #ffc857;
@@ -233,7 +234,7 @@
       min-width: 0;
     }
     .impact .hero-metric {
-      background: linear-gradient(135deg, var(--c-accent) 0%, #c12158 100%);
+      background: linear-gradient(135deg, var(--c-accent) 0%, var(--c-accent-deep) 100%);
       border-radius: 18px;
       padding: 22px 28px;
       display: flex; flex-direction: column; justify-content: space-between;
@@ -462,7 +463,7 @@
       position: absolute; top: 20px; right: 22px;
     }
     .totem.featured {
-      background: linear-gradient(135deg, var(--c-accent) 0%, #c12158 100%);
+      background: linear-gradient(135deg, var(--c-accent) 0%, var(--c-accent-deep) 100%);
     }
     .totem.featured::before { background: var(--c-spot); }
     .totem.featured .num { color: rgba(250, 245, 255, 0.7); }
@@ -545,6 +546,12 @@
     .reveal .fragment { transition-duration: 380ms; }
     @media (prefers-reduced-motion: reduce) {
       .reveal .fragment, .live-ticker .live-dot::before { animation: none; opacity: 1; transform: none; transition: opacity 200ms ease-out; }
+    }
+    /* thorough：打印归档（舞台场景弱化装饰省墨，保留主体）*/
+    @media print {
+      #pptx-export-btn { display: none !important; }
+      .beam, .audience-floor, .camera-frame, .product-drop { opacity: 0.3 !important; }
+      .reveal section { page-break-after: always; overflow: visible !important; height: auto !important; }
     }
   </style>
 </head>
@@ -793,7 +800,7 @@
           <h2>N5 ships tonight.<br>Pre-order is <em>open in chat</em>.<br>The stream stays on.</h2>
           <p>The opening minute is the answer. The next 200 minutes are yours.</p>
           <div class="cta-row">
-            <span class="cta primary">▶ Open the drop · in chat</span>
+            <span class="cta primary">Pre-order · in chat</span>
             <span class="cta ghost">⤓ Backstage Pass</span>
           </div>
         </div>

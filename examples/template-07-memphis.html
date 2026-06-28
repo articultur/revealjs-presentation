@@ -125,6 +125,12 @@
 .pptx-btn{position:fixed;top:16px;right:16px;z-index:100;font-family:var(--f-mono);font-size:12px;letter-spacing:0.1em;text-transform:uppercase;background:var(--c-ink);color:var(--c-bg);border:none;padding:8px 14px;cursor:pointer;opacity:0;transition:opacity .2s;}
 .pptx-btn:hover,.pptx-btn:focus{opacity:1;}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
+/* thorough：打印归档（memphis 拼贴在纸本上仍是完整作品；弱化装饰省墨，保留主体）*/
+@media print{
+  .pptx-btn{display:none !important;}
+  .deco,.band{opacity:0.35 !important;}
+  .reveal section{page-break-after:always;overflow:visible !important;height:auto !important;}
+}
 </style>
 </head>
 <body>
@@ -184,7 +190,7 @@
 <div class="gallery">
 <div class="item bg-yellow tall"><span class="wnum">01</span><h4>BAKERY × CITY</h4><p>连锁烘焙品牌重塑，撞色包装系统，销售 +63%。覆盖 200 家门店的视觉资产。</p></div>
 <div class="item bg-pink"><span class="wnum">02</span><h4>FESTIVAL 26</h4><p>音乐节视觉，票房破纪录。</p></div>
-<div class="item bg-coral"><span class="wnum">03</span><h4>NEON BANK</h4><p>数字银行 launch，获客 -38%。</p></div>
+<div class="item bg-coral"><span class="wnum">03</span><h4>NEON BANK</h4><p>数字银行 launch，获客成本 -38%。</p></div>
 <div class="item bg-teal"><span class="wnum">04</span><h4>TEA LAB</h4><p>新茶饮 IP，3 月 40 店。</p></div>
 <div class="item bg-yellow"><span class="wnum">05</span><h4>TOY STORY</h4><p>手绘动画，2.1 亿播放。</p></div>
 <div class="item bg-pink"><span class="wnum">06</span><h4>MARKET HALL</h4><p>市集导视，客流 +120%。</p></div>
@@ -276,7 +282,7 @@
 <div class="side bg-lime">
 <div class="qm">"</div>
 <div class="qt">"他们不在乎'行业惯例'，只在乎你能不能被记住。这是我们 launch 成功的关键。"</div>
-<div class="qw">— CEO · 数字银行（-38%）</div>
+<div class="qw">— CEO · 数字银行（获客成本 -38%）</div>
 </div>
 </div>
 <div class="source">verified · client interviews</div>
@@ -302,11 +308,13 @@
 </section>
 
 </div></div>
-<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.js" integrity="sha384-1BgZRI35wIBSv5NogsksvIdAsgAPqwRFj4SJUH7dDP14i/J8zwleEEcTA1TTHId3" crossorigin="anonymous"></script>
+<!-- pptxgenjs (~300KB) 改为点击 PPTX 按钮时动态加载（见 ensurePptx），避免初始包开销 -->
 <script>
 Reveal.initialize({width:1280,height:720,margin:0.04,hash:true,slideNumber:'c/t',transition:'fade'});
-function exportPPTX(){if(typeof PptxGenJS==='undefined'){alert('pptxgenjs 未加载');return;}var p=new PptxGenJS();p.defineLayout({name:'C',width:13.33,height:7.5});p.layout='C';Reveal.getSlides().forEach(function(s){var t=(s.querySelector('.nav .id')||{}).innerText||'';var h=(s.querySelector('.poster-title,.scatter-block,.cta-mega')||s.querySelector('div')||{}).innerText||'';p.addSlide().addText(h.split('\n')[0],{x:0.5,y:0.5,w:12,h:1.5,fontSize:28,bold:true}).addText(t,{x:0.5,y:0.2,w:12,h:0.3,fontSize:10,color:'999999'});});p.writeFile({fileName:'make-loud-things.pptx'});}
+var PPTX_SRC='https://cdn.jsdelivr.net/npm/pptxgenjs@4.0.1/dist/pptxgen.bundle.js';var PPTX_INTEGRITY='sha384-qb0Xhi7LLYpvW1HCK6oMrmDLSY9sy7vwm6ZlV6KjtrlL9yg30+YN4neTwnmX+Kp8';
+function ensurePptx(cb){if(typeof PptxGenJS!=='undefined'){cb();return;}var s=document.createElement('script');s.src=PPTX_SRC;s.crossOrigin='anonymous';s.integrity=PPTX_INTEGRITY;s.onload=function(){cb();};s.onerror=function(){alert('pptxgenjs 加载失败,请检查网络');};document.head.appendChild(s);}
+function exportPPTX(){ensurePptx(function(){var p=new PptxGenJS();p.defineLayout({name:'C',width:13.33,height:7.5});p.layout='C';Reveal.getSlides().forEach(function(s){var t=(s.querySelector('.nav .id')||{}).innerText||'';var h=(s.querySelector('.poster-title,.scatter-block,.cta-mega')||s.querySelector('div')||{}).innerText||'';p.addSlide().addText(h.split('\n')[0],{x:0.5,y:0.5,w:12,h:1.5,fontSize:28,bold:true}).addText(t,{x:0.5,y:0.2,w:12,h:0.3,fontSize:10,color:'999999'});});p.writeFile({fileName:'make-loud-things.pptx'});});}
 </script>
 </body>
 </html>
