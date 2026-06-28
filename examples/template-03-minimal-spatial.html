@@ -931,8 +931,8 @@
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@4.0.1/dist/pptxgen.bundle.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.js" integrity="sha384-1BgZRI35wIBSv5NogsksvIdAsgAPqwRFj4SJUH7dDP14i/J8zwleEEcTA1TTHId3" crossorigin="anonymous"></script>
+  <!-- pptxgenjs (~300KB) 改为点击 PPTX 按钮时动态加载（见 ensurePptx），避免初始包开销 -->
   <script>
     Reveal.initialize({
       width: 1280, height: 720, margin: 0.04,
@@ -974,10 +974,23 @@
       var pin=sec.querySelector('.pin');
       if(pin){slide.addText(textOf(pin),{x:0.55,y:7.0,w:6,h:0.3,fontSize:8,color:resolveColor(vars['--c-fg-3'],vars)||'AAAAAA',fontFace:'Calibri',charSpacing:2});}
     }
+    var PPTX_SRC='https://cdn.jsdelivr.net/npm/pptxgenjs@4.0.1/dist/pptxgen.bundle.js';
+    var PPTX_INTEGRITY='sha384-qb0Xhi7LLYpvW1HCK6oMrmDLSY9sy7vwm6ZlV6KjtrlL9yg30+YN4neTwnmX+Kp8';
+    function ensurePptx(cb){
+      if(typeof PptxGenJS!=='undefined'){cb();return;}
+      var s=document.createElement('script');
+      s.src=PPTX_SRC; s.crossOrigin='anonymous'; s.integrity=PPTX_INTEGRITY;
+      s.onload=function(){cb();};
+      s.onerror=function(){alert('PptxGenJS 加载失败,请检查网络');var b=document.getElementById('pptx-export-btn');if(b){b.textContent='PPTX';b.disabled=false;}};
+      document.head.appendChild(s);
+    }
     function doExport(){
-      if(typeof PptxGenJS==='undefined'){alert('PptxGenJS 未加载');return;}
       var btn=document.getElementById('pptx-export-btn');
-      if(btn){btn.textContent='导出中...';btn.disabled=true;}
+      if(btn){btn.textContent='加载模块...';btn.disabled=true;}
+      ensurePptx(function(){var b=document.getElementById('pptx-export-btn');if(b){b.textContent='导出中...';}runExport();});
+    }
+    function runExport(){
+      var btn=document.getElementById('pptx-export-btn');
       try{
         pptx=new PptxGenJS(); pptx.layout='LAYOUT_WIDE';
         var vars=getCssVars();
