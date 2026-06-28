@@ -1,7 +1,7 @@
 ---
 name: revealjs-presentation
 description: |
-  Use this skill to create or edit a **slide deck / presentation / PPT** — a sequenced set of multiple slides (幻灯片 / N页) designed to be shown to an audience, delivered as one self-contained HTML file (opens in a browser, exports to PPTX / PDF). This is the default for ANY "make slides" intent: phrases like "做个 PPT / 幻灯片 / 课件 / 汇报 / deck / slides", "turn this into N pages / 做成 N 页", or "make a deck" — i.e. turning a topic, outline, docx, CSV / 数据, report, architecture, incident postmortem, or a city / food / travel photo deck into multi-page slides for an audience (述职 / 年终总结 / 复盘 / 答辩 / 架构评审 / 产品发布 / 技术分享 / 路演 / 融资 BP / pitch deck / 提案 / 营销方案 / 课件 / tech talk). Also use to fix or extend an existing reveal.js HTML (文字被裁切 / 元素重叠 / 投影显示不全 / overflow / pin overlap), or export an existing deck to PPTX / PDF. NOT for a single chart or graph, a poster, a landing page, a resume, or a plain Word / Markdown / Excel / PDF document.
+  Use this skill to create, edit, or export a **slide deck / presentation / PPT / 幻灯片** — multiple slides built for an audience, delivered as one self-contained HTML file (opens in a browser, exports to editable PPTX / PDF). This is the DEFAULT for ANY "make slides" intent, Chinese or English: "做个 PPT / 幻灯片 / 课件 / 汇报 / deck / slides", "整几个 slides", "make a deck", "turn this into N pages / 做成 N 页". It turns a topic, outline, docx, CSV / 数据, report, architecture, incident postmortem, or city / food / travel photos into audience-facing multi-page slides — 述职 / 年终总结 / 复盘 / 答辩 / 架构评审 / 产品发布 / 技术分享 / tech talk / 路演 / 融资 BP / pitch deck / 提案 / 课件. Also use it to fix or extend an existing reveal.js HTML (文字被裁切 / 元素重叠 / 投影显示不全 / overflow / pin overlap), or export a deck to PPTX / PDF. NOT for a single chart, graph, diagram, poster, infographic, landing page, resume, or a plain Word / Markdown / Excel / PDF document.
 ---
 
 # Reveal.js 演示文稿
@@ -20,7 +20,7 @@ description: |
 
    **图像驱动主题**（城市/旅游/美食/产品实拍,见主题形状表 09 行）骨架前先按 `references/image-driven-deck.md` §4 工作流:列关键词清单 → Wikimedia Commons 搜图 → 选图,再搭骨架（每页绑一张 CC-BY 图）
 4. **生成单个 HTML**：内联 CSS+JS、Reveal.js 4.6.0 CDN、1280×720 画布
-5. **自检（三层 + 图片门禁）**：`node scripts/grade-gate.js <file>` 全绿（地板，含溢出、对比度、pin、空间完整性）+ `node scripts/design-strength-check.js <file>` 四维达标（天花板：尺度≥3:1、有满版色块面板、有非对称分割、有主题原生形式）+ **图像驱动 deck 额外跑 `node scripts/audit-image-assets.js <file>`**（断图、低清/放大满版图、超宽低高图、封面/章节重复、背景主题漂移）+ **P4 生成后必跑 `node scripts/visual-verdict.js <file>`（LLM 视觉语义评审，抓图示不清/标签不可读/图表不解释主张/图片廉价或错配/重复大图/主题割裂/装饰盒压 page furniture）**——这一步是 G1–G10 之外唯一抓感官类问题的门禁，**任何视觉调整后必须重跑**。若无视觉模型 key，跑 `visual-verdict.js --dry-run` 生成截图+prompt；**若会话模型有视觉（opus/sonnet 等），让 Claude Read dry-run 截图 + 按 prompt 的 rubric 判定**（blocker/warning/note），等价 visual-verdict 但用 Claude 视觉代替外部 API；若会话模型无视觉（纯文本），只能留截图并说明未执行视觉判定。
+5. **自检（三层 + 图片门禁）**：`node scripts/grade-gate.js <file>` 全绿（地板，含溢出、对比度、pin、空间完整性）+ `node scripts/design-strength-check.js <file>` 四维达标（天花板：尺度≥3:1、有满版色块面板、有非对称分割、有主题原生形式）+ **图像驱动 deck 额外跑 `node scripts/audit-image-assets.js <file>`**（断图、低清/放大满版图、超宽低高图、封面/章节重复、背景主题漂移）+ **P4 生成后必跑 `node scripts/visual-verdict.js <file>`**（G1–G10 兜不住的感官类问题只能视觉抓：图示不清 / 标签不可读 / 图表不解释主张 / 图片廉价错配 / 重复大图 / 主题割裂 / 装饰盒压 page furniture）。**任何视觉调整后必须重跑**。机制（dry-run、Claude 读图、无视觉 fallback）统一见 §验证。
 6. **交付**：HTML 路径 + 运行/导出说明 + 验证状态
 
 需精细控制走 P0-P6 专业模式（下文）；发布会级先读 `references/launch-grade.md`。
@@ -44,7 +44,7 @@ CDN 加载 reveal.js + Google Fonts，用户**无需安装任何东西**。
 | 层 | 责任 |
 |---|---|
 | 1. 生产管线层 | 结构化内容 → 单文件 Reveal.js HTML → 浏览器 PPTX / PDF |
-| 2. 风格系统层 | 主题原生设计语法、风格候选(先翻 [`references/inspiration/`](references/inspiration/) 15 风格分类选 1-2 个,查 case 借技法 → 落 [`tokens/`](tokens/) primitive;**风格不在覆盖时新建 token override,不新建 template**,见 tokens/README.md)、图表样式、Bento / 页面原语 |
+| 2. 风格系统层 | 主题原生设计语法、风格候选(先翻 [`references/inspiration/`](references/inspiration/) 15 风格分类选 1-2 个,查 case 借技法 → 落 [`tokens/`](tokens/) primitive;**风格不在覆盖时走 style-gap 四件套:case + token + content rewrite + layout variant,不硬套最近 template**,见 [`references/off-template-style-gap.md`](references/off-template-style-gap.md))、图表样式、Bento / 页面原语 |
 | 3. 表达逻辑层 | ghost deck、action title、论证结构、图表注释、引用规范 |
 | 4. 审美约束层 | 反 AI 模板味、字体 / 色彩 / 布局变化、bolder / quieter / distill / polish |
 | 5. 质量审查层 | 层级、可读性、对齐、坐标系完整性、拥挤、可访问性、响应式 / 导出风险 |
@@ -54,7 +54,7 @@ CDN 加载 reveal.js + Google Fonts，用户**无需安装任何东西**。
 
 | 体系 | 规模 | 何时起作用 | 强制级 |
 |------|------|-----------|--------|
-| 关键约束 | 8 项（§1-§5 由脚本联合检查，§6-§8 为流程指南） | 生成 HTML 前（P4 / 快速模式） | 硬约束 |
+| 关键约束 | 9 项（§1-§6 由脚本联合检查，§7-§9 为流程指南） | 生成 HTML 前（P4 / 快速模式） | 硬约束 |
 | 设计硬规则 | 10 条 | `lint-design.js` 检查 | P0 必修，P1/P2 建议 |
 | 失败门禁 | 15 条 | 全流程质量底线 | 触发即阻断交付 |
 | Phase P0-P6 | 7 阶段 | 专业模式流程 | 每段 Gate 确认 |
@@ -71,11 +71,11 @@ CDN 加载 reveal.js + Google Fonts，用户**无需安装任何东西**。
 
 | 专业模式 Phase | 名称 | 类型 | 核心任务 |
 |:-----:|------|:----:|------|
-| P0 | 设计上下文 | ● | 风格(先翻 [`references/inspiration/`](references/inspiration/) 选 1-2 个 → 查 [`tokens/`](tokens/) 有无对应 primitive,无则新建 token override)、色彩、字体方向 |
+| P0 | 设计上下文 | ● | 风格(先翻 [`references/inspiration/`](references/inspiration/) 选 1-2 个 → 查 [`tokens/`](tokens/) 有无对应 primitive;若风格/内容不在覆盖范围,按 [`references/off-template-style-gap.md`](references/off-template-style-gap.md) 补齐 case + token + content rewrite + layout variant)、色彩、字体方向 |
 | P1 | 需求+设计语法 | ● | 场景/时长/听众 + ghost deck + Theme-to-Design Router 六行说明。**⚠ 输出后必须 STOP，等用户"继续 / 进 P4 / 改 X"才能生成 HTML——擅自生成 = 违规** |
 | P2 | 输出方案 | ◐ | 内容结构、视觉方向 |
 | P3 | 设计评审 | ● | 反模式检查 + 优化方向。**⚠ Gate 模式下输出后必须 STOP，等用户确认优化方向** |
-| P4 | 生成初稿 | ● | **两条路径**:**内容在 9 template 覆盖** → 套 template;**不在覆盖** → `scripts/content-router.js` 路由 archetype(A1-A12 + 主题变体)→ `scripts/generate-archetype-deck.js` 生成(四层架构闭合,见 [tokens/README.md](tokens/README.md))。两种都过 **十门禁**(`grade-gate.js` 全绿 = G1-G10 全过;机器判 verdict,不可手动放行) |
+| P4 | 生成初稿 | ● | **两条路径**:**内容在 9 template 覆盖** → 套 template 但重写 proof object 和页面骨架;**不在覆盖** → 先声明 style gap → `scripts/content-router.js` 路由 archetype(A1-A12 + 主题变体)→ `scripts/generate-archetype-deck.js` 生成(四层架构闭合,见 [tokens/README.md](tokens/README.md) 与 [`references/off-template-style-gap.md`](references/off-template-style-gap.md))。两种都过 **十门禁**(`grade-gate.js` 全绿 = G1-G10 全过;机器判 verdict,不可手动放行) |
 | P5 | 优化迭代 | ● | 按规模执行优化（详见 references/pipeline-phases.md「Phase 5」） |
 | P6 | 最终检查 | ◐ | 专业/发布会级必跑；快速模式 ≥12 页、密集数据或视觉结构调整时跑 |
 
@@ -98,7 +98,7 @@ CDN 加载 reveal.js + Google Fonts，用户**无需安装任何东西**。
 
 ## 关键约束（生成 HTML 前必须先确认）
 
-这一节是 P4 / 快速模式生成前的"过桥清单"，下面任意一条不满足都会在 lint / validate / label-overlap / lint-main-claim 中被拦截。**生成代码前先在脑里把这八项过一遍**。
+这一节是 P4 / 快速模式生成前的"过桥清单"，下面任意一条不满足都会在 lint / validate / label-overlap / lint-main-claim 中被拦截。**生成代码前先在脑里把这九项过一遍**。
 
 ### 1. 输出形态硬约束
 
@@ -111,11 +111,11 @@ CDN 加载 reveal.js + Google Fonts，用户**无需安装任何东西**。
 - **不引入 Tailwind 或任何 CSS 框架**
 - **禁止 `vw`/`vh` 单位**：Reveal 用 `transform: scale()` 缩放，vw/vh 不受影响 → 大屏溢出/小屏不可读；字号用 `em`/`px`（详见 `references/technical-specs.md`）
 - **Reveal 配置**：`{ width: 1280, height: 720, margin: 0.04, hash: true, slideNumber: 'c/t', transition: 'fade' }`
-- **页面过渡只用 `fade`/`slide`，禁 `convex`/`concave`/`zoom`**：3D 过渡给页面套透视，扭曲 `getBoundingClientRect` → `visual-check.js` 报画布尺寸混杂（**实测同一 deck 出现 1229×691 夹 1199×752**）。所有页画布尺寸必须一致（**G8** `test-canvas-fill.js` 机器查）。要"活泼"用 fragment 动效，别换过渡（详见 `references/visual-check.md`、`references/motion-delight.md`）
+- **页面过渡只用 `fade`/`slide`，禁 `convex`/`concave`/`zoom`**：3D 过渡给页面套透视，扭曲 `getBoundingClientRect` → `visual-check.js` 报画布尺寸混杂。所有页画布尺寸必须一致（**G8** `test-canvas-fill.js` 机器查）。要"活泼"用 fragment 动效，别换过渡（详见 `references/visual-check.md`、`references/motion-delight.md`）
 - **交付前必须过十门禁**：`grade-gate.js <file>` 全绿（见 §验证）。P4 生成后立刻跑，任一红灯 = 回 §2 拆页/降文字/重绑坐标系
-- **切勿破坏 reveal 的 section 堆叠/隐藏**：弱选择器 `.reveal section{position:relative}` 无害（被 reveal.css 覆盖 = dead fallback）；**真正危险的是 `!important` 或加强选择器强覆盖 `position`** → section 进文档流垂直堆叠 → overflow:hidden 截断 → 除首页外全空白（**v15.2 实测 slide 3 top=1397，已回滚**）。给 present 垂直居中用 `.reveal section.present{display:flex!important}`，别 blanket-force（详见 `references/css-skeleton.md`）
+- **切勿破坏 reveal 的 section 堆叠/隐藏**：弱选择器 `.reveal section{position:relative}` 无害（被 reveal.css 覆盖 = dead fallback）；**真正危险的是 `!important` 或加强选择器强覆盖 `position`** → section 进文档流垂直堆叠 → overflow:hidden 截断 → 除首页外全空白。给 present 垂直居中用 `.reveal section.present{display:flex!important}`，别 blanket-force（详见 `references/css-skeleton.md`）
 - **Pin 定位上下文**：pin 相对最近 positioned 祖先（reveal 的 absolute section）；若 section 退回 static，pin 相对 BODY 全叠视口左下角 → `test-label-overlap` 报泄露
-- **字体 fallback 防 FOUT 重叠**（BP logo-stamp 8px 重叠根因,2026-06 加）：所有 `font-family` 栈**在 generic fallback（`sans-serif`/`serif`）前**带窄体 fallback（`'Arial Narrow'` / `'Helvetica Neue Condensed'`）；大字（logo/标题/大数字 ≥3em）与角元素（stamp/pin/photo-credit/角标）水平间距 **≥ 50px**。字体未加载时 fallback 到窄体而非默认宽体,防加载前/后布局跳变致重叠。`scripts/test-font-loading.js` 机器检测（宽度差 >15% 或间距 <50px = blocker）,`scripts/auto-fix.js` 兜底注入窄体 fallback
+- **字体 fallback 防 FOUT 重叠**：所有 `font-family` 栈**在 generic fallback（`sans-serif`/`serif`）前**带窄体 fallback（`'Arial Narrow'` / `'Helvetica Neue Condensed'`）；大字（logo/标题/大数字 ≥3em）与角元素（stamp/pin/photo-credit/角标）水平间距 **≥ 50px**。字体未加载时 fallback 到窄体而非默认宽体,防加载前/后布局跳变致重叠。`scripts/test-font-loading.js` 机器检测（宽度差 >15% 或间距 <50px = blocker）,`scripts/auto-fix.js` 兜底注入窄体 fallback
 
 ### 2. 内容预算（生成 section 前先算）
 
@@ -204,11 +204,37 @@ slide 画布 **1280×720px**，可用空间 ≈ 1120×580px，每页安全预算
 - **历史/数据主题：具体日期、参数、价格、基准分数本身就是 proof object，必须用真实值 + 来源**。G5 证据门禁靠加 source label 满足，**绝不靠把数字软化为"约/示意/持平/大致"**——软化数字 = 丢掉设计感最关键的"具体性"。`design-strength-check.js` 的 contentSpecificity 子分会盯这个（四维主度量之外的第 5 子分）。
 - 学术 / 研究 / 政策 / 医疗 / 金融内容优先使用 action title + citation；品牌 / 发布会内容可以更具舞台感，但仍必须有主命题。
 - 结尾优先停在 conclusion / takeaway / decision slide；不要默认用 “Thank You” 空页收尾。
-- **少用 em-dash（— / ——）做句中连接**：impeccable audit 把"句子里反复用破折号连接从句"列为 AI 文风指纹——跨种子 01/02/03/06 都中过。中文 `——`、英文 ` — ` 作连接，一页超过 2–3 次就成节奏 tell。改用逗号、冒号、句号或分号。结构性的 `—` 不算（表格无数据 `<td>—</td>`、编号标签 `ed.01 — Pilot`、装饰 `<span>—</span>`）。
+- **少用 em-dash（— / ——）做句中连接**：impeccable audit 把"句子里反复用破折号连接从句"列为 AI 文风指纹。中文 `——`、英文 ` — ` 作连接，一页超过 2–3 次就成节奏 tell。改用逗号、冒号、句号或分号。结构性的 `—` 不算（表格无数据 `<td>—</td>`、编号标签 `ed.01 — Pilot`、装饰 `<span>—</span>`）。
 
 ## Theme-to-Design Router
 
 模板不是最终目的，只是已经验证过的设计语法 seed。每次生成前必须先产出一段**设计语法说明**，再决定复用、改造或新建。
+
+### Style Gap 硬约束:模板外内容不硬套
+
+当内容不符合现有 9 个 seed template 的范围,或最近模板会让主题错位时,必须进入 [`references/off-template-style-gap.md`](references/off-template-style-gap.md) 路径。**PPT 服务于内容,不是内容服务于模板**:不要把临床试验、法律案卷、金融台账、水墨叙事、品牌系统等内容硬塞进最近的 editorial/dark-tech/gradient 外观。
+
+Style gap 必须补齐四件套:
+
+| 件 | 最低要求 |
+|---|---|
+| Inspiration case | 从 `references/inspiration/` 选 1-2 个高质量风格 case;没有就新增文字拆解,不提交版权截图 |
+| Token primitive | 选择或新增 `tokens/<style>.css`,但 token 只负责色/字/背景,不能冒充完整风格 |
+| Content rewrite | action title、标签、proof object 必须改成该内容的主题语言 |
+| Layout archetype variant | 使用 ≥3 种 A1-A12 archetype,且至少 1 个为本主题发明变体 |
+
+Style-gap Router 除六行说明外,必须额外写明:
+
+```text
+Style gap: 是/否;原因:____。
+参考样片:____ / ____;借用技法:____。
+Token:使用 ____;如新建,说明 AA 配对和字体 fallback。
+内容语义改写:____。
+Layout 变体:____。
+不和谐风险:____(重叠/超框/错配风险 + 验证命令)。
+```
+
+如果 visual-verdict 或人工审阅指出“风格冲突 / 内容被硬塞进模板 / 图像或版式不解释主张”,先回到四件套修 content rewrite 或 layout variant,不要只换颜色和字体。
 
 ### 第一步·选种子：按主题"形状"，不按行业关键词
 
@@ -232,7 +258,7 @@ slide 画布 **1280×720px**，可用空间 ≈ 1120×580px，每页安全预算
 
 **worked example**：`AI 大模型发展史` → 历程 → **01**（不是 02：虽是技术，主干是"编年"不是"系统运行"）；`单体→三层架构迁移` → 结构 → **03**；`新产品发布会` → 发布 → **04**；`SRE 故障复盘` → 系统 → **02**。
 
-**不硬套（硬约束）**：8 个形状都不沾（如纯金融台账、临床实验报告、法律案卷），就**新建一次性语法**（见下「新语法最低要求」），并说清"为什么 8 个种子都不行"。把内容塞进不合适的种子比新建更糟——硬套是比"发明癖"更大的失败。
+**不硬套（硬约束）**：9 个形状都不沾（如纯金融台账、临床实验报告、法律案卷），或命中形状但视觉隐喻会讲偏,就进入 Style Gap 路径（见上）。说清"为什么现有种子都不行",再新建一次性语法或 archetype 变体。把内容塞进不合适的种子比新建更糟——硬套是比"发明癖"更大的失败。
 
 ### 必填六行（P1 结束前完成）
 
@@ -258,7 +284,7 @@ archetype 序列：每页分配一个 archetype（A1-A12，见 layout-archetypes
 本主题发明变体：≥1 个为本主题调参/改结构的 archetype（不是照抄）
 ```
 
-**退化拦截**：生成后跑 `node scripts/design-strength-check.js <file>`。四维（尺度对比/用色投入/构图张力/隐喻贯彻）任一不达标，**回炉重做骨架，不是微调**。典型退化信号：全 deck display ≤2.5em（尺度太平）、无任何满版色块面板（用色显平）、全是通用卡片无主题原生形式（隐喻没贯彻）。**图像 deck 特别注意**：满版照片不算色块——colorCommit 扫的是 commit background 声明密度（÷ 页数），照片顶替不了。图像 deck 要 colorCommit ≥60 得靠**色块密度**：≥1 页满版色块锚点（`image-driven-deck.md` IP6）+ 数据 / 标签实色 chip + kicker 色带一起上（实测北京 deck 仅 +1 页 IP6 只到 36/100，再加 3 个数据 chip 才到 55/100）。
+**退化拦截**：生成后跑 `node scripts/design-strength-check.js <file>`。四维（尺度对比/用色投入/构图张力/隐喻贯彻）任一不达标，**回炉重做骨架，不是微调**。典型退化信号：全 deck display ≤2.5em（尺度太平）、无任何满版色块面板（用色显平）、全是通用卡片无主题原生形式（隐喻没贯彻）。**图像 deck 特别注意**：满版照片不算色块——colorCommit 扫的是 commit background 声明密度（÷ 页数），照片顶替不了。图像 deck 要 colorCommit ≥60 得靠**色块密度**：≥1 页满版色块锚点（`image-driven-deck.md` IP6）+ 数据 / 标签实色 chip + kicker 色带一起上（实测：仅 +1 页锚点 ≈36/100，补 3 个数据 chip 才到 55/100）。
 
 ### 匹配规则
 
@@ -272,7 +298,7 @@ archetype 序列：每页分配一个 archetype（A1-A12，见 layout-archetypes
 | 用户给品牌/参考图 | 从品牌行为和语气抽隐喻，不只吸色或模仿字体 |
 | 内容跨多个语境 | 选一个主隐喻，其他作为局部页面动作 |
 
-**新语法最低要求**：1 个清晰隐喻 + 4 种页面原语 + 1 个签名时刻 + 1 套颜色/字体 token + 3 个禁用套路 + 1 条验证问题（把颜色字体拿掉后，这页是否仍属于这个主题？）。
+**新语法最低要求**：1 个清晰隐喻 + 4 种页面原语 + 1 个签名时刻 + 1 套颜色/字体 token + 3 个禁用套路 + 1 条验证问题（把颜色字体拿掉后，这页是否仍属于这个主题？）。若这是 style gap,还必须有 inspiration case、content rewrite 和 layout variant 记录,不能只新增 token。
 
 ### 设计强度三拨盘（density / variance / motion）
 
@@ -383,7 +409,7 @@ archetype 序列：每页分配一个 archetype（A1-A12，见 layout-archetypes
 
 **关键认知**：门禁（地板）与设计强度（天花板）不可互替——合规但四维全默认 = 平庸；通过门禁要削弱设计时，找"既大胆又合规"的解（深化专色到 AA / 反相面板），不是改弱求合规。详见 `references/validation.md`、`references/design-fundamentals.md` §6。
 
-调垂直平衡另跑 `node scripts/visual-check.js <file>`（启发式、非阻断，与 visual-qa 冲突时信 visual-qa）。视觉语义问题（图示不清、标签虽未重叠但不可读、图表不解释主张）信 `visual-verdict.js`；若无 key，跑 `--dry-run` 后**让有视觉的会话模型（opus/sonnet）Read 截图 + rubric 判定**；若会话模型无视觉，最终回复写明“未执行视觉判定”。评估框架用 `grade-gate.js --json` 的 `passed` 字段作客观断言。如果未执行验证，在最终回复中**明确说明**。
+调垂直平衡另跑 `node scripts/visual-check.js <file>`（启发式、非阻断，与 visual-qa 冲突时信 visual-qa）。视觉语义问题（图示不清、标签不可读、图表不解释主张）信 `visual-verdict.js`，机制见上表。评估框架用 `grade-gate.js --json` 的 `passed` 字段作客观断言。如果未执行验证，在最终回复中**明确说明**。
 
 图像驱动 deck 的设计问题不能只靠固定脚本：`audit-image-assets.js` 先拦硬伤，`visual-verdict.js` 再用视觉模型判断照片是否讲清楚页面主张、是否重复、是否廉价、是否主题割裂、是否缺乏视觉冲击。两者都要跑；一个抓事实，一个抓感受和语义。
 
@@ -415,6 +441,7 @@ bash scripts/setup.sh          # 仅环境检查
 | **扎设计根（必读）** | `references/design-fundamentals.md` | 设计四维：字体尺度系统、构图张力、专色用色、隐喻→形式生成法。禁令的反面——教怎么长出设计感 |
 | **选布局引擎（必读）** | `references/layout-archetypes.md` | 12 个 voice 无关、可组合、带参数的布局 archetype（满版分割/锚点数字/报头封面/对峙对比/机制图…）+ deck 级节奏编排 |
 | **选配色字体** | `references/design-principles.md` | 配色方案、字体系统、反模式、文案规则 |
+| **处理模板外内容 / 风格缺口** | `references/off-template-style-gap.md` | Style gap 判定、四件套扩展、PPT 服务内容的验收线 |
 | **构建页面** | `references/layout-patterns.md` | 通用容器（列表/流程/代码/基础网格）；主骨架优先用 archetype |
 | **需图标** | `references/icon-system.md` | 85 个 inline SVG 图标 |
 | **需图表** | `references/diagram-system.md` | 流程/树/时序/关系/状态图，纯 HTML+CSS+SVG |

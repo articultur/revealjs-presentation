@@ -636,7 +636,8 @@ function checkBannedFonts(html) {
   const fontMatch = allCss.match(/font-family\s*:\s*([^;]+)/gi) || [];
 
   fontMatch.forEach(fm => {
-    const fontList = fm.replace(/font-family\s*:\s*/i, '').toLowerCase();
+    // 'Arial Narrow' 是 technical-specs 推荐的窄体 fallback(防 FOUT 重叠),从 BANNED 检测排除;裸 'Arial' 仍禁
+    const fontList = fm.replace(/font-family\s*:\s*/i, '').toLowerCase().replace(/arial narrow/g, '');
     BANNED_FONTS.forEach(banned => {
       if (fontList.includes(banned)) {
         addResult('p1', 'BANNED_FONT',

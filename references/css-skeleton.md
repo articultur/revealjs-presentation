@@ -65,6 +65,12 @@ img, svg, video { max-width: 100%; max-height: 100%; object-fit: contain; }
 }
 .reveal h1 { font-size: 3.2em; font-weight: 600; }
 .reveal h2 { font-size: 2em;  font-weight: 600; }
+/* ⚠️ 大号展示文字（数字 / 比率 / 标题，font-size 明显大于正文）正下方紧邻其它文字时，
+   line-height 别压到 ≤1：字形（斜体 / 分数 / 下伸部 gjpqy）会溢出 line-box 压到下方文字。
+   box 类门禁（G3 label-overlap / G9 check-overflow）量的是元素 box、量不到字形墨迹 →
+   会漏判这类重叠（box 有间隙但字形压下去了）。解法二选一：line-height ≥ 1.15，
+   或在元素间留足 margin 吸收字形下溢。标题 h1-h6 因通常带 margin 较安全；最高风险是
+   「大数字 / 比率 + 紧贴小标签」组合（如 .ratio ≈1/3 压 .verdict-lbl、.value 4.8M 压 .since）。 */
 .reveal p  { font-size: 0.85em; line-height: 1.65; color: var(--c-fg-2); }
 /* editorial-serif 覆盖：h1 改为 font-weight: 400; font-style: italic */
 /* dark-tech / vibrant-gradient 覆盖：h1 改为 font-weight: 300 */
