@@ -26,26 +26,69 @@ const { routeDeck } = require('./content-router');
 
 const ROOT = path.resolve(__dirname, '..');
 const TOKENS_DIR = path.join(ROOT, 'tokens');
+const PPTX_CLIENT_PATH = path.join(ROOT, 'scripts', 'export-pptx-client.js');
 
 // voice → Google Fonts URL(editorial-serif 为默认)
 const VOICE_FONTS = {
   'editorial-serif': 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Source+Serif+4:opsz,wght@8..60,400&family=Noto+Serif+SC:wght@400;600&family=Noto+Sans+SC:wght@400&family=Courier+Prime:wght@400&display=swap',
+  'chinese-ink-wash': 'https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@400;500;700&family=Courier+Prime:wght@400;700&display=swap',
 };
 const esc = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
 function readTokensInline(voice) {
   const base = fs.readFileSync(path.join(TOKENS_DIR, 'base.css'), 'utf8');
-  let prim = '';
-  try { prim = fs.readFileSync(path.join(TOKENS_DIR, `${voice}.css`), 'utf8'); } catch (e) { /* voice 无 token 文件则只用 base */ }
+  const tokenPath = path.join(TOKENS_DIR, `${voice}.css`);
+  if (!fs.existsSync(tokenPath)) {
+    throw new Error(`Missing style token primitive: tokens/${voice}.css`);
+  }
+  const prim = fs.readFileSync(tokenPath, 'utf8');
   return base + '\n' + prim;
 }
 
+function readPptxClientInline() {
+  return fs.readFileSync(PPTX_CLIENT_PATH, 'utf8').replace(/<\/script/gi, '<\\/script');
+}
+
+function evidenceStatus(s, input) {
+  return s.evidence_status || input.evidence_status || 'illustrative';
+}
+
+function requireFields(kind, section, fields) {
+  const missing = fields.filter(field => !section[field]);
+  if (missing.length) {
+    throw new Error(`Missing ${kind} fields: ${missing.join(', ')}`);
+  }
+}
+
+function requireOffTemplateContract(input, routed) {
+  const isOffTemplate = input.off_template || Boolean(input.style_gap);
+  if (!isOffTemplate) return;
+  const gap = input.style_gap || {};
+  const missing = ['inspiration_case', 'token', 'content_rewrite', 'layout_variant']
+    .filter(field => !gap[field]);
+  if (missing.length) {
+    throw new Error(`Missing style-gap contract fields: ${missing.join(', ')}`);
+  }
+  if (gap.token !== input.voice) {
+    throw new Error(`Style-gap token must match voice: ${gap.token || '(missing)'} != ${input.voice}`);
+  }
+}
+
+function requireNoImplicitFallback(routed) {
+  const fallbackRoutes = routed.routes.filter(r => r.fallback_chapter);
+  if (fallbackRoutes.length) {
+    const indexes = fallbackRoutes.map(r => r.index).join(', ');
+    throw new Error(`Deck route cannot use implicit chapter fallback: section ${indexes}`);
+  }
+}
+
 // ── 12 archetype fill(对齐 references/layout-archetypes.md 骨架,token 化)──
-function fillArchetype(route, s, idx, total) {
+function fillArchetype(route, s, idx, total, input = {}) {
   const num = String(idx + 1).padStart(2, '0');
   const v = route.variant_hint ? `<!-- variant:${esc(route.variant_hint)} -->` : '';
+  const evidence = `<div class="evidence-label">${esc(evidenceStatus(s, input))}</div>`;
   const wrap = (inner, cls = 'deck-flex', style = 'height:100%;') =>
-    `<section class="${cls}" data-background="var(--c-bg)" style="${style}">${v}${inner}<div class="pin">${num} / ${esc(route.content_type)}</div></section>`;
+    `<section class="${cls}" data-background="var(--c-bg)" style="${style}">${v}${evidence}${inner}<div class="pin">${num} / ${esc(route.content_type)}</div></section>`;
 
   switch (route.archetype) {
     // A1 Masthead Cover
@@ -88,9 +131,9 @@ function fillArchetype(route, s, idx, total) {
       </div>`, 'deck-flex', 'flex-direction:column;padding:2.6em 3em;height:100%;');
 
     // A4 Full-Bleed Split
-    case 'A4': return `<section class="deck-flex" data-background="var(--c-bg)" style="height:100%;padding:0;">${v}
+    case 'A4': return `<section class="deck-flex" data-background="var(--c-bg)" style="height:100%;padding:0;">${v}${evidence}
       <div style="width:42%;background:var(--c-fg);color:var(--c-bg);display:flex;flex-direction:column;justify-content:space-between;padding:2.2em 2em;">
-        <div><div class="kicker" style="color:var(--c-accent);">${esc(s.title)}</div>
+        <div><div class="kicker" style="color:var(--c-bg);opacity:0.82;">${esc(s.title)}</div>
         <h2 style="color:var(--c-bg);margin:0.5em 0 0;">${esc(s.panel_title||s.title)}</h2></div>
         <div style="font-family:var(--f-display);font-style:italic;color:var(--c-bg);font-size:1.1em;">${esc(s.panel_quote||'')}</div>
       </div>
@@ -112,7 +155,7 @@ function fillArchetype(route, s, idx, total) {
       </div></div>`, 'deck-flex', 'align-items:center;padding:2.6em 3.2em;height:100%;');
 
     // A6 Face-Off Compare
-    case 'A6': return `<section class="deck-flex" data-background="var(--c-bg)" style="height:100%;padding:0;">${v}
+    case 'A6': return `<section class="deck-flex" data-background="var(--c-bg)" style="height:100%;padding:0;">${v}${evidence}
       <div style="width:52%;background:var(--c-accent);color:var(--c-bg);display:flex;flex-direction:column;justify-content:space-between;padding:1.9em 2.4em;">
         <div><div style="font-family:var(--f-mono);font-size:0.5em;letter-spacing:0.16em;text-transform:uppercase;color:var(--c-bg);opacity:0.8;">${esc(s.a_label||'A')}</div>
         <div style="font-family:var(--f-display);font-size:clamp(3.4em,4.6em,5.2em);font-style:italic;font-weight:600;color:var(--c-bg);line-height:1;">${esc(s.a_value||'')}</div>
@@ -138,19 +181,19 @@ function fillArchetype(route, s, idx, total) {
           <div style="font-size:0.58em;opacity:0.75;margin-top:0.2em;">${esc(k.note||'')}</div></div>`).join('')}
       </div>`, 'deck-flex', 'flex-direction:column;justify-content:center;padding:2.6em 3em;height:100%;');
 
-    // A8 Mechanism
+    // A8 Mechanism(items 文字标签 + 衰减条,绝不丢内容;A8 仅适合量化前后对比)
     case 'A8': return wrap(`<div class="kicker">${esc(s.title||'机制')}</div>
       <h2 style="font-family:var(--f-display);font-size:1.8em;margin:0.3em 0 1em;">${esc(s.subtitle||s.title||'')}</h2>
       <div style="display:flex;gap:1.2em;align-items:stretch;">
         <div style="flex:1;border:1px solid var(--c-border);padding:1em;">
-          <div style="font-family:var(--f-mono);font-size:0.48em;letter-spacing:0.12em;text-transform:uppercase;color:var(--c-fg-3);">${esc(s.before_label||'前')}</div>
-          ${(s.before_items||[]).map((it,i)=>`<div style="height:0.9em;background:var(--c-fg);opacity:${0.85-i*0.13};margin:0.4em 0;"></div>`).join('')}
+          <div style="font-family:var(--f-mono);font-size:0.48em;letter-spacing:0.12em;text-transform:uppercase;color:var(--c-fg-3);margin-bottom:0.5em;">${esc(s.before_label||'前')}</div>
+          ${(s.before_items||[]).map((it,i)=>`<div style="margin:0.5em 0;"><div style="font-size:0.62em;color:var(--c-fg-2);margin-bottom:0.25em;">${esc(it)}</div><div style="height:0.5em;background:var(--c-fg);opacity:${0.85-i*0.13};"></div></div>`).join('')}
         </div>
         <div style="display:flex;align-items:center;font-size:2em;color:var(--c-accent);font-family:var(--f-display);font-style:italic;">→</div>
         <div style="flex:1;border:2px solid var(--c-accent);background:var(--c-accent);color:var(--c-bg);padding:1em;">
-          <div style="font-family:var(--f-mono);font-size:0.48em;letter-spacing:0.12em;text-transform:uppercase;opacity:0.85;">${esc(s.after_label||'后')}</div>
-          ${(s.after_items||[]).map(it=>`<div style="height:0.6em;background:var(--c-bg);opacity:0.85;margin:0.4em 0;"></div>`).join('')}
-          <div style="font-family:var(--f-mono);font-size:0.5em;margin-top:0.6em;">${esc(s.reduction||'')}</div>
+          <div style="font-family:var(--f-mono);font-size:0.48em;letter-spacing:0.12em;text-transform:uppercase;opacity:0.85;margin-bottom:0.5em;">${esc(s.after_label||'后')}</div>
+          ${(s.after_items||[]).map(it=>`<div style="margin:0.5em 0;"><div style="font-size:0.62em;color:var(--c-bg);margin-bottom:0.25em;">${esc(it)}</div><div style="height:0.4em;background:var(--c-bg);opacity:0.85;"></div></div>`).join('')}
+          <div style="font-family:var(--f-mono);font-size:0.52em;margin-top:0.6em;">${esc(s.reduction||'')}</div>
         </div>
       </div>`, 'deck-flex', 'flex-direction:column;justify-content:center;padding:2.6em 3em;height:100%;');
 
@@ -163,7 +206,7 @@ function fillArchetype(route, s, idx, total) {
       </table>`, 'deck-flex', 'flex-direction:column;padding:2.6em 3em;height:100%;');
 
     // A10 Pullquote
-    case 'A10': return `<section class="deck-grid" data-background="var(--c-bg)" style="grid-template-columns:0.3fr 0.7fr;gap:64px;align-items:center;padding:64px 80px;height:100%;">${v}
+    case 'A10': return `<section class="deck-grid" data-background="var(--c-bg)" style="grid-template-columns:0.3fr 0.7fr;gap:64px;align-items:center;padding:64px 80px;height:100%;">${v}${evidence}
       <div style="border-right:1px solid var(--c-border);padding-right:56px;">
         <div style="font-family:var(--f-display);font-style:italic;font-size:4em;color:var(--c-accent);line-height:0.9;">№ ${esc(s.number||'')}</div>
         <div style="font-family:var(--f-mono);font-size:0.5em;letter-spacing:0.12em;text-transform:uppercase;color:var(--c-fg-2);margin-top:0.6em;">${esc(s.title||'引言')}</div>
@@ -191,15 +234,54 @@ function fillArchetype(route, s, idx, total) {
         <div style="margin-top:1.2em;display:inline-flex;gap:0.6em;"><span class="stamp" style="border:2px solid var(--c-accent);color:var(--c-accent);padding:0.35em 0.8em;font-family:var(--f-mono);font-size:0.5em;letter-spacing:0.22em;text-transform:uppercase;">${esc(s.stamp||'CATALOGUED')}</span></div>
       </div>`, 'deck-flex', 'flex-direction:column;justify-content:center;align-items:center;padding:2.6em 3em;height:100%;text-align:center;');
 
+    // IMG · 图像对峙(顶部标题 + 双图并排对比 + 标签;图像驱动主题。proof 是图,非文字)
+    case 'IMG': {
+      requireFields('image-compare', s, ['img_a', 'img_b', 'a_label', 'b_label']);
+      return `<section class="deck-flex" data-background="var(--c-bg)" style="height:100%;flex-direction:column;padding:0;">${v}${evidence}
+        <div style="padding:1em 1.6em 0.7em;border-bottom:1px solid var(--c-border);">
+          <div class="kicker">${esc(s.subtitle||'图像对比')}</div>
+          <h2 style="font-family:var(--f-display);font-size:1.7em;font-style:italic;margin:0.2em 0 0;color:var(--c-fg);">${esc(s.title||'')}</h2>
+        </div>
+        <div style="flex:1;display:flex;min-height:0;">
+          <div style="width:50%;display:flex;flex-direction:column;background:var(--c-bg-paper);">
+            <div style="flex:1;background:url('${esc(s.img_a)}') center/cover;filter:saturate(0.85) contrast(0.95);min-height:0;"></div>
+            <div style="padding:0.9em 1.4em;border-top:3px solid var(--c-accent);">
+              <div style="font-family:var(--f-mono);font-size:0.5em;letter-spacing:0.12em;text-transform:uppercase;color:var(--c-accent);">${esc(s.a_label)}</div>
+              <div style="font-family:var(--f-display);font-size:1.3em;font-style:italic;margin:0.2em 0;">${esc(s.a_value)}</div>
+              <div style="font-size:0.56em;color:var(--c-fg-2);">${esc(s.a_detail||'')}</div>
+            </div>
+          </div>
+          <div style="width:50%;display:flex;flex-direction:column;">
+            <div style="flex:1;background:url('${esc(s.img_b)}') center/cover;filter:saturate(0.85) contrast(0.95);min-height:0;"></div>
+            <div style="padding:0.9em 1.4em;border-top:3px solid var(--c-fg-2);">
+              <div style="font-family:var(--f-mono);font-size:0.5em;letter-spacing:0.12em;text-transform:uppercase;color:var(--c-fg-2);">${esc(s.b_label)}</div>
+              <div style="font-family:var(--f-display);font-size:1.3em;font-style:italic;margin:0.2em 0;">${esc(s.b_value)}</div>
+              <div style="font-size:0.56em;color:var(--c-fg-2);">${esc(s.b_detail||'')}</div>
+            </div>
+          </div>
+        </div>
+        <div class="pin">${num} / ${esc(s.title||'图像对比')}</div>
+      </section>`;
+    }
+
     default: return wrap(`<h2>${esc(s.title||'')}</h2><p>${esc(s.body||'')}</p>`);
   }
 }
 
 function assembleDeck(input, routed) {
-  const voice = input.voice || 'editorial-serif';
+  if (!input.voice) {
+    throw new Error('Missing required voice token name');
+  }
+  requireOffTemplateContract(input, routed);
+  requireNoImplicitFallback(routed);
+  const voice = input.voice;
   const tokens = readTokensInline(voice);
-  const fonts = VOICE_FONTS[voice] || VOICE_FONTS['editorial-serif'];
-  const sections = routed.routes.map((r, i) => fillArchetype(r, input.sections[i], i, routed.routes.length)).join('\n');
+  const fonts = VOICE_FONTS[voice];
+  if (!fonts) {
+    throw new Error(`Missing voice font mapping: ${voice}`);
+  }
+  const pptxClient = readPptxClientInline();
+  const sections = routed.routes.map((r, i) => fillArchetype(r, input.sections[i], i, routed.routes.length, input)).join('\n');
   return `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -220,9 +302,12 @@ ${tokens}
 .reveal p{margin:0;}
 .kicker{font-family:var(--f-mono);font-size:0.5em;letter-spacing:0.16em;text-transform:uppercase;color:var(--c-fg-3);display:inline-block;}
 .pin{position:absolute;left:2.5em;bottom:1.2em;font-family:var(--f-mono);font-size:0.46em;letter-spacing:0.08em;color:var(--c-fg-3);}
+.evidence-label{position:absolute;right:2.5em;top:1.2em;z-index:2;font-family:var(--f-mono);font-size:0.44em;letter-spacing:0.12em;text-transform:uppercase;color:var(--c-fg-3);}
 .deck-flex{display:flex !important;}
 .deck-grid{display:grid !important;}
 .reveal .progress{color:var(--c-accent);}
+#pptx-export-btn{position:fixed;top:14px;right:14px;z-index:1000;opacity:0;pointer-events:none;border:1px solid var(--c-border);background:var(--c-bg);color:var(--c-fg);font-family:var(--f-mono);font-size:11px;letter-spacing:0.12em;padding:6px 10px;}
+#pptx-export-btn:focus,#pptx-export-btn:hover,body:hover #pptx-export-btn{opacity:1;pointer-events:auto;}
 @media (prefers-reduced-motion:reduce){.reveal *{transition:none!important;animation:none!important;}}
 </style>
 </head>
@@ -231,6 +316,10 @@ ${tokens}
 ${sections}
 </div></div>
 <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pptxgenjs@4.0.1/dist/pptxgen.bundle.js"></script>
+<script>
+${pptxClient}
+</script>
 <script>
 Reveal.initialize({width:1280,height:720,margin:0.04,hash:true,slideNumber:'c/t',progress:true,center:false,controls:true,controlsTutorial:false,transition:'fade',backgroundTransition:'fade'});
 </script>
@@ -241,39 +330,47 @@ Reveal.initialize({width:1280,height:720,margin:0.04,hash:true,slideNumber:'c/t'
 const MEDICAL = {
   topic: 'III 期临床试验结果 · CX-204',
   voice: 'editorial-serif',
+  off_template: true,
+  style_gap: {
+    inspiration_case: 'clinical readout / evidence dossier',
+    token: 'editorial-serif',
+    content_rewrite: 'clinical endpoints, cohorts, hazard ratio, safety ledger',
+    layout_variant: 'A5 endpoint anchor + A9 trial ledger + A8 mechanism variant',
+  },
+  evidence_status: 'illustrative',
   sections: [
-    { title: 'III 期临床结果', subtitle: 'CX-204 · 晚期 NSCLC', meta: ['VOL. 01', '2026', 'CLINICAL READOUT'],
+    { title: 'III 期临床结果', content_type: 'cover', subtitle: 'CX-204 · 晚期 NSCLC', meta: ['VOL. 01', '2026', 'CLINICAL READOUT'],
       body: 'CX-204 将晚期 NSCLC 患者 5 年总生存率从 42% 提升到 67%,达到主要终点。',
       facts: [{ k: 'OS', v: '67% vs 42%' }, { k: 'PFS', v: '中位 14.2 月' }, { k: 'N', v: 'n=480' }, { k: '期', v: 'III 期' }] },
-    { title: '核心结论', emphasis: '67%', body: ' —— 5 年生存率的全新基准。', support: 'III 期试验 n=480,主要终点 OS 达到,HR=0.52,p<0.001。' },
-    { title: '主要终点', label: 'PRIMARY ENDPOINT · OS', number: '67%', event: 'CX-204 试验组 5 年生存率',
+    { title: '核心结论', content_type: 'thesis', emphasis: '67%', body: ' —— 5 年生存率的全新基准。', support: 'III 期试验 n=480,主要终点 OS 达到,HR=0.52,p<0.001。' },
+    { title: '主要终点', content_type: 'data-anchor', label: 'PRIMARY ENDPOINT · OS', number: '67%', event: 'CX-204 试验组 5 年生存率',
       note: 'vs 对照组 42% · HR=0.52(95%CI 0.42-0.64) · p<0.001', source: 'III 期 · 主要终点 · verified',
       evidence: [{ k: '对照组 OS', v: '42%' }, { k: 'HR (95%CI)', v: '0.52 (0.42-0.64)' }, { k: 'p 值', v: '< 0.001' }] },
-    { title: '试验 vs 对照', subtitle: 'OS 对峙',
+    { title: '试验 vs 对照', content_type: 'comparison', subtitle: 'OS 对峙',
       a_label: 'CX-204', a_value: '67%', a_unit: '5 年 OS', a_details: ['HR = 0.52', 'p < 0.001'],
       b_label: '标准疗法', b_value: '42%', b_unit: '5 年 OS', b_details: ['现有 SOC', '安慰剂对照'],
       verdict: '+25pp', verdict_note: '绝对生存获益' },
-    { title: '多指标台账', subtitle: 'CX-204 vs 对照 · 全终点',
+    { title: '多指标台账', content_type: 'evidence-table', subtitle: 'CX-204 vs 对照 · 全终点',
       headers: ['终点', 'CX-204', '对照', 'HR / p'], highlight_col: 1,
       rows: [['OS(5 年)', '67%', '42%', 'HR=0.52'], ['PFS(中位)', '14.2 月', '8.1 月', 'HR=0.48'], ['ORR', '72%', '41%', '—'], ['3-4 级 AE', '38%', '31%', '可控']] },
-    { title: '作用机制', subtitle: '靶点 X 抑制 → 通路 Y 阻断 → 凋亡激活',
+    { title: '作用机制', content_type: 'mechanism', subtitle: '靶点 X 抑制 → 通路 Y 阻断 → 凋亡激活',
       before_label: '传统化疗', after_label: 'CX-204', reduction: '复发风险降低 48%',
       before_items: ['广谱细胞毒', '选择性低', '耐药快'],
       after_items: ['靶点 X 高选择', '通路 Y 阻断', '凋亡激活'] },
-    { title: '试验时间线', subtitle: '2022 入组 → 2025 读出',
+    { title: '试验时间线', content_type: 'chronology', subtitle: '2022 入组 → 2025 读出',
       nodes: [
         { year: '2022', title: '入组启动', desc: 'n=480 随机' },
         { year: '2023', title: '给药完成', desc: 'Q3W × 18 周期' },
         { year: '2024', title: '中期分析', desc: 'OS 显著获益', accent: true },
         { year: '2025', title: '主要读出', desc: '达到主要终点', accent: true } ] },
-    { title: 'PI 评价', number: '07', who: 'R. Tanaka', role: '主要研究者(PI) · 肿瘤学',
+    { title: 'PI 评价', content_type: 'quote', number: '07', who: 'R. Tanaka', role: '主要研究者(PI) · 肿瘤学',
       quote: '这是十年来该领域最显著的总生存获益。' },
-    { title: '结论要点', subtitle: 'III 期读出结论',
+    { title: '结论要点', content_type: 'takeaways', subtitle: 'III 期读出结论',
       items: [
         { t: 'OS 显著获益', d: '67% vs 42%,HR=0.52,p<0.001' },
         { t: '安全性可控', d: '3-4 级 AE 38%,无新安全信号' },
         { t: 'NDA 启动', d: 'Q4 报产申请提交' } ] },
-    { title: '下一步', topic: 'CX-204 · NEXT', body: 'CX-204 将于 Q4 提交 NDA,有望成为晚期 NSCLC 一线新标准。', stamp: '2026 · NDA Q4' },
+    { title: '下一步', content_type: 'closing', topic: 'CX-204 · NEXT', body: 'CX-204 将于 Q4 提交 NDA,有望成为晚期 NSCLC 一线新标准。', stamp: '2026 · NDA Q4' },
   ],
 };
 

@@ -16,6 +16,7 @@
     "test:validate-overflow": "node scripts/test-validate-overflow.js",
     "test:reference-contract": "node scripts/test-reference-contract.js",
     "test:launch-grade-contract": "node scripts/test-launch-grade-contract.js",
+    "test:off-template-regression": "node scripts/test-off-template-regression.js",
     "test:lint-main-claim": "node scripts/test-lint-main-claim.js",
     "test:initial-slide-visible": "node scripts/test-initial-slide-visible.js",
     "doctor": "bash scripts/doctor.sh"

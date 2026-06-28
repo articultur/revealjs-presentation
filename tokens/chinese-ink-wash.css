@@ -2,8 +2,8 @@
    chinese-ink-wash.css — 水墨 / 东方美学 primitive
    ============================================================
    风格空白扩库试点:不属于原 9 template 覆盖(东方美学,西方设计中
-   心的 template 集合的已知盲区)。验证「加一个 token 文件 + 复用
-   现有 layout = 新风格」,无需新 template HTML。
+   心的 template 集合的已知盲区)。验证 style-gap 四件套中的 token
+   primitive,需配合内容语义改写和 layout archetype variant。
 
    配色:宣纸白 + 浓淡墨 + 朱砂印。字体:中文衬线(宋体 = 书法感)。
    对应 references/inspiration/ 风格表可补「东方美学 / 水墨」行。

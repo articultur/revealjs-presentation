@@ -1,10 +1,10 @@
 # Design Tokens
 
-> 风格 = token override,不是新 template。这是「内容不符合已有风格时」的业界现成解法。
+> token 是 style-gap 四件套之一,不是完整解法。内容不符合已有 template 时,不要硬套最近模板,也不要只换 token。
 
 ## 这是什么
 
-把每个 template 内联的 `:root` 视觉变量,**外置成可复用的 token 文件**。换风格 = 换一个 token 文件;新主题不在覆盖范围 = 加一个 token 文件,**不需要新 template HTML**。
+把每个 template 内联的 `:root` 视觉变量,**外置成可复用的 token 文件**。换风格 = 换一个 token 文件;新主题不在覆盖范围时,token 只解决色/字/背景 primitive,还必须配合 inspiration case、content rewrite 和 layout archetype variant。完整合同见 [`references/off-template-style-gap.md`](../references/off-template-style-gap.md)。
 
 对应 [references/inspiration/](../references/inspiration/) 的人读标杆(15 风格拆解),`tokens/` 是这些风格的**机器可读实现源**。
 
@@ -24,7 +24,7 @@ tokens/
 | **`<style>.css`** | primitive(原始色值 `--c-*` + 字体 `--f-*`) | 每风格一个文件 | Material 3 primitive tokens |
 | template HTML | layout 骨架 + 组件 CSS | 9 个 template | component tokens(版式与风格正交) |
 
-**关键**:template 是「版式骨架」,**与风格正交**。风格由 token 文件决定,不由 template 决定。
+**关键**:template 是「版式骨架」,**与风格正交**。token 决定风格 primitive,但不能单独决定主题是否成立。PPT 服务于内容:当内容需要新的现实隐喻或 proof object 时,必须改写内容语义和 layout variant。
 
 ## 怎么用
 
@@ -47,13 +47,14 @@ tokens/
 
 主题不在 15 风格覆盖(如水墨/和风/行业专属美学)→
 
-1. **不新建 template**(太重),**不硬套最近 template**(AI 味)
-2. 新建 `tokens/<new-style>.css`,只填 primitive(`--c-*` + `--f-*`)
-3. 在 [references/inspiration/](../references/inspiration/) 录一条 case(人学拆解)
-4. 复用任一 template 的 layout 骨架 + 新 token 文件
-5. README 风格表加一行
+1. **不硬套最近 template**(AI 味),先声明 style gap。
+2. 在 [references/inspiration/](../references/inspiration/) 选择或新增一条 case(人学拆解)。
+3. 新建 `tokens/<new-style>.css`,只填 primitive(`--c-*` + `--f-*`)。
+4. 改写 action title、标签、proof object,让内容进入该风格的语义媒介。
+5. 复用 A1-A12 layout archetype,并至少发明 1 个本主题变体;必要时才新增 template。
+6. README 风格表加一行,并记录验证问题。
 
-成本从「写一个新 template HTML」降到「填一个 primitive 文件」。
+成本从「写一个完整 template HTML」降到「case + primitive token + 内容语义 + layout 变体」。如果 layout 变体仍无法表达主题,再考虑新增 template。
 
 ### token 的边界:三层配合(pilot 实证)
 
@@ -67,7 +68,7 @@ tokens/
 | **内容(文案语义)** | ❌ 不能 | 英文文案配水墨色 → 偏编辑档案;cover 改中文「留白处,见山河」→ 水墨 / 新中式成立 |
 | **layout(版式骨架)** | ❌ 不能 | pilot 沿用 template-01 西方左文右图网格;要更纯的水墨(留白 / 散点)需调 layout |
 
-**结论**:加 token 文件 = 换肤色,成本极低(约 50 行),**配匹配内容即可让风格基本成立**;要"纯粹"的传统美学,还需内容改写(+ 可选 layout 调整)。这与 [references/inspiration/](../references/inspiration/) 的三层解耦一致——token 是风格层,内容 / layout 是另两层。
+**结论**:加 token 文件 = 换肤色,成本极低(约 50 行),但不能单独保证高质量 PPT。要让风格成立,必须同时做内容改写和 layout 调整;要"纯粹"的传统美学,layout variant 不是可选项。这与 [references/off-template-style-gap.md](../references/off-template-style-gap.md) 的四件套一致——token 是风格 primitive,内容 / layout / reference 是另外三层。
 
 ## primitive 文件契约
 

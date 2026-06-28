@@ -41,6 +41,7 @@ const ARCHETYPE_MAP = {
   quote:           { code: 'A10', name: 'Pullquote',          reason: '上下双线 + 巨型斜体引言' },
   takeaways:       { code: 'A11', name: 'Takeaway Roster',    reason: '编号顶边卡阵列,要点/启示' },
   closing:         { code: 'A12', name: 'Masthead Closing',   reason: '报头收尾,呼应封面' },
+  'image-compare': { code: 'IMG', name: 'Image Face-Off',    reason: '双图并排对比 + 标签(图像驱动:proof 是图本身,见 image-driven-deck.md)' },
 };
 
 // ── archetype 变体规则(对应失败门禁 #9:≥1 主题发明变体)──
@@ -56,6 +57,7 @@ const VARIANT_RULES = {
 
 // ── content-type 自动检测(按优先级:语义强 → 数字特征 → 兜底)──
 const DETECT_RULES = [
+  { type: 'image-compare', test: s => s.__hasImageCompare },
   { type: 'takeaways',      test: s => /要点|启示|结论是|建议:|小结/.test(s) || /\n\s*[1-9][.、)]/.test(s) || /^[1-9][.、]\s/.test(s) },
   { type: 'thesis',         test: s => /^(核心|主张|结论是|我们认为|关键发现|核心结论)/.test(s) || (s.length < 55 && /(提升|降低|达到|占比|增长|减少)了?\s*\d/.test(s)) },
   { type: 'closing',        test: s => /下一步|展望|谢谢|结语|结束|报产|申请提交|Q[1-4]\s*提交/.test(s) },
@@ -73,20 +75,25 @@ function detectContentType(section) {
   const text = `${section.title || ''} ${section.body || ''}`.trim();
   if (section.index === 0) return 'cover';
   if (section.index === section.total - 1 && /结尾|结束|谢谢|总结|展望|下一步/.test(text)) return 'closing';
+  const signal = Object.assign(new String(text), {
+    __hasImageCompare: Boolean(section.img_a && section.img_b),
+  });
   for (const r of DETECT_RULES) {
-    if (r.test(text)) return r.type;
+    if (r.test(signal)) return r.type;
   }
   return 'chapter'; // 兜底:无强特征的中间段 → 章节分隔
 }
 
 function routeSection(section) {
   const text = `${section.title || ''} ${section.body || ''}`.trim();
+  const explicitType = Boolean(section.content_type && section.content_type !== 'auto');
   const ct = (!section.content_type || section.content_type === 'auto')
     ? detectContentType(section)
     : section.content_type;
   const arch = ARCHETYPE_MAP[ct] || ARCHETYPE_MAP.chapter;
   const variantFn = VARIANT_RULES[ct];
   const variant_hint = variantFn ? variantFn(text) : null;
+  const fallback_chapter = !explicitType && ct === 'chapter' && section.index > 0 && section.index < section.total - 1;
   return {
     index: section.index,
     title: (section.title || '').slice(0, 28),
@@ -96,6 +103,7 @@ function routeSection(section) {
     archetype_name: arch.name,
     reason: arch.reason,
     variant_hint,
+    fallback_chapter,
   };
 }
 
@@ -104,6 +112,7 @@ function routeDeck(input) {
   const routes = input.sections.map((s, i) => routeSection({ ...s, index: i, total }));
   const codes = [...new Set(routes.map(r => r.archetype))];
   const variantCount = routes.filter(r => r.variant_hint).length;
+  const fallbackCount = routes.filter(r => r.fallback_chapter).length;
   const min3 = codes.length >= 3;
   const varOk = variantCount >= 1;
   return {
@@ -116,6 +125,7 @@ function routeDeck(input) {
       min_3_satisfied: min3,
       variant_invented: varOk,
       variant_count: variantCount,
+      fallback_chapter_count: fallbackCount,
       hint: (min3 ? `✅ ≥3 archetype(${codes.length} 种)` : '⚠️ 不足 3 种 archetype(换皮风险)')
         + ' · ' + (varOk ? `✅ ≥1 主题变体(${variantCount} 处)` : '⚠️ 无主题变体(门禁 #9 未满足)'),
     },

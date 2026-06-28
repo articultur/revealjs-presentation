@@ -1,0 +1,89 @@
+{
+  "topic": "江南水系治理 · 留白中的工程秩序",
+  "voice": "chinese-ink-wash",
+  "off_template": true,
+  "style_gap": {
+    "inspiration_case": "东方美学 / 水墨长卷",
+    "token": "chinese-ink-wash",
+    "content_rewrite": "水系、河网、泵站、留白缓冲成为 proof object",
+    "layout_variant": "A2 留白主张 + A5 水位锚点 + A8 河网机制变体"
+  },
+  "evidence_status": "illustrative",
+  "sections": [
+    {
+      "title": "留白处,见水系",
+      "subtitle": "江南水系治理 · 东方美学 style gap",
+      "content_type": "cover",
+      "meta": ["WATER SYSTEM", "2026", "FIELD NOTES"],
+      "body": "这不是一份普通治理汇报,而是一张把河道、堤岸、泵站与村落关系重新摊开的水墨长卷。",
+      "facts": [
+        { "k": "河网", "v": "42 条支流" },
+        { "k": "节点", "v": "18 个泵站" },
+        { "k": "周期", "v": "3 阶段治理" }
+      ]
+    },
+    {
+      "title": "核心主张",
+      "content_type": "thesis",
+      "emphasis": "水不是背景,",
+      "body": "而是整个治理系统的主角。",
+      "support": "排版以留白、印章、轴线和散点标注组织信息,避免把东方主题套进普通卡片网格。"
+    },
+    {
+      "title": "水位锚点",
+      "content_type": "data-anchor",
+      "label": "FLOOD SEASON · LEVEL",
+      "number": "73%",
+      "event": "主汛期水位压力集中在南北两条廊道",
+      "note": "42 条支流中,18 条需要联动泵站;数据为 illustrative。",
+      "source": "水系调研样例 · illustrative",
+      "evidence": [
+        { "k": "联动泵站", "v": "18" },
+        { "k": "重点支流", "v": "42" },
+        { "k": "治理阶段", "v": "3" }
+      ]
+    },
+    {
+      "title": "上游 vs 下游",
+      "subtitle": "蓄排节奏对峙",
+      "content_type": "comparison",
+      "a_label": "上游蓄洪",
+      "a_value": "73%",
+      "a_unit": "主汛期压力",
+      "a_details": ["留白区承载水位缓冲", "村落边界保持弹性"],
+      "b_label": "下游排涝",
+      "b_value": "42%",
+      "b_unit": "泵站负载",
+      "b_details": ["集中排口压力高", "需分散节点"],
+      "verdict": "先蓄后排",
+      "verdict_note": "水墨长卷式治理节奏"
+    },
+    {
+      "title": "治理机制",
+      "subtitle": "河网留白 → 泵站联动 → 村落缓冲",
+      "content_type": "mechanism",
+      "before_label": "硬排模式",
+      "after_label": "水系协同",
+      "reduction": "单点排涝压力降低 31%",
+      "before_items": ["排口集中", "边界硬化", "村落被动"],
+      "after_items": ["支流分散", "泵站联动", "留白缓冲"]
+    },
+    {
+      "title": "三段治理轴",
+      "subtitle": "2026 试点 → 2028 成网",
+      "content_type": "chronology",
+      "nodes": [
+        { "year": "2026", "title": "试点", "desc": "2 条主河道" },
+        { "year": "2027", "title": "联动", "desc": "18 个泵站", "accent": true },
+        { "year": "2028", "title": "成网", "desc": "42 条支流" }
+      ]
+    },
+    {
+      "title": "收束",
+      "content_type": "closing",
+      "topic": "水系即秩序",
+      "body": "让水的流向决定版面,让治理对象决定视觉语言。",
+      "stamp": "STYLE GAP · INK WASH"
+    }
+  ]
+}
