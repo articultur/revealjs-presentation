@@ -42,10 +42,22 @@ Style gap 不是只加 token。必须形成一个可执行 bundle:
 Style gap: 是/否;原因:____。
 参考样片:____ / ____;借用技法:____。
 Token:使用 ____;如新建,说明 AA 配对和字体 fallback。
+内容-版式贴合度:内容形状____;主 proof object____;版式为何服务它____;去色去字体后是否仍属于本主题____。
 内容语义改写:____(action title / label / proof object 如何改成主题语言)。
 Layout 变体:____(A# 基础 + 本主题改造点)。
 不和谐风险:____(最可能重叠/超框/错配的对象与验证命令)。
 ```
+
+## 流程接入点
+
+内容-版式贴合度要前置到流程里,不能只作为最终观感备注:
+
+| Phase | Gate | 不通过时 |
+|---|---|---|
+| **P1 预检** | **内容-版式贴合度**必须写进 Router:内容形状、主 proof object、版式为何服务它;去色去字体后仍应属于本主题 | 不进 P4;重做 ghost deck / content rewrite / layout variant |
+| **P3 评审** | 检查 proof object 是否解释主张、是否内容被硬塞进模板、是否版式不解释主张 | 停下给优化方向;优先修 content rewrite 或 layout variant |
+| **P6 验收** | visual-verdict 或人工审阅逐页确认视觉语义和内容-版式贴合度无 blocker | 回 P3/P5,不能用换色或换字体掩盖错配 |
+| **P4 路由** | P1/P3 贴合度低即进入 style-gap,即使行业关键词命中某个 seed template | 走四件套扩展,不使用最近模板硬套 |
 
 ## 通过线
 

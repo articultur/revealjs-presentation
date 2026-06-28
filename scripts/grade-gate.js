@@ -209,15 +209,18 @@ function runCheckOverflow(filePath) {
   if (result.error) return { passed: false, error: result.error.message };
   const stderr = result.stderr?.trim() || '';
   const m = (result.stdout || '').match(/(\d+) issue\(s\)/);
-  const issueCount = m ? parseInt(m[1]) : 0;
-  // 脚本内部 bug（ReferenceError/TypeError/SyntaxError）视为脚本问题而非 deck 问题，不阻断交付
+  const issueCount = m ? parseInt(m[1]) : null;
+  // 脚本内部 bug 说明 G9 失效；门禁必须 fail-closed，避免坏检测静默放行。
   const scriptBug = /ReferenceError|TypeError|SyntaxError|^Error:/m.test(stderr);
+  const parseFailed = issueCount === null;
   return {
-    passed: scriptBug ? true : (result.status === 0),
+    passed: result.status === 0 && !scriptBug && !parseFailed && issueCount === 0,
     issueCount,
     exitCode: result.status,
     stderr: stderr || null,
-    warning: scriptBug ? 'check-overflow 脚本内部错误，跳过此项检查（不阻断）' : null,
+    error: scriptBug
+      ? 'check-overflow internal script error'
+      : (parseFailed ? 'check-overflow issue count parse failed' : null),
   };
 }
 

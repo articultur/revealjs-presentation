@@ -72,12 +72,12 @@ CDN 加载 reveal.js + Google Fonts，用户**无需安装任何东西**。
 | 专业模式 Phase | 名称 | 类型 | 核心任务 |
 |:-----:|------|:----:|------|
 | P0 | 设计上下文 | ● | 风格(先翻 [`references/inspiration/`](references/inspiration/) 选 1-2 个 → 查 [`tokens/`](tokens/) 有无对应 primitive;若风格/内容不在覆盖范围,按 [`references/off-template-style-gap.md`](references/off-template-style-gap.md) 补齐 case + token + content rewrite + layout variant)、色彩、字体方向 |
-| P1 | 需求+设计语法 | ● | 场景/时长/听众 + ghost deck + Theme-to-Design Router 六行说明。**⚠ 输出后必须 STOP，等用户"继续 / 进 P4 / 改 X"才能生成 HTML——擅自生成 = 违规** |
+| P1 | 需求+设计语法 | ● | 场景/时长/听众 + ghost deck + Theme-to-Design Router 六行说明 + **内容-版式贴合度预检**（内容形状 / 主 proof object / 版式为何服务它）。**⚠ 输出后必须 STOP，等用户"继续 / 进 P4 / 改 X"才能生成 HTML——擅自生成 = 违规** |
 | P2 | 输出方案 | ◐ | 内容结构、视觉方向 |
-| P3 | 设计评审 | ● | 反模式检查 + 优化方向。**⚠ Gate 模式下输出后必须 STOP，等用户确认优化方向** |
+| P3 | 设计评审 | ● | 反模式检查 + **内容-版式贴合度评审**（proof object 是否解释主张 / 是否内容被硬塞进模板 / 版式不解释主张）+ 优化方向。**⚠ Gate 模式下输出后必须 STOP，等用户确认优化方向** |
 | P4 | 生成初稿 | ● | **两条路径**:**内容在 9 template 覆盖** → 套 template 但重写 proof object 和页面骨架;**不在覆盖** → 先声明 style gap → `scripts/content-router.js` 路由 archetype(A1-A12 + 主题变体)→ `scripts/generate-archetype-deck.js` 生成(四层架构闭合,见 [tokens/README.md](tokens/README.md) 与 [`references/off-template-style-gap.md`](references/off-template-style-gap.md))。两种都过 **十门禁**(`grade-gate.js` 全绿 = G1-G10 全过;机器判 verdict,不可手动放行) |
 | P5 | 优化迭代 | ● | 按规模执行优化（详见 references/pipeline-phases.md「Phase 5」） |
-| P6 | 最终检查 | ◐ | 专业/发布会级必跑；快速模式 ≥12 页、密集数据或视觉结构调整时跑 |
+| P6 | 最终检查 | ◐ | 专业/发布会级必跑；快速模式 ≥12 页、密集数据或视觉结构调整时跑；复核**视觉语义与内容-版式贴合度**，`visual-verdict` 或人工审阅有 blocker 就回 P3/P5 |
 
 ● 必须完成　◐ 可跳过　/　刷新已有演示：跳过 P1，从 P3 开始评审
 
@@ -108,7 +108,7 @@ CDN 加载 reveal.js + Google Fonts，用户**无需安装任何东西**。
 - **CSS 全部内联**在 `<style>` 中，用 `--c-*` / `--f-*` token；骨架见 `references/css-skeleton.md`
 - **每页一个 `<section>`**；section 级 flex/grid 必须用 `class="deck-flex"` / `class="deck-grid"`——reveal 会把 present section 的 inline `display` 改成 `block`，**写在 stylesheet 里的 `display:flex` 会被静默覆盖成 dead code，你以为在居中其实没有**；只有 `deck-flex`/`deck-grid` 类才能在 reveal override 后重新生效
 - **图标用 inline SVG**（`references/icon-system.md`），不用 Font Awesome、不用 Emoji 当图标
-- **不引入 Tailwind 或任何 CSS 框架**
+- **不引入 Tailwind 或任何 CSS 框架**：框架类名是 AI 模板味来源，且单文件自包含 + PPTX 导出要求 CSS 全可控——手写 `--c-*`/`--f-*` token 才能贯彻设计语法
 - **禁止 `vw`/`vh` 单位**：Reveal 用 `transform: scale()` 缩放，vw/vh 不受影响 → 大屏溢出/小屏不可读；字号用 `em`/`px`（详见 `references/technical-specs.md`）
 - **Reveal 配置**：`{ width: 1280, height: 720, margin: 0.04, hash: true, slideNumber: 'c/t', transition: 'fade' }`
 - **页面过渡只用 `fade`/`slide`，禁 `convex`/`concave`/`zoom`**：3D 过渡给页面套透视，扭曲 `getBoundingClientRect` → `visual-check.js` 报画布尺寸混杂。所有页画布尺寸必须一致（**G8** `test-canvas-fill.js` 机器查）。要"活泼"用 fragment 动效，别换过渡（详见 `references/visual-check.md`、`references/motion-delight.md`）
@@ -116,6 +116,7 @@ CDN 加载 reveal.js + Google Fonts，用户**无需安装任何东西**。
 - **切勿破坏 reveal 的 section 堆叠/隐藏**：弱选择器 `.reveal section{position:relative}` 无害（被 reveal.css 覆盖 = dead fallback）；**真正危险的是 `!important` 或加强选择器强覆盖 `position`** → section 进文档流垂直堆叠 → overflow:hidden 截断 → 除首页外全空白。给 present 垂直居中用 `.reveal section.present{display:flex!important}`，别 blanket-force（详见 `references/css-skeleton.md`）
 - **Pin 定位上下文**：pin 相对最近 positioned 祖先（reveal 的 absolute section）；若 section 退回 static，pin 相对 BODY 全叠视口左下角 → `test-label-overlap` 报泄露
 - **字体 fallback 防 FOUT 重叠**：所有 `font-family` 栈**在 generic fallback（`sans-serif`/`serif`）前**带窄体 fallback（`'Arial Narrow'` / `'Helvetica Neue Condensed'`）；大字（logo/标题/大数字 ≥3em）与角元素（stamp/pin/photo-credit/角标）水平间距 **≥ 50px**。字体未加载时 fallback 到窄体而非默认宽体,防加载前/后布局跳变致重叠。`scripts/test-font-loading.js` 机器检测（宽度差 >15% 或间距 <50px = blocker）,`scripts/auto-fix.js` 兜底注入窄体 fallback
+- **section reset 吞 margin-top（静默无报错）**：若模板含 `.reveal section > *:not(svg):not(.deco){margin-top:0 !important}` 这类通配 reset（特异性 0,2,2），section 直接子元素写在 class 里的 `margin-top` 会被静默清零——无报错、无 lint 拦截，直接表现为标题压内容、内容压 nav。section 直接子元素的垂直间距**必须用 inline `style="margin-top:Xpx !important"` 或 padding**，不要写在 class 里。案例：memphis 封面 `THINGS.` 标题块下沉压副标题，根因是副标题 class 里的 `margin-top` 被 reset 吞成 0，改 inline `!important` 后恢复。详见 `references/layout-patterns.md`「文字防碰撞规则」
 
 ### 2. 内容预算（生成 section 前先算）
 
@@ -229,6 +230,7 @@ Style-gap Router 除六行说明外,必须额外写明:
 Style gap: 是/否;原因:____。
 参考样片:____ / ____;借用技法:____。
 Token:使用 ____;如新建,说明 AA 配对和字体 fallback。
+内容-版式贴合度:内容形状____;主 proof object____;版式为何服务它____;去色去字体后是否仍属于本主题____。
 内容语义改写:____。
 Layout 变体:____。
 不和谐风险:____(重叠/超框/错配风险 + 验证命令)。
@@ -391,7 +393,7 @@ archetype 序列：每页分配一个 archetype（A1-A12，见 layout-archetypes
 - 页面过渡：`fade`（默认）
 - "惊喜"效果：仅 1-2 页
 - Fragment 时长 300-500ms；标题页进入 500-800ms；退出 ~75% 进入时长
-- **禁用 bounce/elastic 缓动**
+- **禁用 bounce/elastic 缓动**：非标准曲线在 PPTX/投影导出会丢，且弹性回弹是廉价 AI 动效 tell；要"有弹性"用 `cubic-bezier` 自定义曲线
 - 支持 `prefers-reduced-motion`（简化为淡入）
 
 动效时机和 6 种高级模式：`references/motion-delight.md`。
@@ -412,6 +414,8 @@ archetype 序列：每页分配一个 archetype（A1-A12，见 layout-archetypes
 调垂直平衡另跑 `node scripts/visual-check.js <file>`（启发式、非阻断，与 visual-qa 冲突时信 visual-qa）。视觉语义问题（图示不清、标签不可读、图表不解释主张）信 `visual-verdict.js`，机制见上表。评估框架用 `grade-gate.js --json` 的 `passed` 字段作客观断言。如果未执行验证，在最终回复中**明确说明**。
 
 图像驱动 deck 的设计问题不能只靠固定脚本：`audit-image-assets.js` 先拦硬伤，`visual-verdict.js` 再用视觉模型判断照片是否讲清楚页面主张、是否重复、是否廉价、是否主题割裂、是否缺乏视觉冲击。两者都要跑；一个抓事实，一个抓感受和语义。
+
+**内容-版式贴合度不是机器 QA 的替代项，而是路由与验收项**：P1 先判断内容形状、主 proof object 与版式服务关系；P3 评审 proof object 是否解释主张、是否内容被硬塞进模板、是否版式不解释主张；P6 用 `visual-verdict` 或人工审阅确认视觉语义无 blocker。若失败，优先回 P1/P3 重写 content rewrite 或 layout variant，不靠换色/换字体补救。
 
 ## 导出
 
@@ -464,6 +468,7 @@ bash scripts/setup.sh          # 仅环境检查
 - [ ] **Gate 模式守门（元规则）**：若用户指定专业/发布会模式，P1 设计语法输出后**已停下等确认**（没停 = 违规失败，无论 deck 质量多高；规则见 §流程「Gate 模式硬约束」）
 - [ ] 第一眼就是经过**设计意图**的（不是 AI 模板感）
 - [ ] P1 产出了 Theme-to-Design Router 六行说明 + **设计契约**（尺度预设/用色投入/archetype 序列/本主题发明变体），且不是直接套模板
+- [ ] **内容-版式贴合度**已通过：内容形状、主 proof object、版式为何服务它都明确；去掉颜色和字体后，页面结构仍属于这个主题
 - [ ] 主骨架由 ≥3 种 archetype 组合（非种子原语原样填充），含 ≥1 个本主题发明变体
 - [ ] 物理表面型 proof object 与承载面共享坐标系；SVG 文字不靠裁切隐藏、不继承描边；数据趋势线不用 `T`
 - [ ] `design-strength-check.js` 四维达标（尺度≥3:1 / 有满版色块面板 / 有非对称分割 / 有主题原生形式）；数字未被软化成"约/持平"

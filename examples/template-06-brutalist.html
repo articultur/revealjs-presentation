@@ -13,98 +13,174 @@
   --c-mute:oklch(48% 0.004 85);
   --c-line:oklch(22% 0.005 85);
   --c-accent:oklch(88% 0.18 115);
+  --c-alert:oklch(80% 0.2 45);
   --f-display:'Archivo Black',system-ui,sans-serif;
   --f-body:'IBM Plex Sans',system-ui,sans-serif;
   --f-mono:'JetBrains Mono',ui-monospace,monospace;
-  /* 字号阶梯：brutalist 的尺度张力靠不均匀阶差；token 命名化而非均匀化 */
-  --fs-mega:8.4em;
+  --space-1:clamp(0.54rem, 0.64rem, 0.88rem);
+  --space-2:clamp(0.84rem, 1rem, 1.38rem);
+  --space-3:clamp(1.1rem, 1.5rem, 2.1rem);
+  --pad-x:clamp(1.9rem, 2.5rem, 4.5rem);
+  --pad-y:clamp(1.8rem, 2.1rem, 3.5rem);
+  --fs-mega:5.2em;
   --fs-display:4.2em;
   --fs-big:3.4em;
-  --fs-num:2.2em;
-  --fs-at:1.62em;
-  --fs-sub:0.54em;
+  --fs-num:clamp(1.45rem, 2rem, 2.2rem);
+  --fs-at:clamp(1.1rem, 1.32rem, 1.62rem);
+  --fs-sub:clamp(0.38rem, 0.44rem, 0.54rem);
 }
-*{box-sizing:border-box;}
+*{box-sizing:border-box;word-break:break-word;overflow-wrap:break-word;}
 .reveal,.reveal h1,.reveal h2,.reveal h3,.reveal p{font-family:var(--f-body);}
 .reveal section{
-  background:var(--c-bg);color:var(--c-ink);
-  font-size:26px;line-height:1.4;text-align:left;
-  padding:56px 72px 72px;overflow:hidden;position:relative;
+  background:var(--c-bg);
+  color:var(--c-ink);
+  font-size:clamp(19px, 1.4rem, 26px);
+  line-height:1.4;
+  text-align:left;
+  padding:var(--pad-y) var(--pad-x) calc(var(--pad-y) + 12px);
+  overflow:hidden;
+  position:relative;
   height:720px;
+  --flow-shift: 0;
 }
-/* 垂直铺满：只对 present section 启用 flex 居中（!important 压过 reveal 的 inline display:block；
-   不碰 .past/.future，避免破坏 reveal 的隐藏堆叠）*/
 .reveal section.present{display:flex !important;flex-direction:column;justify-content:center;}
-/* Brutalist 硬边框画布 —— 每页一根粗黑边压版 */
 .reveal section::before{
-  content:'';position:absolute;inset:20px;
+  content:'';position:absolute;inset:18px;
   border:2px solid var(--c-line);pointer-events:none;z-index:1;
 }
-/* === 契约原语（种子模板不变量，保留命名）=== */
+    .slide-shell{
+      position:relative;z-index:3;display:flex;flex-direction:column;gap:var(--space-2);min-height:0;width:100%;max-width:100%;align-items:stretch;min-width:0;padding-inline:0;box-sizing:border-box;
+}
+.layout-hero .slide-shell,
+.layout-close .slide-shell{justify-content:center;}
 .kicker{
   font-family:var(--f-mono);font-size:0.5em;letter-spacing:0.22em;
   text-transform:uppercase;color:var(--c-ink);
   border-bottom:3px solid var(--c-line);
-  padding-bottom:6px;margin:0 0 0.7em;display:flex;justify-content:space-between;
+  padding-bottom:6px;margin:0 0 var(--space-1);display:block;
   position:relative;z-index:3;
 }
+.masthead{border-top:3px double var(--c-line);padding-top:6px;}
+.headline-rule{position:relative;padding-bottom:0.2em;}
+.headline-rule::after{content:'';position:absolute;left:0;bottom:-0.16em;width:112px;height:4px;background:var(--c-line);}
+.stamp{display:inline-block;background:var(--c-ink);color:var(--c-accent);font-family:var(--f-mono);font-size:0.38em;line-height:1;letter-spacing:0.16em;text-transform:uppercase;padding:0.38em 0.82em;transform:rotate(-2deg);}
+.brutal-cover .stamp{align-self:flex-start;margin-top:-18px;}
+.anchor-numeral{font-family:var(--f-display);font-size:4.6em;line-height:0.82;letter-spacing:-0.03em;color:var(--c-ink);}
+.kicker span{display:block;}
 .coord{font-family:var(--f-mono);font-size:0.4em;letter-spacing:0.14em;color:var(--c-mute);}
 .reveal .at{
   font-family:var(--f-display);font-size:var(--fs-at);line-height:1.06;
-  letter-spacing:0;margin:0 0 0.6em;max-width:94%;position:relative;z-index:3;
+  letter-spacing:0;margin:0 0 var(--space-2);max-width:94%;position:relative;z-index:3;
 }
 .at.shift{margin-left:0.4em;}
-.proof{position:relative;z-index:3;border:2px solid var(--c-line);background:var(--c-paper);padding:18px 22px;}
-.source{position:absolute;bottom:28px;right:72px;font-family:var(--f-mono);font-size:0.4em;letter-spacing:0.12em;text-transform:uppercase;color:var(--c-mute);z-index:3;}
-.pin{position:absolute;left:64px;bottom:28px;font-family:var(--f-mono);font-size:0.4em;letter-spacing:0.18em;text-transform:uppercase;color:var(--c-mute);z-index:3;}
-/* === Brutalist 极致化原语 === */
-.reveal .display{font-family:var(--f-display);font-size:var(--fs-display);line-height:0.86;letter-spacing:-0.02em;margin:0;position:relative;z-index:3;}
+.reveal .display{
+  font-family:var(--f-display);font-size:var(--fs-display);line-height:0.86;letter-spacing:-0.02em;
+  margin:0;position:relative;z-index:3;
+}
 .display.shift{margin-left:0.3em;}
 .reveal .mega{font-family:var(--f-display);font-size:var(--fs-mega);line-height:0.82;letter-spacing:-0.03em;margin:0;position:relative;z-index:3;}
-.mega.bleed{margin-left:-10px;}
-.reveal .big{font-family:var(--f-display);font-size:var(--fs-big);line-height:0.9;letter-spacing:-0.02em;}
+.mega.bleed{margin-left:clamp(-0.66rem, -0.33rem, -0.15rem);}
+.reveal .big{
+  font-family:var(--f-display);font-size:var(--fs-big);line-height:0.9;letter-spacing:-0.02em;
+}
 .big small{font-family:var(--f-mono);font-size:0.17em;letter-spacing:0.1em;display:block;margin-top:6px;color:var(--c-mute);font-weight:400;}
 .hi{background:var(--c-accent);color:var(--c-ink);padding:1px 8px;display:inline-block;}
 .hi-block{background:var(--c-accent);color:var(--c-ink);padding:4px 16px;display:inline-block;}
-/* 实心黑块 / 反白 —— brutalist 的质量在"块"不在"线" */
+.hi-alt{background:var(--c-alert);color:var(--c-ink);padding:2px 10px;display:inline-block;}
 .rev{background:var(--c-ink);color:var(--c-bg);padding:14px 18px;display:block;}
 .rev .num{color:var(--c-accent);}
-.slab{background:var(--c-ink);position:relative;z-index:3;}
-.slab.accent{background:var(--c-accent);}
-.slab.paper{background:var(--c-paper);border:2px solid var(--c-line);}
 .label{font-family:var(--f-mono);font-size:0.42em;letter-spacing:0.1em;text-transform:uppercase;color:var(--c-mute);}
 .label.on-dark{color:oklch(78% 0.004 85);}
 .reveal .num{font-family:var(--f-display);font-size:var(--fs-num);line-height:1;letter-spacing:-0.02em;}
 .num.accent{color:var(--c-accent);}
-/* 满宽黑条柱（proof 页）—— 粗黑块，非细线 */
-.bbar{background:var(--c-ink);position:relative;z-index:3;}
-.bbar.accent{background:var(--c-accent);}
-.bbar.paper{background:var(--c-paper);border:2px solid var(--c-line);}
-/* 堆叠进程块（mechanism 页）*/
+.slab{background:var(--c-ink);position:relative;z-index:3;}
+.slab.accent{background:var(--c-accent);}
+.slab.paper{background:var(--c-paper);border:2px solid var(--c-line);}
+.proof,.proof{position:relative;z-index:3;border:2px solid var(--c-line);background:var(--c-paper);padding:18px 22px;}
+.source{position:absolute;bottom:calc(var(--pad-y) - 8px);right:var(--pad-x);font-family:var(--f-mono);font-size:0.4em;letter-spacing:0.12em;text-transform:uppercase;color:var(--c-mute);z-index:3;max-width:58%;
+}
+.pin{position:absolute;left:var(--pad-x);bottom:calc(var(--pad-y) - 8px);font-family:var(--f-mono);font-size:0.4em;letter-spacing:0.18em;text-transform:uppercase;color:var(--c-mute);z-index:3;}
+.grid-deco{position:absolute;inset:20px;pointer-events:none;z-index:2;display:grid;grid-template-columns:repeat(4,1fr);opacity:0.22;}
+.grid-deco span{border-right:1px dashed oklch(80% 0.003 85);} .grid-deco span:last-child{border-right:none;}
+.sub{font-family:var(--f-mono);font-size:var(--fs-sub);letter-spacing:0.04em;color:var(--c-mute);margin-top:var(--space-1);max-width:min(72ch,100%);line-height:1.5;position:relative;z-index:3;}
+.pptx-btn{position:fixed;top:16px;right:16px;z-index:100;font-family:var(--f-mono);font-size:12px;letter-spacing:0.1em;text-transform:uppercase;background:var(--c-ink);color:var(--c-bg);border:none;padding:8px 14px;cursor:pointer;opacity:0;transition:opacity .2s;}
+.pptx-btn:hover,.pptx-btn:focus{opacity:1;}
+
+/* 布局原语 */
+.layout-split{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(220px,1fr);align-items:end;gap:var(--space-2);}
+.layout-alt{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2);align-items:start;}
+.layout-chart{display:grid;grid-template-columns:minmax(0, 1.1fr) 1fr;gap:var(--space-3);align-items:end;}
+.layout-stacked{display:grid;grid-template-columns:minmax(0,0.9fr) 1fr;align-items:end;gap:var(--space-3);}
+.layout-close{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--space-2);}
+.layout-close .article{margin-bottom:var(--space-1);} 
+.compact-articles{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
+.compact-articles .article{margin-bottom:0;}
+.compact-articles .article .t{font-size:0.64em;line-height:1.28;}
+
+.flow-lane,
+.flow-lane::before,
+.flow-lane::after{content:'';position:absolute;left:calc(var(--pad-x) - 8px);right:calc(var(--pad-x) - 8px);z-index:2;opacity:0.34;pointer-events:none;}
+.flow-lane{top:32%;height:2px;background:var(--c-line);}
+.flow-lane::before{top:30px;height:2px;background:repeating-linear-gradient(90deg, transparent 0 22px, var(--c-line) 22px 24px);}
+.flow-lane::after{top:70px;height:1px;background:var(--c-line);}
+.flow-lane--slant{transform:rotate(-1.4deg);transform-origin:left 52px;}
+.flow-lane--low{top:auto;bottom:34%;}
+.flow-lane--high{top:22%;}
+
+.meta-card{
+  border:2px solid var(--c-line);padding:clamp(0.75rem, 1rem, 1.5rem);background:var(--c-paper);position:relative;z-index:3;
+}
+.meta-card--inverse{background:var(--c-ink);color:var(--c-bg);}
+.meta-card--inverse .label{color:oklch(82% 0.003 85);}
+    .block-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(0.5rem, 0.75rem, 1rem);align-items:end;position:relative;z-index:3;width:100%;}
+.block-grid .bar{border:2px solid var(--c-line);width:100%;min-width:0;}
+.block-grid .bar.accent{background:var(--c-accent);color:var(--c-ink);} 
+.block-grid .bar{background:var(--c-ink);height:var(--h,120px);color:var(--c-bg);} 
+.block-grid .bar.paper{background:var(--c-paper);color:var(--c-ink);} 
+
 .proc{display:flex;align-items:stretch;border:2px solid var(--c-line);background:var(--c-paper);position:relative;z-index:3;}
 .proc .cell{flex:1;padding:24px 14px;border-right:2px solid var(--c-line);font-size:0.66em;}
 .proc .cell:last-child{border-right:none;}
 .proc .cell.dark{background:var(--c-ink);color:var(--c-bg);}
 .proc .cell .cnt{font-family:var(--f-display);font-size:1.5em;color:var(--c-accent);display:block;margin-top:4px;}
 .proc .cell.dark .cnt{color:var(--c-accent);}
-/* 体量对比块（comparison 页）*/
+
 .mass{display:flex;align-items:flex-end;gap:28px;position:relative;z-index:3;}
-/* 节拍计数（data 页）*/
 .ticks{display:flex;align-items:flex-end;gap:2px;height:46px;position:relative;z-index:3;}
-.ticks i{display:block;width:4px;background:var(--c-ink);}
+.ticks i{display:block;width:4px;background:var(--c-ink);} 
 .ticks i.loud{background:var(--c-accent);height:100%;}
-/* 宣言条款（close 页）*/
+
 .article{display:flex;gap:18px;align-items:stretch;border:2px solid var(--c-line);margin-bottom:10px;position:relative;z-index:3;}
-.article .n{background:var(--c-ink);color:var(--c-accent);font-family:var(--f-display);font-size:1.9em;padding:18px 16px;min-width:1.6em;text-align:center;}
-.article .t{background:var(--c-paper);padding:18px 16px;font-size:0.74em;flex:1;display:flex;align-items:center;}
-/* 角落栅格装饰 */
-.grid-deco{position:absolute;inset:20px;pointer-events:none;z-index:2;display:grid;grid-template-columns:repeat(4,1fr);}
-.grid-deco span{border-right:1px dashed oklch(80% 0.003 85);}
-.grid-deco span:last-child{border-right:none;}
-.sub{font-family:var(--f-mono);font-size:var(--fs-sub);letter-spacing:0.04em;color:var(--c-mute);margin-top:12px;max-width:64%;line-height:1.4;position:relative;z-index:3;}
-.pptx-btn{position:fixed;top:16px;right:16px;z-index:100;font-family:var(--f-mono);font-size:12px;letter-spacing:0.1em;text-transform:uppercase;background:var(--c-ink);color:var(--c-bg);border:none;padding:8px 14px;cursor:pointer;opacity:0;transition:opacity .2s;}
-.pptx-btn:hover,.pptx-btn:focus{opacity:1;}
-/* thorough：状态完备 —— reduced-motion 尊重 + 打印归档（brutalist 的"档案感"契合纸本归档）*/
+    .article{display:flex;gap:14px;align-items:stretch;border:2px solid var(--c-line);margin-bottom:10px;position:relative;z-index:3;}
+    .article .n{background:var(--c-ink);color:var(--c-accent);font-family:var(--f-display);font-size:1.7em;padding:14px 12px;min-width:1.45em;text-align:center;}
+    .article .t{background:var(--c-paper);padding:14px 12px;font-size:0.70em;line-height:1.35;flex:1;display:flex;align-items:center;}
+
+.slide-shell,
+.tension,
+.meta-card,
+.proc,
+.proc .cell,
+.risk-grid,
+.article,
+.article .t,
+.layout-split .layout-split > *{
+  min-width:0;
+}
+
+.tension{padding:var(--space-2);border:2px solid var(--c-line);background:var(--c-paper);position:relative;z-index:3;display:grid;gap:10px;max-width:calc(100% - 30px);overflow:hidden;}
+.tension::after{content:'';position:absolute;top:16px;right:0px;bottom:16px;left:16px;border-right:2px solid rgba(34,34,34,.35);pointer-events:none;}
+.tension p{font-size:0.78em;line-height:1.5;}
+
+.risk-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:stretch;position:relative;z-index:3;}
+.risk-grid .rev{padding:36px 18px 30px;}
+
+@media (max-width: 980px){
+  .reveal section{height:100%;min-height:760px;padding:26px 24px 32px;}
+  .layout-split,.layout-chart,.layout-alt,.layout-stacked,.risk-grid{grid-template-columns:1fr;}
+  .block-grid{grid-template-columns:repeat(2, minmax(0,1fr));}
+  .source,.pin{position:relative;left:auto;right:auto;bottom:auto;}
+}
+
 @media (prefers-reduced-motion: reduce){
   .reveal,.reveal .slides section{transition:none !important;}
   *{animation-duration:0.01ms !important;animation-iteration-count:1 !important;}
@@ -120,126 +196,162 @@
 <button class="pptx-btn" onclick="exportPPTX()">↓ PPTX</button>
 <div class="reveal"><div class="slides">
 
-<!-- 1. COVER —— 报纸头版：满版巨字 + 黑块压住核心数字 -->
-<section class="brutal-cover">
+<section class="brutal-cover layout-hero">
+<div class="flow-lane flow-lane--slant" aria-hidden="true"></div>
 <div class="grid-deco"><span></span><span></span><span></span><span></span></div>
-<div class="kicker"><span>RESIDUE / 01 · COVER</span><span class="coord">X:0000 Y:0000</span></div>
-<h1 class="display shift">ATTENTION<br><span class="hi-block">RESIDUE.</span></h1>
-<div class="rev" style="display:inline-block;margin-top:14px;padding:16px 22px;">
-<span class="big" style="color:var(--c-accent);">23 MIN</span>
-<span class="label on-dark" style="display:block;margin-top:4px;">AVERAGE RESIDUE PER SWITCH · MARK 2008</span>
+<div class="slide-shell">
+  <div class="kicker masthead"><span>RESIDUE / 01 · COVER</span><span class="coord">X:0000 Y:0000</span></div>
+  <h1 class="display shift">ATTENTION<br><span class="hi-block">RESIDUE.</span></h1>
+  <div class="meta-card" style="align-self:flex-start;max-width:56%;">
+    <span class="big" style="color:var(--c-accent);">23 MIN</span>
+    <span class="label on-dark" style="display:block;margin-top:4px;">AVERAGE RESIDUE PER SWITCH · MARK 2008</span>
+  </div>
+  <p class="sub">每次切换，注意力都在漏水。一份关于上下文切换真实代价的批判性报告。</p>
+  <span class="stamp">DO NOT SWITCH</span>
 </div>
-<p class="sub">每次切换，注意力都在漏水。一份关于上下文切换真实代价的批判性报告。</p>
 <div class="source">verified · Gloria Mark, UC Irvine, 2008</div>
 <span class="pin">01 · cover · residue</span>
 </section>
 
-<!-- 2. CLAIM —— 不对称：巨型数字偏左出血 + 右侧注解 -->
-<section>
-<div class="kicker"><span>RESIDUE / 02 · CLAIM</span><span class="coord">X:0240 Y:0540</span></div>
-<h2 class="at">一次上下文切换，注意力残留 <span class="hi">平均 23 分钟</span>。</h2>
-<div style="display:flex;align-items:center;gap:30px;position:relative;z-index:3;">
-<div class="mega bleed">23<span style="font-family:var(--f-mono);font-size:0.16em;letter-spacing:0.1em;display:block;color:var(--c-mute);margin-top:6px;">MINUTES · BEFORE FOCUS REBUILDS</span></div>
-<div style="flex:1;border-left:2px solid var(--c-line);padding-left:24px;font-size:0.62em;line-height:1.55;">
-<strong>残留 = 上一个任务未关闭的思绪</strong>，持续占用工作记忆槽位。切换越深，残留越重，下一次专注要重新从零搭建。
-</div>
+<section class="layout-split">
+<div class="flow-lane flow-lane--high" aria-hidden="true"></div>
+<div class="slide-shell">
+  <div class="kicker"><span>RESIDUE / 02 · CLAIM</span><span class="coord">X:0240 Y:0540</span></div>
+  <h2 class="at headline-rule">一次上下文切换，注意力残留 <span class="hi">平均 23 分钟</span>。</h2>
+  <div class="layout-split" style="grid-template-columns:minmax(0,1.1fr) minmax(180px,0.85fr);">
+    <div style="display:grid;gap:14px;">
+      <p><strong>残留 = 上一个任务未关闭的思绪</strong>，持续占用工作记忆槽位。切换越深，残留越重，下一次专注要重新从零搭建。</p>
+    </div>
+    <div class="meta-card meta-card--inverse">
+      <div class="anchor-numeral">23</div>
+      <div style="font-family:var(--f-mono);font-size:0.68em;letter-spacing:0.08em;color:var(--c-accent);margin-top:10px;text-transform:uppercase;">minutes of cognitive drag</div>
+      <div class="label on-dark" style="margin-top:8px;">每次切换后回归深度状态所需时间</div>
+    </div>
+  </div>
 </div>
 <div class="source">verified · Gloria Mark, UC Irvine, 2008</div>
 <span class="pin">02 · claim · residue</span>
 </section>
 
-<!-- 3. PROOF —— 满宽粗黑条柱（非线性上升），无外框 -->
-<section>
-<div class="kicker"><span>RESIDUE / 03 · PROOF</span><span class="coord">X:0280 Y:0720</span></div>
-<h2 class="at shift">切换越频繁，错误率越高，且代价非线性。</h2>
-<div style="display:flex;gap:16px;align-items:flex-end;height:320px;position:relative;z-index:3;">
-<div style="flex:1;text-align:center;"><div class="bbar" style="height:56px;"></div><div class="label" style="margin-top:8px;">2×/HR<br>12%</div></div>
-<div style="flex:1;text-align:center;"><div class="bbar" style="height:112px;"></div><div class="label" style="margin-top:8px;">6×/HR<br>24%</div></div>
-<div style="flex:1;text-align:center;"><div class="bbar" style="height:200px;"></div><div class="label" style="margin-top:8px;">12×/HR<br>47%</div></div>
-<div style="flex:1;text-align:center;"><div class="bbar accent" style="height:288px;"></div><div class="label" style="margin-top:8px;">20×/HR<br><span class="hi">71%</span></div></div>
+<section class="layout-chart">
+<div class="flow-lane flow-lane--low flow-lane--slant" aria-hidden="true"></div>
+<div class="slide-shell">
+  <div class="kicker"><span>RESIDUE / 03 · PROOF</span><span class="coord">X:0280 Y:0720</span></div>
+  <h2 class="at shift">切换越频繁，错误率越高，且代价非线性。</h2>
+    <div class="block-grid bbar" style="grid-template-columns:repeat(4,1fr); align-items:end;height:312px;">
+    <div style="text-align:center;"><div class="bar paper" style="height:56px;"></div><div class="label" style="margin-top:8px;">2×/HR<br>12%</div></div>
+    <div style="text-align:center;"><div class="bar" style="height:112px;"></div><div class="label" style="margin-top:8px;">6×/HR<br>24%</div></div>
+    <div style="text-align:center;"><div class="bar" style="height:200px;"></div><div class="label" style="margin-top:8px;">12×/HR<br>47%</div></div>
+    <div style="text-align:center;"><div class="bar accent" style="height:276px;"></div><div class="label" style="margin-top:8px;">20×/HR<br><span class="hi">71%</span></div></div>
+  </div>
+  <div class="label" style="margin-top:14px;position:relative;z-index:3;">错误率 % · 随切换频率非线性上升（第 4 档翻倍切换，错误率却 +50%）</div>
 </div>
-<div class="label" style="margin-top:14px;position:relative;z-index:3;">错误率 % · 随切换频率非线性上升（第 4 档翻倍切换，错误率却 +50%）</div>
 <div class="source">illustrative · lab simulation</div>
 <span class="pin">03 · proof · error-rate</span>
 </section>
 
-<!-- 4. MECHANISM —— 堆叠进程块（任务管理器/后台进程），残留计数爬升 -->
 <section>
-<div class="kicker"><span>RESIDUE / 04 · MECHANISM</span><span class="coord">X:0320 Y:0810</span></div>
-<h2 class="at">残留累积：未关闭的任务持续占用工作记忆。</h2>
-<div class="proc">
-<div class="cell"><strong>TASK A</strong><small style="font-family:var(--f-mono);display:block;margin-top:4px;color:var(--c-mute);">进行中</small><span class="cnt">1×</span></div>
-<div class="cell dark"><strong>RESIDUE</strong><small style="font-family:var(--f-mono);display:block;margin-top:4px;color:oklch(78% 0.004 85);">未关闭</small><span class="cnt">2×</span></div>
-<div class="cell"><strong>TASK B</strong><small style="font-family:var(--f-mono);display:block;margin-top:4px;color:var(--c-mute);">性能 ↓ 40%</small><span class="cnt">3×</span></div>
-<div class="cell dark"><strong>CUMULATIVE</strong><small style="font-family:var(--f-mono);display:block;margin-top:4px;color:oklch(78% 0.004 85);">日终崩溃</small><span class="cnt">5×</span></div>
+<div class="flow-lane" aria-hidden="true"></div>
+<div class="slide-shell">
+  <div class="kicker"><span>RESIDUE / 04 · MECHANISM</span><span class="coord">X:04 · Y:08</span></div>
+  <h2 class="at">残留累积：未关闭任务持续占用记忆。</h2>
+  <div class="proc">
+    <div class="cell"><strong>TASK A</strong><small style="font-family:var(--f-mono);display:block;margin-top:4px;color:var(--c-mute);">进行中</small><span class="cnt">1×</span></div>
+    <div class="cell dark"><strong>RESIDUE</strong><small style="font-family:var(--f-mono);display:block;margin-top:4px;color:oklch(78% 0.004 85);">未关闭</small><span class="cnt">2×</span></div>
+    <div class="cell"><strong>TASK B</strong><small style="font-family:var(--f-mono);display:block;margin-top:4px;color:var(--c-mute);">性能 ↓ 40%</small><span class="cnt">3×</span></div>
+    <div class="cell dark"><strong>CUMULATIVE</strong><small style="font-family:var(--f-mono);display:block;margin-top:4px;color:oklch(78% 0.004 85);">日终崩溃</small><span class="cnt">5×</span></div>
+  </div>
+  <div class="tension">
+    <strong>进程视角</strong>
+    <p style="margin:0;max-width:100%;">每个未关闭任务像未清场进程。</p>
+    <p style="margin:0;max-width:100%;">后续切换会叠加负荷。</p>
+    <p style="margin:0;max-width:100%;">最终触发掉速。</p>
+  </div>
+  <div class="label" style="margin-top:8px;position:relative;z-index:3;">每个未关闭任务 = 一个常驻后台进程 · 工作记忆槽位按切换次数线性占用</div>
 </div>
-<div class="label" style="margin-top:14px;position:relative;z-index:3;">每个未关闭任务 = 一个常驻后台进程 · 工作记忆槽位按切换次数线性占用</div>
 <div class="source">illustrative · working memory model</div>
 <span class="pin">04 · mechanism · memory</span>
 </section>
 
-<!-- 5. COMPARISON —— 体量对比块：矮小苍白 vs 巨大纯黑，1× vs 4× 的体量差 -->
-<section>
-<div class="kicker"><span>RESIDUE / 05 · COMPARISON</span><span class="coord">X:0360 Y:0900</span></div>
-<h2 class="at shift">深度 90 分钟 vs 碎片 90 分钟，产出差 4 倍。</h2>
-<div class="mass" style="height:360px;">
-<div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;">
-<div class="slab paper" style="width:60%;height:64px;"></div>
-<div class="label" style="margin-top:10px;">FRAGMENTED<br>1× 产出</div>
+<section class="layout-alt">
+<div class="flow-lane flow-lane--high" aria-hidden="true"></div>
+<div class="slide-shell">
+  <div class="kicker"><span>RESIDUE / 05 · COMPARISON</span><span class="coord">X:0360 Y:0900</span></div>
+  <h2 class="at shift">深度 90 分钟 vs 碎片 90 分钟，产出差 4 倍。</h2>
+  <div class="mass" style="height:300px;">
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;">
+      <div class="slab paper" style="width:60%;height:64px;"></div>
+      <div class="label" style="margin-top:10px;">FRAGMENTED<br>1× 产出</div>
+    </div>
+      <div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;">
+      <div class="slab" style="width:100%;height:292px;"></div>
+      <div class="label" style="margin-top:10px;">DEEP<br><span class="hi">4× 产出</span></div>
+    </div>
+  </div>
+  <div class="layout-close compact-articles">
+    <div class="article"><div class="n">01</div><div class="t">碎片时间把任务切成一组短冲动，制造“看似忙但不增益”的堆叠。</div></div>
+    <div class="article"><div class="n">02</div><div class="t">深度时段让残留可见并回收，形成持续产出。</div></div>
+  </div>
 </div>
-<div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;">
-<div class="slab" style="width:100%;height:330px;"></div>
-<div class="label" style="margin-top:10px;">DEEP<br><span class="hi">4× 产出</span></div>
-</div>
-</div>
-<div class="label" style="margin-top:12px;position:relative;z-index:3;">同等时长 · 单位时间有效产出比 · 体量即差距</div>
 <div class="source">illustrative · Cal Newport, Deep Work</div>
 <span class="pin">05 · comparison · depth</span>
 </section>
 
-<!-- 6. DATA —— 巨型 566 + 节拍 tick 阵（每 11 秒一次） -->
-<section>
-<div class="kicker"><span>RESIDUE / 06 · DATA</span><span class="coord">X:0400 Y:0990</span></div>
-<h2 class="at">知识工作者日均切换 <span class="hi">566 次</span>，每 11 秒一次。</h2>
-<div style="display:flex;align-items:flex-end;gap:30px;position:relative;z-index:3;">
-<div class="mega" style="font-size:7.2em;">566</div>
-<div style="flex:1;">
-<div class="ticks" id="ticks"></div>
-<div class="label" style="margin-top:8px;">每一次跳动 = 一次屏幕切换 · 8 小时内从未停过</div>
-<div style="font-family:var(--f-mono);font-size:0.6em;line-height:1.5;margin-top:10px;">其中 <span class="hi">40%</span> 的切换在 10 秒内发生，根本来不及进入任何深度状态。</div>
-</div>
+<section class="layout-stacked">
+<div class="flow-lane flow-lane--low" aria-hidden="true"></div>
+<div class="slide-shell">
+  <div class="kicker"><span>RESIDUE / 06 · DATA</span><span class="coord">X:0400 Y:0990</span></div>
+  <h2 class="at">知识工作者日均切换 <span class="hi">566 次</span>，每 11 秒一次。</h2>
+  <div class="layout-stacked" style="align-items:end;">
+    <div class="mega" style="font-size:6.4rem;line-height:.95;">566</div>
+    <div style="display:grid;gap:10px;">
+      <div class="ticks" aria-label="switch frequency ticks"></div>
+      <div class="meta-card">
+        <div style="font-family:var(--f-mono);font-size:0.68em;color:var(--c-mute);text-transform:uppercase;letter-spacing:0.09em;">每一次跳动 = 一次切换</div>
+        <div class="num accent" style="margin:4px 0 2px;">8h 连续抖动</div>
+        <div style="font-size:0.68em;line-height:1.55;">其中 <span class="hi-alt">40%</span> 的切换在 10 秒内发生，根本来不及进入任何深度状态。</div>
+      </div>
+    </div>
+  </div>
 </div>
 <div class="source">verified · RescueTime, 2023</div>
 <span class="pin">06 · data · frequency</span>
 </section>
 
-<!-- 7. RISK —— 双反白警示块（黑底 + 荧光数字），警报美学 -->
 <section>
-<div class="kicker"><span>RESIDUE / 07 · RISK</span><span class="coord">X:0440 Y:1080</span></div>
-<h2 class="at shift">碎片化团队：周期延长 2.3 倍，缺陷率上升 47%。</h2>
-<div style="display:flex;gap:18px;position:relative;z-index:3;">
-<div class="rev" style="flex:1;text-align:center;padding:46px 18px;">
-<div class="num accent" style="font-size:2.8em;">2.3×</div>
-<div class="label on-dark" style="margin-top:14px;">DELIVERY CYCLE<br>交付周期延长</div>
+<div class="flow-lane flow-lane--slant" aria-hidden="true"></div>
+<div class="slide-shell">
+  <div class="kicker"><span>RESIDUE / 07 · RISK</span><span class="coord">X:0440 Y:1080</span></div>
+  <h2 class="at shift">碎片化团队：周期延长 2.3 倍，缺陷率上升 47%。</h2>
+  <div class="risk-grid">
+    <div class="rev" style="text-align:center;padding:46px 18px;">
+      <div class="num accent" style="font-size:2.8em;">2.3×</div>
+      <div class="label on-dark" style="margin-top:14px;">DELIVERY CYCLE<br>交付周期延长</div>
+    </div>
+    <div class="rev" style="text-align:center;padding:46px 18px;">
+      <div class="num accent" style="font-size:2.8em;">+47%</div>
+      <div class="label on-dark" style="margin-top:14px;">DEFECT RATE<br>缺陷率上升</div>
+    </div>
+  </div>
+  <div class="meta-card" style="margin-top:auto;">
+    <strong>风险不在“努力”，而在“无法关断”</strong>
+    <p style="margin:4px 0 0;">碎片化不只伤个人，团队层面会持续推高返工与线上缺陷成本。</p>
+  </div>
 </div>
-<div class="rev" style="flex:1;text-align:center;padding:46px 18px;">
-<div class="num accent" style="font-size:2.8em;">+47%</div>
-<div class="label on-dark" style="margin-top:14px;">DEFECT RATE<br>缺陷率上升</div>
-</div>
-</div>
-<div class="label" style="margin-top:14px;position:relative;z-index:3;">碎片化不只伤个人 · 它直接拉长团队交付、放大线上缺陷</div>
 <div class="source">illustrative · team retro aggregate</div>
 <span class="pin">07 · risk · team-cost</span>
 </section>
 
-<!-- 8. CLOSE —— 宣言条款：黑块编号 + 反白条款，宪法式 -->
-<section>
-<div class="kicker"><span>RESIDUE / 08 · CLOSE</span><span class="coord">X:0480 Y:1170</span></div>
-<h2 class="at">三条止血规则：<span class="hi">批次 · 保护带 · 可见度</span>。</h2>
-<div style="position:relative;z-index:3;">
-<div class="article"><div class="n">01</div><div class="t"><strong>BATCH · 批次</strong>：同类任务集中 90 分钟，不交错。</div></div>
-<div class="article"><div class="n">02</div><div class="t"><strong>SHIELD · 保护带</strong>：每日 2 段勿扰时段，关闭通知。</div></div>
-<div class="article"><div class="n">03</div><div class="t"><strong>VISIBLE · 可见度</strong>：未关闭任务写到纸上，腾出工作记忆。</div></div>
+<section class="layout-close">
+<div class="flow-lane flow-lane--low flow-lane--slant" aria-hidden="true"></div>
+<div class="slide-shell">
+  <div class="kicker"><span>RESIDUE / 08 · CLOSE</span><span class="coord">X:0480 Y:1170</span></div>
+  <h2 class="at">三条止血规则：<span class="hi">批次 · 保护带 · 可见度</span>。</h2>
+  <div style="display:grid;gap:10px;">
+    <div class="article"><div class="n">01</div><div class="t"><strong>BATCH · 批次</strong>：同类任务集中 90 分钟，不交错。</div></div>
+    <div class="article"><div class="n">02</div><div class="t"><strong>SHIELD · 保护带</strong>：每日 2 段勿扰时段，关闭通知。</div></div>
+    <div class="article"><div class="n">03</div><div class="t"><strong>VISIBLE · 可见度</strong>：未关闭任务写到纸上，腾出工作记忆。</div></div>
+  </div>
 </div>
 <div class="source">illustrative · residue protocol</div>
 <span class="pin">08 · close · protocol</span>
@@ -247,14 +359,44 @@
 
 </div></div>
 <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.js" integrity="sha384-1BgZRI35wIBSv5NogsksvIdAsgAPqwRFj4SJUH7dDP14i/J8zwleEEcTA1TTHId3" crossorigin="anonymous"></script>
-<!-- pptxgenjs (~300KB) 改为点击 PPTX 按钮时动态加载（见 ensurePptx），避免初始包开销 -->
 <script>
 Reveal.initialize({width:1280,height:720,margin:0.04,hash:true,slideNumber:'c/t',transition:'fade'});
-// 节拍 tick 阵：60 个跳动，每 12 个一个荧光高峰（视觉化"每 11 秒"的密度）
-(function(){var t=document.getElementById('ticks');if(!t)return;for(var i=0;i<60;i++){var d=document.createElement('i');d.style.height=(30+Math.round(Math.abs(Math.sin(i*0.5))*16))+'px';if(i%12===11)d.className='loud';t.appendChild(d);}})();
-var PPTX_SRC='https://cdn.jsdelivr.net/npm/pptxgenjs@4.0.1/dist/pptxgen.bundle.js';var PPTX_INTEGRITY='sha384-qb0Xhi7LLYpvW1HCK6oMrmDLSY9sy7vwm6ZlV6KjtrlL9yg30+YN4neTwnmX+Kp8';
-function ensurePptx(cb){if(typeof PptxGenJS!=='undefined'){cb();return;}var s=document.createElement('script');s.src=PPTX_SRC;s.crossOrigin='anonymous';s.integrity=PPTX_INTEGRITY;s.onload=function(){cb();};s.onerror=function(){alert('pptxgenjs 加载失败,请检查网络');};document.head.appendChild(s);}
-function exportPPTX(){ensurePptx(function(){var p=new PptxGenJS();p.defineLayout({name:'C',width:13.33,height:7.5});p.layout='C';Reveal.getSlides().forEach(function(s){var t=(s.querySelector('.kicker')||{}).innerText||'';var h=(s.querySelector('.at,.display,.mega')||{}).innerText||'';p.addSlide().addText(h.split('\n')[0],{x:0.5,y:0.5,w:12,h:1.5,fontSize:28,bold:true}).addText(t,{x:0.5,y:0.2,w:12,h:0.3,fontSize:10,color:'999999'});});p.writeFile({fileName:'attention-residue.pptx'});});}
+Array.prototype.forEach.call(document.querySelectorAll('.ticks'),function(track,idx){
+  for(var i=0;i<60;i++){
+    var d=document.createElement('i');
+    d.style.height=(30+Math.round(Math.abs(Math.sin(i*0.5 + idx*0.45))*16))+'px';
+    if(i%12===11) d.className='loud';
+    track.appendChild(d);
+  }
+});
+
+var PPTX_SRC='https://cdn.jsdelivr.net/npm/pptxgenjs@4.0.1/dist/pptxgen.bundle.js';
+var PPTX_INTEGRITY='sha384-qb0Xhi7LLYpvW1HCK6oMrmDLSY9sy7vwm6ZlV6KjtrlL9yg30+YN4neTwnmX+Kp8';
+function ensurePptx(cb){
+  if(typeof PptxGenJS!=='undefined'){cb();return;}
+  var s=document.createElement('script');
+  s.src=PPTX_SRC;
+  s.crossOrigin='anonymous';
+  s.integrity=PPTX_INTEGRITY;
+  s.onload=function(){cb();};
+  s.onerror=function(){alert('pptxgenjs 加载失败,请检查网络');};
+  document.head.appendChild(s);
+}
+function exportPPTX(){
+  ensurePptx(function(){
+    var p=new PptxGenJS();
+    p.defineLayout({name:'C',width:13.33,height:7.5});
+    p.layout='C';
+    Reveal.getSlides().forEach(function(s){
+      var t=(s.querySelector('.kicker')||{}).innerText||'';
+      var h=(s.querySelector('.at,.display,.mega')||{}).innerText||'';
+      p.addSlide()
+        .addText(h.split('\n')[0],{x:0.5,y:0.5,w:12,h:1.5,fontSize:28,bold:true})
+        .addText(t,{x:0.5,y:0.2,w:12,h:0.3,fontSize:10,color:'999999'});
+    });
+    p.writeFile({fileName:'attention-residue.pptx'});
+  });
+}
 </script>
 </body>
 </html>

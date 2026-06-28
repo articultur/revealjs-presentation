@@ -77,9 +77,25 @@ const skill = read('SKILL.md');
   ['evidence ledger gate', /证据台账|Evidence Ledger/i],
   ['overflow blocker language', /total\s*>\s*0[\s\S]{0,120}(阻断|blocker|必须修复)/i],
   ['fragment initial-state gate', /fragment[\s\S]{0,120}(初始|首屏|隐藏)/i],
+  ['content-layout fit gate', /内容-版式贴合度/i],
+  ['P1 content-layout fit preflight', /P1[\s\S]{0,260}内容-版式贴合度[\s\S]{0,260}proof object/i],
+  ['P3 content-layout design review', /P3[\s\S]{0,260}(内容被硬塞进模板|版式不解释主张|proof object 是否解释主张)/i],
+  ['P6 content-layout visual acceptance', /P6[\s\S]{0,320}(视觉语义|内容-版式贴合度)[\s\S]{0,320}(visual-verdict|人工审阅)/i],
 ].forEach(([label, pattern]) => {
   if (!pattern.test(skill)) {
     fail(`SKILL.md is missing ${label}.`);
+  }
+});
+
+const styleGap = read('references/off-template-style-gap.md');
+[
+  ['P1 preflight hook', /P1[\s\S]{0,220}内容-版式贴合度/],
+  ['P3 review hook', /P3[\s\S]{0,220}内容-版式贴合度/],
+  ['P6 acceptance hook', /P6[\s\S]{0,220}内容-版式贴合度/],
+  ['router required fields', /内容形状[\s\S]{0,160}主 proof object[\s\S]{0,160}版式为何服务/],
+].forEach(([label, pattern]) => {
+  if (!pattern.test(styleGap)) {
+    fail(`references/off-template-style-gap.md is missing ${label}.`);
   }
 });
 
@@ -352,6 +368,7 @@ const pipelinePhases = read('references/pipeline-phases.md');
   ['validate total>0 blocker', /total\s*>\s*0[\s\S]{0,120}(阻断|blocker|必须修复)/i],
   ['native grammar visual QA', /原生语法|Native Grammar/i],
   ['evidence ledger visual QA', /证据台账|Evidence Ledger/i],
+  ['content-layout fit phase gate', /内容-版式贴合度[\s\S]{0,260}(P1|P3|P6)/i],
 ].forEach(([label, pattern]) => {
   if (!pattern.test(pipelinePhases)) {
     fail(`references/pipeline-phases.md is missing ${label}.`);

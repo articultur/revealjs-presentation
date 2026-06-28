@@ -118,14 +118,17 @@
     .control-cover .terminal .term-bar {
       display: flex; gap: 0.4em; margin-bottom: 1em;
     }
-    .control-cover .terminal .term-bar span {
+    .control-cover .terminal .term-bar > span:not(.term-path) {
       width: 9px; height: 9px; border-radius: 50%; background: var(--c-fg-3);
+      flex: 0 0 9px;
     }
-    .control-cover .terminal .term-bar span:first-child { background: var(--c-alarm); }
-    .control-cover .terminal .term-bar span:nth-child(2) { background: var(--c-warn); }
-    .control-cover .terminal .term-bar span:nth-child(3) { background: var(--c-ok); }
+    .control-cover .terminal .term-bar > span:not(.term-path):first-child { background: var(--c-alarm); }
+    .control-cover .terminal .term-bar > span:not(.term-path):nth-child(2) { background: var(--c-warn); }
+    .control-cover .terminal .term-bar > span:not(.term-path):nth-child(3) { background: var(--c-ok); }
     .control-cover .terminal .term-path {
       color: var(--c-fg-3); margin-left: auto; font-size: 0.85em;
+      width: auto; height: auto; white-space: nowrap;
+      word-break: normal; overflow-wrap: normal;
     }
     .control-cover .terminal .line { display: block; }
     .control-cover .terminal .prompt { color: var(--c-accent); }

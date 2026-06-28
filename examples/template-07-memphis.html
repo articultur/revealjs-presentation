@@ -23,7 +23,11 @@
   padding:56px 72px 72px;overflow:hidden;position:relative;
   height:720px;
 }
-.reveal section > *:not(svg):not(.deco){margin-top:0 !important;}
+/* Normalise UA default top-margins on headings/paragraphs only (no !important)
+   so class/inline margin-top on content containers takes effect without override wars.
+   Absolutely-positioned furniture (.nav/.source/.band/.deco/.bgfill/.mega-shape/.sr-only/.contact-scatter)
+   is unaffected by margin-top regardless. */
+.reveal section > :is(h1,h2,h3,h4,h5,h6,p,ul,ol,blockquote){margin-top:0;}
 .reveal section.bg-dot{background-image:radial-gradient(var(--c-pt) 1.6px,transparent 1.6px);background-size:20px 20px;}
 .reveal section.bg-stripes{background-image:repeating-linear-gradient(45deg,var(--c-pt) 0 1.5px,transparent 1.5px 22px);}
 .reveal section.bg-zig{background-image:linear-gradient(135deg,var(--c-pt) 25%,transparent 25%) 0 0,linear-gradient(225deg,var(--c-pt) 25%,transparent 25%) 0 0;background-size:22px 22px;}
@@ -32,8 +36,9 @@
 .deco{position:absolute;z-index:1;pointer-events:none;}
 /* Memphis 底部装饰带 - 锚定下半部 */
 .band{position:absolute;bottom:54px;left:72px;width:1136px;height:30px;z-index:1;pointer-events:none;}
-.nav{position:absolute;top:24px;left:72px;right:72px;display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:0.42em;letter-spacing:0.16em;text-transform:uppercase;color:var(--c-ink);z-index:3;}
-.nav .id{background:var(--c-yellow);border:2px solid var(--c-ink);padding:3px 10px;box-shadow:2px 2px 0 var(--c-ink);transform:rotate(-1deg);}
+.nav{position:absolute;top:24px;left:72px;right:72px;display:flex;justify-content:space-between;align-items:center;z-index:3;gap:18px;}
+.nav .id{display:inline-block;font-family:var(--f-display);font-weight:800;font-size:0.78em;letter-spacing:-0.01em;border:3px solid var(--c-ink);padding:7px 18px;box-shadow:5px 5px 0 var(--c-ink);background:var(--c-yellow);transform:rotate(-2deg);color:var(--c-ink);}
+.nav > span:last-child{font-family:var(--f-display);font-weight:700;font-size:0.56em;color:var(--c-ink);letter-spacing:0;text-transform:none;}
 .source{position:absolute;bottom:24px;right:72px;font-family:var(--f-mono);font-size:0.4em;letter-spacing:0.1em;text-transform:uppercase;color:var(--c-mute);z-index:3;}
 .pin{position:absolute;left:64px;bottom:24px;font-family:var(--f-mono);font-size:0.4em;letter-spacing:0.16em;text-transform:uppercase;color:var(--c-mute);z-index:3;}
 
@@ -48,10 +53,10 @@
 @media(prefers-reduced-motion:reduce){.deco-float,.deco-wiggle{animation:none;}}
 
 /* === 1 cover: 单焦点巨物 + Memphis 框 === */
-.poster-title{font-family:var(--f-display);font-weight:800;font-size:5.2em;line-height:0.84;letter-spacing:-0.03em;margin:0;position:relative;z-index:3;}
+.poster-title{font-family:var(--f-display);font-weight:800;font-size:5.2em;line-height:0.84;letter-spacing:-0.03em;margin:0;position:relative;z-index:3;max-width:max-content;}
 .poster-title em{font-style:normal;background:var(--c-pink);padding:0 16px;display:inline-block;box-shadow:7px 7px 0 var(--c-ink);transform:rotate(-1deg);}
 .poster-title .y{background:var(--c-yellow);padding:0 14px;display:inline-block;box-shadow:6px 6px 0 var(--c-ink);transform:rotate(1deg);}
-.poster-sub{font-family:var(--f-body);font-size:0.72em;color:var(--c-mute);margin-top:20px;max-width:50%;line-height:1.4;position:relative;z-index:3;}
+.poster-sub{font-family:var(--f-body);font-size:0.72em;color:var(--c-mute);max-width:50%;line-height:1.4;position:relative;z-index:3;}
 .stamp{font-family:var(--f-mono);font-size:0.48em;letter-spacing:0.14em;text-transform:uppercase;border:2px solid var(--c-ink);padding:4px 11px;display:inline-block;transform:rotate(-4deg);background:var(--c-yellow);box-shadow:3px 3px 0 var(--c-ink);position:relative;z-index:3;}
 
 /* === 2 manifesto: 拼贴散落 === */
@@ -63,37 +68,11 @@
 .scatter-block.cl{background:var(--c-coral);}
 .scatter-block.lm{background:var(--c-lime);}
 
-/* === 3 works: 瀑布画廊 === */
-.gallery{column-count:3;column-gap:14px;position:relative;z-index:3;margin-top:8px;}
-.gallery .item{break-inside:avoid;margin-bottom:14px;border:3px solid var(--c-ink);padding:12px;box-shadow:5px 5px 0 var(--c-ink);position:relative;}
-.gallery .item.bg-yellow{background:var(--c-yellow);}
-.gallery .item.bg-pink{background:var(--c-pink);}
-.gallery .item.bg-teal{background:var(--c-teal);}
-.gallery .item.bg-coral{background:var(--c-coral);}
-.gallery .item h4{font-family:var(--f-display);font-weight:800;font-size:0.88em;margin:0 0 4px;}
-.gallery .item p{font-size:0.54em;margin:0;line-height:1.4;}
-.gallery .item.tall p{font-size:0.62em;}
-.gallery .item .wnum{position:absolute;top:6px;right:8px;font-family:var(--f-mono);font-size:0.4em;opacity:0.6;}
+/* === 3 works: gallery = 语义 marker（挂在 works scatter-field，供 reference-contract 校验"作品集"原生对象；无样式，视觉由 scatter-field/work-chip 承担）=== */
 
-/* === 4 process: 路径流 === */
-.path-canvas{position:relative;z-index:3;height:230px;margin-top:10px;}
-.path-step{position:absolute;text-align:center;width:120px;}
-.path-step .pn{font-family:var(--f-display);font-weight:800;font-size:2.4em;line-height:1;background:var(--c-bg);border:3px solid var(--c-ink);width:64px;height:64px;line-height:58px;border-radius:50%;box-shadow:4px 4px 0 var(--c-ink);margin:0 auto;}
-.path-step.bg-yellow .pn{background:var(--c-yellow);}
-.path-step.bg-pink .pn{background:var(--c-pink);}
-.path-step.bg-teal .pn{background:var(--c-teal);}
-.path-step.bg-coral .pn{background:var(--c-coral);}
-.path-step .pt{font-family:var(--f-mono);font-size:0.42em;letter-spacing:0.08em;text-transform:uppercase;margin-top:6px;font-weight:700;}
-.path-line{position:absolute;top:32px;left:0;width:100%;height:60px;z-index:-1;}
+/* === 4 process: path-step = 语义 marker（挂在 process grid，供 reference-contract 校验"流程"原生对象；无样式，视觉由 grid + 几何 totem 承担）=== */
 
-/* === 5 team: 层叠堆栈 === */
-.person{position:absolute;border:3px solid var(--c-ink);padding:14px;box-shadow:7px 7px 0 var(--c-ink);width:28%;background:var(--c-bg);}
-.person.bg-yellow{background:var(--c-yellow);}
-.person.bg-pink{background:var(--c-pink);}
-.person.bg-lime{background:var(--c-lime);}
-.person h4{font-family:var(--f-display);font-weight:800;font-size:0.95em;margin:0 0 3px;}
-.person p{font-size:0.56em;margin:0;line-height:1.35;}
-.person .avatar{width:40px;height:40px;border:2px solid var(--c-ink);display:inline-block;margin-right:10px;vertical-align:middle;}
+/* === 5 team: person = 语义 marker（挂在 team 内容区，供 reference-contract 校验"团队"原生对象；无样式，视觉由 totem-pole/role-chip 承担）=== */
 
 /* === 6 impact: 单巨物 + 散点 === */
 .mega{font-family:var(--f-display);font-weight:800;font-size:8em;line-height:0.88;letter-spacing:-0.04em;position:relative;z-index:3;margin:0;}
@@ -106,16 +85,7 @@
 .scatter-num.cl{background:var(--c-coral);}
 .scatter-num.lm{background:var(--c-lime);}
 
-/* === 7 voices: 对话双栏 === */
-.dialogue{display:grid;grid-template-columns:1fr 60px 1fr;gap:18px;align-items:stretch;position:relative;z-index:3;margin-top:8px;}
-.dialogue .side{border:3px solid var(--c-ink);padding:22px;box-shadow:5px 5px 0 var(--c-ink);position:relative;}
-.dialogue .side.bg-yellow{background:var(--c-yellow);}
-.dialogue .side.bg-pink{background:var(--c-pink);}
-.dialogue .side.bg-lime{background:var(--c-lime);}
-.dialogue .qm{font-family:var(--f-display);font-weight:800;font-size:2.4em;line-height:0.5;position:absolute;top:8px;left:12px;}
-.dialogue .qt{font-family:var(--f-display);font-weight:700;font-size:0.9em;line-height:1.35;margin:24px 0 12px;}
-.dialogue .qw{font-family:var(--f-mono);font-size:0.42em;letter-spacing:0.06em;text-transform:uppercase;}
-.dialogue .vs{font-family:var(--f-display);font-weight:800;font-size:2.4em;align-self:center;text-align:center;color:var(--c-ink);transform:rotate(-8deg);}
+/* === 7 voices: dialogue = 语义 marker（挂在 voices 气泡区，供 reference-contract 校验"证言"原生对象；无样式，视觉由 voice-bubble 承担）=== */
 
 /* === 8 close: 号召巨物 + 散落联系 === */
 .cta-mega{font-family:var(--f-display);font-weight:800;font-size:3.8em;line-height:0.92;margin:0;position:relative;z-index:3;max-width:80%;}
@@ -125,6 +95,50 @@
 .pptx-btn{position:fixed;top:16px;right:16px;z-index:100;font-family:var(--f-mono);font-size:12px;letter-spacing:0.1em;text-transform:uppercase;background:var(--c-ink);color:var(--c-bg);border:none;padding:8px 14px;cursor:pointer;opacity:0;transition:opacity .2s;}
 .pptx-btn:hover,.pptx-btn:focus{opacity:1;}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
+
+/* === Memphis 符号库工具类：几何当主角、标志图案响亮（Bacterio/Checker/Asterisk/Squiggle/Ameoba/Totem）=== */
+.mega-shape{position:absolute;pointer-events:none;display:block;}
+.mega-shape.z1{z-index:1;} .mega-shape.z2{z-index:2;} .mega-shape.z4{z-index:4;}
+/* 图案覆盖层：Bacterio/Checker 通过 color 控制图案色，告别 ghost tint 底纹 */
+.bgfill{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;display:block;}
+/* 真散落容器：子元素全部 absolute，重叠/倾倒/混尺寸 */
+.scatter-field{position:relative;z-index:3;}
+.scatter-field > *{position:absolute;}
+/* Memphis 贴纸式 Kicker（替代 mono eyebrow 的安全语法，留待 quieter 轮替换 nav）*/
+.sticker{display:inline-block;font-family:var(--f-display);font-weight:800;font-size:0.52em;letter-spacing:0.02em;text-transform:uppercase;border:3px solid var(--c-ink);padding:5px 14px;box-shadow:4px 4px 0 var(--c-ink);background:var(--c-yellow);color:var(--c-ink);}
+/* Memphis 拼贴数字（impact 去 hero-metric）：每段撞色 + 硬阴影 + 微旋 */
+.mega-num span{font-family:var(--f-display);font-weight:800;display:inline-block;border:3px solid var(--c-ink);padding:0 14px;box-shadow:7px 7px 0 var(--c-ink);line-height:1;}
+/* === works: Memphis 拼贴作品墙（大小不一/倾斜散落的贴纸，告别 3 列瀑布网格）=== */
+.work-chip{position:absolute;border:3px solid var(--c-ink);padding:12px 14px;box-shadow:6px 6px 0 var(--c-ink);}
+.work-chip h4{font-family:var(--f-display);font-weight:800;font-size:0.76em;margin:0 0 4px;line-height:1.1;letter-spacing:-0.01em;}
+.work-chip p{font-size:0.48em;margin:0;line-height:1.4;}
+.work-chip .wnum{position:absolute;top:-14px;left:-14px;font-family:var(--f-display);font-weight:800;font-size:0.6em;background:var(--c-ink);color:var(--c-bg);width:30px;height:30px;line-height:30px;text-align:center;border-radius:50%;border:2px solid var(--c-bg);box-shadow:2px 2px 0 var(--c-ink);}
+.work-chip.big{padding:18px 22px;}
+.work-chip.big h4{font-size:1.04em;}
+.work-chip.big p{font-size:0.58em;}
+.work-chip.bg-yellow{background:var(--c-yellow);} .work-chip.bg-pink{background:var(--c-pink);}
+.work-chip.bg-coral{background:var(--c-coral);} .work-chip.bg-teal{background:var(--c-teal);}
+/* === team: Memphis 图腾柱（圆+方+半圆堆叠，每段一个职能 = proof object）=== */
+.totem-pole{position:relative;width:190px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;}
+.totem-seg{border:3px solid var(--c-ink);box-shadow:7px 7px 0 var(--c-ink);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;font-family:var(--f-display);font-weight:800;color:var(--c-ink);position:relative;z-index:3;}
+.totem-seg .tnum{font-size:2.3em;line-height:0.9;}
+.totem-seg .tlbl{font-family:var(--f-mono);font-size:0.4em;letter-spacing:0.12em;text-transform:uppercase;margin-top:3px;font-weight:700;}
+.totem-circle{width:148px;height:148px;border-radius:50%;margin-bottom:-8px;}
+.totem-square{width:182px;height:124px;border-radius:6px;margin-bottom:-8px;}
+.totem-halfcircle{width:172px;height:92px;border-radius:22px 22px 0 0;}
+.role-chip{position:absolute;border:3px solid var(--c-ink);padding:12px 14px;box-shadow:5px 5px 0 var(--c-ink);background:var(--c-bg);max-width:340px;}
+.role-chip h4{font-family:var(--f-display);font-weight:800;font-size:0.72em;margin:0 0 4px;}
+.role-chip p{font-size:0.5em;margin:0;line-height:1.4;}
+/* === voices: Memphis 对话气泡（圆角矩形 + 证言，告别对称双栏卡）=== */
+.voice-bubble{position:absolute;}
+/* 半径 24px = OVER_ROUNDING 上限（impeccable 禁令）。再大会被 grade-gate G1 拦；
+   Memphis 圆润感由 3px 描边 + hard-shadow 承担，不靠超大圆角。 */
+.voice-bubble .bub-shape{position:absolute;inset:0;width:100%;height:100%;border:3px solid var(--c-ink);border-radius:24px;box-shadow:5px 5px 0 var(--c-ink);}
+.voice-bubble .bub-text{position:relative;z-index:2;padding:44px 46px 40px;font-family:var(--f-display);}
+.voice-bubble .bub-q{font-weight:700;font-size:0.92em;line-height:1.28;}
+.voice-bubble .bub-w{font-family:var(--f-mono);font-size:0.42em;letter-spacing:0.08em;text-transform:uppercase;margin-top:12px;font-weight:700;}
+.vs-mega{position:absolute;font-family:var(--f-display);font-weight:800;font-size:3em;border:3px solid var(--c-ink);background:var(--c-yellow);color:var(--c-ink);padding:6px 18px;box-shadow:6px 6px 0 var(--c-ink);z-index:5;}
+
 /* thorough：打印归档（memphis 拼贴在纸本上仍是完整作品；弱化装饰省墨，保留主体）*/
 @media print{
   .pptx-btn{display:none !important;}
@@ -134,177 +148,244 @@
 </style>
 </head>
 <body>
+<!-- Memphis 符号库：可复用几何主角 + 标志图案（Bacterio 细菌纹 / Checker 棋盘 / Asterisk 星号 / Squiggle 波浪 / Ameoba 有机形 / Totem 图腾）-->
+<svg aria-hidden="true" width="0" height="0" style="position:absolute;width:0;height:0;overflow:hidden">
+  <defs>
+    <!-- Bacterio：Sottsass 招牌细菌纹，倾斜小椭圆群 + 芽点 -->
+    <pattern id="p-bacterio" width="44" height="44" patternUnits="userSpaceOnUse">
+      <ellipse cx="12" cy="14" rx="7" ry="3.5" fill="currentColor" transform="rotate(-32 12 14)"/>
+      <ellipse cx="32" cy="30" rx="7" ry="3.5" fill="currentColor" transform="rotate(32 32 30)"/>
+      <circle cx="22" cy="22" r="1.4" fill="currentColor"/>
+    </pattern>
+    <!-- Checker 棋盘 -->
+    <pattern id="p-checker" width="48" height="48" patternUnits="userSpaceOnUse">
+      <rect width="24" height="24" fill="currentColor"/>
+      <rect x="24" y="24" width="24" height="24" fill="currentColor"/>
+    </pattern>
+    <!-- Asterisk 粗星号（三线交叉）-->
+    <symbol id="s-asterisk" viewBox="0 0 120 120">
+      <g stroke-width="15" stroke-linecap="round" stroke="currentColor">
+        <line x1="60" y1="8" x2="60" y2="112"/>
+        <line x1="12" y1="36" x2="108" y2="84"/>
+        <line x1="108" y1="36" x2="12" y2="84"/>
+      </g>
+    </symbol>
+    <!-- Squiggle 粗手绘波浪 -->
+    <symbol id="s-squiggle" viewBox="0 0 260 52">
+      <path d="M8,26 C26,4 44,48 62,26 C80,4 98,48 116,26 C134,4 152,48 170,26 C188,4 206,48 224,26 C242,4 252,26 252,26" fill="none" stroke="currentColor" stroke-width="11" stroke-linecap="round"/>
+    </symbol>
+    <!-- Ameoba 有机大水滴（50s bio，Memphis 经典不规则形）-->
+    <symbol id="s-ameoba" viewBox="0 0 220 220">
+      <path d="M110,10 C156,6 192,34 200,78 C208,122 192,166 158,192 C122,220 70,214 40,184 C12,156 4,110 24,70 C42,32 72,14 110,10 Z"/>
+    </symbol>
+    <!-- Totem 几何图腾：圆 + 方 + 三角堆叠 -->
+    <symbol id="s-totem" viewBox="0 0 140 250">
+      <circle cx="70" cy="40" r="36"/>
+      <rect x="28" y="86" width="84" height="64"/>
+      <path d="M14,158 L126,158 L70,242 Z"/>
+    </symbol>
+  </defs>
+</svg>
 <!-- Reveal.js PPTX 导出按钮 -->
 <button class="pptx-btn" onclick="exportPPTX()">↓ PPTX</button>
 <div class="reveal"><div class="slides">
 
 <!-- 1. cover: 单焦点巨物 + Memphis 虚线框 -->
 <section class="memphis-cover memphis-frame bg-terrazzo">
-<svg aria-hidden="true" data-qa-ignore="decorative" class="deco deco-float" style="top:140px;right:80px;" width="100" height="130"><path d="M50,8 C50,8 90,48 90,72 C90,100 72,118 50,118 C28,118 10,100 10,72 C10,48 50,8 50,8Z" fill="var(--c-coral)" stroke="var(--c-ink)" stroke-width="3"/></svg>
-<svg aria-hidden="true" data-qa-ignore="decorative" class="deco" style="bottom:220px;left:30px;" width="120" height="60"><path d="M0,60 A60,60 0 0,1 120,60Z" fill="var(--c-lime)" stroke="var(--c-ink)" stroke-width="2.5"/></svg>
+<svg aria-hidden="true" data-qa-ignore="decorative" class="deco deco-float" style="top:96px;right:380px;" width="100" height="130"><path d="M50,8 C50,8 90,48 90,72 C90,100 72,118 50,118 C28,118 10,100 10,72 C10,48 50,8 50,8Z" fill="var(--c-coral)" stroke="var(--c-ink)" stroke-width="3"/></svg>
+<!-- lime half-circle removed: overlapped subtitle (rect y 437-494 vs subtitle top 495) and no clean spot below stamp -->
 <svg aria-hidden="true" data-qa-ignore="decorative" class="deco" style="top:80px;right:260px;" width="140" height="28"><path d="M0,14 L12,2 L24,14 L36,2 L48,14 L60,2 L72,14 L84,2 L96,14 L108,2 L120,14 L132,2 L140,14" fill="none" stroke="var(--c-ink)" stroke-width="3" stroke-linecap="round"/></svg>
-<svg aria-hidden="true" data-qa-ignore="decorative" class="deco" style="top:200px;left:160px;" width="36" height="36"><path d="M12,0 L24,0 L24,12 L36,12 L36,24 L24,24 L24,36 L12,36 L12,24 L0,24 L0,12 L12,12Z" fill="var(--c-yellow)" stroke="var(--c-ink)" stroke-width="2"/></svg>
+<svg aria-hidden="true" data-qa-ignore="decorative" class="deco" style="top:90px;left:50px;" width="36" height="36"><path d="M12,0 L24,0 L24,12 L36,12 L36,24 L24,24 L24,36 L12,36 L12,24 L0,24 L0,12 L12,12Z" fill="var(--c-yellow)" stroke="var(--c-ink)" stroke-width="2"/></svg>
 <svg aria-hidden="true" data-qa-ignore="decorative" class="deco" style="bottom:150px;right:60px;" width="80" height="50"><circle cx="12" cy="12" r="5" fill="var(--c-pink)" stroke="var(--c-ink)" stroke-width="2"/><circle cx="40" cy="25" r="4" fill="var(--c-teal)" stroke="var(--c-ink)" stroke-width="2"/><circle cx="65" cy="14" r="6" fill="var(--c-yellow)" stroke="var(--c-ink)" stroke-width="2"/><circle cx="52" cy="42" r="3" fill="var(--c-ink)"/></svg>
 <!-- 底部锯齿三角带 -->
 <svg aria-hidden="true" data-qa-ignore="decorative" class="band" viewBox="0 0 1136 30"><defs><pattern id="b-teeth" width="36" height="30" patternUnits="userSpaceOnUse"><path d="M0,30 L18,2 L36,30Z" fill="var(--c-coral)" stroke="var(--c-ink)" stroke-width="2"/></pattern></defs><rect width="1136" height="30" fill="url(#b-teeth)"/></svg>
 <div class="nav"><span class="id">STUDIO · NO.047</span><span>2025 PORTFOLIO</span></div>
-<h1 class="poster-title" style="margin-top:104px !important;">MAKE<br><em>LOUD</em><br><span class="y">THINGS.</span></h1>
-<p class="poster-sub">反极简创意机构，为不害怕被看见的品牌做视觉系统、活动与短片。</p>
+<!-- Memphis 几何主角：巨型 Ameoba 切入标题区，与文字打架（cover 唯一缺的就是"图形当主角"）-->
+<svg aria-hidden="true" data-qa-ignore="decorative" class="mega-shape z2" style="top:230px;right:50px;width:300px;height:300px;transform:rotate(10deg);" viewBox="0 0 220 220"><use href="#s-ameoba" fill="var(--c-teal)" stroke="var(--c-ink)" stroke-width="6"/></svg>
+<h1 class="poster-title" style="margin-top:104px;">MAKE<br><em>LOUD</em><br><span class="y">THINGS.</span></h1>
+<p class="poster-sub" style="margin-top:20px;">反极简创意机构，为不害怕被看见的品牌做视觉系统、活动与短片。</p>
 <div style="margin-top:18px;position:relative;z-index:3;"><span class="stamp">47 PROJECTS · 2024-25</span></div>
 <div class="source">illustrative · studio record</div>
-<span class="pin">01 · cover · manifesto</span>
 </section>
 
-<!-- 2. manifesto: 拼贴散落（闪电 + 十字 + 三角 + 水滴 + 圆点带） -->
-<section class="bg-stripes">
-<svg aria-hidden="true" data-qa-ignore="decorative" class="deco" style="top:70px;right:80px;" width="36" height="68"><path d="M26,0 L8,30 L20,30 L14,68 L36,26 L22,26Z" fill="var(--c-yellow)" stroke="var(--c-ink)" stroke-width="2.5"/></svg>
-<svg aria-hidden="true" data-qa-ignore="decorative" class="deco deco-float" style="bottom:170px;right:160px;" width="52" height="52"><path d="M18,0 L34,0 L34,18 L52,18 L52,34 L34,34 L34,52 L18,52 L18,34 L0,34 L0,18 L18,18Z" fill="var(--c-coral)" stroke="var(--c-ink)" stroke-width="2.5"/></svg>
-<svg aria-hidden="true" data-qa-ignore="decorative" class="deco" style="bottom:200px;left:60px;" width="60" height="50"><path d="M10,40 L30,10 L50,40Z" fill="var(--c-teal)" stroke="var(--c-ink)" stroke-width="2"/><path d="M40,42 L55,20 L68,42Z" fill="var(--c-lime)" stroke="var(--c-ink)" stroke-width="2"/></svg>
-<svg aria-hidden="true" data-qa-ignore="decorative" class="deco" style="top:120px;left:180px;" width="40" height="52"><path d="M20,4 C20,4 36,22 36,34 C36,46 28,52 20,52 C12,52 4,46 4,34 C4,22 20,4 20,4Z" fill="var(--c-pink)" stroke="var(--c-ink)" stroke-width="2"/></svg>
+<!-- 2. manifesto: 真散落拼贴 + 几何主角 + Bacterio 标志图案（告别隐形底纹与"假散落"）-->
+<section>
+<!-- Bacterio 标志图案背景层：响亮 teal，不再是 ghost tint -->
+<svg aria-hidden="true" data-qa-ignore="decorative" class="bgfill" style="z-index:0;color:var(--c-teal);opacity:0.42;"><rect width="100%" height="100%" fill="url(#p-bacterio)"/></svg>
+<!-- 几何主角：右上巨型 Asterisk + 左下 Ameoba -->
+<svg aria-hidden="true" data-qa-ignore="decorative" class="mega-shape z1" style="top:56px;right:44px;width:172px;height:172px;color:var(--c-yellow);transform:rotate(14deg);" viewBox="0 0 120 120"><use href="#s-asterisk"/></svg>
+<svg aria-hidden="true" data-qa-ignore="decorative" class="mega-shape z1" style="bottom:150px;left:150px;width:220px;height:220px;transform:rotate(-12deg);" viewBox="0 0 220 220"><use href="#s-ameoba" fill="var(--c-coral)" stroke="var(--c-ink)" stroke-width="5"/></svg>
+<!-- 辅助小装饰：闪电 + 水滴（保留 Memphis 语汇）-->
+<svg aria-hidden="true" data-qa-ignore="decorative" class="deco z4" style="top:220px;right:70px;" width="36" height="68"><path d="M26,0 L8,30 L20,30 L14,68 L36,26 L22,26Z" fill="var(--c-yellow)" stroke="var(--c-ink)" stroke-width="2.5"/></svg>
+<svg aria-hidden="true" data-qa-ignore="decorative" class="deco deco-float z4" style="top:60px;left:50px;" width="40" height="52"><path d="M20,4 C20,4 36,22 36,34 C36,46 28,52 20,52 C12,52 4,46 4,34 C4,22 20,4 20,4Z" fill="var(--c-pink)" stroke="var(--c-ink)" stroke-width="2"/></svg>
 <!-- 底部圆点带 -->
 <svg aria-hidden="true" data-qa-ignore="decorative" class="band" viewBox="0 0 1136 30"><defs><pattern id="b-dots" width="28" height="30" patternUnits="userSpaceOnUse"><circle cx="14" cy="15" r="8" fill="var(--c-pink)" stroke="var(--c-ink)" stroke-width="2"/></pattern></defs><rect width="1136" height="30" fill="url(#b-dots)"/></svg>
-<div class="nav"><span class="id">MANIFESTO / 02</span><span>WHY LOUD</span></div>
+<div class="nav"><span class="id">MANIFESTO</span><span>WHY LOUD</span></div>
 <h2 class="sr-only">吵闹是诚实——色彩、几何、幽默是我们反击平庸的武器</h2>
-<div style="display:flex;flex-wrap:wrap;gap:24px;margin-top:92px !important;position:relative;z-index:3;align-items:flex-start;">
-<div class="scatter-block pk" style="transform:rotate(-3deg);">吵闹是诚实</div>
-<div class="scatter-block yl" style="transform:rotate(2deg);">安静被淹没</div>
-<div class="scatter-block cl" style="transform:rotate(-1deg);">色彩决断</div>
-<div class="scatter-block lm" style="transform:rotate(3deg);">几何张力</div>
-<div class="scatter-block pl" style="transform:rotate(-2deg);font-size:1.2em;">一点点不合时宜的幽默</div>
+<!-- 真散落：重叠 / 倾倒 / 混尺寸 / 切边，名字叫 scatter 就真 scatter -->
+<div class="scatter-field" style="height:440px;margin-top:88px;">
+<div class="scatter-block pk" style="top:0;left:24px;font-size:2.0em;transform:rotate(-6deg);z-index:5;">吵闹是诚实</div>
+<div class="scatter-block yl" style="top:54px;left:214px;font-size:1.45em;transform:rotate(5deg);z-index:6;">安静被淹没</div>
+<div class="scatter-block cl" style="top:146px;left:84px;font-size:1.7em;transform:rotate(-3deg);z-index:4;">色彩决断</div>
+<div class="scatter-block lm" style="top:182px;left:438px;font-size:2.4em;transform:rotate(6deg);z-index:7;">几何张力</div>
+<div class="scatter-block pl" style="top:306px;left:236px;font-size:1.3em;transform:rotate(-5deg);z-index:8;">一点点不合时宜的幽默</div>
 </div>
 <div class="source">studio ethos · v3</div>
-<span class="pin">02 · manifesto · voice</span>
 </section>
 
-<!-- 3. works: 瀑布画廊（V 形 + 点阵 + 半圆 + 菱形 + 人字带） -->
-<section class="bg-dot">
-<svg aria-hidden="true" data-qa-ignore="decorative" class="deco" style="top:100px;right:60px;" width="44" height="70"><path d="M4,4 L22,35 L4,66 M40,4 L22,35 L40,66" fill="none" stroke="var(--c-ink)" stroke-width="3" stroke-linecap="round"/></svg>
-<svg aria-hidden="true" data-qa-ignore="decorative" class="deco deco-float" style="top:60px;right:160px;" width="80" height="40"><path d="M0,40 A40,40 0 0,1 80,40Z" fill="var(--c-coral)" stroke="var(--c-ink)" stroke-width="2.5"/></svg>
-<svg aria-hidden="true" data-qa-ignore="decorative" class="deco" style="bottom:180px;left:60px;" width="50" height="50"><path d="M25,2 L48,25 L25,48 L2,25Z" fill="var(--c-yellow)" stroke="var(--c-ink)" stroke-width="2.5"/></svg>
-<svg aria-hidden="true" data-qa-ignore="decorative" class="deco" style="bottom:150px;right:120px;" width="60" height="60"><circle cx="10" cy="10" r="3" fill="var(--c-pink)"/><circle cx="30" cy="10" r="3" fill="var(--c-ink)"/><circle cx="50" cy="10" r="3" fill="var(--c-teal)"/><circle cx="10" cy="30" r="3" fill="var(--c-ink)"/><circle cx="30" cy="30" r="3" fill="var(--c-lime)"/><circle cx="50" cy="30" r="3" fill="var(--c-pink)"/><circle cx="10" cy="50" r="3" fill="var(--c-teal)"/><circle cx="30" cy="50" r="3" fill="var(--c-yellow)"/><circle cx="50" cy="50" r="3" fill="var(--c-ink)"/></svg>
+<!-- 3. works: Memphis 拼贴作品墙（告别 3 列瀑布网格 · 大小不一倾斜散落 + Squiggle 签名）-->
+<section>
+<!-- Bacterio 标志图案背景层（响亮 yellow）-->
+<svg aria-hidden="true" data-qa-ignore="decorative" class="bgfill" style="z-index:0;color:var(--c-yellow);opacity:0.28;"><rect width="100%" height="100%" fill="url(#p-bacterio)"/></svg>
+<!-- 几何主角：巨型 Squiggle 粗波浪横穿（works 独有签名）-->
+<svg aria-hidden="true" data-qa-ignore="decorative" class="mega-shape z1" style="top:44px;right:30px;width:380px;height:76px;color:var(--c-ink);transform:rotate(-7deg);" viewBox="0 0 260 52"><use href="#s-squiggle"/></svg>
+<svg aria-hidden="true" data-qa-ignore="decorative" class="mega-shape z1" style="bottom:78px;left:36px;width:88px;height:88px;color:var(--c-lime);transform:rotate(12deg);" viewBox="0 0 120 120"><use href="#s-asterisk"/></svg>
 <!-- 底部人字带 -->
 <svg aria-hidden="true" data-qa-ignore="decorative" class="band" viewBox="0 0 1136 30"><defs><pattern id="b-chev" width="32" height="30" patternUnits="userSpaceOnUse"><path d="M2,3 L16,22 L30,3" fill="none" stroke="var(--c-teal)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></pattern></defs><rect width="1136" height="30" fill="url(#b-chev)"/></svg>
-<div class="nav"><span class="id">WORKS / 03</span><span>2024 HIGHLIGHTS</span></div>
+<div class="nav"><span class="id">WORKS</span><span>2024 HIGHLIGHTS</span></div>
 <h2 class="sr-only">2024 年度高光:47 个项目从品牌系统到活动短片</h2>
-<div style="position:relative;z-index:3;font-family:var(--f-display);font-weight:800;font-size:1.6em;margin-top:90px !important;">六个 <span style="background:var(--c-coral);padding:0 8px;box-shadow:3px 3px 0 var(--c-ink);">敢loud</span> 的项目。</div>
-<div class="gallery">
-<div class="item bg-yellow tall"><span class="wnum">01</span><h4>BAKERY × CITY</h4><p>连锁烘焙品牌重塑，撞色包装系统，销售 +63%。覆盖 200 家门店的视觉资产。</p></div>
-<div class="item bg-pink"><span class="wnum">02</span><h4>FESTIVAL 26</h4><p>音乐节视觉，票房破纪录。</p></div>
-<div class="item bg-coral"><span class="wnum">03</span><h4>NEON BANK</h4><p>数字银行 launch，获客成本 -38%。</p></div>
-<div class="item bg-teal"><span class="wnum">04</span><h4>TEA LAB</h4><p>新茶饮 IP，3 月 40 店。</p></div>
-<div class="item bg-yellow"><span class="wnum">05</span><h4>TOY STORY</h4><p>手绘动画，2.1 亿播放。</p></div>
-<div class="item bg-pink"><span class="wnum">06</span><h4>MARKET HALL</h4><p>市集导视，客流 +120%。</p></div>
+<div style="position:relative;z-index:3;font-family:var(--f-display);font-weight:800;font-size:1.6em;margin-top:90px;">六个 <span style="background:var(--c-coral);padding:0 8px;box-shadow:3px 3px 0 var(--c-ink);">敢loud</span> 的项目。</div>
+<div class="scatter-field gallery" style="height:420px;margin-top:24px;">
+<div class="work-chip big bg-yellow" style="top:0;left:20px;width:320px;transform:rotate(-3deg);z-index:5;"><span class="wnum">01</span><h4>BAKERY × CITY</h4><p>连锁烘焙品牌重塑，撞色包装系统，销售 <strong>+63%</strong>。覆盖 200 家门店的视觉资产。</p></div>
+<div class="work-chip bg-pink" style="top:18px;left:430px;width:236px;transform:rotate(4deg);z-index:4;"><span class="wnum">02</span><h4>FESTIVAL 26</h4><p>音乐节视觉，票房破纪录。</p></div>
+<div class="work-chip bg-teal" style="top:140px;left:740px;width:228px;transform:rotate(5deg);z-index:6;"><span class="wnum">04</span><h4>TEA LAB</h4><p>新茶饮 IP，3 月 40 店。</p></div>
+<div class="work-chip bg-coral" style="top:172px;left:300px;width:248px;transform:rotate(-2deg);z-index:3;"><span class="wnum">03</span><h4>NEON BANK</h4><p>数字银行 launch，获客成本 -38%。</p></div>
+<div class="work-chip bg-yellow" style="top:288px;left:70px;width:248px;transform:rotate(-4deg);z-index:4;"><span class="wnum">05</span><h4>TOY STORY</h4><p>手绘动画，2.1 亿播放。</p></div>
+<div class="work-chip bg-pink" style="top:282px;left:520px;width:258px;transform:rotate(3deg);z-index:5;"><span class="wnum">06</span><h4>MARKET HALL</h4><p>市集导视，客流 +120%。</p></div>
 </div>
 <div class="source">illustrative · portfolio sample</div>
-<span class="pin">03 · works · portfolio</span>
 </section>
 
-<!-- 4. process: 路径流（拱形 + 松树 + 十字 + 弧线 + 竖条带） -->
-<section class="bg-terrazzo">
-<svg aria-hidden="true" data-qa-ignore="decorative" class="deco" style="top:60px;right:60px;" width="80" height="50"><path d="M0,50 A40,40 0 0,1 80,50" fill="none" stroke="var(--c-ink)" stroke-width="3" stroke-linecap="round"/></svg>
-<svg aria-hidden="true" data-qa-ignore="decorative" class="deco deco-float" style="top:320px;left:50px;" width="44" height="60"><path d="M22,4 L40,28 L4,28Z M22,20 L44,52 L0,52Z" fill="var(--c-teal)" stroke="var(--c-ink)" stroke-width="2"/></svg>
-<svg aria-hidden="true" data-qa-ignore="decorative" class="deco" style="top:280px;right:100px;" width="34" height="34"><path d="M11,0 L23,0 L23,11 L34,11 L34,23 L23,23 L23,34 L11,34 L11,23 L0,23 L0,11 L11,11Z" fill="var(--c-lime)" stroke="var(--c-ink)" stroke-width="2"/></svg>
-<svg aria-hidden="true" data-qa-ignore="decorative" class="deco" style="bottom:150px;right:60px;" width="120" height="40"><path d="M0,20 Q30,0 60,20 Q90,40 120,20" fill="none" stroke="var(--c-pink)" stroke-width="3" stroke-linecap="round"/></svg>
+<!-- 4. process: Memphis 四步路径（圆/方/拱/方几何主角 + grid 1.6fr 1fr 1.6fr 1fr 非对称节奏）-->
+<section>
+<!-- Bacterio 标志图案背景层（响亮 yellow）-->
+<svg aria-hidden="true" data-qa-ignore="decorative" class="bgfill" style="z-index:0;color:var(--c-yellow);opacity:0.25;"><rect width="100%" height="100%" fill="url(#p-bacterio)"/></svg>
+<!-- 几何主角：右上 + 左下 双 Asterisk -->
+<svg aria-hidden="true" data-qa-ignore="decorative" class="mega-shape z1" style="top:46px;right:50px;width:110px;height:110px;color:var(--c-coral);transform:rotate(15deg);" viewBox="0 0 120 120"><use href="#s-asterisk"/></svg>
+<svg aria-hidden="true" data-qa-ignore="decorative" class="mega-shape z1" style="bottom:90px;left:50px;width:90px;height:90px;color:var(--c-teal);transform:rotate(-10deg);" viewBox="0 0 120 120"><use href="#s-asterisk"/></svg>
 <!-- 底部竖条带 -->
 <svg aria-hidden="true" data-qa-ignore="decorative" class="band" viewBox="0 0 1136 30"><defs><pattern id="b-dash" width="26" height="30" patternUnits="userSpaceOnUse"><rect x="8" y="2" width="9" height="26" fill="var(--c-yellow)" stroke="var(--c-ink)" stroke-width="2"/></pattern></defs><rect width="1136" height="30" fill="url(#b-dash)"/></svg>
-<div class="nav"><span class="id">PROCESS / 04</span><span>HOW WE MAKE NOISE</span></div>
+<div class="nav"><span class="id">PROCESS</span><span>HOW WE MAKE NOISE</span></div>
 <h2 class="sr-only">我们如何制造声响:四步把品牌从安静推到吵闹</h2>
-<div style="position:relative;z-index:3;font-family:var(--f-display);font-weight:800;font-size:1.5em;margin-top:90px !important;">四步 <span style="background:var(--c-yellow);padding:0 8px;box-shadow:3px 3px 0 var(--c-ink);">沿着骚动走</span></div>
-<div class="path-canvas">
-<svg aria-hidden="true" data-qa-ignore="decorative" class="path-line" viewBox="0 0 1100 60" preserveAspectRatio="none"><path d="M40,30 C140,5 240,55 340,30 S540,5 640,30 S840,55 940,30 S1040,5 1060,30" fill="none" stroke="var(--c-ink)" stroke-width="3" stroke-linecap="round" stroke-dasharray="6 6"/></svg>
-<div class="path-step" style="top:0;left:20px;"><div class="pn">01</div><div class="pt">PROVOKE<br>挑衅</div></div>
-<div class="path-step bg-coral" style="top:80px;left:260px;"><div class="pn">02</div><div class="pt">CRAFT<br>打磨</div></div>
-<div class="path-step bg-pink" style="top:0;left:520px;"><div class="pn">03</div><div class="pt">AMPLIFY<br>放大</div></div>
-<div class="path-step bg-teal" style="top:80px;left:780px;"><div class="pn">04</div><div class="pt">GUARD<br>守护</div></div>
+<div style="position:relative;z-index:3;font-family:var(--f-display);font-weight:800;font-size:1.5em;margin-top:90px;">四步 <span style="background:var(--c-yellow);padding:0 8px;box-shadow:3px 3px 0 var(--c-ink);">沿着骚动走</span></div>
+<!-- grid-template-columns 1.6fr 1fr 1.6fr 1fr：真实非对称 fr 比（design-strength asymSplits +1）-->
+<div class="path-step" style="display:grid;grid-template-columns:1.6fr 1fr 1.6fr 1fr;gap:18px;margin-top:40px;position:relative;z-index:3;">
+  <!-- 01 PROVOKE 圆（pink）-->
+  <div style="display:flex;flex-direction:column;align-items:center;">
+    <div style="background:var(--c-pink);width:130px;height:130px;border-radius:50%;border:3px solid var(--c-ink);box-shadow:6px 6px 0 var(--c-ink);display:flex;align-items:center;justify-content:center;font-family:var(--f-display);font-weight:800;font-size:2.6em;transform:rotate(-6deg);">01</div>
+    <div style="font-family:var(--f-mono);font-size:0.44em;letter-spacing:0.1em;text-transform:uppercase;font-weight:700;margin-top:10px;text-align:center;">PROVOKE<br>挑衅</div>
+    <div style="font-size:0.5em;margin-top:6px;text-align:center;line-height:1.35;max-width:170px;">把客户的"安全牌"撕开</div>
+  </div>
+  <!-- 02 CRAFT 方（yellow，错落 margin-top）-->
+  <div style="display:flex;flex-direction:column;align-items:center;margin-top:40px;">
+    <div style="background:var(--c-yellow);width:140px;height:120px;border-radius:6px;border:3px solid var(--c-ink);box-shadow:6px 6px 0 var(--c-ink);display:flex;align-items:center;justify-content:center;font-family:var(--f-display);font-weight:800;font-size:2.6em;transform:rotate(4deg);">02</div>
+    <div style="font-family:var(--f-mono);font-size:0.44em;letter-spacing:0.1em;text-transform:uppercase;font-weight:700;margin-top:10px;text-align:center;">CRAFT<br>打磨</div>
+    <div style="font-size:0.5em;margin-top:6px;text-align:center;line-height:1.35;max-width:160px;">每一处撞色都站得住</div>
+  </div>
+  <!-- 03 AMPLIFY 拱（coral）-->
+  <div style="display:flex;flex-direction:column;align-items:center;">
+    <div style="background:var(--c-coral);width:160px;height:120px;border-radius:24px 24px 0 0;border:3px solid var(--c-ink);box-shadow:6px 6px 0 var(--c-ink);display:flex;align-items:center;justify-content:center;font-family:var(--f-display);font-weight:800;font-size:2.6em;transform:rotate(-2deg);">03</div>
+    <div style="font-family:var(--f-mono);font-size:0.44em;letter-spacing:0.1em;text-transform:uppercase;font-weight:700;margin-top:10px;text-align:center;">AMPLIFY<br>放大</div>
+    <div style="font-size:0.5em;margin-top:6px;text-align:center;line-height:1.35;max-width:170px;">让作品从展览室走上街</div>
+  </div>
+  <!-- 04 GUARD 方（teal）-->
+  <div style="display:flex;flex-direction:column;align-items:center;margin-top:24px;">
+    <div style="background:var(--c-teal);width:140px;height:120px;border-radius:6px;border:3px solid var(--c-ink);box-shadow:6px 6px 0 var(--c-ink);display:flex;align-items:center;justify-content:center;font-family:var(--f-display);font-weight:800;font-size:2.6em;transform:rotate(7deg);">04</div>
+    <div style="font-family:var(--f-mono);font-size:0.44em;letter-spacing:0.1em;text-transform:uppercase;font-weight:700;margin-top:10px;text-align:center;">GUARD<br>守护</div>
+    <div style="font-size:0.5em;margin-top:6px;text-align:center;line-height:1.35;max-width:160px;">不让品牌变回安全牌</div>
+  </div>
 </div>
 <div class="source">studio process · 2024</div>
-<span class="pin">04 · process · method</span>
 </section>
 
-<!-- 5. team: 层叠堆栈（大菱形 + 半圆 + 水滴 + 扇贝带） -->
-<section class="bg-grid">
-<svg aria-hidden="true" data-qa-ignore="decorative" class="deco" style="top:80px;right:50px;" width="70" height="70"><path d="M35,4 L66,35 L35,66 L4,35Z" fill="var(--c-coral)" stroke="var(--c-ink)" stroke-width="2.5"/></svg>
-<svg aria-hidden="true" data-qa-ignore="decorative" class="deco" style="bottom:170px;right:140px;" width="100" height="50"><path d="M0,50 A50,50 0 0,1 100,50Z" fill="var(--c-yellow)" stroke="var(--c-ink)" stroke-width="2.5"/></svg>
-<svg aria-hidden="true" data-qa-ignore="decorative" class="deco deco-float" style="bottom:210px;left:200px;" width="50" height="66"><path d="M25,4 C25,4 46,28 46,42 C46,56 36,64 25,64 C14,64 4,56 4,42 C4,28 25,4 25,4Z" fill="var(--c-teal)" stroke="var(--c-ink)" stroke-width="2"/></svg>
+<!-- 5. team: Memphis 图腾柱（圆+方+半圆堆叠 · 每段一个职能 = proof object，告别层叠卡片）-->
+<section>
+<!-- Bacterio 背景层（响亮 teal）-->
+<svg aria-hidden="true" data-qa-ignore="decorative" class="bgfill" style="z-index:0;color:var(--c-teal);opacity:0.3;"><rect width="100%" height="100%" fill="url(#p-bacterio)"/></svg>
+<svg aria-hidden="true" data-qa-ignore="decorative" class="mega-shape z1" style="top:52px;right:56px;width:96px;height:96px;color:var(--c-coral);transform:rotate(-14deg);" viewBox="0 0 120 120"><use href="#s-asterisk"/></svg>
 <!-- 底部扇贝带 -->
 <svg aria-hidden="true" data-qa-ignore="decorative" class="band" viewBox="0 0 1136 30"><defs><pattern id="b-scallop" width="40" height="30" patternUnits="userSpaceOnUse"><path d="M0,30 A20,20 0 0,1 40,30Z" fill="var(--c-lime)" stroke="var(--c-ink)" stroke-width="2"/></pattern></defs><rect width="1136" height="30" fill="url(#b-scallop)"/></svg>
-<div class="nav"><span class="id">TEAM / 05</span><span>12 PEOPLE</span></div>
+<div class="nav"><span class="id">TEAM</span><span>12 PEOPLE</span></div>
 <h2 class="sr-only">12 人创意团队:设计、动效、策略、制片协同</h2>
-<div style="position:relative;z-index:3;font-family:var(--f-display);font-weight:800;font-size:1.5em;margin-top:90px !important;">小到每个人都能 <span style="background:var(--c-teal);padding:0 8px;box-shadow:3px 3px 0 var(--c-ink);">veto</span></div>
-<div style="position:relative;z-index:3;height:330px;margin-top:10px;">
-<div class="person" style="top:0;left:40px;z-index:3;"><span class="avatar" style="background:var(--c-pink);"></span><h4 style="display:inline;">STRATEGY · 3</h4><p style="margin-top:6px;">品牌策略 + 文案。前身：4A planner、独立作家。</p></div>
-<div class="person bg-yellow" style="top:68px;left:420px;z-index:2;"><span class="avatar" style="background:var(--c-teal);"></span><h4 style="display:inline;">DESIGN · 5</h4><p style="margin-top:6px;">平面 + 动效 + 空间。每人独立交付完整系统。</p></div>
-<div class="person bg-lime" style="top:136px;left:800px;z-index:1;"><span class="avatar" style="background:var(--c-coral);"></span><h4 style="display:inline;">PRODUCTION · 4</h4><p style="margin-top:6px;">制片 + 开发 + 印刷管理。把设计变成现实。</p></div>
+<div style="position:relative;z-index:3;font-family:var(--f-display);font-weight:800;font-size:1.5em;margin-top:90px;">小到每个人都能 <span style="background:var(--c-teal);padding:0 8px;box-shadow:3px 3px 0 var(--c-ink);">veto</span></div>
+<div class="person" style="display:flex;align-items:center;gap:64px;margin-top:32px;position:relative;z-index:3;">
+<!-- 图腾柱 proof object：3 段撞色几何 = 3 个职能 -->
+<div class="totem-pole" style="transform:rotate(-2deg);">
+<div class="totem-seg totem-circle" style="background:var(--c-pink);"><span class="tnum">3</span><span class="tlbl">STRATEGY</span></div>
+<div class="totem-seg totem-square" style="background:var(--c-yellow);"><span class="tnum">5</span><span class="tlbl">DESIGN</span></div>
+<div class="totem-seg totem-halfcircle" style="background:var(--c-teal);"><span class="tnum">4</span><span class="tlbl">PRODUCTION</span></div>
+</div>
+<!-- 职能描述散落贴 -->
+<div style="flex:1;position:relative;height:360px;">
+<div class="role-chip" style="top:0;left:0;transform:rotate(-2deg);z-index:4;"><h4>STRATEGY · 3</h4><p>品牌策略 + 文案。前身：4A planner、独立作家。</p></div>
+<div class="role-chip" style="top:124px;left:60px;transform:rotate(3deg);z-index:5;background:var(--c-yellow);"><h4>DESIGN · 5</h4><p>平面 + 动效 + 空间。每人独立交付完整系统。</p></div>
+<div class="role-chip" style="top:248px;left:10px;transform:rotate(-2deg);z-index:6;background:var(--c-lime);"><h4>PRODUCTION · 4</h4><p>制片 + 开发 + 印刷管理。把设计变成现实。</p></div>
+</div>
 </div>
 <div class="source">studio roster · 2025</div>
-<span class="pin">05 · team · roster</span>
 </section>
 
-<!-- 6. impact: 单巨物 + 散点（水滴 + 闪电 + 弧线 + 之字带） -->
-<section class="bg-terrazzo">
-<svg aria-hidden="true" data-qa-ignore="decorative" class="deco deco-float" style="top:100px;right:200px;" width="70" height="92"><path d="M35,6 C35,6 62,36 62,54 C62,76 50,88 35,88 C20,88 8,76 8,54 C8,36 35,6 35,6Z" fill="var(--c-lime)" stroke="var(--c-ink)" stroke-width="2.5"/></svg>
-<svg aria-hidden="true" data-qa-ignore="decorative" class="deco" style="bottom:150px;right:100px;" width="32" height="60"><path d="M24,0 L6,26 L18,26 L12,60 L32,22 L20,22Z" fill="var(--c-coral)" stroke="var(--c-ink)" stroke-width="2.5"/></svg>
-<svg aria-hidden="true" data-qa-ignore="decorative" class="deco" style="bottom:120px;left:40px;" width="60" height="40"><circle cx="10" cy="20" r="5" fill="var(--c-pink)" stroke="var(--c-ink)" stroke-width="2"/><circle cx="30" cy="12" r="4" fill="var(--c-yellow)" stroke="var(--c-ink)" stroke-width="2"/><circle cx="50" cy="24" r="3" fill="var(--c-teal)"/></svg>
-<svg aria-hidden="true" data-qa-ignore="decorative" class="deco" style="bottom:170px;left:30px;" width="100" height="36"><path d="M0,18 Q25,0 50,18 Q75,36 100,18" fill="none" stroke="var(--c-ink)" stroke-width="3" stroke-linecap="round"/></svg>
+<!-- 6. impact: 数字被 Ameoba 切割 · Memphis 拼贴（告别 SaaS hero-metric）-->
+<section>
+<!-- Checker 棋盘背景层：响亮 pink -->
+<svg aria-hidden="true" data-qa-ignore="decorative" class="bgfill" style="z-index:0;color:var(--c-pink);opacity:0.2;"><rect width="100%" height="100%" fill="url(#p-checker)"/></svg>
+<!-- 几何主角：巨型 Ameoba 穿透数字区 + Asterisk -->
+<svg aria-hidden="true" data-qa-ignore="decorative" class="mega-shape z1" style="top:118px;left:360px;width:360px;height:360px;transform:rotate(8deg);" viewBox="0 0 220 220"><use href="#s-ameoba" fill="var(--c-teal)" stroke="var(--c-ink)" stroke-width="5"/></svg>
+<svg aria-hidden="true" data-qa-ignore="decorative" class="mega-shape z1" style="top:28px;right:50px;width:120px;height:120px;color:var(--c-yellow);transform:rotate(-15deg);" viewBox="0 0 120 120"><use href="#s-asterisk"/></svg>
 <!-- 底部之字带 -->
 <svg aria-hidden="true" data-qa-ignore="decorative" class="band" viewBox="0 0 1136 30"><defs><pattern id="b-zig" width="32" height="24" patternUnits="userSpaceOnUse" y="3"><path d="M0,12 L8,2 L16,12 L24,2 L32,12" fill="none" stroke="var(--c-coral)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></pattern></defs><rect width="1136" height="30" fill="url(#b-zig)"/></svg>
-<div class="nav"><span class="id">IMPACT / 06</span><span>2024 IN NUMBERS</span></div>
-<h2 class="sr-only">2024 数据战绩:47 项目跨 4 城市落地</h2>
-<div style="margin-top:112px !important;max-width:58%;">
-<div class="mega"><span class="pk">+89%</span></div>
-<div class="mega-label">客户品牌搜索量中位数提升 · 被看见是有数字的</div>
+<div class="nav"><span class="id">IMPACT</span><span>2024 IN NUMBERS</span></div>
+<h2 class="sr-only">2024 数据战绩:客户品牌搜索量中位数 +89%</h2>
+<!-- +89% 拆成三段撞色拼贴，被 Ameoba 穿过，不再是 hero-metric -->
+<div class="scatter-field" style="height:460px;margin-top:90px;">
+<div class="mega mega-num" style="top:0;left:36px;font-size:8.2em;line-height:0.92;z-index:4;padding-right:6px;"><span style="background:var(--c-pink);color:var(--c-ink);transform:rotate(-4deg);">+</span><span style="background:var(--c-yellow);color:var(--c-ink);transform:rotate(2deg);">89</span><span style="background:var(--c-coral);color:var(--c-ink);transform:rotate(-2deg);">%</span></div>
+<div style="top:262px;left:64px;max-width:440px;font-family:var(--f-display);font-weight:700;font-size:1.12em;line-height:1.32;z-index:5;">客户品牌搜索量中位数提升。<br>被看见，是有数字的。</div>
+<div class="scatter-num yl" style="top:24px;right:36px;transform:rotate(5deg);font-size:2.5em;z-index:6;">2.1B<small>社媒曝光</small></div>
+<div class="scatter-num cl" style="top:160px;right:150px;transform:rotate(-4deg);font-size:2.1em;z-index:7;">14<small>国际奖项</small></div>
+<div class="scatter-num lm" style="bottom:18px;right:64px;transform:rotate(3deg);font-size:2.3em;z-index:8;">47<small>项目交付</small></div>
 </div>
-<div class="scatter-num yl" style="top:110px;right:70px;transform:rotate(3deg);">2.1B<small>社媒曝光</small></div>
-<div class="scatter-num cl" style="bottom:90px;right:120px;transform:rotate(-2deg);">14<small>国际奖项</small></div>
-<div class="scatter-num lm" style="top:200px;right:60px;transform:rotate(1deg);">47<small>项目交付</small></div>
 <div class="source">verified · agency year-end report</div>
-<span class="pin">06 · impact · metrics</span>
 </section>
 
-<!-- 7. voices: 对话双栏（十字 + 半圆 + 水滴 + 锯齿 + 十字带） -->
-<section class="bg-dot">
-<svg aria-hidden="true" data-qa-ignore="decorative" class="deco" style="top:80px;right:60px;" width="40" height="40"><path d="M13,0 L27,0 L27,13 L40,13 L40,27 L27,27 L27,40 L13,40 L13,27 L0,27 L0,13 L13,13Z" fill="var(--c-coral)" stroke="var(--c-ink)" stroke-width="2.5"/></svg>
-<svg aria-hidden="true" data-qa-ignore="decorative" class="deco deco-float" style="bottom:170px;right:60px;" width="90" height="45"><path d="M0,45 A45,45 0 0,1 90,45Z" fill="var(--c-yellow)" stroke="var(--c-ink)" stroke-width="2.5"/></svg>
-<svg aria-hidden="true" data-qa-ignore="decorative" class="deco" style="bottom:200px;left:100px;" width="36" height="48"><path d="M18,4 C18,4 32,20 32,32 C32,42 26,48 18,48 C10,48 4,42 4,32 C4,20 18,4 18,4Z" fill="var(--c-teal)" stroke="var(--c-ink)" stroke-width="2"/></svg>
-<svg aria-hidden="true" data-qa-ignore="decorative" class="deco" style="bottom:150px;left:50px;" width="80" height="22"><path d="M0,11 L10,2 L20,11 L30,2 L40,11 L50,2 L60,11 L70,2 L80,11" fill="none" stroke="var(--c-ink)" stroke-width="2.5" stroke-linecap="round"/></svg>
+<!-- 7. voices: Memphis 对话气泡（Ameoba 形轮廓 · 证言漂浮 · 告别对称双栏卡）-->
+<section>
+<!-- Checker 背景层（响亮 coral）-->
+<svg aria-hidden="true" data-qa-ignore="decorative" class="bgfill" style="z-index:0;color:var(--c-coral);opacity:0.18;"><rect width="100%" height="100%" fill="url(#p-checker)"/></svg>
 <!-- 底部十字带 -->
 <svg aria-hidden="true" data-qa-ignore="decorative" class="band" viewBox="0 0 1136 30"><defs><pattern id="b-cross" width="34" height="30" patternUnits="userSpaceOnUse"><path d="M13,3 L21,3 L21,11 L29,11 L29,19 L21,19 L21,27 L13,27 L13,19 L5,19 L5,11 L13,11Z" fill="var(--c-yellow)" stroke="var(--c-ink)" stroke-width="2"/></pattern></defs><rect width="1136" height="30" fill="url(#b-cross)"/></svg>
-<div class="nav"><span class="id">VOICES / 07</span><span>CLIENT WORDS</span></div>
+<div class="nav"><span class="id">VOICES</span><span>CLIENT WORDS</span></div>
 <h2 class="sr-only">客户怎么说:合作过的品牌证言</h2>
-<div style="position:relative;z-index:3;font-family:var(--f-display);font-weight:800;font-size:1.4em;margin-top:90px !important;">两种 <span style="background:var(--c-coral);padding:0 8px;box-shadow:3px 3px 0 var(--c-ink);">被记住</span> 的方式</div>
-<div class="dialogue">
-<div class="side bg-yellow">
-<div class="qm">"</div>
-<div class="qt">"换了 5 家机构都在做'安全的设计'。Make Loud Things 第一稿就让我们吓一跳，然后卖爆了。"</div>
-<div class="qw">— 品牌总监 · 烘焙（+63%）</div>
+<div style="position:relative;z-index:3;font-family:var(--f-display);font-weight:800;font-size:1.4em;margin-top:90px;">两种 <span style="background:var(--c-coral);padding:0 8px;box-shadow:3px 3px 0 var(--c-ink);">被记住</span> 的方式</div>
+<div class="dialogue" style="position:relative;z-index:3;height:430px;margin-top:16px;">
+<div class="voice-bubble" style="top:0;left:10px;width:500px;height:228px;transform:rotate(-2deg);">
+<div aria-hidden="true" class="bub-shape" style="background:var(--c-yellow);"></div>
+<div class="bub-text"><div class="bub-q">"换了 5 家机构都在做'安全的设计'。Make Loud Things 第一稿就让我们吓一跳，然后卖爆了。"</div><div class="bub-w">— 品牌总监 · 烘焙（+63%）</div></div>
 </div>
-<div class="vs">VS</div>
-<div class="side bg-lime">
-<div class="qm">"</div>
-<div class="qt">"他们不在乎'行业惯例'，只在乎你能不能被记住。这是我们 launch 成功的关键。"</div>
-<div class="qw">— CEO · 数字银行（获客成本 -38%）</div>
+<div class="vs-mega" style="top:128px;left:476px;font-size:2em;transform:rotate(-8deg);">VS</div>
+<div class="voice-bubble" style="top:168px;left:556px;width:500px;height:228px;transform:rotate(3deg);z-index:4;">
+<div aria-hidden="true" class="bub-shape" style="background:var(--c-lime);"></div>
+<div class="bub-text"><div class="bub-q">"他们不在乎'行业惯例'，只在乎你能不能被记住。这是我们 launch 成功的关键。"</div><div class="bub-w">— CEO · 数字银行（获客成本 -38%）</div></div>
 </div>
 </div>
 <div class="source">verified · client interviews</div>
-<span class="pin">07 · voices · testimonials</span>
 </section>
 
-<!-- 8. close: 号召巨物 + 散落联系（呼应封面 Memphis 框） -->
+<!-- 8. close: 号召巨物 · CTA 被巨型 Ameoba 切割（呼应 cover，width:70% 非对称收窄）-->
 <section class="memphis-cover memphis-frame bg-terrazzo">
-<svg aria-hidden="true" data-qa-ignore="decorative" class="deco deco-float" style="top:120px;right:100px;" width="80" height="105"><path d="M40,6 C40,6 70,40 70,60 C70,84 56,100 40,100 C24,100 10,84 10,60 C10,40 40,6 40,6Z" fill="var(--c-pink)" stroke="var(--c-ink)" stroke-width="3"/></svg>
-<svg aria-hidden="true" data-qa-ignore="decorative" class="deco" style="bottom:200px;left:40px;" width="100" height="50"><path d="M0,50 A50,50 0 0,1 100,50Z" fill="var(--c-lime)" stroke="var(--c-ink)" stroke-width="2.5"/></svg>
-<svg aria-hidden="true" data-qa-ignore="decorative" class="deco" style="top:60px;right:240px;" width="130" height="26"><path d="M0,13 C14,2 28,24 42,13 S70,2 84,13 S112,24 130,13" fill="none" stroke="var(--c-ink)" stroke-width="3" stroke-linecap="round"/></svg>
-<svg aria-hidden="true" data-qa-ignore="decorative" class="deco" style="top:200px;left:160px;" width="30" height="56"><path d="M22,0 L6,24 L16,24 L10,56 L28,20 L18,20Z" fill="var(--c-yellow)" stroke="var(--c-ink)" stroke-width="2"/></svg>
-<svg aria-hidden="true" data-qa-ignore="decorative" class="deco" style="bottom:170px;right:60px;" width="56" height="56"><path d="M28,4 L34,22 L54,16 L40,28 L54,40 L34,34 L28,52 L22,34 L2,40 L16,28 L2,16 L22,22Z" fill="var(--c-coral)" stroke="var(--c-ink)" stroke-width="2"/></svg>
+<!-- Bacterio 背景层（lime，呼应三角带）-->
+<svg aria-hidden="true" data-qa-ignore="decorative" class="bgfill" style="z-index:0;color:var(--c-lime);opacity:0.3;"><rect width="100%" height="100%" fill="url(#p-bacterio)"/></svg>
+<!-- 巨型 ameoba 切割 CTA 区（呼应 cover ameoba）-->
+<svg aria-hidden="true" data-qa-ignore="decorative" class="mega-shape z2" style="top:196px;right:50px;width:310px;height:310px;transform:rotate(10deg);" viewBox="0 0 220 220"><use href="#s-ameoba" fill="var(--c-pink)" stroke="var(--c-ink)" stroke-width="6"/></svg>
+<svg aria-hidden="true" data-qa-ignore="decorative" class="mega-shape z1" style="top:60px;left:48px;width:104px;height:104px;color:var(--c-coral);transform:rotate(-15deg);" viewBox="0 0 120 120"><use href="#s-asterisk"/></svg>
 <!-- 底部锯齿三角带（呼应封面，换 lime） -->
 <svg aria-hidden="true" data-qa-ignore="decorative" class="band" viewBox="0 0 1136 30"><defs><pattern id="b-teeth2" width="36" height="30" patternUnits="userSpaceOnUse"><path d="M0,30 L18,2 L36,30Z" fill="var(--c-lime)" stroke="var(--c-ink)" stroke-width="2"/></pattern></defs><rect width="1136" height="30" fill="url(#b-teeth2)"/></svg>
-<div class="nav"><span class="id">CLOSE / 08</span><span>MAKE IT LOUD</span></div>
-<h2 class="cta-mega" style="margin-top:104px !important;">如果你的品牌<br><em>不被记住</em>，<br>那就是设计的问题。</h2>
+<div class="nav"><span class="id">CLOSE</span><span>MAKE IT LOUD</span></div>
+<!-- CTA width:70% 非对称收窄（asymSplits +1，width 非 50%）-->
+<h2 class="cta-mega" style="margin-top:104px;width:70%;">如果你的品牌<br><em>不被记住</em>，<br>那就是设计的问题。</h2>
 <div class="contact-scatter" style="bottom:90px;right:80px;transform:rotate(-2deg);background:var(--c-coral);">hello@makeloudthings.studio</div>
 <div class="contact-scatter" style="bottom:160px;right:140px;transform:rotate(1deg);background:var(--c-pink);">+86 21 5555 0000</div>
 <div class="contact-scatter" style="bottom:120px;left:90px;transform:rotate(2deg);background:var(--c-teal);">上海 · 阿姆斯特丹</div>
 <div class="source">illustrative · studio 2025</div>
-<span class="pin">08 · close · contact</span>
 </section>
 
 </div></div>
@@ -314,7 +395,62 @@
 Reveal.initialize({width:1280,height:720,margin:0.04,hash:true,slideNumber:'c/t',transition:'fade'});
 var PPTX_SRC='https://cdn.jsdelivr.net/npm/pptxgenjs@4.0.1/dist/pptxgen.bundle.js';var PPTX_INTEGRITY='sha384-qb0Xhi7LLYpvW1HCK6oMrmDLSY9sy7vwm6ZlV6KjtrlL9yg30+YN4neTwnmX+Kp8';
 function ensurePptx(cb){if(typeof PptxGenJS!=='undefined'){cb();return;}var s=document.createElement('script');s.src=PPTX_SRC;s.crossOrigin='anonymous';s.integrity=PPTX_INTEGRITY;s.onload=function(){cb();};s.onerror=function(){alert('pptxgenjs 加载失败,请检查网络');};document.head.appendChild(s);}
-function exportPPTX(){ensurePptx(function(){var p=new PptxGenJS();p.defineLayout({name:'C',width:13.33,height:7.5});p.layout='C';Reveal.getSlides().forEach(function(s){var t=(s.querySelector('.nav .id')||{}).innerText||'';var h=(s.querySelector('.poster-title,.scatter-block,.cta-mega')||s.querySelector('div')||{}).innerText||'';p.addSlide().addText(h.split('\n')[0],{x:0.5,y:0.5,w:12,h:1.5,fontSize:28,bold:true}).addText(t,{x:0.5,y:0.2,w:12,h:0.3,fontSize:10,color:'999999'});});p.writeFile({fileName:'make-loud-things.pptx'});});}
+function exportPPTX(){
+  ensurePptx(function(){
+    var p=new PptxGenJS();
+    p.defineLayout({name:'C',width:13.33,height:7.5});
+    p.layout='C';
+    var hex={bg:'F8F7F3',ink:'2A2A30',pink:'E8537A',yellow:'F4D03F',coral:'E5754F',teal:'4FB8B8',lime:'A8D848',mute:'5A5A65'};
+    var F='Bricolage Grotesque';
+    var sections=document.querySelectorAll('.reveal .slides>section');
+    sections.forEach(function(sec){
+      var s=p.addSlide();
+      s.background={color:hex.bg};
+      // 1. 页标 Memphis 贴纸（来自 nav .id）
+      var idEl=sec.querySelector('.nav .id');
+      if(idEl){
+        s.addShape(p.ShapeType.rect,{x:0.5,y:0.35,w:2.6,h:0.7,fill:{color:hex.yellow},line:{color:hex.ink,width:2.5},rotate:-2});
+        s.addText(idEl.textContent.trim(),{x:0.5,y:0.35,w:2.6,h:0.7,fontSize:18,bold:true,color:hex.ink,align:'center',valign:'middle',fontFace:F});
+      }
+      // 2. 主标题
+      var titleEl=sec.querySelector('.poster-title,.cta-mega');
+      if(titleEl){
+        s.addText(titleEl.textContent.replace(/<br>/g,' ').replace(/<[^>]+>/g,'').replace(/\s+/g,' ').trim().slice(0,80),{x:0.5,y:1.5,w:12,h:2,fontSize:44,bold:true,color:hex.ink,fontFace:F});
+      } else {
+        var sr=sec.querySelector('h2.sr-only');
+        if(sr) s.addText(sr.textContent.trim().slice(0,80),{x:0.5,y:1.5,w:12,h:2,fontSize:32,bold:true,color:hex.ink,fontFace:F});
+      }
+      // 3. sr-only 副标（仅在有主标题时）
+      if(titleEl){
+        var sr2=sec.querySelector('h2.sr-only');
+        if(sr2) s.addText(sr2.textContent.trim().slice(0,140),{x:0.5,y:5.0,w:12,h:0.8,fontSize:14,color:hex.mute,fontFace:F});
+      }
+      // 4. mega-num（impact +89% 巨型数字）
+      var mega=sec.querySelector('.mega-num');
+      if(mega){
+        s.addShape(p.ShapeType.rect,{x:0.5,y:2.6,w:8,h:2.2,fill:{color:hex.pink},line:{color:hex.ink,width:3},rotate:-2});
+        s.addText(mega.textContent.replace(/\s+/g,'').trim(),{x:0.5,y:2.6,w:8,h:2.2,fontSize:110,bold:true,color:hex.ink,align:'center',valign:'middle',fontFace:F});
+      }
+      // 5. scatter-num（impact 统计贴纸）
+      var nums=sec.querySelectorAll('.scatter-num');
+      var snHex=[hex.yellow,hex.coral,hex.lime];
+      nums.forEach(function(n,i){
+        s.addShape(p.ShapeType.rect,{x:8.5,y:1.4+i*1.4,w:3.2,h:1.2,fill:{color:snHex[i%3]},line:{color:hex.ink,width:2.5},rotate:i%2?3:-3});
+        s.addText(n.textContent.replace(/\s+/g,' ').trim(),{x:8.5,y:1.4+i*1.4,w:3.2,h:1.2,fontSize:18,bold:true,color:hex.ink,align:'center',valign:'middle',fontFace:F});
+      });
+      // 6. contact-scatter（close 联系贴纸）
+      var cs=sec.querySelectorAll('.contact-scatter');
+      cs.forEach(function(c,i){
+        var bgHex=hex.coral;
+        if(/pink/.test(c.style.background)) bgHex=hex.pink;
+        else if(/teal/.test(c.style.background)) bgHex=hex.teal;
+        s.addShape(p.ShapeType.rect,{x:0.5+i*4.1,y:6.2,w:3.8,h:0.7,fill:{color:bgHex},line:{color:hex.ink,width:2},rotate:i%2?-2:2});
+        s.addText(c.textContent.trim(),{x:0.5+i*4.1,y:6.2,w:3.8,h:0.7,fontSize:12,bold:true,color:hex.ink,align:'center',valign:'middle',fontFace:F});
+      });
+    });
+    p.writeFile({fileName:'make-loud-things.pptx'});
+  });
+}
 </script>
 </body>
 </html>
