@@ -72,12 +72,12 @@ CDN 加载 reveal.js + Google Fonts，用户**无需安装任何东西**。
 | 专业模式 Phase | 名称 | 类型 | 核心任务 |
 |:-----:|------|:----:|------|
 | P0 | 设计上下文 | ● | 风格(先翻 [`references/inspiration/`](references/inspiration/) 选 1-2 个 → 查 [`tokens/`](tokens/) 有无对应 primitive;若风格/内容不在覆盖范围,按 [`references/off-template-style-gap.md`](references/off-template-style-gap.md) 补齐 case + token + content rewrite + layout variant)、色彩、字体方向 |
-| P1 | 需求+设计语法 | ● | 场景/时长/听众 + ghost deck + Theme-to-Design Router 六行说明 + **内容-版式贴合度预检**（内容形状 / 主 proof object / 版式为何服务它）。**⚠ 输出后必须 STOP，等用户"继续 / 进 P4 / 改 X"才能生成 HTML——擅自生成 = 违规** |
+| P1 | 需求+设计语法 | ● | 场景/时长/听众 + ghost deck + Theme-to-Design Router 六行说明 + **内容-版式贴合度预检**（内容形状 / 主 proof object / 版式为何服务它）+ **元素语义策略**（每页元素清单 / 动画解释任务 / 必须或禁用的元素族）。**⚠ 输出后必须 STOP，等用户"继续 / 进 P4 / 改 X"才能生成 HTML——擅自生成 = 违规** |
 | P2 | 输出方案 | ◐ | 内容结构、视觉方向 |
-| P3 | 设计评审 | ● | 反模式检查 + **内容-版式贴合度评审**（proof object 是否解释主张 / 是否内容被硬塞进模板 / 版式不解释主张）+ 优化方向。**⚠ Gate 模式下输出后必须 STOP，等用户确认优化方向** |
-| P4 | 生成初稿 | ● | **两条路径**:**内容在 9 template 覆盖** → 套 template 但重写 proof object 和页面骨架;**不在覆盖** → 先声明 style gap → `scripts/content-router.js` 路由 archetype(A1-A12 + 主题变体)→ `scripts/generate-archetype-deck.js` 生成(四层架构闭合,见 [tokens/README.md](tokens/README.md) 与 [`references/off-template-style-gap.md`](references/off-template-style-gap.md))。两种都过 **十门禁**(`grade-gate.js` 全绿 = G1-G10 全过;机器判 verdict,不可手动放行) |
+| P3 | 设计评审 | ● | 反模式检查 + **内容-版式贴合度评审**（proof object 是否解释主张 / 是否内容被硬塞进模板 / 版式不解释主张）+ **内容-元素贴合度评审**（元素是否解释 action title / 动画是否解释机制而非装饰 / 图标、表格、图片、代码是否抢主 proof object）+ 优化方向。**⚠ Gate 模式下输出后必须 STOP，等用户确认优化方向** |
+| P4 | 生成初稿 | ● | 先读 `references/element-semantics.md` 做元素语义路由,显式分派 13 类元素: proof object / motion / icon / table / data-viz / diagram / image / code / metric / quote-evidence / annotation / page furniture / whitespace,再加载对应专项文件。**两条路径**:**内容在 9 template 覆盖** → 套 template 但重写 proof object 和页面骨架;**不在覆盖** → 先声明 style gap → `scripts/content-router.js` 路由 archetype(A1-A12 + 主题变体)→ `scripts/generate-archetype-deck.js` 生成(四层架构闭合,见 [tokens/README.md](tokens/README.md) 与 [`references/off-template-style-gap.md`](references/off-template-style-gap.md))。两种都过 **十门禁**(`grade-gate.js` 全绿 = G1-G10 全过;机器判 verdict,不可手动放行) |
 | P5 | 优化迭代 | ● | 按规模执行优化（详见 references/pipeline-phases.md「Phase 5」） |
-| P6 | 最终检查 | ◐ | 专业/发布会级必跑；快速模式 ≥12 页、密集数据或视觉结构调整时跑；复核**视觉语义与内容-版式贴合度**，`visual-verdict` 或人工审阅有 blocker 就回 P3/P5 |
+| P6 | 最终检查 | ◐ | 专业/发布会级必跑；快速模式 ≥12 页、密集数据或视觉结构调整时跑；复核**视觉语义与内容-版式贴合度/内容-元素贴合度**，确认每页元素清单服务 action title；`visual-verdict` 或人工审阅有 blocker 就回 P3/P5 |
 
 ● 必须完成　◐ 可跳过　/　刷新已有演示：跳过 P1，从 P3 开始评审
 
@@ -231,6 +231,7 @@ Style gap: 是/否;原因:____。
 参考样片:____ / ____;借用技法:____。
 Token:使用 ____;如新建,说明 AA 配对和字体 fallback。
 内容-版式贴合度:内容形状____;主 proof object____;版式为何服务它____;去色去字体后是否仍属于本主题____。
+元素语义策略:主 proof object 类型____;必须出现的元素族____;禁用/少用的元素族____;动画承担的解释任务____;表格/图表/图片/代码的选择理由____。
 内容语义改写:____。
 Layout 变体:____。
 不和谐风险:____(重叠/超框/错配风险 + 验证命令)。
@@ -446,6 +447,7 @@ bash scripts/setup.sh          # 仅环境检查
 | **选布局引擎（必读）** | `references/layout-archetypes.md` | 12 个 voice 无关、可组合、带参数的布局 archetype（满版分割/锚点数字/报头封面/对峙对比/机制图…）+ deck 级节奏编排 |
 | **选配色字体** | `references/design-principles.md` | 配色方案、字体系统、反模式、文案规则 |
 | **处理模板外内容 / 风格缺口** | `references/off-template-style-gap.md` | Style gap 判定、四件套扩展、PPT 服务内容的验收线 |
+| **元素语义总入口** | `references/element-semantics.md` | proof object、动画、图标、表格、图表、图片、代码、引用、页面家具在 P1/P3/P4/P6 的选择和验收 |
 | **构建页面** | `references/layout-patterns.md` | 通用容器（列表/流程/代码/基础网格）；主骨架优先用 archetype |
 | **需图标** | `references/icon-system.md` | 85 个 inline SVG 图标 |
 | **需图表** | `references/diagram-system.md` | 流程/树/时序/关系/状态图，纯 HTML+CSS+SVG |
@@ -469,6 +471,7 @@ bash scripts/setup.sh          # 仅环境检查
 - [ ] 第一眼就是经过**设计意图**的（不是 AI 模板感）
 - [ ] P1 产出了 Theme-to-Design Router 六行说明 + **设计契约**（尺度预设/用色投入/archetype 序列/本主题发明变体），且不是直接套模板
 - [ ] **内容-版式贴合度**已通过：内容形状、主 proof object、版式为何服务它都明确；去掉颜色和字体后，页面结构仍属于这个主题
+- [ ] **元素语义**已通过：每页元素清单、主 proof object、辅助元素族、动画解释任务明确；每个元素都服务 action title,不是模板装饰
 - [ ] 主骨架由 ≥3 种 archetype 组合（非种子原语原样填充），含 ≥1 个本主题发明变体
 - [ ] 物理表面型 proof object 与承载面共享坐标系；SVG 文字不靠裁切隐藏、不继承描边；数据趋势线不用 `T`
 - [ ] `design-strength-check.js` 四维达标（尺度≥3:1 / 有满版色块面板 / 有非对称分割 / 有主题原生形式）；数字未被软化成"约/持平"

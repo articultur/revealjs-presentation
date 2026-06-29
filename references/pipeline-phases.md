@@ -26,6 +26,8 @@
 
 内容-版式贴合度是 P1/P3/P6 的跨阶段 Gate：P1 预判内容形状、主 proof object 与版式服务关系；P3 审查是否内容被硬塞进模板或版式不解释主张；P6 用 visual-verdict / 人工审阅做视觉语义验收。
 
+元素语义是 P1/P3/P4/P6 的跨阶段 Gate：P1 产出每页元素清单和主 proof object；P3 审查内容-元素贴合度；P4 先读 `references/element-semantics.md` 再按元素族加载专项 reference；P6 用 `element-quality-check.js` + `visual-verdict` / 人工审阅验收元素是否服务主张。
+
 ## 各 Phase 对应 reference（流程闭环）
 
 | Phase | 主要 reference | 获取 |
@@ -35,6 +37,7 @@
 | P0-1 色彩/字体 | `references/design-principles.md` | 配色方案、字体系统、反模式 |
 | P2-3 评审 | `references/failure-gates.md` + `references/impeccable-integration.md` | 15 条门禁、impeccable 命令映射 |
 | P4 生成骨架 | `references/css-skeleton.md` + `references/technical-specs.md` | CSS 骨架、CDN/插件/三端适配 |
+| P4 元素语义路由 | `references/element-semantics.md` | 所有 deck 先读,再显式分派 13 类元素: proof object / motion / icon / table / data-viz / diagram / image / code / metric / quote-evidence / annotation / page furniture / whitespace |
 | P4 布局/图表/图标/图片 | `references/layout-patterns.md` / `references/diagram-system.md` / `references/data-viz.md` / `references/icon-system.md` / `references/image-system.md` | 按需加载 |
 | P5 优化 | `references/impeccable-integration.md`（Phase×命令映射）+ `references/motion-delight.md` | 命令到演示场景、动效 |
 | P6 最终（发布会级） | `references/launch-grade.md` + 本文件 Step 1-7 | golden-reference、验证步骤 |
@@ -98,6 +101,7 @@ P1 不能只给“选择了哪个模板”。必须先给 ghost deck，再给设
 页面骨架：主要使用 ____ / ____ / ____ / ____ 这些页面动作。
 Proof object：必须可视化证明 ____，不能只写成 bullet。
 内容-版式贴合度：内容形状 ____；主 proof object ____；版式为何服务它 ____；去色去字体后是否仍属于本主题 ____。
+元素语义策略：主 proof object 类型 ____；必须出现的元素族 ____；禁用/少用的元素族 ____；动画承担的解释任务 ____；表格/图表/图片/代码的选择理由 ____。
 物理契约：____ 是承载面；____ 必须在其中；____ 不得侵入/重叠；____ 必须对齐。
 禁止套路：不能使用 ____，因为它会把主题讲偏或变成通用模板。
 ```
@@ -110,7 +114,7 @@ Proof object：必须可视化证明 ____，不能只写成 bullet。
 | 只局部匹配 | 借用 scaffold，新建隐喻和页面原语 |
 | 不匹配 | 新建设计语法，不硬套 5 个 examples |
 
-视觉 Gate 1 通过标准：用户能看懂“为什么这个主题应该长成这种页面”，而不只是知道“选了哪个模板”；内容-版式贴合度必须明确到 proof object 和 layout 关系。
+视觉 Gate 1 通过标准：用户能看懂“为什么这个主题应该长成这种页面”，而不只是知道“选了哪个模板”；内容-版式贴合度必须明确到 proof object 和 layout 关系；元素语义必须明确到每页元素清单、动画解释任务和禁用元素族。
 
 ### 第二轮：补充确认（按需）
 
@@ -252,6 +256,7 @@ node scripts/visual-verdict.js <HTML文件> --out /private/tmp/<deck>-verdict
 - 演示 chrome：PPTX 导出按钮、导航箭头、页码不得遮挡正文或 pin 注释；导出按钮默认应不可见，仅悬停/聚焦出现。
 - 设计质量：每页必须有清晰视觉重心；大字号 statement 不能互压；数据页必须可读且有来源或“示意”标注。
 - 内容-版式贴合度：每页 proof object 必须解释 action title；去掉颜色和字体后，页面结构仍应属于本主题；发现“内容被硬塞进模板 / 版式不解释主张”就回 P3/P5。
+- 内容-元素贴合度：每页元素清单必须服务 action title；动画解释机制/变化,不是装饰进场；图标只做状态/动作/分类/方向辅助；表格只做精确值查找；图片、代码、引用必须承担证据或对象展示角色。
 - 原生语法 / Native Grammar：品牌、平台、产品类 deck 必须能看到对象自己的界面、行为或社群机制，例如 feed、播放器、搜索、评论、交易路径、控制台、仪表盘，而不是只有换色模板。
 - 证据台账 / Evidence Ledger：精确数字、排名、百分比、DAU/MAU/GMV 必须在页面或备注中对应 `verified/source URL`、`user-provided` 或 `illustrative`；“公开披露”不是可追溯来源。
 - LLM 视觉语义：`visual-verdict.js` 的 blocker 必须修复；若因无模型 key 只能 `--dry-run`，检查记录必须明确“未执行模型判定”，不能写成视觉通过。

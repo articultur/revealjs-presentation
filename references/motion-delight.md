@@ -1,6 +1,8 @@
 # 动效与惊喜设计
 
 > 本文件整合了 impeccable 的 [animate](https://github.com/pbakaus/impeccable) 和 [delight](https://github.com/pbakaus/impeccable) 技能，专为 reveal.js 演示场景适配。
+>
+> 先读 `references/element-semantics.md` 的 Motion 规则。动画必须解释内容关系,不是装饰进场。语义任务至少落入以下一种: **assembly / 组装**、**flow / 流动**、**growth / 增长**、**state / 状态切换**、**reveal / 对比揭示**。如果静态态不能说明主张,不得用动画补救。
 
 ## 目录
 
@@ -269,7 +271,7 @@ reveal.js 中每个可交互元素都值得微交互设计：
 document.addEventListener('keydown', function(e) {
   if (e.shiftKey && e.key === '?') {
     var easterEgg = document.createElement('div');
-    easterEgg.innerHTML = '🎉 你找到了彩蛋！';
+    easterEgg.innerHTML = '[spark] 你找到了彩蛋！';
     easterEgg.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);font-size:3em;z-index:9999;animation:fadeIn 500ms ease-out';
     document.body.appendChild(easterEgg);
     setTimeout(function() { easterEgg.remove(); }, 2000);

@@ -1,6 +1,8 @@
 # 演示图表系统
 
 > 纯 HTML+CSS+SVG 构建的演示图表，零依赖、完全可定制、PPTX 导出后节点文字可编辑。
+>
+> 先读 `references/element-semantics.md` 的 Diagram 规则。架构图/流程图必须解释系统关系、层级、时序或状态；不要把 bullet 列表画成盒子冒充 proof object。
 
 ## 设计理论基础
 
