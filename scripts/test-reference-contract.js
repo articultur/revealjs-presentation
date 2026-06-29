@@ -8,6 +8,7 @@ const { spawnSync } = require('child_process');
 const root = path.resolve(__dirname, '..');
 
 const referenceFiles = [
+  'references/element-semantics.md',
   'references/data-viz.md',
   'references/diagram-system.md',
   'references/image-system.md',
@@ -58,6 +59,57 @@ if (/class="diagram-node"[^>]*style="[^"]*position\s*:\s*absolute/i.test(diagram
   fail('references/diagram-system.md must not show position:absolute on diagram nodes; use grid/flex nodes and absolute SVG connector layers only.');
 }
 
+const elementSemantics = read('references/element-semantics.md');
+const elementFamilies = [
+  ['Proof Object', /Proof Object|proof object|论证对象/i],
+  ['Motion', /Motion|动画/i],
+  ['Icon', /Icon|图标/i],
+  ['Table', /Table|表格/i],
+  ['Data Viz', /Data Viz|数据图表|数据可视化/i],
+  ['Diagram', /Diagram|架构图|流程图/i],
+  ['Image', /Image|Screenshot|图片|截图/i],
+  ['Code', /Code|Terminal|Log Scene|代码|终端|日志/i],
+  ['Metric', /Metric|KPI|Anchor Number|指标|大数字/i],
+  ['Quote Evidence', /Quote|Evidence|Citation|引用|证据|来源/i],
+  ['Annotation', /Annotation|Callout|Connector|标注|引线|箭头/i],
+  ['Page Furniture', /Page Furniture|topbar|pin|footer|页面家具/i],
+  ['Whitespace', /Whitespace|留白/i],
+];
+
+if (!/(P1|引导)[\s\S]{0,500}(P3|创作|评审)[\s\S]{0,500}(P4|制造|生成)[\s\S]{0,500}(P6|检查|验收)/i.test(elementSemantics)) {
+  fail('references/element-semantics.md is missing stage matrix.');
+}
+if (!/路由与语义验收入口/.test(elementSemantics) || !/制造细则以叶子文档为准/.test(elementSemantics)) {
+  fail('references/element-semantics.md must define its authority boundary as routing/semantic acceptance, with manufacturing details owned by leaf docs.');
+}
+
+function sectionAfterHeading(content, headingPattern) {
+  const headingRe = /^### .+$/gm;
+  const headings = [];
+  let match;
+  while ((match = headingRe.exec(content)) !== null) {
+    headings.push({ index: match.index, text: match[0] });
+  }
+  const headingIndex = headings.findIndex(h => headingPattern.test(h.text));
+  if (headingIndex === -1) return '';
+  const start = headings[headingIndex].index;
+  const next = headings[headingIndex + 1];
+  return content.slice(start, next ? next.index : content.length);
+}
+
+for (const [family, pattern] of elementFamilies) {
+  const section = sectionAfterHeading(elementSemantics, pattern);
+  if (!section) {
+    fail(`references/element-semantics.md is missing ${family} family section.`);
+    continue;
+  }
+  for (const field of ['Use when', 'Do not use when', 'Design move', 'Manufacturing rules', 'QA checks']) {
+    if (!new RegExp(`\\*\\*${field}\\*\\*`, 'i').test(section)) {
+      fail(`references/element-semantics.md ${family} section is missing ${field}.`);
+    }
+  }
+}
+
 const launchGrade = read('references/launch-grade.md');
 [
   ['golden reference', /launch-grade-principles\.html/],
@@ -77,9 +129,29 @@ const skill = read('SKILL.md');
   ['evidence ledger gate', /证据台账|Evidence Ledger/i],
   ['overflow blocker language', /total\s*>\s*0[\s\S]{0,120}(阻断|blocker|必须修复)/i],
   ['fragment initial-state gate', /fragment[\s\S]{0,120}(初始|首屏|隐藏)/i],
+  ['content-layout fit gate', /内容-版式贴合度/i],
+  ['element semantics route', /references\/element-semantics\.md|元素语义/i],
+  ['P1 element semantics strategy', /P1[\s\S]{0,340}(元素语义|元素策略|每页元素清单)/i],
+  ['P3 content-element fit review', /P3[\s\S]{0,340}(内容-元素贴合度|元素是否解释 action title|动画是否解释机制)/i],
+  ['P6 element semantics visual acceptance', /P6[\s\S]{0,420}(元素语义|内容-元素贴合度|每页元素)[\s\S]{0,420}(visual-verdict|人工审阅)/i],
+  ['P1 content-layout fit preflight', /P1[\s\S]{0,260}内容-版式贴合度[\s\S]{0,260}proof object/i],
+  ['P3 content-layout design review', /P3[\s\S]{0,260}(内容被硬塞进模板|版式不解释主张|proof object 是否解释主张)/i],
+  ['P6 content-layout visual acceptance', /P6[\s\S]{0,320}(视觉语义|内容-版式贴合度)[\s\S]{0,320}(visual-verdict|人工审阅)/i],
 ].forEach(([label, pattern]) => {
   if (!pattern.test(skill)) {
     fail(`SKILL.md is missing ${label}.`);
+  }
+});
+
+const styleGap = read('references/off-template-style-gap.md');
+[
+  ['P1 preflight hook', /P1[\s\S]{0,220}内容-版式贴合度/],
+  ['P3 review hook', /P3[\s\S]{0,220}内容-版式贴合度/],
+  ['P6 acceptance hook', /P6[\s\S]{0,220}内容-版式贴合度/],
+  ['router required fields', /内容形状[\s\S]{0,160}主 proof object[\s\S]{0,160}版式为何服务/],
+].forEach(([label, pattern]) => {
+  if (!pattern.test(styleGap)) {
+    fail(`references/off-template-style-gap.md is missing ${label}.`);
   }
 });
 
@@ -352,11 +424,39 @@ const pipelinePhases = read('references/pipeline-phases.md');
   ['validate total>0 blocker', /total\s*>\s*0[\s\S]{0,120}(阻断|blocker|必须修复)/i],
   ['native grammar visual QA', /原生语法|Native Grammar/i],
   ['evidence ledger visual QA', /证据台账|Evidence Ledger/i],
+  ['content-layout fit phase gate', /内容-版式贴合度[\s\S]{0,260}(P1|P3|P6)/i],
+  ['element semantics phase gate', /元素语义[\s\S]{0,360}(P1|P3|P4|P6)/i],
 ].forEach(([label, pattern]) => {
   if (!pattern.test(pipelinePhases)) {
     fail(`references/pipeline-phases.md is missing ${label}.`);
   }
 });
+
+const motionDelight = read('references/motion-delight.md');
+if (!/(assembly|组装)[\s\S]{0,260}(flow|流动)[\s\S]{0,260}(growth|增长)[\s\S]{0,260}(state|状态)[\s\S]{0,260}(reveal|揭示)/i.test(motionDelight)) {
+  fail('references/motion-delight.md must define semantic motion tasks: assembly, flow, growth, state, and reveal.');
+}
+if (!/Motion[\s\S]{0,160}motion-delight\.md|动画[\s\S]{0,160}motion-delight\.md/i.test(elementSemantics)) {
+  fail('references/element-semantics.md must route Motion to motion-delight.md.');
+}
+
+const iconSystem = read('references/icon-system.md');
+if (!/proof object|论证对象/.test(iconSystem) || !/辅助|状态|动作|分类|方向/.test(iconSystem)) {
+  fail('references/icon-system.md must say icons are auxiliary status/action/category/direction cues, not proof objects.');
+}
+
+const tableSystem = read('references/table-system.md');
+if (!/element-semantics\.md/.test(tableSystem) || !/趋势|精确值查找/.test(tableSystem)) {
+  fail('references/table-system.md must link to element-semantics.md and distinguish precise lookup from trend expression.');
+}
+if (!/Table[\s\S]{0,160}table-system\.md|表格[\s\S]{0,160}table-system\.md/i.test(elementSemantics)) {
+  fail('references/element-semantics.md must route Table to table-system.md.');
+}
+
+const validation = read('references/validation.md');
+if (!/元素语义/.test(validation) || !/visual-verdict[\s\S]{0,220}(补盲|盲区|语义)/i.test(validation)) {
+  fail('references/validation.md must explain the boundary between element-quality-check and visual-verdict element semantics review.');
+}
 
 const designPolish = read('references/design-polish.md');
 [

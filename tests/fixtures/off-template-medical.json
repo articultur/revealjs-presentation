@@ -1,0 +1,114 @@
+{
+  "topic": "III 期临床试验结果 · CX-204",
+  "voice": "editorial-serif",
+  "off_template": true,
+  "style_gap": {
+    "inspiration_case": "clinical readout / evidence dossier",
+    "token": "editorial-serif",
+    "content_rewrite": "clinical endpoints, cohorts, hazard ratio, safety ledger",
+    "layout_variant": "A5 endpoint anchor + A9 trial ledger + A8 mechanism variant"
+  },
+  "evidence_status": "illustrative",
+  "sections": [
+    {
+      "title": "III 期临床结果",
+      "subtitle": "CX-204 · 晚期 NSCLC",
+      "content_type": "cover",
+      "meta": ["VOL. 01", "2026", "CLINICAL READOUT"],
+      "body": "CX-204 将晚期 NSCLC 患者 5 年总生存率从 42% 提升到 67%,达到主要终点。",
+      "facts": [
+        { "k": "OS", "v": "67% vs 42%" },
+        { "k": "PFS", "v": "中位 14.2 月" },
+        { "k": "N", "v": "n=480" },
+        { "k": "期", "v": "III 期" }
+      ]
+    },
+    {
+      "title": "核心结论",
+      "content_type": "thesis",
+      "emphasis": "67%",
+      "body": " 5 年生存率成为新的治疗基准。",
+      "support": "III 期试验 n=480,主要终点 OS 达到,HR=0.52,p<0.001。"
+    },
+    {
+      "title": "主要终点",
+      "content_type": "data-anchor",
+      "label": "PRIMARY ENDPOINT · OS",
+      "number": "67%",
+      "event": "CX-204 试验组 5 年生存率",
+      "note": "vs 对照组 42% · HR=0.52(95%CI 0.42-0.64) · p<0.001",
+      "source": "III 期 · 主要终点 · illustrative",
+      "evidence": [
+        { "k": "对照组 OS", "v": "42%" },
+        { "k": "HR (95%CI)", "v": "0.52 (0.42-0.64)" },
+        { "k": "p 值", "v": "< 0.001" }
+      ]
+    },
+    {
+      "title": "试验 vs 对照",
+      "subtitle": "OS 对峙",
+      "content_type": "comparison",
+      "a_label": "CX-204",
+      "a_value": "67%",
+      "a_unit": "5 年 OS",
+      "a_details": ["HR = 0.52", "p < 0.001"],
+      "b_label": "标准疗法",
+      "b_value": "42%",
+      "b_unit": "5 年 OS",
+      "b_details": ["现有 SOC", "安慰剂对照"],
+      "verdict": "+25pp",
+      "verdict_note": "绝对生存获益"
+    },
+    {
+      "title": "多指标台账",
+      "subtitle": "CX-204 vs 对照 · 全终点",
+      "content_type": "evidence-table",
+      "headers": ["终点", "CX-204", "对照", "HR / p"],
+      "highlight_col": 1,
+      "rows": [
+        ["OS(5 年)", "67%", "42%", "HR=0.52"],
+        ["PFS(中位)", "14.2 月", "8.1 月", "HR=0.48"],
+        ["ORR", "72%", "41%", "—"],
+        ["3-4 级 AE", "38%", "31%", "可控"]
+      ]
+    },
+    {
+      "title": "作用机制",
+      "subtitle": "靶点 X 抑制 → 通路 Y 阻断 → 凋亡激活",
+      "content_type": "mechanism",
+      "before_label": "传统化疗",
+      "after_label": "CX-204",
+      "reduction": "复发风险降低 48%",
+      "before_items": ["广谱细胞毒", "选择性低", "耐药快"],
+      "after_items": ["靶点 X 高选择", "通路 Y 阻断", "凋亡激活"]
+    },
+    {
+      "title": "试验时间线",
+      "subtitle": "2022 入组 → 2025 读出",
+      "content_type": "chronology",
+      "nodes": [
+        { "year": "2022", "title": "入组启动", "desc": "n=480 随机" },
+        { "year": "2023", "title": "给药完成", "desc": "Q3W × 18 周期" },
+        { "year": "2024", "title": "中期分析", "desc": "OS 显著获益", "accent": true },
+        { "year": "2025", "title": "主要读出", "desc": "达到主要终点", "accent": true }
+      ]
+    },
+    {
+      "title": "结论要点",
+      "subtitle": "III 期读出结论",
+      "content_type": "takeaways",
+      "items": [
+        { "t": "OS 显著获益", "d": "67% vs 42%,HR=0.52,p<0.001" },
+        { "t": "安全性可控", "d": "3-4 级 AE 38%,无新安全信号" },
+        { "t": "NDA 启动", "d": "Q4 报产申请提交" }
+      ]
+    },
+    {
+      "title": "下一步",
+      "content_type": "closing",
+      "topic": "CX-204 · NEXT",
+      "body": "CX-204 将于 Q4 提交 NDA,有望成为晚期 NSCLC 一线新标准。",
+      "stamp": "2026 · NDA Q4"
+    }
+  ]
+}

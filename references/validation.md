@@ -10,13 +10,15 @@
 |---|---|---|---|
 | **地板（合规）** | `grade-gate.js` 全绿（十门禁 G1-G10 合一） | 硬约束、机器判、不可人工放行 | 任一红灯 → 回 P5 重生成 |
 | **天花板（设计强度）** | `design-strength-check.js` 四维（尺度/用色/张力/隐喻） | advisory（退出码恒 0），但任一维不达标 = 回炉重做骨架，**不是微调** | 退化信号：全 deck display ≤2.5em、无满版色块面板、全是通用卡片 |
-| **元素级天花板** | `element-quality-check.js` 四子分（动画/图标/表格/流程图） | advisory，子分 ≥70 达标 | emoji 当图标 / 图标不主题跟随 / 表格违反 data-ink |
-| **视觉语义评审** | `visual-verdict.js`（截图 + 视觉模型 + JSON verdict） | 模型辅助；抓固定脚本盲区 | blocker → 回 P5；无 key 只能 `--dry-run`，必须报告未执行模型判定 |
+| **元素级天花板** | `element-quality-check.js` 四子分（动画/图标/表格/流程图）+ `references/element-semantics.md` 元素语义清单 | advisory，子分 ≥70 达标；语义问题进入视觉评审 | emoji 当图标 / 图标不主题跟随 / 表格违反 data-ink / 元素不服务 action title |
+| **视觉语义评审** | `visual-verdict.js`（截图 + 视觉模型 + JSON verdict） | 模型辅助；抓固定脚本盲区,补盲元素语义问题 | blocker → 回 P5；无 key 只能 `--dry-run`，必须报告未执行模型判定 |
 | **图片资产门禁** | `audit-image-assets.js` | 图像驱动 deck 专项硬检；抓视觉模型前的客观资产硬伤 | blocker → 换图 / 换页型 / 重做照片角色台账 |
 
 **关键认知（防止合规驱动退化）**：门禁是地板，设计强度是天花板，两者**不可互替**。当通过某门禁似乎要削弱设计时（如「满版面板怕对比度不足 → 干脆不做面板」），**正解是找一个既大胆又合规的选择**（深化专色到 AA / 用 `var(--c-fg)` 反相面板），**不是把设计改弱来求合规**。把数字软化为「约/持平」来躲 G5 证据门禁 = 失败；正解是保留真实数字 + 加 source label。参见 `design-fundamentals.md` §6。
 
 **但满足地板不是目标**：一个 deck 可以零门禁违规却四维全默认（合规但平庸）。
+
+**元素语义边界**：`element-quality-check.js` 只能稳定检查客观元素质量（动画配置、图标实现、表格 data-ink、流程图结构）。它不能可靠判断“这个元素为什么存在”。当问题是动画只是装饰、图标抢 proof object、表格不该表达趋势、图片/代码/引用没有解释 action title 时,必须用 `visual-verdict.js` 或人工审阅补盲,并回到 P1/P3 改元素语义或 proof object。
 
 ## 十门禁（G1-G10，grade-gate.js 合一）
 

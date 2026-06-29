@@ -1,0 +1,30 @@
+name: gates
+
+# 把"地板门禁 + 元契约 + lint 伞"接进 CI。
+# 在此之前整条强制链只靠 SKILL.md 自然语言提示 LLM 去跑 grade-gate，
+# 绕过 skill 直接改模板 + npm test 时，10 门禁一声不响。
+# 现在三层都在 push/PR 时自动跑。天花板（design-strength-check）advisory、
+# 始终 exit 0，不入阻断层；需要时本地 `node scripts/design-strength-check.js` 看。
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  gates:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      # 地板：9 模板 × 10 门禁全绿（机器判 verdict，不可人工放行）
+      - run: npm run gate
+      # 元契约：references / 系统不变量
+      - run: npm test
+      # lint 伞：参考文档硬规则 + chrome 元素 AA + 设计 lint
+      - run: npm run lint:all

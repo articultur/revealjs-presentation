@@ -20,6 +20,7 @@
       --c-fg-2: rgba(250, 245, 255, 0.62);
       --c-fg-3: rgba(250, 245, 255, 0.30);
       --c-accent: #ff3e7f;
+      --c-accent-deep: #c12158;
       --c-accent-soft: rgba(255, 62, 127, 0.18);
       --c-beam: rgba(255, 62, 127, 0.10);
       --c-spot: #ffc857;
@@ -103,6 +104,45 @@
     .live-ticker b { color: var(--c-fg); font-weight: 500; }
     .live-ticker .sep { color: var(--c-fg-3); }
     .live-ticker .right { margin-left: auto; display: flex; gap: 1.4em; }
+    .launch-cover .live-ticker {
+      top: 18px; left: 10%; right: 10%;
+      height: 38px; padding: 0 30px;
+      display: grid; grid-template-columns: 1fr auto 1fr;
+      align-items: center; gap: 18px;
+      background:
+        linear-gradient(90deg, transparent 0%, rgba(255, 62, 127, 0.22) 12%, rgba(255, 200, 87, 0.14) 50%, rgba(255, 62, 127, 0.22) 88%, transparent 100%),
+        rgba(10, 6, 18, 0.72);
+      border-top: 1px solid rgba(255, 200, 87, 0.16);
+      border-bottom: 1px solid rgba(255, 62, 127, 0.18);
+      box-shadow: 0 18px 46px rgba(255, 62, 127, 0.18);
+      backdrop-filter: blur(2px);
+    }
+    .launch-cover .live-ticker .cue-left,
+    .launch-cover .live-ticker .cue-center,
+    .launch-cover .live-ticker .cue-right {
+      display: flex; align-items: center; min-width: 0;
+      font-family: var(--f-mono); white-space: nowrap;
+      word-break: normal; overflow-wrap: normal;
+    }
+    .launch-cover .live-ticker .cue-left { gap: 12px; justify-self: start; }
+    .launch-cover .live-ticker .cue-center {
+      gap: 8px; justify-self: center;
+      color: var(--c-fg); letter-spacing: 0.11em;
+      text-transform: uppercase;
+    }
+    .launch-cover .live-ticker .cue-center b { color: var(--c-fg); font-weight: 600; }
+    .launch-cover .live-ticker .cue-center span {
+      color: var(--c-spot);
+    }
+    .launch-cover .live-ticker .cue-right {
+      gap: 10px; justify-self: end; justify-content: flex-end;
+      color: rgba(250, 245, 255, 0.48);
+      overflow: hidden; text-overflow: ellipsis;
+    }
+    .launch-cover .live-ticker .cue-right span { overflow: hidden; text-overflow: ellipsis; }
+    .launch-cover .live-ticker .live-dot {
+      white-space: nowrap; word-break: normal; overflow-wrap: normal;
+    }
 
     /* ─────────── LAUNCH COVER (stage) ─────────── */
     .launch-cover {
@@ -139,6 +179,7 @@
       padding: 32px 48px;
     }
     .launch-cover .main-screen .screen-tag {
+      align-self: center;
       font-family: var(--f-mono); font-size: 0.5em;
       letter-spacing: 0.2em; text-transform: uppercase;
       color: var(--c-spot); margin-bottom: 1em;
@@ -174,18 +215,20 @@
       border-left: none; border-top: none;
     }
     .launch-cover .camera-frame .rec {
-      position: absolute; top: -32px; left: 8px;
+      position: absolute; top: 12px; left: 14px;
       font-family: var(--f-mono); font-size: 11px;
       color: var(--c-accent); letter-spacing: 0.1em;
       display: flex; align-items: center; gap: 0.4em;
+      padding: 4px 8px; background: rgba(10, 6, 18, 0.62);
     }
     .launch-cover .camera-frame .rec::before {
       content: ''; width: 8px; height: 8px; background: var(--c-accent); border-radius: 50%;
     }
     .launch-cover .camera-frame .timecode {
-      position: absolute; top: -32px; right: 8px;
+      position: absolute; top: 12px; right: 14px;
       font-family: var(--f-mono); font-size: 11px;
       color: var(--c-fg-3); letter-spacing: 0.08em;
+      padding: 4px 8px; background: rgba(10, 6, 18, 0.52);
     }
 
     .launch-cover .audience-floor {
@@ -233,7 +276,7 @@
       min-width: 0;
     }
     .impact .hero-metric {
-      background: linear-gradient(135deg, var(--c-accent) 0%, #c12158 100%);
+      background: linear-gradient(135deg, var(--c-accent) 0%, var(--c-accent-deep) 100%);
       border-radius: 18px;
       padding: 22px 28px;
       display: flex; flex-direction: column; justify-content: space-between;
@@ -462,7 +505,7 @@
       position: absolute; top: 20px; right: 22px;
     }
     .totem.featured {
-      background: linear-gradient(135deg, var(--c-accent) 0%, #c12158 100%);
+      background: linear-gradient(135deg, var(--c-accent) 0%, var(--c-accent-deep) 100%);
     }
     .totem.featured::before { background: var(--c-spot); }
     .totem.featured .num { color: rgba(250, 245, 255, 0.7); }
@@ -546,6 +589,12 @@
     @media (prefers-reduced-motion: reduce) {
       .reveal .fragment, .live-ticker .live-dot::before { animation: none; opacity: 1; transform: none; transition: opacity 200ms ease-out; }
     }
+    /* thorough：打印归档（舞台场景弱化装饰省墨，保留主体）*/
+    @media print {
+      #pptx-export-btn { display: none !important; }
+      .beam, .audience-floor, .camera-frame, .product-drop { opacity: 0.3 !important; }
+      .reveal section { page-break-after: always; overflow: visible !important; height: auto !important; }
+    }
   </style>
 </head>
 <body>
@@ -555,16 +604,9 @@
       <!-- 1: LAUNCH COVER -->
       <section class="launch-cover deck-flex" data-background="#0a0612">
         <div class="live-ticker" data-qa-ignore="decorative">
-          <span class="live-dot">LIVE</span>
-          <span class="sep">/</span>
-          <span>Hall 7 · main stage</span>
-          <span class="sep">/</span>
-          <b>Spring Reveal · day 1</b>
-          <span class="right">
-            <span>2026.03.14 · 19:00 CST</span>
-            <span class="sep">/</span>
-            <span>4 800 in the room · 1.2M streaming · illustrative</span>
-          </span>
+          <span class="cue-left"><span class="live-dot">LIVE</span><span>Hall 7</span></span>
+          <span class="cue-center"><b>Spring Reveal</b><span>· Day 1</span></span>
+          <span class="cue-right"><span>19:00 CST</span><span>· illustrative</span></span>
         </div>
 
         <div class="stage-scene">
@@ -793,7 +835,7 @@
           <h2>N5 ships tonight.<br>Pre-order is <em>open in chat</em>.<br>The stream stays on.</h2>
           <p>The opening minute is the answer. The next 200 minutes are yours.</p>
           <div class="cta-row">
-            <span class="cta primary">▶ Open the drop · in chat</span>
+            <span class="cta primary">Pre-order · in chat</span>
             <span class="cta ghost">⤓ Backstage Pass</span>
           </div>
         </div>
@@ -817,8 +859,8 @@
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@4.0.1/dist/pptxgen.bundle.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.js" integrity="sha384-1BgZRI35wIBSv5NogsksvIdAsgAPqwRFj4SJUH7dDP14i/J8zwleEEcTA1TTHId3" crossorigin="anonymous"></script>
+  <!-- pptxgenjs (~300KB) 改为点击 PPTX 按钮时动态加载（见 ensurePptx），避免初始包开销 -->
   <script>
     Reveal.initialize({
       width: 1280, height: 720, margin: 0.04,
@@ -860,10 +902,23 @@
       var pin=sec.querySelector('.pin');
       if(pin){slide.addText(textOf(pin),{x:0.55,y:7.0,w:6,h:0.3,fontSize:8,color:resolveColor(vars['--c-fg-3'],vars)||'888888',fontFace:'Calibri',charSpacing:2});}
     }
+    var PPTX_SRC='https://cdn.jsdelivr.net/npm/pptxgenjs@4.0.1/dist/pptxgen.bundle.js';
+    var PPTX_INTEGRITY='sha384-qb0Xhi7LLYpvW1HCK6oMrmDLSY9sy7vwm6ZlV6KjtrlL9yg30+YN4neTwnmX+Kp8';
+    function ensurePptx(cb){
+      if(typeof PptxGenJS!=='undefined'){cb();return;}
+      var s=document.createElement('script');
+      s.src=PPTX_SRC; s.crossOrigin='anonymous'; s.integrity=PPTX_INTEGRITY;
+      s.onload=function(){cb();};
+      s.onerror=function(){alert('PptxGenJS 加载失败,请检查网络');var b=document.getElementById('pptx-export-btn');if(b){b.textContent='PPTX';b.disabled=false;}};
+      document.head.appendChild(s);
+    }
     function doExport(){
-      if(typeof PptxGenJS==='undefined'){alert('PptxGenJS 未加载');return;}
       var btn=document.getElementById('pptx-export-btn');
-      if(btn){btn.textContent='导出中...';btn.disabled=true;}
+      if(btn){btn.textContent='加载模块...';btn.disabled=true;}
+      ensurePptx(function(){var b=document.getElementById('pptx-export-btn');if(b){b.textContent='导出中...';}runExport();});
+    }
+    function runExport(){
+      var btn=document.getElementById('pptx-export-btn');
       try{
         pptx=new PptxGenJS(); pptx.layout='LAYOUT_WIDE';
         var vars=getCssVars();

@@ -7,6 +7,7 @@
  *
  * Usage:
  *   node scripts/visual-qa.js deck.html --out /tmp/deck-visual
+ *   node scripts/visual-qa.js deck.html --output /tmp/deck-visual
  *   node scripts/visual-qa.js deck.html --show-fragments
  *   node scripts/visual-qa.js deck.html --annotate-overflow   # red-outline VP_TOP/overflow elements
  *
@@ -24,15 +25,37 @@ const fs = require('fs');
 const path = require('path');
 
 const args = process.argv.slice(2);
-const htmlFile = args.find(arg => !arg.startsWith('--'));
-const outArgIndex = args.indexOf('--out');
+
+function firstPositionalArg() {
+  const valueFlags = new Set(['--out', '--output']);
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+    if (valueFlags.has(arg)) {
+      i++;
+      continue;
+    }
+    if (!arg.startsWith('--')) return arg;
+  }
+  return null;
+}
+
+const htmlFile = firstPositionalArg();
+const outArgIndex = args.findIndex(arg => arg === '--out' || arg === '--output');
 const showFragments = args.includes('--show-fragments');
 const annotateOverflow = args.includes('--annotate-overflow');
 const waitArg = args.find(arg => arg.startsWith('--wait='));
 const waitMs = waitArg ? Number(waitArg.split('=')[1]) : 900;
+const knownFlags = new Set(['--out', '--output', '--show-fragments', '--annotate-overflow']);
+const unknownFlags = args.filter(arg => arg.startsWith('--') && !knownFlags.has(arg) && !arg.startsWith('--wait='));
+
+if (unknownFlags.length) {
+  console.error(`未知参数: ${unknownFlags.join(', ')}`);
+  console.error('用法: node scripts/visual-qa.js <HTML文件> [--out dir|--output dir] [--show-fragments] [--annotate-overflow] [--wait=900]');
+  process.exit(2);
+}
 
 if (!htmlFile) {
-  console.log('用法: node scripts/visual-qa.js <HTML文件> [--out dir] [--show-fragments] [--annotate-overflow] [--wait=900]');
+  console.log('用法: node scripts/visual-qa.js <HTML文件> [--out dir|--output dir] [--show-fragments] [--annotate-overflow] [--wait=900]');
   process.exit(1);
 }
 

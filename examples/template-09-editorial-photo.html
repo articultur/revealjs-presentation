@@ -123,7 +123,7 @@
     .ph-stat .img-side { width: 58%; position: relative; overflow: hidden; border: 1px solid rgba(238,228,206,0.32); }
     .ph-stat .img-side img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
     .ph-stat .num-side { width: 42%; display: flex; flex-direction: column; justify-content: center; padding: 34px 38px; overflow: hidden; background: #11100d; border: 1px solid rgba(238,228,206,0.32); border-left: none; }
-    .ph-stat .num-side .big-num { font-family: var(--f-condensed); font-size: 3.72em; font-weight: 400; line-height: 0.9; color: var(--c-accent); margin: 0.17em 0 0.12em; letter-spacing: 0.01em; }
+    .ph-stat .num-side .big-num { font-family: var(--f-condensed); font-size: 3.72em; font-weight: 400; line-height: 0.9; color: #b73320; margin: 0.17em 0 0.12em; letter-spacing: 0.01em; }
     .ph-stat .num-side .big-num span { color: var(--c-bg-paper) !important; }
     .ph-stat .num-side .num-label { font-family: var(--f-mono); font-size: 0.46em; letter-spacing: 0.14em; color: rgba(238,228,206,0.58); text-transform: uppercase; }
     .ph-stat .num-side h3 { font-size: 0.98em; margin-top: 0.55em; line-height: 1.16; color: var(--c-bg-paper); }
@@ -150,9 +150,9 @@
     .ph-faceoff .fo-small .num small { font-size: 0.28em; color: rgba(238,228,206,0.7); margin-left: 0.25em; }
     .ph-faceoff .fo-small .lbl { font-family: var(--f-mono); font-size: 0.44em; letter-spacing: 0.14em; color: rgba(238,228,206,0.62); text-transform: uppercase; }
     .ph-faceoff .fo-verdict { margin-top: 1.1em; padding-top: 0.85em; border-top: 2px solid var(--c-bg-paper); }
-    .ph-faceoff .fo-verdict .ratio { font-family: var(--f-display); font-style: italic; font-size: 3.2em; color: var(--c-bg-paper); line-height: 1; }
+    .ph-faceoff .fo-verdict .ratio { font-family: var(--f-display); font-style: italic; font-size: 3.2em; color: var(--c-bg-paper); line-height: 1.2; margin-bottom: 0.12em; }
     .ph-faceoff .fo-verdict .ratio em { color: var(--c-accent-2); font-style: italic; }
-    .ph-faceoff .fo-verdict .verdict-lbl { font-family: var(--f-mono); font-size: 0.42em; letter-spacing: 0.12em; color: rgba(238,228,206,0.72); text-transform: uppercase; margin-top: 0.4em; }
+    .ph-faceoff .fo-verdict .verdict-lbl { font-family: var(--f-mono); font-size: 0.42em; letter-spacing: 0.12em; color: rgba(238,228,206,0.72); text-transform: uppercase; margin-top: 0.6em; }
     .ph-faceoff .fo-small p { font-size: 0.58em; color: rgba(238,228,206,0.72); margin-top: 0.8em; max-width: 34ch; line-height: 1.55; }
 
     /* A2 Manifesto 浅底命题（深浅呼吸页 · 本主题发明变体）
@@ -193,6 +193,10 @@
     .ph-spread .kicker::before, .ph-stat .kicker::before, .ph-faceoff .kicker::before { background: var(--c-hot); }
     .ph-spread .source, .ph-stat .source, .ph-faceoff .source { color: rgba(238, 228, 206, 0.52); }
     .reveal .fragment { transition-duration: 380ms; }
+    /* 明暗转折过渡：ph-manifesto 浅底呼吸页与深底页明暗反差大，
+       reveal 默认背景 fade 中间帧两层叠加会灰蒙闪烁。拉长背景层过渡至
+       720ms + ease-out 曲线，给暗↔亮跳变留适应时间，内容过渡仍走 default。 */
+    .reveal .backgrounds .slide-background { transition: opacity 720ms cubic-bezier(0.33, 0, 0.2, 1); }
     @media (prefers-reduced-motion: reduce) { .reveal .fragment { opacity: 1; transform: none; transition: opacity 200ms ease-out; } }
     .reveal .progress { color: var(--c-accent); height: 2px; }
     .reveal .controls { color: var(--c-fg-2); }
@@ -385,7 +389,7 @@
             </div>
           </div>
           <div class="stamp">NO. 026 · {CITY} · LISTED</div>
-          <div class="source" style="margin-top: 0.6em;color:rgba(238,228,206,0.55);">All photos · Wikimedia Commons · open licenses. Author credits per plate. (占位用 picsum,生成时按主题换 CC-BY 原图。)</div>
+          <div class="source ph-credits" style="margin-top: 0.6em;color:rgba(238,228,206,0.55);">All photos · Wikimedia Commons · open licenses. Author credits per plate. (占位用 picsum,生成时按主题换 CC-BY 原图。)</div>
         </div>
         <span class="pin">10 · A12 colophon</span>
       </section>
@@ -393,8 +397,8 @@
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@4.0.1/dist/pptxgen.bundle.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.js" integrity="sha384-1BgZRI35wIBSv5NogsksvIdAsgAPqwRFj4SJUH7dDP14i/J8zwleEEcTA1TTHId3" crossorigin="anonymous"></script>
+  <!-- pptxgenjs (~300KB) 改为点击 PPTX 按钮时动态加载（见 ensurePptx），避免初始包开销 -->
   <script>
     Reveal.initialize({
       width: 1280, height: 720, margin: 0.04,
@@ -420,7 +424,8 @@
     function textOf(el){return (el.textContent||'').trim();}
     var pptx;
     function exportSection(slide,sec,vars){
-      var bg=resolveColor(vars['--c-bg']||vars['--bg'],vars)||'FFFFFF';
+      var isLight=sec.classList.contains('ph-manifesto');
+      var bg=resolveColor(isLight?(vars['--c-bg-paper']||'EEE4CE'):(vars['--c-bg']||vars['--bg']),vars)||'FFFFFF';
       slide.background={color:bg};
       var textMuted=resolveColor(vars['--c-fg-2']||vars['--text-muted'],vars)||'999999';
       var y=0.55;
@@ -435,10 +440,24 @@
       var pin=sec.querySelector('.pin');
       if(pin){slide.addText(textOf(pin),{x:0.55,y:7.0,w:6,h:0.3,fontSize:8,color:resolveColor(vars['--c-fg-3'],vars)||'AAAAAA',fontFace:'Calibri',charSpacing:2});}
     }
+    var PPTX_SRC='https://cdn.jsdelivr.net/npm/pptxgenjs@4.0.1/dist/pptxgen.bundle.js';
+    var PPTX_INTEGRITY='sha384-qb0Xhi7LLYpvW1HCK6oMrmDLSY9sy7vwm6ZlV6KjtrlL9yg30+YN4neTwnmX+Kp8'; /* SRI: 防 CDN 篡改 */
+    function ensurePptx(cb){
+      if(typeof PptxGenJS!=='undefined'){cb();return;}
+      var s=document.createElement('script');
+      s.src=PPTX_SRC; s.crossOrigin='anonymous';
+      if(PPTX_INTEGRITY.indexOf('HASH')===-1){s.integrity=PPTX_INTEGRITY;}
+      s.onload=function(){cb();};
+      s.onerror=function(){alert('PptxGenJS 加载失败,请检查网络');var b=document.getElementById('pptx-export-btn');if(b){b.textContent=BTN_TEXT;b.disabled=false;}};
+      document.head.appendChild(s);
+    }
     function doExport(){
-      if(typeof PptxGenJS==='undefined'){alert('PptxGenJS 未加载');return;}
       var btn=document.getElementById('pptx-export-btn');
-      if(btn){btn.textContent='导出中...';btn.disabled=true;}
+      if(btn){btn.textContent='加载模块...';btn.disabled=true;}
+      ensurePptx(function(){var b=document.getElementById('pptx-export-btn');if(b){b.textContent='导出中...';}runExport();});
+    }
+    function runExport(){
+      var btn=document.getElementById('pptx-export-btn');
       try{
         pptx=new PptxGenJS(); pptx.layout='LAYOUT_WIDE';
         var vars=getCssVars();

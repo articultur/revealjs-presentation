@@ -260,6 +260,66 @@ Slide 02 · proof · image role: landmark detail · why_this_image: ____ · sour
 
 节奏要点:① **IP2 只 2 次**(slide 3/8),不超 25%;② **A2 浅底插在中段**(slide 7)做呼吸;③ **IP7 对峙 + IP5 数据相邻但分工**(对峙 vs 单证);④ 首尾闭环(IP1 cover-stamp ↔ A12 stamp)。
 
+### §3.5 呼吸页(A2 Manifesto)· 可复用页型规范
+
+> ph-manifesto 起源于 template-09 editorial-photo 种子的"本主题发明变体",经 Dieter Rams 审计(27/30)确认为高分离度页型。这里把它从一次性发明提炼为**任何深底图像 deck 都能套用的通用呼吸页规范**,其他种子/主题可直接复用。
+
+**角色**:全 deck 唯一反相页。把前半段影像收束成**一个主张**,同时给眼睛一个"亮起来"的呼吸点,打破全深单调。它是 deck 里**信息密度 + 视觉权重最高**的一页(主张句 + 支撑句 + 极端留白),不是配图说明页。
+
+**位置约束(硬)**:
+- 必须**前后都是深底页**——呼吸页靠"反相"产生张力,夹在两深底之间才成立;两浅相邻 = 无呼吸
+- 插在 deck **中段(约 60–75% 位置)**——前半段影像铺陈完、后半段实用信息开始前,用主张收束转折;放太早(前 3 页)读者还没建立上下文,放太晚(末页)变成结尾而非呼吸
+- **全 deck 只 1 页**——多张浅底页会稀释"唯一呼吸点"的视觉权重,且触发 colorCommit 偏平
+
+**token 用法(零孤立色)**:
+
+| 用途 | token | 说明 |
+|---|---|---|
+| 背景 | `var(--c-bg-paper)` | 纸色浅底,来自 `:root`,禁新色 |
+| 主张字 | `var(--c-fg)` | 深墨色,h2 / em |
+| 支撑字 | `var(--c-fg-2)` | muted 深棕,p |
+| 角落标注 | `var(--c-fg-3)` | subtle,pin / m-foot |
+| 强调 | `var(--c-accent)` | kicker / em,与深底页共享同一 accent |
+
+全部复用 `:root`,**禁止在呼吸页引入孤立色**——这是它能在深色 deck 里"反相却不割裂"的关键。
+
+**HTML 骨架(最小可复用)**:
+
+```html
+<section class="ph-manifesto deck-flex" data-background="var(--c-bg-paper)">
+  <span class="kicker">Midway · 一个主张</span>
+  <h2>{主题}不是一天能<em>看完</em>的{名词}。</h2>
+  <div class="m-rule"></div>
+  <p>[一句支撑:为什么需要慢 / 分次 / 走路——把前半段影像收束成主张。]</p>
+  <div class="m-foot">a claim, not a caption · 主张页</div>
+  <span class="pin">NN · A2 manifesto (light)</span>
+</section>
+```
+
+**明暗过渡要求(配套,硬)**:深↔浅明暗反差大,默认 `backgroundTransition: 'fade'` 中间帧两层叠加会灰蒙闪烁。生成呼吸页时**必须**为背景层加专属过渡曲线(参考 template-09 实现):
+
+```css
+.reveal .backgrounds .slide-background { transition: opacity 720ms cubic-bezier(0.33, 0, 0.2, 1); }
+```
+
+拉长背景过渡 + ease-out,让暗↔亮跳变给眼睛适应时间,内容过渡仍走 default。
+
+**可复用 checklist(生成时逐条勾)**:
+
+- [ ] 全 deck 只此 1 页浅底,且前后页都是深底?
+- [ ] 位置在中段(60–75%),非首尾?
+- [ ] 只用 `:root` token,无孤立色?
+- [ ] 有 1 句主张(h2)+ 1 句支撑(p),非空装饰?
+- [ ] m-foot 标注"a claim, not a caption"(主张页 ≠ 配图说明页)?
+- [ ] 背景层过渡曲线已加(防深↔浅闪眼)?
+- [ ] `design-strength` 深浅呼吸子分 = ✓(全深/全浅会被 metaphor -10)?
+
+**何时不该用**:
+
+- deck 本身就是浅底系 → 反过来插 1 页**深底**章节页做呼吸,不要硬塞浅底
+- 总页数 < 6 → 没有足够铺垫,呼吸页显得突兀;用普通章节页即可
+- 没有真正的"主张"可收束 → 空有留白无内容,变成空洞;宁可不要
+
 ---
 
 ## §4 工作流(生成图像驱动 deck)

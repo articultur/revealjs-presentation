@@ -1,6 +1,8 @@
 # 数据可视化组件库
 
 > 纯 CSS+SVG 数据图表，零依赖，Reveal.js 画布内自适应缩放。
+>
+> 先读 `references/element-semantics.md` 的 Data Viz 规则。数据图表用于趋势、对比、占比、分布、排名和异常点；读者需要精确查值时改用 `table-system.md`。
 
 ## 设计原则
 

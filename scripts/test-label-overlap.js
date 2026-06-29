@@ -2,7 +2,7 @@
 /**
  * Label Overlap Detector
  * ─────────────────────────────────────────────────────────────
- * Detects label-class elements (.pin / .stamp / .corner-mark / kicker)
+ * Detects label-class elements (.pin / .source / .photo-credit / .evidence-label / .stamp / .corner-mark / kicker)
  * that visually overlap inside the 1280×720 viewport — INCLUDING
  * labels that belong to a non-present slide but leak into the current
  * viewport (a known blind spot of reveal.js 4.x absolute-positioned pins).
@@ -41,6 +41,7 @@
 
 const path = require('path');
 const fs = require('fs');
+const { LABEL_SELECTOR } = require('./qa-selectors');
 
 let chromium;
 try {
@@ -58,10 +59,8 @@ if (!files.length) {
   process.exit(2);
 }
 
-// Label-class elements: 真正的索引/元数据小元素。不含 [class*="folio"]/
-// [class*="catalog-mark"]（误匹配 .folio-grid 等布局容器）。[class~="kicker"]
-// 用词边界匹配 class="kicker" / class="a kicker b"，但不匹配 superkicker。
-const LABEL_SELECTOR = '.pin, .stamp, .corner-mark, [class~="kicker"]';
+// Label-class elements: 真正的索引/元数据小元素。选择器集中在 qa-selectors.js，
+// 防止新增 page furniture class 后只改一处检测、另一处继续漏检。
 
 (async () => {
   const browser = await chromium.launch();

@@ -1,6 +1,8 @@
 # 演示文稿图标系统
 
 > 专为 reveal.js 演示文稿设计的 inline SVG 图标库。零依赖、零请求、自动跟随主题色。
+>
+> 先读 `references/element-semantics.md` 的 Icon 规则。图标是状态、动作、分类、方向的辅助 cue,不是 proof object / 论证对象；需要证明主张时应使用图表、表格、截图、流程或证据卡,不要用通用图标替代。
 
 ## 设计规范
 
