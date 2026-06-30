@@ -142,9 +142,14 @@ function measure(file) {
   asymSplits += wPct.filter(w => !/:50%/.test(w)).length;
   //   (c) 负 margin 错位（brutalist/memphis 散落手法）
   asymSplits += (cssText.match(/margin-(?:left|right)\s*:\s*-\d/i) || []).length;
-  // colorCommitPct：每页平均 commit background 数映射到 0-100（每页 ≥1.5 个 = 满分）
+  // colorCommitPct：每页平均 commit background 数映射到 0-100。
+  // 风格族校准（iteration-1 乡愁水墨 deck 教训）：committed 美学每页 ≥1.5 = 满分；
+  // 但克制风格（ink-wash / minimal / editorial-quiet）哲学是少而精，统一 1.5 会系统性误判"用色偏平"。
+  // 检测克制风格 → 满分基线降到 0.8/页（仍要求有色块系统，只校准密度期望）。
   const avgCommitPerPage = sections.length ? commitBgs.length / sections.length : 0;
-  const colorCommitPct = Math.min(100, Math.round(avgCommitPerPage / 1.5 * 100));
+  const restrainedStyle = /chinese-ink-wash|ink-wash|editorial-quiet|\bminimal\b|克制美学|water-?ink/i.test(html);
+  const commitBaseline = restrainedStyle ? 0.8 : 1.5;
+  const colorCommitPct = Math.min(100, Math.round(avgCommitPerPage / commitBaseline * 100));
   const fullBleedSlides = Math.min(sections.length, commitBgs.length); // 等效页数（显示用）
 
   // 4. 隐喻贯彻：布局多样性 + 主题原生形式信号
@@ -255,11 +260,16 @@ function measure(file) {
   const topicLabels = /^(?:背景|方法|结果|总结|概述|目录|前言|引言|介绍|方法论|总结与展望|谢谢|thank\s+you|thanks|overview|background|introduction|agenda)$/i;
   let claimSlides = 0;
   for (const s of sections) {
-    const h = s.html.match(/<h[12][^>]*>([\s\S]*?)<\/h[12]>/i);
-    if (h) {
-      const text = h[1].replace(/<[^>]+>/g, '').trim();
-      if (text.length >= 4 && !topicLabels.test(text)) claimSlides++;
+    // content-driven 命题检测：h1-h3（典型 deck），或带语义 class（claim/manifesto/lead/kicker/thesis/hero-title）
+    // 的 p/div/span。文学/非典型 deck 命题常在 <p>（iteration-1 乡愁 deck：诗化命题在 <p> 被 0 分，
+    // 换 <h2> 视觉不变就过——检测要认内容语义，不只数 h 标签）。
+    const h = s.html.match(/<h[1-3][^>]*>([\s\S]*?)<\/h[1-3]>/i);
+    let text = h ? h[1].replace(/<[^>]+>/g, '').trim() : '';
+    if (!text) {
+      const claimEl = s.html.match(/<(?:p|div|span)[^>]*\bclass="[^"]*\b(?:claim|manifesto|lead|kicker|thesis|statement|hero-title)\b[^"]*"[^>]*>([\s\S]*?)<\/(?:p|div|span)>/i);
+      if (claimEl) text = claimEl[1].replace(/<[^>]+>/g, '').trim();
     }
+    if (text.length >= 4 && !topicLabels.test(text)) claimSlides++;
   }
   const communication = sections.length ? Math.min(100, Math.round(claimSlides / sections.length * 100)) : 0;
 
@@ -302,6 +312,7 @@ function measure(file) {
     scaleContrast: +maxDisplay.toFixed(2),
     fullBleedSlides,
     colorCommitPct,
+    restrainedStyle,
     avgCommitPerPage: +avgCommitPerPage.toFixed(2),
     asymSplits,
     layoutVariety: +layoutVariety.toFixed(2),
@@ -358,7 +369,8 @@ function report(m) {
   const signals = Object.entries(m.nativeSignals).filter(([, v]) => v).map(([k]) => k).join(', ') || '—';
   console.log(`\n  ${m.file}  (${m.slides} slides)`);
   console.log(`    尺度对比 scaleContrast : ${m.scaleContrast}:1   (${s.sScale}/100)  ${m.scaleContrast >= 3 ? '✓' : '⚠ <3:1 太平'}`);
-  console.log(`    用色投入 colorCommit    : 每页均 ${m.avgCommitPerPage} 个色块 (${m.fullBleedSlides} 处)  (${s.sCommit}/100)  ${s.sCommit >= 60 ? '✓' : '⚠ 用色偏平'}`);
+  const commitNote = m.restrainedStyle ? '克制风格族·基线 0.8/页校准' : (s.sCommit >= 60 ? '✓' : '⚠ 用色偏平');
+  console.log(`    用色投入 colorCommit    : 每页均 ${m.avgCommitPerPage} 个色块 (${m.fullBleedSlides} 处)  (${s.sCommit}/100)  ${commitNote}`);
   console.log(`    构图张力 tension        : ${m.asymSplits} 处非对称分割  (${s.sTension}/100)  ${m.asymSplits >= 2 ? '✓' : '⚠ 全对称'}`);
   console.log(`    隐喻贯彻 metaphor       : ${m.nativePrimitives} 原语 / ${m.distinctLayouts} 种布局  (${s.sMetaphor}/100)${s.metaphorPenalty ? `  ⚠ 节奏惩罚 -${s.metaphorPenalty}` : ''}`);
   console.log(`      └ 原生形式: ${signals}`);

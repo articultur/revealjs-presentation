@@ -103,7 +103,7 @@ CDN 加载 reveal.js + Google Fonts，用户**无需安装任何东西**。
 ### 1. 输出形态硬约束
 
 - **单个自包含 HTML 文件**，不拆分 CSS/JS
-- **Reveal.js 4.6.0 CDN**：`cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.{css,js}`
+- **Reveal.js 4.6.0 CDN**：`cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.{css,js}`。**CDN SRI 策略见 `references/technical-specs.md`「CDN SRI 策略」**：reveal.js(JS) 加固定 SRI、reveal.css(CSS) **不加** SRI（与种子一致）；被 hook 提示缺 integrity 时别盲目给 CSS 补 SRI——hash 算错会触发 CSP 拦截致视觉崩坏，门禁还可能误判通过
 - **Google Fonts**：按设计语法选择，`<link>` 引入
 - **CSS 全部内联**在 `<style>` 中，用 `--c-*` / `--f-*` token；骨架见 `references/css-skeleton.md`
 - **每页一个 `<section>`**；section 级 flex/grid 必须用 `class="deck-flex"` / `class="deck-grid"`——reveal 会把 present section 的 inline `display` 改成 `block`，**写在 stylesheet 里的 `display:flex` 会被静默覆盖成 dead code，你以为在居中其实没有**；只有 `deck-flex`/`deck-grid` 类才能在 reveal override 后重新生效
@@ -407,7 +407,7 @@ archetype 序列：每页分配一个 archetype（A1-A12，见 layout-archetypes
 |---|---|---|
 | **地板（合规）** | `node scripts/grade-gate.js <file>` 全绿（十门禁 G1-G10 合一） | 硬约束、**机器判 verdict，禁止人工放行**（案例见 `references/validation.md` G5 段） |
 | **天花板（设计强度）** | `node scripts/design-strength-check.js <file>` 四维达标 + `node scripts/element-quality-check.js <file>` 元素子分 ≥70 | advisory，任一维不达标 = **回炉重做骨架**，不是微调 |
-| **视觉评审** | `node scripts/visual-qa.js <file> --annotate-overflow --show-fragments` 逐页审阅 + `node scripts/visual-verdict.js <file>` LLM 视觉语义评审 | **P4 生成后必跑、任何视觉改动后必跑**（快速模式也跑）。无视觉模型 key 时：`visual-verdict.js --dry-run` 生成截图+prompt → Claude（有视觉的会话模型）Read 截图 + 按 prompt rubric 判定 blocker/warning/note → 写入 `/tmp/manual-visual-verdict.json` 备查 |
+| **视觉评审** | `node scripts/visual-qa.js <file> --annotate-overflow --show-fragments` 逐页审阅 + `node scripts/visual-verdict.js <file>` LLM 视觉语义评审 | **P4 生成后必跑、任何视觉改动后必跑**（快速模式也跑）。无视觉模型 key 时：`visual-verdict.js --dry-run` 生成截图+prompt → **仅当会话模型有真实视觉能力时** Claude Read 截图 + 按 rubric 判定 blocker/warning/note → 写入 `/tmp/manual-visual-verdict.json`。**视觉能力自检（必做）**：Read 一张截图后，若返回内容是文件路径/URL/空描述而非像素视觉内容（经某些 harness/proxy 的会话模型读不到图像素，Read 只回路径），即视为无视觉能力 → 此 fallback 判定无效，必须记 `visual-verdict passed=null（dry-run·会话模型无视觉能力）`，**不得声称「Claude 读图判定无 blocker」**（iteration-2 实测：4/6 agent 在无视觉 harness 里仍报告「视觉模型判定通过」，全是无效判定） |
 | **图片资产门禁** | `node scripts/audit-image-assets.js <file>` | 图像驱动 deck 必跑；阻断断图、满版图被放大、满版图低于画布、超宽低高图硬塞 hero、封面/章节/结尾重复大图；警告支撑图重复与背景主题漂移 |
 
 **关键认知**：门禁（地板）与设计强度（天花板）不可互替——合规但四维全默认 = 平庸；通过门禁要削弱设计时，找"既大胆又合规"的解（深化专色到 AA / 反相面板），不是改弱求合规。详见 `references/validation.md`、`references/design-fundamentals.md` §6。
@@ -481,5 +481,5 @@ bash scripts/setup.sh          # 仅环境检查
 - [ ] reveal.js 运行无布局问题，逐页截图无残影/裁切/按钮污染
 - [ ] `test-pin-collision.js` 输出 `OK: all pin regions clear.`
 - [ ] 图像驱动 deck 已跑 `audit-image-assets.js`：无断图、无低清/放大满版图、无重复封面/章节大图、无非意图背景主题漂移
-- [ ] **`visual-verdict.js` 已跑（无 key 则 Claude 读 dry-run 截图判定）且无 blocker**——感官类问题只能视觉抓，G1–G10 兜不住
+- [ ] **`visual-verdict.js` 已跑且无 blocker**——感官类问题只能视觉抓，G1–G10 兜不住。无 vision key 走 dry-run：**仅当会话模型 Read 截图返回像素视觉内容时**才能「Claude 读图判定」；Read 只回路径/URL = 无视觉能力，记 `passed=null dry-run`，**不得声称判定通过**
 - [ ] 包含运行/导出说明和验证状态

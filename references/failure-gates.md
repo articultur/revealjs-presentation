@@ -248,6 +248,8 @@ node scripts/visual-verdict.js <file> --dry-run
 
 但 dry-run 只证明评审输入已生成，**不等于视觉模型判定通过**；最终交付必须明确说明未执行模型视觉判定。
 
+「无 key 时让会话 Claude Read 截图判定」这个 fallback 只在会话模型有真实视觉能力时有效。**视觉能力自检**：Read 一张截图，若返回的是文件路径/URL/空描述而非像素内容（经某些 harness/proxy 的会话模型读不到图像素），即无视觉能力 → fallback 判定无效，仍记 `passed=null`，**不得声称「Claude 读图判定无 blocker」**（iteration-2 实测：4/6 agent 在无视觉 harness 里仍报告「视觉判定通过」，全是无效判定）。无视觉能力时，视觉语义只能由用户/有视觉的模型事后复核，agent 不得自行宣告通过。
+
 ### 真实重影案例（来自 5 模板优化复盘）
 
 1. **雷达 + pin**：左下角雷达 SVG 与 pin "01 · cockpit · cover" 重叠 → 雷达移右下角并加 `data-qa-ignore="decorative"`

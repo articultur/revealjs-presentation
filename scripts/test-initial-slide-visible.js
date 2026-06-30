@@ -39,7 +39,15 @@ function hasFragmentClass($, el) {
 }
 
 for (const file of files) {
-  const absPath = path.isAbsolute(file) ? file : path.join(root, file);
+  // 相对路径解析：先按 cwd（用户/agent 传入的相对路径），再按 skill 根（无参 fallback 的种子模板）。
+  // 旧逻辑统一 path.join(root, file) 会让 agent 在 outputs 目录传 "deck.html" 时去 skill 根找 → file not found。
+  let absPath;
+  if (path.isAbsolute(file)) {
+    absPath = file;
+  } else {
+    const fromCwd = path.resolve(process.cwd(), file);
+    absPath = fs.existsSync(fromCwd) ? fromCwd : path.join(root, file);
+  }
   if (!fs.existsSync(absPath)) {
     failures.push(`${file}: file not found`);
     continue;

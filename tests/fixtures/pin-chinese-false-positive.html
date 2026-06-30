@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="zh"><head><meta charset="utf-8"><title>O7 fixture</title></head>
+<body>
+<div class="reveal"><div class="slides">
+<!-- Case A: 中文 pin（概括索引）+ 英文数据 main —— 临床 deck 典型，旧逻辑应误报 -->
+<section>
+  <span class="pin">终点裁决</span>
+  <h2>ORR 47.3% vs 12.1% — objective response rate</h2>
+  <p class="claim">核心疗效数据由 main 区的 h2 + claim 承担，pin 仅作章节索引</p>
+</section>
+<!-- Case B: 中文 pin + 中文命题 main（字面不重复但主题一致）-->
+<section>
+  <span class="pin">回不去</span>
+  <h2>乡愁不是地图上的距离，是时间钉住的疼</h2>
+</section>
+<!-- Case C: 中文 pin + main 区几乎空 —— pin 真的是 sole claim，应保留 fail -->
+<section>
+  <span class="pin">核心发现</span>
+  <div class="decor"></div>
+</section>
+</div></div>
+</body></html>

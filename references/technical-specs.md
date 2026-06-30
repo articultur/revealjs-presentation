@@ -32,6 +32,18 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 ```
 
+### CDN SRI 策略（防视觉崩坏，2026-06 边界测试新增）
+
+种子模板的 SRI 策略是**不一致但有原因的**——必须照搬，不要自作主张给所有 CDN 补 SRI：
+
+| 资源 | SRI | 原因 |
+|------|-----|------|
+| `reveal.js`（JS） | ✅ 加固定 hash `sha384-1BgZRI35wIBSv5NogsksvIdAsgAPqwRFj4SJUH7dDP14i/J8zwleEEcTA1TTHId3` + `crossorigin="anonymous"` | JS 是执行代码，SRI 防篡改价值高 |
+| `reveal.css`（CSS） | ❌ **不加 SRI** | 与种子模板一致。CSS 加 SRI 后若 hash 算错 → CSP 拦截 → 样式不加载 → **截图全是无样式残影，而 grade-gate 可能误判通过**（iteration-1 wt-launch 实测教训） |
+| Google Fonts / highlight.js | ❌ 不加 SRI | 同上；字体/CSS 的 SRI 跨域行为复杂，收益不抵风险 |
+
+**铁律**：要给任何资源加 SRI，**必须用真实文件内容计算 hash 并实测加载成功**，绝不能手写或猜测 hash。被 security hook 提示「缺 integrity」时，**不要盲目给 reveal.css 补 SRI**——种子模板就是不带，照搬即可。校验 SRI 正确性要靠浏览器实测样式是否加载，不要只看门禁绿灯。
+
 ### 字体 fallback 安全清单（防 FOUT 重叠,2026-06 MVP 新增）
 
 字体未加载时 fallback 到默认宽体，大字撑到相邻元素致重叠（BLACKPINK logo-stamp 8px 重叠根因）。所有 `font-family` 栈**在 generic fallback（`sans-serif`/`serif`）前**带窄体 fallback：

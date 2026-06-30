@@ -1,6 +1,6 @@
 {
   "name": "revealjs-presentation",
-  "version": "15.0.0",
+  "version": "15.1.0",
   "description": "Reveal.js 演示文稿生成技能 — 含可编辑 PPTX 导出",
   "private": true,
   "scripts": {
