@@ -14,7 +14,7 @@ description: |
 
 1. **触发**：用户说"做个 PPT / 幻灯片 / 课件"或给出主题。**触发时立刻判别模式**：args/消息含"专业模式 / professional / P0-P6 / 发布会级 / keynote / 惊艳"→ 标记 **Gate 模式**（P1/P3 后强制 STOP 等确认，见下文「Gate 模式硬约束」）；否则快速模式。**Gate 模式必须在回复开头声明**："检测到『专业模式』→ 进 Gate 流程，本阶段输出设计语法后我会停下等你确认，不直接生成。"
 2. **确认 4 要素**：主题 · 观众 · 页数 · 语言（缺省：通用观众 / 8-12 页 / 中文）。页数是硬约束——用户给 N 页时最终偏差 ≤1（见 §8）
-3. **判断双条件 + 搭骨架**（防"方向完全错了"大返工——BLACKPINK 教训;跑 `node scripts/generate-ghost-deck.js --json '{...}'` 可机器判）：
+3. **判断双条件 + 搭骨架**（防"方向完全错了"大返工——跑 `node scripts/generate-ghost-deck.js --json '{...}'` 可机器判）：
    - **AUTO（一键自动,不确认）**：明确需求（主题+页数+观众+要点 全给）**且**指定模板/风格（"参照 xxx" / template-0X）→ 直接生成 HTML
    - **GHOST（轻骨架预览,5 秒可扫能喊停）**：双条件任一不满足 → 先生成 ghost deck（每页 role + action title + proof object）+ Theme-to-Design Router 六行说明,等用户"继续 / 改 X"才生成 HTML。**Ghost Deck Test**：只读 action titles 应能讲完整故事——读不通先改论证,不进视觉设计
 
@@ -116,8 +116,8 @@ CDN 加载 reveal.js + Google Fonts，用户**无需安装任何东西**。
 - **切勿破坏 reveal 的 section 堆叠/隐藏**：弱选择器 `.reveal section{position:relative}` 无害（被 reveal.css 覆盖 = dead fallback）；**真正危险的是 `!important` 或加强选择器强覆盖 `position`** → section 进文档流垂直堆叠 → overflow:hidden 截断 → 除首页外全空白。给 present 垂直居中用 `.reveal section.present{display:flex!important}`，别 blanket-force（详见 `references/css-skeleton.md`）
 - **Pin 定位上下文**：pin 相对最近 positioned 祖先（reveal 的 absolute section）；若 section 退回 static，pin 相对 BODY 全叠视口左下角 → `test-label-overlap` 报泄露
 - **字体 fallback 防 FOUT 重叠**：所有 `font-family` 栈**在 generic fallback（`sans-serif`/`serif`）前**带窄体 fallback（`'Arial Narrow'` / `'Helvetica Neue Condensed'`）；大字（logo/标题/大数字 ≥3em）与角元素（stamp/pin/photo-credit/角标）水平间距 **≥ 50px**。字体未加载时 fallback 到窄体而非默认宽体,防加载前/后布局跳变致重叠。`scripts/test-font-loading.js` 机器检测（宽度差 >15% 或间距 <50px = blocker）,`scripts/auto-fix.js` 兜底注入窄体 fallback
-- **section reset 吞 margin-top（静默无报错）**：若模板含 `.reveal section > *:not(svg):not(.deco){margin-top:0 !important}` 这类通配 reset（特异性 0,2,2），section 直接子元素写在 class 里的 `margin-top` 会被静默清零——无报错、无 lint 拦截，直接表现为标题压内容、内容压 nav。section 直接子元素的垂直间距**必须用 inline `style="margin-top:Xpx !important"` 或 padding**，不要写在 class 里。案例：memphis 封面 `THINGS.` 标题块下沉压副标题，根因是副标题 class 里的 `margin-top` 被 reset 吞成 0，改 inline `!important` 后恢复。详见 `references/layout-patterns.md`「文字防碰撞规则」
-- **文字断行（G11 · 用户最痛「一个词/句号变两行」）**：标题 h1-h3 默认 `word-break:keep-all; overflow-wrap:anywhere; text-wrap:balance; line-break:strict`（keep-all 防 CJK 拆字、anywhere 兜底防溢出、balance 均衡行宽）；**标题末尾标点「。」「，」用 `<span style="white-space:nowrap">词。</span>` 绑定前词**——防「单独的句号」甩下行（widow/runt punctuation，slide 真实痛点，t07/t09 实测命中 6 处）；数字+单位、inline 高亮短语 `<em>`/标签 `white-space:nowrap`；**避坑** `break-word/break-all`（肢解英文词，拆词主因）。⚠ `text-wrap:pretty`/`line-break:strict` 实测**不能**解决中文孤标点行——孤标点必须 `nowrap` 绑定。G11 五层机器检测（L1 数字/英文 + L2 孤字/孤标点 + L3a 中文词 + L4 避头尾），详见 `references/failure-gates.md` §19
+- **section reset 吞 margin-top（静默无报错）**：若模板含 `.reveal section > *:not(svg):not(.deco){margin-top:0 !important}` 这类通配 reset（特异性 0,2,2），section 直接子元素写在 class 里的 `margin-top` 会被静默清零——无报错、无 lint 拦截，直接表现为标题压内容、内容压 nav。section 直接子元素的垂直间距**必须用 inline `style="margin-top:Xpx !important"` 或 padding**，不要写在 class 里（机理与 memphis 封面 `THINGS.` 下沉案例详见 `references/layout-patterns.md`「文字防碰撞规则」）
+- **文字断行（G11 · 用户最痛「一个词/句号变两行」）**：标题 h1-h3 默认 `word-break:keep-all; overflow-wrap:anywhere; text-wrap:balance; line-break:strict`（keep-all 防 CJK 拆字、anywhere 兜底防溢出、balance 均衡行宽）；**标题末尾标点「。」「，」用 `<span style="white-space:nowrap">词。</span>` 绑定前词**——防「单独的句号」甩下行（widow/runt punctuation，slide 真实痛点）；数字+单位、inline 高亮短语 `<em>`/标签 `white-space:nowrap`；**避坑** `break-word/break-all`（肢解英文词，拆词主因）。⚠ `text-wrap:pretty`/`line-break:strict` 实测**不能**解决中文孤标点行——孤标点必须 `nowrap` 绑定。G11 五层机器检测（L1 数字/英文 + L2 孤字/孤标点 + L3a 中文词 + L4 避头尾），详见 `references/failure-gates.md` §19
 
 ### 2. 内容预算（生成 section 前先算）
 
@@ -288,7 +288,7 @@ archetype 序列：每页分配一个 archetype（A1-A12，见 layout-archetypes
 本主题发明变体：≥1 个为本主题调参/改结构的 archetype（不是照抄）
 ```
 
-**退化拦截**：生成后跑 `node scripts/design-strength-check.js <file>`。四维（尺度对比/用色投入/构图张力/隐喻贯彻）任一不达标，**回炉重做骨架，不是微调**。典型退化信号：全 deck display ≤2.5em（尺度太平）、无任何满版色块面板（用色显平）、全是通用卡片无主题原生形式（隐喻没贯彻）。**图像 deck 特别注意**：满版照片不算色块——colorCommit 扫的是 commit background 声明密度（÷ 页数），照片顶替不了。图像 deck 要 colorCommit ≥60 得靠**色块密度**：≥1 页满版色块锚点（`image-driven-deck.md` IP6）+ 数据 / 标签实色 chip + kicker 色带一起上（实测：仅 +1 页锚点 ≈36/100，补 3 个数据 chip 才到 55/100）。
+**退化拦截**：生成后跑 `node scripts/design-strength-check.js <file>`。四维（尺度对比/用色投入/构图张力/隐喻贯彻）任一不达标，**回炉重做骨架，不是微调**。典型退化信号：全 deck display ≤2.5em（尺度太平）、无任何满版色块面板（用色显平）、全是通用卡片无主题原生形式（隐喻没贯彻）。**图像 deck 特别注意**：满版照片不算色块——colorCommit 扫的是 commit background 声明密度（÷ 页数），照片顶替不了。图像 deck 要 colorCommit ≥60 得靠**色块密度**：≥1 页满版色块锚点（`image-driven-deck.md` IP6）+ 数据 / 标签实色 chip + kicker 色带一起上（单独锚点不够，需 chip 密度叠加）。
 
 ### 匹配规则
 
@@ -408,7 +408,7 @@ archetype 序列：每页分配一个 archetype（A1-A12，见 layout-archetypes
 |---|---|---|
 | **地板（合规）** | `node scripts/grade-gate.js <file>` 全绿（十一门禁 G1-G11 合一） | 硬约束、**机器判 verdict，禁止人工放行**（案例见 `references/validation.md` G5 段） |
 | **天花板（设计强度）** | `node scripts/design-strength-check.js <file>` 四维达标 + `node scripts/element-quality-check.js <file>` 元素子分 ≥70 | advisory，任一维不达标 = **回炉重做骨架**，不是微调 |
-| **视觉评审** | `node scripts/visual-qa.js <file> --annotate-overflow --show-fragments` 逐页审阅 + `node scripts/visual-verdict.js <file>` LLM 视觉语义评审 | **P4 生成后必跑、任何视觉改动后必跑**（快速模式也跑）。无视觉模型 key 时：`visual-verdict.js --dry-run` 生成截图+prompt → **仅当会话模型有真实视觉能力时** Claude Read 截图 + 按 rubric 判定 blocker/warning/note → 写入 `/tmp/manual-visual-verdict.json`。**视觉能力自检（必做）**：Read 一张截图后，若返回内容是文件路径/URL/空描述而非像素视觉内容（经某些 harness/proxy 的会话模型读不到图像素，Read 只回路径），即视为无视觉能力 → 此 fallback 判定无效，必须记 `visual-verdict passed=null（dry-run·会话模型无视觉能力）`，**不得声称「Claude 读图判定无 blocker」**（iteration-2 实测：4/6 agent 在无视觉 harness 里仍报告「视觉模型判定通过」，全是无效判定）。**L3b 创意短语断行**（`价格屠夫`/`终点裁决`/`客观缓解率` 等 jieba 切不准的整体短语被拆两行）也走视觉评审，判别规则（R1 残尾孤字 / R2 固定短语切割 + 豁免）见 `references/failure-gates.md` §19 |
+| **视觉评审** | `node scripts/visual-qa.js <file> --annotate-overflow --show-fragments` 逐页审阅 + `node scripts/visual-verdict.js <file>` LLM 视觉语义评审 | **P4 生成后必跑、任何视觉改动后必跑**（快速模式也跑）。无 vision key 走 `--dry-run`；**视觉能力自检 + 反幻觉锚点（必做，防谎报通过）见 `references/validation.md`「视觉能力自检协议」**——无视觉能力必须记 `passed=null`，不得声称读图通过**L3b 创意短语断行**（`价格屠夫`/`终点裁决`/`客观缓解率` 等 jieba 切不准的整体短语被拆两行）也走视觉评审，判别规则（R1 残尾孤字 / R2 固定短语切割 + 豁免）见 `references/failure-gates.md` §19 |
 | **图片资产门禁** | `node scripts/audit-image-assets.js <file>` | 图像驱动 deck 必跑；阻断断图、满版图被放大、满版图低于画布、超宽低高图硬塞 hero、封面/章节/结尾重复大图；警告支撑图重复与背景主题漂移 |
 
 **关键认知**：门禁（地板）与设计强度（天花板）不可互替——合规但四维全默认 = 平庸；通过门禁要削弱设计时，找"既大胆又合规"的解（深化专色到 AA / 反相面板），不是改弱求合规。详见 `references/validation.md`、`references/design-fundamentals.md` §6。
