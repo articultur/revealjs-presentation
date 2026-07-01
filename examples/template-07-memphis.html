@@ -88,8 +88,8 @@
 /* === 7 voices: dialogue = 语义 marker（挂在 voices 气泡区，供 reference-contract 校验"证言"原生对象；无样式，视觉由 voice-bubble 承担）=== */
 
 /* === 8 close: 号召巨物 + 散落联系 === */
-.cta-mega{font-family:var(--f-display);font-weight:800;font-size:3.8em;line-height:0.92;margin:0;position:relative;z-index:3;max-width:80%;}
-.cta-mega em{font-style:normal;background:var(--c-pink);padding:0 14px;display:inline-block;box-shadow:6px 6px 0 var(--c-ink);transform:rotate(-1deg);}
+.cta-mega{font-family:var(--f-display);font-weight:800;font-size:3.8em;line-height:0.92;margin:0;position:relative;z-index:3;max-width:80%;word-break:keep-all;overflow-wrap:anywhere;line-break:strict;text-wrap:balance;}
+.cta-mega em{font-style:normal;background:var(--c-pink);padding:0 14px;display:inline-block;box-shadow:6px 6px 0 var(--c-ink);transform:rotate(-1deg);white-space:nowrap;}
 .contact-scatter{position:absolute;font-family:var(--f-mono);font-size:0.56em;letter-spacing:0.04em;z-index:3;border:2px solid var(--c-ink);padding:8px 12px;box-shadow:4px 4px 0 var(--c-ink);background:var(--c-bg);line-height:1.5;}
 
 .pptx-btn{position:fixed;top:16px;right:16px;z-index:100;font-family:var(--f-mono);font-size:12px;letter-spacing:0.1em;text-transform:uppercase;background:var(--c-ink);color:var(--c-bg);border:none;padding:8px 14px;cursor:pointer;opacity:0;transition:opacity .2s;}
@@ -381,7 +381,7 @@
 <svg aria-hidden="true" data-qa-ignore="decorative" class="band" viewBox="0 0 1136 30"><defs><pattern id="b-teeth2" width="36" height="30" patternUnits="userSpaceOnUse"><path d="M0,30 L18,2 L36,30Z" fill="var(--c-lime)" stroke="var(--c-ink)" stroke-width="2"/></pattern></defs><rect width="1136" height="30" fill="url(#b-teeth2)"/></svg>
 <div class="nav"><span class="id">CLOSE</span><span>MAKE IT LOUD</span></div>
 <!-- CTA width:70% 非对称收窄（asymSplits +1，width 非 50%）-->
-<h2 class="cta-mega" style="margin-top:104px;width:70%;">如果你的品牌<br><em>不被记住</em>，<br>那就是设计的问题。</h2>
+<h2 class="cta-mega" style="margin-top:104px;width:70%;">如果你的品牌<br><em>不被记住</em>，<br>那就是设计<span style="white-space:nowrap">的问题。</span></h2>
 <div class="contact-scatter" style="bottom:90px;right:80px;transform:rotate(-2deg);background:var(--c-coral);">hello@makeloudthings.studio</div>
 <div class="contact-scatter" style="bottom:160px;right:140px;transform:rotate(1deg);background:var(--c-pink);">+86 21 5555 0000</div>
 <div class="contact-scatter" style="bottom:120px;left:90px;transform:rotate(2deg);background:var(--c-teal);">上海 · 阿姆斯特丹</div>

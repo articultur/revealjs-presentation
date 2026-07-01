@@ -50,10 +50,13 @@
     .reveal section.ph-cover, .reveal section.ph-section { padding: 0; background: #11100d !important; }
     .reveal section.ph-stat, .reveal section.ph-spread, .reveal section.ph-faceoff { padding: 0; }
     .reveal section > * { max-width: 100%; box-sizing: border-box; }
-    h1, h2, h3, h4, p, li, span, div { word-break: break-word; overflow-wrap: break-word; }
+    /* 标题 keep-all：CJK 词（城市 / 不是）不在字间断，anywhere 兜底防溢出。
+       正文 normal：长段落字间断防容器撑爆。 */
+    h1, h2, h3, h4 { word-break: keep-all; overflow-wrap: anywhere; text-wrap: balance; line-break: strict; }
+    p, li, span, div { word-break: normal; overflow-wrap: anywhere; }
     img, svg, video { max-width: 100%; max-height: 100%; object-fit: contain; }
     .reveal svg text { stroke: none; paint-order: fill; }
-    .reveal h1, .reveal h2, .reveal h3 { font-family: var(--f-display); line-height: 1.04; letter-spacing: 0; color: var(--c-fg); text-wrap: balance; }
+    .reveal h1, .reveal h2, .reveal h3 { font-family: var(--f-display); line-height: 1.04; letter-spacing: 0; color: var(--c-fg); text-wrap: balance; line-break: strict; }
     .reveal h1 { font-size: 3.3em; font-weight: 900; margin: 0; }
     .reveal h2 { font-size: 1.9em; font-weight: 900; margin: 0 0 0.4em 0; }
     .reveal h3 { font-size: 1.1em; font-weight: 900; margin: 0; }
@@ -214,7 +217,7 @@
         <div class="cover-code">{CITY}</div>
         <div class="cover-content">
           <span class="kicker on-dark">Volume I · 城市影像志</span>
-          <h1>{城市名},一座<br><em>长在照片里</em>的城市。</h1>
+          <h1>{城市名},一座<br><em>长在照片里</em><span style="white-space:nowrap">的城市。</span></h1>
           <p class="cover-deck">一份用实景照片讲故事的城市影像志——图即论据,不是装饰。给第一次来的人,十页影像看完一座城。</p>
           <div class="cover-meta">City Photo Dossier · ed.01 · 10 plates · replace photos with CC-BY from Wikimedia Commons</div>
         </div>
@@ -243,7 +246,7 @@
         </div>
         <div class="text-side">
           <span class="kicker">PLATE · {地标名} / Landmark</span>
-          <h2 style="margin-top: 0.5em;">一座地标,压着<em>一千年的故事</em>。</h2>
+          <h2 style="margin-top: 0.5em;">一座地标,压着<span style="white-space:nowrap"><em>一千年的故事</em>。</span></h2>
           <p class="lede">[始建年代] 始建,[重建年代] 重建。一座地标看过的城市变迁,比任何文字都多。它是这座城市最稳定的视觉锚。</p>
           <div class="stat-row">
             <div class="stat"><div class="v">YYYY</div><div class="lbl">始建 · [朝代]</div></div>

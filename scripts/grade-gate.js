@@ -26,6 +26,7 @@
  *   G8  test-canvas-fill.js      exit 0            (sections fill the 720 canvas)
  *   G9  check-overflow.js        issueCount = 0    (bbox overflow / overlap)
  *   G10 test-spatial-integrity.js exit 0           (surface drift / clipped SVG text)
+ *   G11 test-text-break.js       exit 0            (词/数字跨行断裂)
  *
  * Usage:
  *   node scripts/grade-gate.js <file.html> [<file2.html> ...]
@@ -241,6 +242,23 @@ function runSpatialIntegrity(filePath) {
   };
 }
 
+// ─── G11 · 词/数字跨行断裂（playwright Range.getClientRects + nodejieba 分词） ───
+function runTextBreak(filePath) {
+  const result = spawnSync('node', [path.join(SCRIPTS_DIR, 'test-text-break.js'), filePath], {
+    encoding: 'utf8', timeout: 180_000,
+    env: { ...process.env, NODE_NO_WARNINGS: '1' },
+  });
+  if (result.error) return { passed: false, error: result.error.message };
+  const m = (result.stdout || '').match(/(\d+) break issue\(s\)/);
+  const issueCount = m ? parseInt(m[1], 10) : 0;
+  return {
+    passed: result.status === 0,
+    issueCount,
+    exitCode: result.status,
+    stderr: result.stderr?.trim() || null,
+  };
+}
+
 // ─── Main ─────────────────────────────────────────────────────
 
 const results = [];
@@ -308,7 +326,12 @@ for (const file of files) {
     console.log(`  G10 spatial-integrity:${spatial.passed ? '✓ surfaces aligned' : fail(`✗ ${spatial.issueCount || '?'} issue(s)`)}${spatial.error ? ` (${spatial.error})` : ''}`);
   }
 
-  const allPassed = lint.passed && validate.passed && overlap.passed && mainClaim.passed && evidence.passed && colorRole.passed && contrast.passed && canvas.passed && overflow.passed && spatial.passed;
+  const textBreak = runTextBreak(abs);
+  if (!jsonOnly) {
+    console.log(`  G11 text-break:      ${textBreak.passed ? '✓ no word/number split' : fail(`✗ ${textBreak.issueCount || '?'} break(s)`)}${textBreak.error ? ` (${textBreak.error})` : ''}`);
+  }
+
+  const allPassed = lint.passed && validate.passed && overlap.passed && mainClaim.passed && evidence.passed && colorRole.passed && contrast.passed && canvas.passed && overflow.passed && spatial.passed && textBreak.passed;
   if (!jsonOnly) console.log(`  → ${allPassed ? pass('PASS') : fail('FAIL')}`);
 
   results.push({
@@ -325,6 +348,7 @@ for (const file of files) {
       canvasFill: { passed: canvas.passed, shortCount: canvas.shortCount || 0, error: canvas.error || null },
       checkOverflow: { passed: overflow.passed, issueCount: overflow.issueCount || 0, exitCode: overflow.exitCode || 0, error: overflow.error || null },
       spatialIntegrity: { passed: spatial.passed, issueCount: spatial.issueCount || 0, exitCode: spatial.exitCode || 0, error: spatial.error || null },
+      textBreak: { passed: textBreak.passed, issueCount: textBreak.issueCount || 0, exitCode: textBreak.exitCode || 0, error: textBreak.error || null },
     },
   });
 }
@@ -365,6 +389,7 @@ if (jsonOnly) {
       if (!f.gates?.canvasFill?.passed) reasons.push(`canvas-fill fail (${f.gates?.canvasFill?.shortCount || '?'} short)`);
       if (!f.gates?.checkOverflow?.passed) reasons.push(`check-overflow fail (${f.gates?.checkOverflow?.issueCount || '?'} issues)`);
       if (!f.gates?.spatialIntegrity?.passed) reasons.push(`spatial-integrity fail (${f.gates?.spatialIntegrity?.issueCount || '?'} issues)`);
+      if (!f.gates?.textBreak?.passed) reasons.push(`text-break fail (${f.gates?.textBreak?.issueCount || '?'} breaks)`);
       console.log(failDim(`  ✗ ${path.basename(f.file)}: ${reasons.join(', ') || f.error}`));
     }
   }

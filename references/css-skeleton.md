@@ -52,7 +52,10 @@
 
 /* ── 3. 溢出预防（不可省略） ── */
 .reveal section > * { max-width: 100%; box-sizing: border-box; }
-h1, h2, h3, h4, p, li, span, div { word-break: break-word; overflow-wrap: break-word; }
+/* 标题 keep-all（防 CJK 拆字）+ anywhere 兜底（防溢出，不肢解英文词）+ balance（行宽均衡）+ strict（CJK 标点禁则）；
+   正文 normal + anywhere（允许西文词间断行兜底）。⚠ 禁用 break-word/break-all——肢解英文词是拆词主因（G11，见 failure-gates §19） */
+h1, h2, h3, h4 { word-break: keep-all; overflow-wrap: anywhere; text-wrap: balance; line-break: strict; }
+p, li, span, div { word-break: normal; overflow-wrap: anywhere; }
 img, svg, video { max-width: 100%; max-height: 100%; object-fit: contain; }
 /* 图形 SVG 常在根节点设置 stroke；文字必须取消继承描边，否则投影时会发糊。 */
 .reveal svg text { stroke: none; paint-order: fill; }

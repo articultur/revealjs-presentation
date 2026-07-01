@@ -32,7 +32,8 @@
 
     /* ── 3. 溢出预防 ──────────────────────────────────── */
     .reveal section > * { max-width: 100%; box-sizing: border-box; }
-    h1, h2, h3, h4, p, li, span, div { word-break: break-word; overflow-wrap: break-word; }
+    h1, h2, h3, h4 { word-break: keep-all; overflow-wrap: anywhere; text-wrap: balance; line-break: strict; }
+    p, li, span, div { word-break: normal; overflow-wrap: anywhere; }
     img, svg, video { max-width: 100%; max-height: 100%; object-fit: contain; }
 
     /* ── 4. 排版系统 ──────────────────────────────────── */
