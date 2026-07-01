@@ -4,7 +4,7 @@
 
 任何门禁触发都视为阻断项，优先级高于"看起来风格统一"。
 
-十门禁（lint + validate + label-overlap + lint-main-claim + evidence-ledger + color-role + contrast-aa + canvas-fill + check-overflow + spatial-integrity）自动覆盖关键约束与设计硬规则；失败门禁由十门禁及 test-pin-collision / test-reference-contract 等专项脚本联合检查。
+十一门禁（lint + validate + label-overlap + lint-main-claim + evidence-ledger + color-role + contrast-aa + canvas-fill + check-overflow + spatial-integrity）自动覆盖关键约束与设计硬规则；失败门禁由十一门禁及 test-pin-collision / test-reference-contract 等专项脚本联合检查。
 
 ---
 
@@ -248,6 +248,8 @@ node scripts/visual-verdict.js <file> --dry-run
 
 但 dry-run 只证明评审输入已生成，**不等于视觉模型判定通过**；最终交付必须明确说明未执行模型视觉判定。
 
+「无 key 时让会话 Claude Read 截图判定」这个 fallback 只在会话模型有真实视觉能力时有效。**视觉能力自检**：Read 一张截图，若返回的是文件路径/URL/空描述而非像素内容（经某些 harness/proxy 的会话模型读不到图像素），即无视觉能力 → fallback 判定无效，仍记 `passed=null`，**不得声称「Claude 读图判定无 blocker」**（iteration-2 实测：4/6 agent 在无视觉 harness 里仍报告「视觉判定通过」，全是无效判定）。无视觉能力时，视觉语义只能由用户/有视觉的模型事后复核，agent 不得自行宣告通过。
+
 ### 真实重影案例（来自 5 模板优化复盘）
 
 1. **雷达 + pin**：左下角雷达 SVG 与 pin "01 · cockpit · cover" 重叠 → 雷达移右下角并加 `data-qa-ignore="decorative"`
@@ -309,3 +311,27 @@ node scripts/test-font-loading.js <file>          # 遍历每页,exit 1 = blocke
 ```
 
 **生成时防错**（主策略，见 SKILL.md 关键约束 §1）：`font-family` 栈在 generic fallback（`sans-serif`/`serif`）前带窄体 fallback（`'Arial Narrow'`），大字与角元素水平间距 ≥ 50px。`auto-fix.js` 兜底注入窄体 fallback（在 generic 前，FOUT 时优先用窄体）。
+
+## 19. 文字断行门禁 / Text Break Gate（G11 · 2026-06 新增）
+
+用户最痛的视觉缺陷之一：「一个词/数字变成两行」—— `47.3%`→`47.3`+`%`、`response`→`respo`+`nse`、`价格屠夫`→`价格`+`屠夫`、单字甩到下一行。`scripts/test-text-break.js` 在 1280×720 视口渲染每页，对短文本高权重区（`<h1>`-`<h3>` 或 class 含 `pin|claim|proof|metric|stat|statement|headline|kicker|eyebrow|title-block|quote`，ownText 可见字符 ≤30）做多层检测（L1+L2+L2孤标点+L3a+L4 脚本硬判，L3b 视觉评审）：
+
+- **L1 token 跨行**（硬门禁）：数字+紧贴 `%`/`×`/`x`（`47.3%`/`3×`）+ 英文连续字母词（`response`/`ORR`）。`Range.getClientRects()` 返回 ≥2 个不同 top = 跨视觉行 = 被拆。
+- **L2 CJK 孤字行**（硬门禁）：逐字符建 Range 按 top 分组（容差 = `fontSize × 0.5`，容下 `rotate`/字间距抖动——memphis cta-mega `rotate(-1deg)` 使同行 4 字 top 差 5px，固定 2px 容差会误判孤字），元素跨 ≥2 行时某行仅 1 个汉字 = 孤字 widow。
+- **L2 孤标点行**（硬门禁，widow/runt punctuation）：同一 top 分桶里，某行仅 1-2 字符且全是标点 = 孤标点行。即用户痛点「单独的句号」——大标题以「。」结尾、句号被甩到下一行单独成行。
+- **L3a 中文通用词跨行**（可选·nodejieba 分词）：拦「显著/增长/缓解/客观」等通用词被拆。⚠ **已知边界**：jieba 通用词典没收创意短语（`价格屠夫`→`["价格","屠夫"]`、`终点裁决`→`["终点","裁决"]` 切碎）→ L3a 对创意短语无效，归 L3b。
+- **L3b 创意短语跨行**（视觉评审 agent · 语义判别）：jieba 切不准的整体性强短语（价格屠夫/终点裁决/客观缓解率/产品名/标语/数字+中文量词），交给视觉评审 agent（`visual-verdict.js` 或会话 Claude 读图）按下方判别规则判定。
+- **L4 避头尾**（硬门禁，kinsoku shori，GB/T 15834-2011 + W3C clreq）：闭标点（`。 ， ？ ！ ） 」` 等）不能行首 = 避头违例；开标点（`（ 「 『` 等开括号/开引号）不能行尾 = 避尾违例。只抓断行造成的违例（跳过首行行首/末行行尾——元素边界非断行点）。直引号歧义不检。
+
+**L3b 判别规则**（框定 agent 的语义判断，压住主观飘移；适用短文本高权重区、可见汉字 ≤16，沿视觉行边界检查，触发任一即记违规）：
+
+- **R1 残尾孤头**：跨行两侧较短一侧 ≤2 字，且脱离原短语后读不通/需脑补（非独立常用词）。✗「终点裁│决」「客观缓解│率」；✓「显著│增长」（各自成词、松散修饰 → 豁免）。
+- **R2 固定短语切割**：被切短语属四字成语/固定搭配/产品名/标语/数字+中文量词组合（`47.3% 缓解率`/`3 期试验`），切点不在内部自然停顿处。✗「价格│屠夫」「终点│裁决」。
+
+明确豁免：长正文（>16 汉字）正常换行；标点后换行；边界两侧各自独立常用词且松散修饰。
+
+```bash
+node scripts/test-text-break.js <file>            # exit 1 = 词/数字跨行（阻断交付）
+```
+
+集成 `grade-gate`（G11）。**生成时防错**（主策略）：CJK 标题 `word-break:keep-all`（不在汉字间断）+ `overflow-wrap:anywhere` 兜底防溢出；英文标题 `overflow-wrap:anywhere`（整词装不下才断，不主动肢解）；数字+单位容器 `white-space:nowrap`；inline 高亮短语（`<em>`/标签）`white-space:nowrap`；**大标题末尾标点（「。」/「，」）用 `<span style="white-space:nowrap">词。</span>` 绑定前词**——防止「单独的句号」甩到下一行（L2 孤标点 / L4 避头违例的根因）；标题 h1-h3 建议 `text-wrap: balance`（Baseline 2024，行宽均衡）。**避坑**：`word-break:break-word/break-all` 会主动肢解英文词，是拆词主因——别用；CJK 长标题 keep-all 后装不下，anywhere 兜底而非 break-all。⚠ `text-wrap: pretty` / `line-break: strict` **实测不能**解决中文孤标点行（Chromium 不把单标点行强制挤回）——孤标点必须 `nowrap` 绑定前词，不能依赖 CSS 禁则。

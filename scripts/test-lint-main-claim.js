@@ -46,16 +46,25 @@ function topicWords(text) {
   return cjk ? [...new Set(cjk)] : [];
 }
 
-// Check if any topic word from pin appears in main-visual text
+// Check whether main-visual area carries the slide's topic expression.
+//
+// gate 意图：pin 不应是 sole topical expression —— 主题应由 main 区承担。
+//
+// O7 修复（中文 deck 适配，iteration-2 临床/乡愁 v1 实测）：
+// 旧逻辑要求 pin 的中文主题词在 main 区「字面重复」(pinTopics.every(w => main.includes(w)))。
+// 这对中文 deck 过严：中文 pin 常用概括索引词（终点裁决 / 价格屠夫 / 回不去），
+// 而 main 区用具体命题或英文临床数据（ORR 47.3%），字面不匹配但主题明确由 main 承担。
+// 旧逻辑逼 agent 把中文 pin 改成英文索引（iteration-2 v1 实测），违背中文 deck 自然语义。
+//
+// 新逻辑：只要 main 区有实质主题表达（h1/h2/h3/大字号/claim 类拼接 ≥6 字符），
+// 即视为主题由 main 承担、pin 不是 sole claim → pass。
+// 仅当 main 区几乎空（<6 字符，pin 真的是唯一主题表达）才 fail。
+// 英文 pin（种子模板）不受影响：topicWords 返回 [] → 上面 early return true。
 function topicCoveredByMain(pinText, mainText) {
   const pinTopics = topicWords(pinText);
-  if (pinTopics.length === 0) return true;  // no extractable topic = pass
-  const mainLower = mainText.toLowerCase();
-  return pinTopics.every(w => {
-    // Check both exact and lowercased
-    if (mainLower.includes(w.toLowerCase())) return true;
-    return false;
-  });
+  if (pinTopics.length === 0) return true;  // 英文索引 pin，无主题词，pass
+  const mainTrimmed = mainText.replace(/\s+/g, ' ').trim();
+  return mainTrimmed.length >= 6;  // main 有实质主题表达 → 主题由 main 承担
 }
 
 // ─── Main ─────────────────────────────────────────────────────

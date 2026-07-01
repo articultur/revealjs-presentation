@@ -1,0 +1,62 @@
+{
+  "skill_name": "revealjs-presentation",
+  "iteration": 1,
+  "baseline_config": "without_skill",
+  "rationale": "第一轮基线：当前 skill 尚未修改，old snapshot = current 无对比意义。用 without_skill 看 skill 增量 + 绝对失效点。第二轮改进后再用 old(v1) vs new(v2)。",
+  "evals": [
+    {
+      "id": 1,
+      "name": "clinical-trial-gap",
+      "layer": "L1",
+      "sut": "路由覆盖 — Style Gap（9 模板不沾）",
+      "prompt": "我们药厂下周要给投资人讲一个新药 II 期临床试验结果，得做个 deck。核心数据：客观缓解率 47.3%（对照组才 12.1%）、中位无进展生存期 8.2 个月、3 级以上不良事件 23%。这内容太严肃了，不能有任何花哨的视觉，但又不能做成 word 搬家那种丑 PPT。临床术语保留英文。15 页，专业模式，你先把方向给我看。",
+      "expected": "主动声明 Style Gap（临床不在 9 种子）+ 走四件套，不硬套 dark-tech/editorial；Gate 模式 P1 后 STOP；数据带 evidence status；中英混排；~15 页",
+      "files": []
+    },
+    {
+      "id": 2,
+      "name": "ev-history-5pages",
+      "layer": "L1",
+      "sut": "约束仲裁 — §8 页数 ↔ §2 内容预算",
+      "prompt": "做个中国新能源汽车 10 年发展史，给完全不懂行的朋友科普。从 2014 年补贴政策讲起，到 2024 年集体出海，中间得讲到比亚迪/特斯拉这些玩家、纯电/插混/增程几条技术路线、还有几个关键政策转折点。但我只要 5 页，讲多了人听不进去。中文，取舍你自己定。",
+      "expected": "5 页（偏差 ≤1）；做论证级取舍而非删内容凑数或塞 bullet 溢出；历程形状路由 01；科普语气",
+      "files": []
+    },
+    {
+      "id": 3,
+      "name": "fix-broken-deck",
+      "layer": "L2",
+      "sut": "任务类型 — 修复 ≠ 生成",
+      "prompt": "我之前用这个 skill 做了个团队介绍 deck，但有几个毛病：第 3 页文字被右边切掉一截、第 5 页角标和页码叠在一起了、还有一页投影仪上显示不全。HTML 文件在 input/broken-deck.html，帮我修，别动整体设计。",
+      "expected": "诊断出 3 个 bug（p3 nowrap 溢出 / p4 高度超出 / p5 badge-pin 重叠）；只修 bug 不重做设计；修后过 grade-gate/test-label-overlap",
+      "files": ["input/broken-deck.html"]
+    },
+    {
+      "id": 4,
+      "name": "ai-launch-grade",
+      "layer": "L2",
+      "sut": "模式判别 — launch-grade 触发",
+      "prompt": "我们做了个新的 AI 编程助手，下个月有公开线上发布会，几千人看。这 deck 是产品门面，要惊艳、要苹果发布会那种水准。你发挥到极致就行。",
+      "expected": "识别 launch-grade 发布会级模式（惊艳/发布会/苹果水准/public）→ 走 launch-grade.md（storyboard+golden-reference+截图+test-launch-grade-contract+PPTX 证明），不只当普通 vibrant-gradient 快速生成",
+      "files": []
+    },
+    {
+      "id": 5,
+      "name": "vertical-916",
+      "layer": "L3",
+      "sut": "画布预设 — 9:16 竖屏",
+      "prompt": "我在做小红书账号，想用 deck 形式做一期「手冲咖啡入门」。但要竖屏的，手机刷那种比例，不是横屏 PPT。每页一张大图配一句话，9 页。",
+      "expected": "处理非 16:9 画布（skill 硬编码 1280×720）；要么给出竖屏方案，要么明确说明能力边界而非硬套横屏",
+      "files": []
+    },
+    {
+      "id": 6,
+      "name": "nostalgia-no-proof",
+      "layer": "L3",
+      "sut": "论证框架 — 无 proof object",
+      "prompt": "读书会下月主题是「乡愁」，想做个 deck 引发讨论。不要数据、不要图表、不要截图——就是用文字和氛围让人有感触。10 页，中文，要有文学性。",
+      "expected": "处理无论证/无 proof object 的情绪主题；不强行套 action-title 论证框架或塞假数据；有文学性视觉氛围",
+      "files": []
+    }
+  ]
+}
