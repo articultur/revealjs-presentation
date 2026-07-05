@@ -2,6 +2,7 @@
 node_modules/
 .playwright-mcp/
 .omc/
+.impeccable/
 *.pptx
 *.pdf
 *.skill
