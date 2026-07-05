@@ -14,14 +14,16 @@
  *   c 修完重跑 grade-gate + validate + label-overlap,issues 数必须降,否则回退
  *
  * 修复分级:
- *   SAFE     字体窄体 fallback + pin 泄漏 display:none(零风险,默认总应用)
+ *   SAFE     pin 泄漏 display:none(零风险,默认应用)+ 字体窄体 fallback(--inject-font-fallback;默认关,改全部 font-family 影响 voice)
  *   ATTEMPT  溢出 section 缩字号 5% / pin 移右下(需 --aggressive;c 验证才保留)
  *   REPORT   对比度失败 / 视觉 blocker(报告转人工,不改——避免伤 voice)
  *
  * Usage:
- *   node scripts/auto-fix.js <html>                 # 只 SAFE 修复(in-place)
+ *   node scripts/auto-fix.js <html>                 # dry-run(默认,只报告不落盘)
+ *   node scripts/auto-fix.js <html> --write         # 原地应用(默认 dry-run,需显式 --write)
  *   node scripts/auto-fix.js <html> --out fixed.html
  *   node scripts/auto-fix.js <html> --aggressive    # 加 ATTEMPT 修复
+ *   node scripts/auto-fix.js <html> --inject-font-fallback  # 字体窄体 fallback(默认关:改全部 font-family 影响 voice)
  *   node scripts/auto-fix.js <html> --max-iter 3
  *
  * Exit codes:
@@ -39,6 +41,8 @@ const htmlFile = args.find(a => !a.startsWith('--'));
 const outIdx = args.indexOf('--out');
 const outFile = outIdx >= 0 ? args[outIdx + 1] : null;
 const aggressive = args.includes('--aggressive');
+const write = args.includes('--write');
+const injectFontFallback = args.includes('--inject-font-fallback');
 const maxIterIdx = args.indexOf('--max-iter');
 const maxIter = maxIterIdx >= 0 ? parseInt(args[maxIterIdx + 1], 10) : 3;
 
@@ -186,7 +190,7 @@ let bestIssues = baseline.total;
 // maxIter 为未来迭代类修复预留;当前 SAFE+ATTEMPT 单轮 + c 验证即收敛。
 iter = 1;
 const fixes = [];
-const f1 = fixFontFallbacks(html);
+const f1 = injectFontFallback ? fixFontFallbacks(html) : { html, changed: 0 };
 const f2 = fixPinLeak(f1.html);
 if (f1.changed) fixes.push(`字体窄体 fallback ×${f1.changed}`);
 if (f2.changed) fixes.push('pin 泄漏 display:none');
@@ -220,11 +224,16 @@ if (after.total > bestIssues) {
   bestIssues = after.total;
 }
 
-// 写出
-const dest = outFile ? path.resolve(outFile) : filePath;
-fs.writeFileSync(dest, finalHtml);
-console.log('');
-console.log(`  ✓ 已写出: ${dest}${dest === filePath ? ' (in-place)' : ''}`);
+// 写出(默认 dry-run:只报告不落盘;--write 原地,--out 写新文件)
+if (!write && !outFile) {
+  console.log('');
+  console.log(`  ✓ dry-run(默认):未落盘。加 --write 原地应用,或 --out <file> 写新文件。`);
+} else {
+  const dest = outFile ? path.resolve(outFile) : filePath;
+  fs.writeFileSync(dest, finalHtml);
+  console.log('');
+  console.log(`  ✓ 已写出: ${dest}${dest === filePath ? ' (in-place)' : ''}`);
+}
 console.log(`  最终 issues: ${baseline.total} → ${bestIssues}`);
 console.log('');
 

@@ -104,7 +104,7 @@ assert(
 console.log('  [3/5] auto-fix 注入字体 fallback 不破坏 deck');
 const fixedCopy = deckPath + '.regression-tmp';
 fs.copyFileSync(deckPath, fixedCopy);
-const autofix = run('auto-fix.js', [fixedCopy]);   // in-place SAFE
+const autofix = run('auto-fix.js', [fixedCopy, '--write', '--inject-font-fallback']);   // in-place SAFE + font fallback
 const fixedHtml = fs.readFileSync(fixedCopy, 'utf8');
 fs.unlinkSync(fixedCopy);
 assert(
