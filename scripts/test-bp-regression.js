@@ -106,7 +106,7 @@ const fixedCopy = deckPath + '.regression-tmp';
 fs.copyFileSync(deckPath, fixedCopy);
 const autofix = run('auto-fix.js', [fixedCopy, '--write', '--inject-font-fallback']);   // in-place SAFE + font fallback
 const fixedHtml = fs.readFileSync(fixedCopy, 'utf8');
-fs.unlinkSync(fixedCopy);
+try { fs.unlinkSync(fixedCopy); } catch {}  // 防异常致 .regression-tmp 残留,review fix
 assert(
   'auto-fix 字体 fallback 在 generic 前(Arial Narrow, sans-serif)',
   /'Arial Narrow',\s*sans-serif/.test(fixedHtml) || /'Arial Narrow',\s*serif/.test(fixedHtml),

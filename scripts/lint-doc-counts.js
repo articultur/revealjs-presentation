@@ -48,11 +48,14 @@ const FORBIDDEN = [
   // 失败门禁数:权威 = 19 条(§1-§19)
   { re: /13 条失败门禁/g, name: '旧失败门禁数「13 条失败门禁」(应为 19 条)' },
   { re: /15 条失败门禁/g, name: '旧失败门禁数「15 条失败门禁」(应为 19 条)' },
+  { re: /1[345] 条门禁/g, name: '旧失败门禁数「N 条门禁」(无"失败"前缀,应为 19 条;review fix:原正则要求"失败"前缀致 CI 假绿)' },
 ];
 
 // 历史档案豁免(旧计数是其历史叙述,非当前事实)
+// + 本脚本自身:FORBIDDEN 数组的定义字符串含旧计数词,扫 .js 时会 self-match
 const EXEMPT = new Set([
   path.join(ROOT, 'references/template-differentiation-audit.md'),
+  path.join(ROOT, 'scripts/lint-doc-counts.js'),
 ]);
 
 function walkMd(dir) {
@@ -69,7 +72,15 @@ function walkMd(dir) {
   return out;
 }
 
-const files = [...walkMd(ROOT)];
+// scripts/*.js 注释也扫(.js 陈旧门禁计数同样误导,review fix:原只扫 .md 漏 .js)
+function walkJs(dir) {
+  if (!fs.existsSync(dir)) return [];
+  return fs.readdirSync(dir, { withFileTypes: true })
+    .filter(e => e.isFile() && e.name.endsWith('.js'))
+    .map(e => path.join(dir, e.name));
+}
+
+const files = [...walkMd(ROOT), ...walkJs(path.join(ROOT, 'scripts'))];
 const findings = [];
 
 for (const file of files) {
@@ -90,7 +101,7 @@ console.log('╔═════════════════════�
 console.log('║  lint-doc-counts · 文档计数 vs 实装一致性     ║');
 console.log('╚══════════════════════════════════════════════╝');
 console.log(`  权威:G1-G12(十二门禁)· 9 seed template · §1-§19(19 条失败门禁)`);
-console.log(`  扫描 ${files.length} 个 .md(豁免 ${EXEMPT.size} 历史档案)`);
+console.log(`  扫描 ${files.length} 个文档(.md + scripts/*.js;豁免 ${EXEMPT.size})`);
 
 if (findings.length === 0) {
   console.log('\n  ✅ 无旧计数残留——文档计数与实装一致');

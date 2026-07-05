@@ -312,7 +312,7 @@ archetype 序列：每页分配一个 archetype（A1-A12，见 layout-archetypes
 
 本项目优先保持单文件 HTML 和导出稳定。场景 → 选择映射表（KPI/趋势 → 纯 CSS-SVG；流程/系统 → diagram-system；密集数据 → 拆页,Bento 只作单页原语；地图/网络 → 静态 SVG 避免导出失真；严格表格 → 减内容不缩字号）见 `references/data-viz.md` §图表/Bento 取舍。
 
-### 失败模式门禁（15 条速查 / 完整说明见 `references/failure-gates.md`）
+### 失败模式门禁（§1-15 速查 + §16-19 新增，完整说明见 `references/failure-gates.md`）
 
 | # | 门禁 | 一句话 |
 |---|------|--------|
@@ -483,7 +483,7 @@ bash scripts/setup.sh          # 仅环境检查
 | **加动效** | `references/motion-delight.md` | 时机、easing 曲线、6 种高级模式 |
 | **调垂直平衡** | `references/visual-check.md` | visual-check 指标（重心/跨度/画布）、可接受取舍、假阳性、和 visual-qa 的分工 |
 | **配 Reveal** | `references/technical-specs.md` | CDN、插件、三端适配、固定画布 |
-| **失败门禁详解** | `references/failure-gates.md` | 15 条门禁完整说明 + 真实重影案例 |
+| **失败门禁详解** | `references/failure-gates.md` | 19 条门禁完整说明 + 真实重影案例 |
 | **验证脚本与门禁（总参考）** | `references/validation.md` | 三层模型、十二门禁 G1-G12、完整脚本清单、阻断条件表、impeccable 覆盖映射、G6/G7 分工、评估集成 |
 | **模板差异化审计** | `references/template-differentiation-audit.md` | 跨模板相似度审查证据、首页并排对比方法 |
 | **专业模式评审** | `references/pipeline-phases.md` | Phase Gate 检查表、发现访谈、P5 分层 |

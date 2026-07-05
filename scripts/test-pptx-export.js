@@ -56,6 +56,10 @@ function extractSections(html) {
   return sections.map(sec => {
     const $sec = $(sec);
     // h1 优先,否则 h2/h3(action title 语义)
+    // 直接子 h1/h2/h3 优先(主标题语义,对齐 export-pptx 的 section 直接子处理)。
+    // 不用 find:dark-tech 等模板每页有多个嵌套 h2/h3(终端标签),find().first() 命中嵌套小标题
+    // 而非主 h1 → 误报"缺 h1"。已知局限:嵌套在 div/cover 内的主 h1 不校验(9 examples 主标题
+    // 均为 section 直接子;若未来模板把主 h1 嵌套,再优化为"直接子优先,无则 find h1")。
     const h1El = $sec.children('h1,h2,h3').first();
     const h1 = h1El.text().replace(/\s+/g, ' ').trim();
     return { h1 };

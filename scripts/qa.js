@@ -124,7 +124,7 @@ function visualMode() {
   // 真实模型评审 = 外发截图到 vision 模型。必须同时满足 OPENAI_API_KEY + 显式 opt-in
   // (VISUAL_VERDICT_OPT_IN=1,默认关防意外外发)。无 key 或未 opt-in → blocked,不再静默
   // 降级 dry-run 假通过(评估 P0 修复项 G001-③:感官缺陷只靠 visual-verdict,失能时必须
-  // 强制人工签字,不能让 G1-G10 全绿的 deck 蒙混交付)。
+  // 强制人工签字,不能让 G1-G12 全绿的 deck 蒙混交付)。
   if (forceVisual) {
     if (!process.env.OPENAI_API_KEY) return 'blocked-no-key';
     if (!visualOptIn) return 'blocked-no-optin';

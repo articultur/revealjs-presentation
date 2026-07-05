@@ -49,6 +49,17 @@ const overflowDetectCode = fs.readFileSync(path.join(__dirname, 'overflow-detect
   await page.evaluate(() => { window.__REVEALJS_VALIDATE_DISABLE_AUTO_RUN__ = true; });
   await page.addScriptTag({ content: overflowDetectCode });
 
+  // assert 扫描器成功注入:overflow-detect IIFE 若有运行时错误(非语法错误,addScriptTag 不抛),
+  // comprehensiveOverflowScan 保持 undefined → evaluate return null → if(scan) 跳过 → 0 issue 假通过。
+  // stderr 的 scriptBug 正则捕获不到 IIFE 运行时错误,故此处显式 assert,失败 exit 2(grade-gate G9
+  // parseFailed 捕获 → fail-closed)。review G004-① HIGH。
+  const scannerReady = await page.evaluate(() => typeof window.comprehensiveOverflowScan === 'function');
+  if (!scannerReady) {
+    console.error('❌ comprehensiveOverflowScan 未注入(overflow-detect.js IIFE 运行时错误)—— fail-closed');
+    await browser.close();
+    process.exit(2);
+  }
+
   const n = await page.evaluate(() => (typeof Reveal !== 'undefined' && Reveal.getTotalSlides) ? Reveal.getTotalSlides() : 0);
   if (!n) { console.error('❌ Reveal 未加载或无 slides'); await browser.close(); process.exit(2); }
 

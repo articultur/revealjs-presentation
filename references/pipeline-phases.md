@@ -22,7 +22,7 @@
 | 5 | 优化迭代 | 执行的 skills 列表和结果 |
 | 6 | 最终检查 | Phase 6 检查报告 + 用户交付确认 |
 
-十二门禁（lint + validate + label-overlap + lint-main-claim + evidence-ledger + color-role + contrast-aa + canvas-fill + check-overflow + spatial-integrity）自动覆盖关键约束与设计硬规则；失败门禁由十二门禁及 test-pin-collision / test-reference-contract 等专项脚本联合检查。
+十二门禁（lint + validate + label-overlap + lint-main-claim + evidence-ledger + color-role + contrast-aa + canvas-fill + check-overflow + spatial-integrity + text-break + design-strength）自动覆盖关键约束与设计硬规则；失败门禁由十二门禁及 test-pin-collision / test-reference-contract 等专项脚本联合检查。
 
 内容-版式贴合度是 P1/P3/P6 的跨阶段 Gate：P1 预判内容形状、主 proof object 与版式服务关系；P3 审查是否内容被硬塞进模板或版式不解释主张；P6 用 visual-verdict / 人工审阅做视觉语义验收。
 
@@ -35,7 +35,7 @@
 | P0-6 总架构 | `references/layered-architecture.md` | 外部项目取舍、六层职责、轻量合同 |
 | P0-1 设计上下文/语法 | `references/design-polish.md` | Theme-to-Design Router 完整说明、页面原语、签名时刻 |
 | P0-1 色彩/字体 | `references/design-principles.md` | 配色方案、字体系统、反模式 |
-| P2-3 评审 | `references/failure-gates.md` + `references/impeccable-integration.md` | 15 条门禁、impeccable 命令映射 |
+| P2-3 评审 | `references/failure-gates.md` + `references/impeccable-integration.md` | 19 条门禁、impeccable 命令映射 |
 | P4 生成骨架 | `references/css-skeleton.md` + `references/technical-specs.md` | CSS 骨架、CDN/插件/三端适配 |
 | P4 元素语义路由 | `references/element-semantics.md` | 所有 deck 先读,再显式分派 13 类元素: proof object / motion / icon / table / data-viz / diagram / image / code / metric / quote-evidence / annotation / page furniture / whitespace |
 | P4 布局/图表/图标/图片 | `references/layout-patterns.md` / `references/diagram-system.md` / `references/data-viz.md` / `references/icon-system.md` / `references/image-system.md` | 按需加载 |

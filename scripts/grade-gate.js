@@ -212,7 +212,7 @@ function runCheckOverflow(filePath) {
   const m = (result.stdout || '').match(/(\d+) issue\(s\)/);
   const issueCount = m ? parseInt(m[1]) : null;
   // 脚本内部 bug 说明 G9 失效；门禁必须 fail-closed，避免坏检测静默放行。
-  const scriptBug = /ReferenceError|TypeError|SyntaxError|^Error:/m.test(stderr);
+  const scriptBug = /(?:Reference|Type|Syntax|Range|URI|Eval|Aggregate)Error|^Error:/m.test(stderr);
   const parseFailed = issueCount === null;
   return {
     passed: result.status === 0 && !scriptBug && !parseFailed && issueCount === 0,
@@ -240,7 +240,7 @@ function runSpatialIntegrity(filePath) {
   const isClear = /spatial integrity clear|OK: spatial integrity/i.test(stdout);
   const issueCount = m ? parseInt(m[1], 10) : (isClear ? 0 : null);
   // 脚本内部 bug 说明 G10 失效;门禁必须 fail-closed,避免坏检测静默放行(对齐 G9 runCheckOverflow)。
-  const scriptBug = /ReferenceError|TypeError|SyntaxError|^Error:/m.test(stderr);
+  const scriptBug = /(?:Reference|Type|Syntax|Range|URI|Eval|Aggregate)Error|^Error:/m.test(stderr);
   const parseFailed = issueCount === null;
   return {
     passed: !scriptBug && !parseFailed && issueCount === 0,
@@ -268,7 +268,7 @@ function runTextBreak(filePath) {
   const isClear = /no text break|OK: no text breaks/i.test(stdout);
   const issueCount = m ? parseInt(m[1], 10) : (isClear ? 0 : null);
   // 脚本内部 bug 说明 G11 失效;门禁必须 fail-closed,避免坏检测静默放行(对齐 G9 runCheckOverflow)。
-  const scriptBug = /ReferenceError|TypeError|SyntaxError|^Error:/m.test(stderr);
+  const scriptBug = /(?:Reference|Type|Syntax|Range|URI|Eval|Aggregate)Error|^Error:/m.test(stderr);
   const parseFailed = issueCount === null;
   return {
     passed: !scriptBug && !parseFailed && issueCount === 0,

@@ -4,7 +4,7 @@
 
 任何门禁触发都视为阻断项，优先级高于"看起来风格统一"。
 
-十二门禁（lint + validate + label-overlap + lint-main-claim + evidence-ledger + color-role + contrast-aa + canvas-fill + check-overflow + spatial-integrity）自动覆盖关键约束与设计硬规则；失败门禁由十二门禁及 test-pin-collision / test-reference-contract 等专项脚本联合检查。
+十二门禁（lint + validate + label-overlap + lint-main-claim + evidence-ledger + color-role + contrast-aa + canvas-fill + check-overflow + spatial-integrity + text-break + design-strength）自动覆盖关键约束与设计硬规则；失败门禁由十二门禁及 test-pin-collision / test-reference-contract 等专项脚本联合检查。
 
 ---
 

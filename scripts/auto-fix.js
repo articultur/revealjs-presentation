@@ -70,7 +70,7 @@ function runScript(name, file) {
   return { status: r.status, stdout: r.stdout || '', stderr: r.stderr || '' };
 }
 
-// grade-gate 是 single source of truth(G1-G10 合一,内部已跑 validate G2 + label-overlap G3)
+// grade-gate 是 single source of truth(G1-G12 合一,内部已跑 validate G2 + label-overlap G3)
 // 不再单独跑 validate/label-overlap——会 double/triple-count 致 c-validation 失真(review C1)
 function countIssues(file) {
   if (!fs.existsSync(path.join(SCRIPTS, 'grade-gate.js'))) {
@@ -81,7 +81,7 @@ function countIssues(file) {
   if (/Grade Gate:\s*✓\s*PASS/i.test(out)) {
     return { total: 0, detail: [], firstBlocking: null };
   }
-  // 数失败的 G(G1-G10 行,行尾 ✗)——比 exit code 更精确(review I5)
+  // 数失败的 G(G1-G12 行,行尾 ✗)——比 exit code 更精确(review I5)
   const failedGates = [...out.matchAll(/^\s*(G\d+[^\n:]*?):\s*✗/gm)].map(m => m[1].trim());  // 允许行首缩进(grade-gate G 行有前导空格)
   const total = failedGates.length || 1;
   const detail = failedGates.length
