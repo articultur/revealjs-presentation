@@ -28,8 +28,9 @@
     "test:initial-slide-visible": "node scripts/test-initial-slide-visible.js",
     "test:text-collision": "node scripts/test-text-collision.js examples/template-07-memphis.html",
     "test:text-break": "node scripts/test-text-break.js examples/template-*.html",
+    "test:pptx-export": "node scripts/test-pptx-export.js examples/template-*.html",
     "test:doc-counts": "node scripts/lint-doc-counts.js",
-    "test": "npm run test:doc-counts && npm run test:validate-overflow && npm run test:reference-contract && npm run test:launch-grade-contract && npm run test:qa-system-contract && npm run test:off-template-regression && npm run test:lint-main-claim && npm run test:initial-slide-visible && npm run test:text-collision && npm run test:text-break",
+    "test": "npm run test:doc-counts && npm run test:validate-overflow && npm run test:reference-contract && npm run test:launch-grade-contract && npm run test:qa-system-contract && npm run test:off-template-regression && npm run test:lint-main-claim && npm run test:initial-slide-visible && npm run test:text-collision && npm run test:text-break && npm run test:pptx-export",
     "doctor": "bash scripts/doctor.sh"
   },
   "dependencies": {

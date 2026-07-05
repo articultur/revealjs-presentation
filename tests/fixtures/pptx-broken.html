@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="utf-8">
+  <title>pptx-broken fixture</title>
+</head>
+<body>
+  <div class="reveal"><div class="slides">
+    <section>
+      <h1>第一页有标题</h1>
+      <p>这一页有正常内容,导出后应保留标题与正文文本框。</p>
+    </section>
+    <section>
+      <!-- 故意空 section:无 h1、无 p、无任何文本元素。
+           export-pptx.js 导出此页只剩右下角页码 "2/2"(3 字符),
+           test-pptx-export.js 的「文本 < 5 字符 = 空白页」校验应判红。
+           模拟 launch-grade 行 66「proof object / 标题丢失」阻断场景。 -->
+    </section>
+  </div></div>
+</body>
+</html>

@@ -36,7 +36,7 @@
 7. 做“页脚主题反查”：逐页读左下角 `pin`，确认其中的主题词已经在主视觉区域出现或被等价表达。`pin` 只能是索引，不能是本页唯一标题；否则把主题词升级到标题、色块、主图形、核心数据或 quote。
 8. 做“颜色角色反查”：主标题/主数字/主 proof object 是否使用最高层级颜色；来源、页码、脚注是否退到低层级。若强调色随机散落或页脚比主标题更像主题，返工。
 9. 对照 golden reference（`tests/fixtures/launch-grade-principles.html`）：新稿至少要有同等级的开场识别、布局变化、色彩决断和完整页密度；若看起来像普通汇报、模板页或报告页，回到 storyboard。
-10. 运行 `node scripts/export-pptx.js <file> -o /private/tmp/<deck>.pptx`，确认 PPTX 至少保留标题、核心结论、主图形和色彩层级。
+10. 运行 `node scripts/export-pptx.js <file> -o /private/tmp/<deck>.pptx`，再跑 `node scripts/test-pptx-export.js <file>` 机器化冒烟校验（slide 数=section 数 + 标题不丢 + 无空白页，G006）；机器校验绿后人工确认 PPTX 至少保留核心结论、主图形和色彩层级。
 11. 运行 `node scripts/test-launch-grade-contract.js`，确保 skill 的发布会级流程、golden reference 和验证命令没有退化。
 
 ## Scoring Rubric
