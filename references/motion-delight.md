@@ -380,6 +380,81 @@ document.addEventListener('keydown', function(e) {
 
 ---
 
+## 循环动效模式（持续过程可见）
+
+> 适用：信号传输 / 能量传导 / 活跃状态等"一直在发生"的动态过程。静态图体现不了，循环动效让它持续可见。**整 deck ≤3 处，每页 ≤2 个 `infinite`**。配合 SKILL.md §动效决策清单使用——只给"持续流/一直在跑"类内容加，其他用 fragment 或不动效。
+
+### flow · 蚂蚁线流动（信号/数据传输）
+
+互连线、信号线、数据流的虚线持续流动。最适合 GPU↔HBM、节点间传输、网络流、管线。
+
+```css
+@keyframes motion-flow { to { stroke-dashoffset: -24; } }
+.motion-signal { stroke-dasharray: 5 7; animation: motion-flow 1.4s linear infinite; }
+```
+
+挂到 `<g>`（整组线流动）或单个 `<line>`/`<path>`。`linear` easing 是这里唯一推荐 linear 的场景（持续匀速流动）。reduced-motion 时变实线不流动。
+
+### pulse · 呼吸脉冲（传导/活跃）
+
+铜柱、连接点、活跃节点的 opacity 呼吸。最适合"能量在传导"的垂直/点状元素。
+
+```css
+@keyframes motion-pulse { 0%,100% { opacity: 0.4; } 50% { opacity: 1; } }
+.motion-pulse { animation: motion-pulse 1.8s ease-in-out infinite; }
+```
+
+挂到 `<g>`（包裹多元素整组呼吸）或单个 `<rect>`/`<circle>`。周期 1.6-2.4s（太短像闪烁，太长拖沓）。
+
+### glow · 发光呼吸（关键活跃元素）
+
+`drop-shadow` 半径呼吸。给"关键活跃"元素（服务器、核心节点、签名时刻）加发光感。
+
+```css
+@keyframes motion-glow { 0%,100% { filter: drop-shadow(0 0 4px var(--c-accent)); } 50% { filter: drop-shadow(0 0 14px var(--c-accent)); } }
+.motion-glow { animation: motion-glow 2.4s ease-in-out infinite; }
+```
+
+慎用——发光是强表达，整 deck 1-2 处足够。
+
+### grow · 一次性进场生长（对比/增长）
+
+柱状条、进度条从左生长。**不是循环**（`forwards` 一次性），但常和循环动效配套（对比页：柱生长 + 信号流动）。
+
+```css
+@keyframes motion-grow { to { transform: scaleX(1); } }
+.motion-bar { transform-origin: left center; transform: scaleX(0); }
+.motion-bar.play { animation: motion-grow 0.9s cubic-bezier(0.22,1,0.36,1) forwards; }
+```
+
+`.play` class 由 JS 在 `slidechanged` 时给当前 slide 元素加（触发进场）：
+
+```javascript
+Reveal.on('slidechanged', function(ev) {
+  ev.currentSlide.querySelectorAll('[data-anim]').forEach(function(el) {
+    el.classList.remove('play');
+    requestAnimationFrame(function() {
+      requestAnimationFrame(function() { el.classList.add('play'); });
+    });
+  });
+});
+```
+
+### SVG 元素加动效（重要）
+
+SVG 元素（`<g>`/`<rect>`/`<line>`/`<circle>`）加 fragment 或 CSS 动效时，**用纯 opacity，禁 transform**（translateY/rotate/scale）——SVG 的 transform 在 viewBox 坐标系下和 HTML 不同，容易失真定位。reveal 4.6.0 的 `.fragment`（不带 fade-up）默认就是 opacity 切换，对 SVG `<g>` 生效：`<g class="fragment">` 按 → 揭示整组（实测 reveal 把 SVG fragment 纳入 `#/n/0/0` 导航）。
+
+### 循环动效检查清单
+
+- [ ] 整 deck 循环动效 ≤3 个**应用点**（一个应用点 = 一个独立用法，如"互连线 flow"不论几条线算 1 点；按动效类型 + 页面去重数）
+- [ ] 每页 ≤2 个 `infinite`（互相干扰）
+- [ ] 周期 1.4-2.4s（太短急躁/闪烁，太长拖沓）
+- [ ] `prefers-reduced-motion` 时全禁用 + 显示终态（opacity:1 / 实线 / 不发光）
+- [ ] 关掉动效后静态图也能讲清（动效是加值，关掉测试）
+- [ ] 循环动效不覆盖核心可读信息（不在精确数据上加 pulse）
+
+---
+
 ## 高级动画模式
 
 > 以下动画模式适用于需要更强视觉冲击力的演示场景。每个模式都兼容 `prefers-reduced-motion`。

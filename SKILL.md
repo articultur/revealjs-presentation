@@ -72,10 +72,10 @@ CDN 加载 reveal.js + Google Fonts，用户**无需安装任何东西**。
 | 专业模式 Phase | 名称 | 类型 | 核心任务 |
 |:-----:|------|:----:|------|
 | P0 | 设计上下文 | ● | 风格(先翻 [`references/inspiration/`](references/inspiration/) 选 1-2 个 → 查 [`tokens/`](tokens/) 有无对应 primitive;若风格/内容不在覆盖范围,按 [`references/off-template-style-gap.md`](references/off-template-style-gap.md) 补齐 case + token + content rewrite + layout variant)、色彩、字体方向 |
-| P1 | 需求+设计语法 | ● | 场景/时长/听众 + ghost deck + Theme-to-Design Router 六行说明 + **内容-版式贴合度预检**（内容形状 / 主 proof object / 版式为何服务它）+ **元素语义策略**（每页元素清单 / 动画解释任务 / 必须或禁用的元素族）。**⚠ 输出后必须 STOP，等用户"继续 / 进 P4 / 改 X"才能生成 HTML——擅自生成 = 违规** |
+| P1 | 需求+设计语法 | ● | 场景/时长/听众 + ghost deck + Theme-to-Design Router 六行说明 + **内容-版式贴合度预检**（内容形状 / 主 proof object / 版式为何服务它）+ **元素语义策略**（每页元素清单 / 动画解释任务 / 必须或禁用的元素族）+ **动效决策**（按 §动效决策清单,定每页动效类型:无 / fragment 逐步 / CSS 循环 / CSS 进场;循环 ≤3 处/deck,fragment ≤30% 页面;过"关掉测试"）。**⚠ 输出后必须 STOP，等用户"继续 / 进 P4 / 改 X"才能生成 HTML——擅自生成 = 违规** |
 | P2 | 输出方案 | ◐ | 内容结构、视觉方向 |
 | P3 | 设计评审 | ● | 反模式检查 + **内容-版式贴合度评审**（proof object 是否解释主张 / 是否内容被硬塞进模板 / 版式不解释主张）+ **内容-元素贴合度评审**（元素是否解释 action title / 动画是否解释机制而非装饰 / 图标、表格、图片、代码是否抢主 proof object）+ 优化方向。**⚠ Gate 模式下输出后必须 STOP，等用户确认优化方向** |
-| P4 | 生成初稿 | ● | 先读 `references/element-semantics.md` 做元素语义路由,显式分派 13 类元素: proof object / motion / icon / table / data-viz / diagram / image / code / metric / quote-evidence / annotation / page furniture / whitespace,再加载对应专项文件。**两条路径**:**内容在 9 template 覆盖** → 套 template 但重写 proof object 和页面骨架;**不在覆盖** → 先声明 style gap → `scripts/content-router.js` 路由 archetype(A1-A12 + 主题变体)→ `scripts/generate-archetype-deck.js` 生成(四层架构闭合,见 [tokens/README.md](tokens/README.md) 与 [`references/off-template-style-gap.md`](references/off-template-style-gap.md))。两种都过 **十一门禁**(`grade-gate.js` 全绿 = G1-G11 全过;机器判 verdict,不可手动放行) |
+| P4 | 生成初稿 | ● | 先读 `references/element-semantics.md` 做元素语义路由,显式分派 13 类元素: proof object / motion / icon / table / data-viz / diagram / image / code / metric / quote-evidence / annotation / page furniture / whitespace,再加载对应专项文件。**按 P1 动效决策**给适当页面加动效(加载 `references/motion-delight.md` 对应 recipe:fragment 逐步揭示工艺/堆叠、CSS 循环 flow/pulse/glow 给持续传输/传导页、CSS 进场 grow 给对比条;封面/void-page/精确数据页不加;SVG 元素 fragment 用纯 opacity 禁 transform)。**两条路径**:**内容在 9 template 覆盖** → 套 template 但重写 proof object 和页面骨架;**不在覆盖** → 先声明 style gap → `scripts/content-router.js` 路由 archetype(A1-A12 + 主题变体)→ `scripts/generate-archetype-deck.js` 生成(四层架构闭合,见 [tokens/README.md](tokens/README.md) 与 [`references/off-template-style-gap.md`](references/off-template-style-gap.md))。两种都过 **十一门禁**(`grade-gate.js` 全绿 = G1-G11 全过;机器判 verdict,不可手动放行) |
 | P5 | 优化迭代 | ● | 按规模执行优化（详见 references/pipeline-phases.md「Phase 5」） |
 | P6 | 最终检查 | ◐ | 专业/发布会级必跑；快速模式 ≥12 页、密集数据或视觉结构调整时跑；复核**视觉语义与内容-版式贴合度/内容-元素贴合度**，确认每页元素清单服务 action title；`visual-verdict` 或人工审阅有 blocker 就回 P3/P5 |
 
@@ -391,14 +391,38 @@ archetype 序列：每页分配一个 archetype（A1-A12，见 layout-archetypes
 
 ## 动效
 
-- 步骤序列：fragment `fade-up`，stagger ≤150ms/项
-- 页面过渡：`fade`（默认）
-- "惊喜"效果：仅 1-2 页
-- Fragment 时长 300-500ms；标题页进入 500-800ms；退出 ~75% 进入时长
-- **禁用 bounce/elastic 缓动**：非标准曲线在 PPTX/投影导出会丢，且弹性回弹是廉价 AI 动效 tell；要"有弹性"用 `cubic-bezier` 自定义曲线
-- 支持 `prefers-reduced-motion`（简化为淡入）
+**核心心法**：动效服务讲解，不服务装饰。**默认零动效**，每个加入的动效要按内容动词论证。**关掉测试**：禁用所有动效 deck 还能讲清吗？不能 = 内容缺陷，先修内容，别用动效补救。
 
-动效时机和 6 种高级模式：`references/motion-delight.md`。
+**两套机制（按场景选，不混用）**：
+
+| 机制 | 触发 | 适合场景 | 内容动词 |
+|---|---|---|---|
+| **fragment**（按 → 揭示） | 演讲者按方向键 | 现场演讲、步步讲解、教学 | "逐步造/一步步" |
+| **CSS 循环**（`infinite`） | 进入页自动播放 | 自学/分享、持续过程可见 | "持续流/一直在跑" |
+| **CSS 进场**（`forwards` 一次性） | 进入页自动 | 对比/增长冲击力 | "从 0 长到 X" |
+| **不动效** | — | 宣言/口号、一次性看清的结构、封面主标题、精确读数 | "喊口号/一次看清" |
+
+**决策清单（P1 设计时过一遍）**：
+
+- 工艺/流程/步骤 → fragment 逐步揭示
+- 信号传输/能量传导/活跃状态 → CSS 循环（flow 蚂蚁线 / pulse 呼吸 / glow 发光）
+- 数据对比/增长 → CSS 进场 grow（scaleX 0→1）
+- 堆叠/层级 → fragment 逐层 OR CSS 进场 rise
+- 宣言（void-page）/封面主标题/精确数据页 → **不动效**
+- 拿不准 → 不动效（克制优先）
+
+**克制上限（硬规则，P4 生成后必查）**：
+
+- 循环动效 ≤3 个**应用点**/deck —— 一个应用点 = 一个独立的循环动效用法（"互连线 flow"算 1 点，不论几条线；"铜柱 pulse"算 1 点；"发光 glow"算 1 点）。同一动效跨多页用算多个应用点（每页 1 点）。
+- 每页 ≤2 个 `infinite` 元素（互相干扰）
+- fragment ≤30% 页面 · "惊喜"效果仅 1-2 页
+- **生成后 grep `animation:[^;}]*infinite`，数应用点（按动效类型 + 页面去重），>3 必删到 ≤3**
+
+**实现规则**：fragment `fade-up` stagger ≤150ms/项；进场 400-650ms；循环 1.4-2.4s（太短急躁，太长拖沓）；用 `cubic-bezier(0.22,1,0.36,1)`，`linear` 只给持续流动；**禁 bounce/elastic**（廉价 AI tell，PPTX 导出丢）；页面过渡只用 `fade`/`slide`（禁 3D 过渡，理由见 §1）；必兼容 `prefers-reduced-motion`（显示终态，不隐藏信息）。**SVG 元素加 fragment 用纯 opacity，禁 transform**（viewBox 坐标系下 translateY/rotate 会失真）。
+
+**导出兼容（硬约束）**：fragment + CSS 动效在 PPTX/PDF 导出**都会丢**。设计时必须保证**静态快照可读**——动效是 HTML 演示的加值，不是信息载体。关掉动效的 PPTX 也要能独立讲清。
+
+详细 recipe（fragment stagger / easing 曲线 / CSS 循环 flow·pulse·glow / 数字滚动 / SVG 描边 / 视差等高级模式）：`references/motion-delight.md`。
 
 ## 验证
 
@@ -477,6 +501,7 @@ bash scripts/setup.sh          # 仅环境检查
 - [ ] 物理表面型 proof object 与承载面共享坐标系；SVG 文字不靠裁切隐藏、不继承描边；数据趋势线不用 `T`
 - [ ] `design-strength-check.js` 四维达标（尺度≥3:1 / 有满版色块面板 / 有非对称分割 / 有主题原生形式）；数字未被软化成"约/持平"
 - [ ] `element-quality-check.js` 元素子分达标（动画/图标/表格/流程图均 ≥70）；emoji 不当图标、图标 inline 且主题跟随、表格符合 data-ink
+- [ ] **动效关掉测试**：禁用所有动效 deck 还能讲清（动效是 HTML 加值不是信息载体）；循环动效 ≤3 处/deck、fragment ≤30% 页面；`prefers-reduced-motion` 显示终态不隐藏；PPTX 导出（动效丢失）静态快照可读
 - [ ] 发布会级任务通过了 `references/launch-grade.md` 的 golden-reference、截图和导出门禁
 - [ ] 匹配观众和语气，远距离可读
 - [ ] reveal.js 运行无布局问题，逐页截图无残影/裁切/按钮污染
