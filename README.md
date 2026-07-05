@@ -76,7 +76,7 @@ revealjs-presentation/
 ├── README.md             # 本文件
 ├── DESIGN.md · GUIDE.md · PRODUCT.md   # 项目设计 / 指南 / 产品说明
 ├── package.json          # Node.js 依赖
-├── examples/             # 8 套种子模板（template-01..08）
+├── examples/             # 9 套种子模板（template-01..09）
 ├── references/           # 24 份设计参考文档 + template-invariants.json
 │   ├── layered-architecture.md       # 六层架构 + 概念交叉索引
 │   ├── design-fundamentals.md        # 设计四维根（尺度/张力/用色/隐喻→形式）
@@ -96,8 +96,8 @@ revealjs-presentation/
 │   ├── motion-delight.md             # 动效时机 / easing / 高级模式
 │   ├── visual-check.md               # 垂直平衡启发式
 │   ├── technical-specs.md            # CDN / Reveal 配置 / 三端适配
-│   ├── failure-gates.md              # 13 条失败门禁
-│   ├── validation.md                 # 验证脚本与门禁总参考（三层模型/八门禁/阻断表）
+│   ├── failure-gates.md              # 19 条失败门禁
+│   ├── validation.md                 # 验证脚本与门禁总参考（三层模型/十二门禁/阻断表）
 │   ├── pipeline-phases.md            # 专业模式 Phase Gate
 │   ├── launch-grade.md               # 发布会级标准
 │   ├── template-differentiation-audit.md  # 跨模板相似度审计

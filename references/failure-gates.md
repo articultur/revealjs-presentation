@@ -1,10 +1,10 @@
 # 失败模式门禁 / Failure Mode Gates
 
-15 条来自真实生成失败复盘的硬门禁。SKILL.md 给出一句话概括 + 修复入口；本文件保留完整说明、根因和反例。
+19 条来自真实生成失败复盘的硬门禁。SKILL.md 给出一句话概括 + 修复入口；本文件保留完整说明、根因和反例。
 
 任何门禁触发都视为阻断项，优先级高于"看起来风格统一"。
 
-十一门禁（lint + validate + label-overlap + lint-main-claim + evidence-ledger + color-role + contrast-aa + canvas-fill + check-overflow + spatial-integrity）自动覆盖关键约束与设计硬规则；失败门禁由十一门禁及 test-pin-collision / test-reference-contract 等专项脚本联合检查。
+十二门禁（lint + validate + label-overlap + lint-main-claim + evidence-ledger + color-role + contrast-aa + canvas-fill + check-overflow + spatial-integrity）自动覆盖关键约束与设计硬规则；失败门禁由十二门禁及 test-pin-collision / test-reference-contract 等专项脚本联合检查。
 
 ---
 
@@ -282,8 +282,10 @@ node scripts/visual-verdict.js <file> --dry-run
 - **c 升分才保留**：修完重跑 `grade-gate` + `validate` + `test-label-overlap`，issues 数必须降/平，否则回退原版
 
 ```bash
-node scripts/auto-fix.js <file>                  # SAFE 修复(字体 fallback + pin 泄漏)
-node scripts/auto-fix.js <file> --aggressive     # 加 ATTEMPT(溢出缩字 / pin 移右下)
+node scripts/auto-fix.js <file>                  # 默认 dry-run(只报告不落盘,G003);SAFE 报告(字体 fallback + pin 泄漏)
+node scripts/auto-fix.js <file> --write          # 原地落盘(默认 dry-run,需显式 --write 或 --out <file>)
+node scripts/auto-fix.js <file> --write --inject-font-fallback  # 加字体窄体 fallback(默认关:改全部 font-family 影响 voice)
+node scripts/auto-fix.js <file> --write --aggressive     # 加 ATTEMPT(溢出缩字 / pin 移右下)
 ```
 
 对比度失败、视觉语义 blocker、设计感平庸——自愈不碰，分别走 `design-strength-check.js` 的 `colorContrast` 子分、`visual-verdict.js` 的 category、`references/design-fundamentals.md` §5。

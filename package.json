@@ -10,8 +10,9 @@
     "start": "npx http-server -p 4173 -c-1",
     "lint": "node scripts/lint-design.js",
     "lint:docs": "node scripts/lint-reference-docs.js",
+    "lint:doc-counts": "node scripts/lint-doc-counts.js",
     "lint:chrome": "node scripts/lint-template-chrome.js examples/template-*.html",
-    "lint:all": "npm run lint:docs && npm run lint:chrome && for f in examples/template-*.html; do node scripts/lint-design.js \"$f\" || exit 1; done",
+    "lint:all": "npm run lint:doc-counts && npm run lint:docs && npm run lint:chrome && for f in examples/template-*.html; do node scripts/lint-design.js \"$f\" || exit 1; done",
     "gate": "node scripts/grade-gate.js examples/template-*.html",
     "export-pptx": "node scripts/export-pptx.js",
     "visual-qa": "node scripts/visual-qa.js",
@@ -27,7 +28,8 @@
     "test:initial-slide-visible": "node scripts/test-initial-slide-visible.js",
     "test:text-collision": "node scripts/test-text-collision.js examples/template-07-memphis.html",
     "test:text-break": "node scripts/test-text-break.js examples/template-*.html",
-    "test": "npm run test:validate-overflow && npm run test:reference-contract && npm run test:launch-grade-contract && npm run test:qa-system-contract && npm run test:off-template-regression && npm run test:lint-main-claim && npm run test:initial-slide-visible && npm run test:text-collision && npm run test:text-break",
+    "test:doc-counts": "node scripts/lint-doc-counts.js",
+    "test": "npm run test:doc-counts && npm run test:validate-overflow && npm run test:reference-contract && npm run test:launch-grade-contract && npm run test:qa-system-contract && npm run test:off-template-regression && npm run test:lint-main-claim && npm run test:initial-slide-visible && npm run test:text-collision && npm run test:text-break",
     "doctor": "bash scripts/doctor.sh"
   },
   "dependencies": {

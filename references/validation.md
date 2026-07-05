@@ -8,10 +8,10 @@
 
 | 层 | 脚本 | 性质 | 失败处置 |
 |---|---|---|---|
-| **地板（合规）** | `grade-gate.js` 全绿（十一门禁 G1-G11 合一） | 硬约束、机器判、不可人工放行 | 任一红灯 → 回 P5 重生成 |
+| **地板（合规）** | `grade-gate.js` 全绿（十二门禁 G1-G12 合一） | 硬约束、机器判、不可人工放行 | 任一红灯 → 回 P5 重生成 |
 | **天花板（设计强度）** | `design-strength-check.js` 四维（尺度/用色/张力/隐喻） | advisory（退出码恒 0），但任一维不达标 = 回炉重做骨架，**不是微调** | 退化信号：全 deck display ≤2.5em、无满版色块面板、全是通用卡片 |
 | **元素级天花板** | `element-quality-check.js` 四子分（动画/图标/表格/流程图）+ `references/element-semantics.md` 元素语义清单 | advisory，子分 ≥70 达标；语义问题进入视觉评审 | emoji 当图标 / 图标不主题跟随 / 表格违反 data-ink / 元素不服务 action title |
-| **视觉语义评审** | `visual-verdict.js`（截图 + 视觉模型 + JSON verdict） | 模型辅助；抓固定脚本盲区,补盲元素语义问题 | blocker → 回 P5；无 key 只能 `--dry-run`，必须报告未执行模型判定 |
+| **视觉语义评审** | `visual-verdict.js`（截图 + 视觉模型 + JSON verdict） | 模型辅助；抓固定脚本盲区,补盲元素语义问题 | blocker → 回 P5；**无 key / 未 opt-in = UNSKIPPABLE-BLOCKED**（非 dry-run 假通过,G001），需 `--visual-signoff` / `VISUAL_VERDICT_SIGNOFF=1` 人工签字 + `VISUAL_VERDICT_OPT_IN=1`（默认关防外发）才放行 |
 | **图片资产门禁** | `audit-image-assets.js` | 图像驱动 deck 专项硬检；抓视觉模型前的客观资产硬伤 | blocker → 换图 / 换页型 / 重做照片角色台账 |
 
 **关键认知（防止合规驱动退化）**：门禁是地板，设计强度是天花板，两者**不可互替**。当通过某门禁似乎要削弱设计时（如「满版面板怕对比度不足 → 干脆不做面板」），**正解是找一个既大胆又合规的选择**（深化专色到 AA / 用 `var(--c-fg)` 反相面板），**不是把设计改弱来求合规**。把数字软化为「约/持平」来躲 G5 证据门禁 = 失败；正解是保留真实数字 + 加 source label。参见 `design-fundamentals.md` §6。
@@ -20,9 +20,9 @@
 
 **元素语义边界**：`element-quality-check.js` 只能稳定检查客观元素质量（动画配置、图标实现、表格 data-ink、流程图结构）。它不能可靠判断“这个元素为什么存在”。当问题是动画只是装饰、图标抢 proof object、表格不该表达趋势、图片/代码/引用没有解释 action title 时,必须用 `visual-verdict.js` 或人工审阅补盲,并回到 P1/P3 改元素语义或 proof object。
 
-## 十一门禁（G1-G11，grade-gate.js 合一）
+## 十二门禁（G1-G12，grade-gate.js 合一）
 
-`grade-gate.js <file>` 一次跑完十一门禁，退出码 1 = 任一红灯，**机器判 verdict，禁止人工放行**（案例：v15.0 把「15 页」压成 12 页时主观放行导致翻车）。
+`grade-gate.js <file>` 一次跑完十二门禁，退出码 1 = 任一红灯，**机器判 verdict，禁止人工放行**（案例：v15.0 把「15 页」压成 12 页时主观放行导致翻车）。
 
 | 门禁 | 脚本 | 检查 | 阻断条件 |
 |------|------|------|----------|
@@ -34,9 +34,10 @@
 | **G6** | `test-color-role.js` | 颜色角色（**相对**层级：主命题对比度必须高于 pin/页脚，OKLCH L 近似亮度） | 退出码 1 = 主命题对比度弱于 pin/页脚文本 |
 | **G7** | `test-contrast-aa.js` | **绝对** WCAG AA（真 oklch→sRGB 相对亮度，遍历祖先 bg，大字阈值） | 退出码 1 = 文本 <4.5:1 / 大字 <3:1 |
 | **G8** | `test-canvas-fill.js` | section 占满画布（对齐 visual-check 画布一致性） | 退出码 1 = section 未占满画布（内容高度矮盒 / 页间画布不一致） |
-| **G9** | `check-overflow.js` | Playwright bbox 溢出/叠放专项：①文本越右界 ②元素越画布 ③时间线文字压条 ④**元素内文字溢出父容器**（`scrollWidth > clientWidth` + 父容器有显式宽度约束，抓 terminal/code/span 等 inline 文字越界；纯感官类如黑字黑底、装饰盒压 page furniture 留给 visual-verdict） | 退出码 1 = bbox issueCount > 0 |
+| **G9** | `check-overflow.js` | Playwright bbox 溢出/叠放专项（**G004 起复用 `overflow-detect.js` 的 `comprehensiveOverflowScan` 共享扫描器**:data-qa-ignore 统一豁免 + sectionRect 边界自动适配 `Reveal.getScale()` 消除 letterbox/scale<1 漏报）：①VP_TOP/RIGHT/BOTTOM/LEFT 越界 ②CONTENT_W/H 内容溢出 ③CHILD_Ovf Flex/Grid 撑破 ④TIMELINE_DESC_TOO_TALL ⑤TEXT_OVERLAP_BAR；纯感官类留给 visual-verdict | 退出码 1 = bbox issueCount > 0 |
 | **G10** | `test-spatial-integrity.js` | proof object 与物理表面坐标系一致；读取 `template-invariants.json` 的 `physicalContract`；页标/北向标/pin 不压关键对象；图纸尺寸链对齐外墙；SVG `<text>` 不被 viewport 裁切、不继承可见描边；数据图曲线不使用易反射失真的 `T` 命令 | 退出码 1 = surface containment / physicalContract drift / page-label frame collision / north-mark heading collision / pin-object collision / plan aspect drift / dimension-wall mismatch / marker-label collision / SVG text clipping/stroke / data-curve smooth-T |
 | **G11** | `test-text-break.js` | 词/数字跨行断裂（用户最痛「一个词变两行」）：L1 数字+紧贴 %/×/x 与英文连续字母词跨行（Range.getClientRects ≥2 top）+ L2 CJK 孤字行 + **L2 孤标点行**（widow/runt punctuation，「单独的句号」）+ L3a nodejieba 中文通用词跨行（可选）+ **L4 避头尾**（kinsoku，句号/闭标点不能行首、开括号不能行尾）；适用短文本高权重区（h1-h3 或 claim 类，ownText ≤30）；创意短语（价格屠夫/终点裁决 jieba 切不准）归 L3b 视觉评审（判别规则见 `failure-gates.md` §19） | 退出码 1 = 词/数字/CJK 词跨行、孤字/孤标点或避头尾违例（issueCount > 0） |
+| **G12** | `design-strength-check.js --gate` | **反 slop 地板**（G002 新增）：scaleContrast≥2.5（尺度对比代理）+ nativeSignals metaphor≥1（主题原生隐喻原语命中,含 terminal/notebook/memphis/iso/film 五原语扩展） | 退出码 1 = 四维代理未达反 slop 地板 → 回炉重做骨架,非微调 |
 
 **G6 vs G7 分工**：G6 是**相对**层级检查——主命题对比度必须高于 pin/页脚，保证「最重要的事最醒目」；G7 是**绝对** WCAG AA——任何文本对它的实际底色必须 ≥4.5:1（大字 ≥3:1）。两者互补、不可互替：G6 过了不代表无障碍达标（这正是 2.96:1 白字粉卡能绿过的原因），G7 补上这个洞。
 
@@ -44,7 +45,7 @@
 
 ```bash
 # 地板（合规）—— 交付前必跑，全绿才放行
-node scripts/grade-gate.js <file>                      # 十一门禁合一 = 合规地板
+node scripts/grade-gate.js <file>                      # 十二门禁合一 = 合规地板
 node scripts/grade-gate.js --json <file>               # JSON 输出（供 eval 框架消费）
 
 # 天花板（设计强度）—— advisory，但任一维不达标回炉重做骨架
@@ -60,7 +61,7 @@ node scripts/lint-design.js <file> --verbose            # 含 P2 建议 + 精致
 node scripts/validate.js <file>                         # Playwright 溢出检测 + 截图
 node scripts/validate.js <file> --fix                   # 检测 + 自动修复 + 重检
 
-# 十一门禁单项（grade-gate 内部调用，也可单独跑）
+# 十二门禁单项（grade-gate 内部调用，也可单独跑）
 node scripts/test-pin-collision.js <file>               # Pin/水印与正文重叠检测（失败门禁 #13）
 node scripts/test-label-overlap.js <file>               # 标签互相重叠 + 跨 slide 泄露（G3）
 node scripts/test-lint-main-claim.js <file>             # 主命题进场门禁（G4）
@@ -103,7 +104,7 @@ node scripts/lint-reference-docs.js                     # 参考文档代码示�
 
 | 脚本 | 阻断条件 |
 |------|----------|
-| `grade-gate.js` | 退出码 1 = 十一门禁任一红灯（机器判，不可人工放行） |
+| `grade-gate.js` | 退出码 1 = 十二门禁任一红灯（机器判，不可人工放行） |
 | `lint-design.js` | 退出码 1 = 存在 P0 违规 |
 | `validate.js` | 输出 `total > 0` = 真实布局溢出 |
 | `test-pin-collision.js` | 退出码 1 = Pin 与正文重叠 |
@@ -153,6 +154,6 @@ node scripts/lint-reference-docs.js                     # 参考文档代码示�
 
 ## 评估框架集成
 
-eval runner 用 `grade-gate.js --json` 的 `passed` 字段作为客观断言——`passed: true` 仅当十一门禁全部通过。禁止 grader 用主观判断覆盖机器 verdict（v15.0 把「15 页」压成 12 页时曾因主观放行翻车）。
+eval runner 用 `grade-gate.js --json` 的 `passed` 字段作为客观断言——`passed: true` 仅当十二门禁全部通过。禁止 grader 用主观判断覆盖机器 verdict（v15.0 把「15 页」压成 12 页时曾因主观放行翻车）。
 
 如果未执行验证，在最终回复中**明确说明**。

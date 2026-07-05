@@ -18,11 +18,11 @@
 | 1 | 需求+设计语法 | 场景、时长、听众、ghost deck、Theme-to-Design Router、模板/新语法判断 |
 | 2 | 方案 | 内容结构、视觉方向 |
 | 3 | 设计评审 | `/critique` 报告 + 优化方向确认 |
-| 4 | 生成初稿 | HTML 文件路径 + 十门禁全绿（参见 SKILL.md §验证） |
+| 4 | 生成初稿 | HTML 文件路径 + 十二门禁全绿（参见 SKILL.md §验证） |
 | 5 | 优化迭代 | 执行的 skills 列表和结果 |
 | 6 | 最终检查 | Phase 6 检查报告 + 用户交付确认 |
 
-十门禁（lint + validate + label-overlap + lint-main-claim + evidence-ledger + color-role + contrast-aa + canvas-fill + check-overflow + spatial-integrity）自动覆盖关键约束与设计硬规则；失败门禁由十门禁及 test-pin-collision / test-reference-contract 等专项脚本联合检查。
+十二门禁（lint + validate + label-overlap + lint-main-claim + evidence-ledger + color-role + contrast-aa + canvas-fill + check-overflow + spatial-integrity）自动覆盖关键约束与设计硬规则；失败门禁由十二门禁及 test-pin-collision / test-reference-contract 等专项脚本联合检查。
 
 内容-版式贴合度是 P1/P3/P6 的跨阶段 Gate：P1 预判内容形状、主 proof object 与版式服务关系；P3 审查是否内容被硬塞进模板或版式不解释主张；P6 用 visual-verdict / 人工审阅做视觉语义验收。
 

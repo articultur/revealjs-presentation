@@ -8,7 +8,7 @@ The system must generate decks whose structure, proof objects, typography, motio
 
 ## Evidence Surfaces
 
-- `examples/template-01-editorial-serif.html` through `examples/template-08-isometric.html` are the current seed examples (01-05 original grammars; 06-08 brutalist / memphis / isometric — three orthogonal styles added for maximum cross-template differentiation).
+- `examples/template-01-editorial-serif.html` through `examples/template-09-editorial-photo.html` are the current seed examples (01-05 original grammars; 06-08 brutalist / memphis / isometric — three orthogonal styles; 09 editorial-photo — image-driven grammar for city/travel/food/product topics).
 - `SKILL.md` is the generation workflow contract.
 - `references/design-principles.md` and `references/design-polish.md` define the visual quality bar.
 - `references/layered-architecture.md` defines the six-layer generation contract across production, style, argument, taste, QA, and task governance.
@@ -90,8 +90,8 @@ Templates 06 (brutalist), 07 (memphis), 08 (isometric) each push one orthogonal 
 
 Before claiming a template improvement:
 
-1. Run `node scripts/grade-gate.js <file>` (all eight gates: G1 lint + G2 validate + G3 label-overlap + G4 lint-main-claim + G5 evidence-ledger + G6 color-role + G7 contrast-aa + G8 canvas-fill).
+1. Run `node scripts/grade-gate.js <file>` (all twelve gates: G1 lint + G2 validate + G3 label-overlap + G4 lint-main-claim + G5 evidence-ledger + G6 color-role + G7 contrast-aa + G8 canvas-fill + G9 check-overflow + G10 spatial-integrity + G11 text-break + G12 design-strength).
 2. Run `node scripts/visual-qa.js <file> --annotate-overflow --out <dir>`.
 3. Compare contact sheets with colors mentally removed. Similar skeletons fail even if lint passes.
 
-Resolved: the seed set is `template-01..08` (8 implemented). `references/template-invariants.json` is the canonical machine-readable contract for all eight. The 10 design grammars in `references/design-polish.md` (financial-terminal, clinical-lab, …) are unimplemented references with logical chapter numbering — they do not correspond to `examples/` filenames.
+Resolved: the seed set is `template-01..09` (9 implemented). `references/template-invariants.json` is the canonical machine-readable contract for all nine. The 10 design grammars in `references/design-polish.md` (financial-terminal, clinical-lab, …) are unimplemented references with logical chapter numbering — they do not correspond to `examples/` filenames.
