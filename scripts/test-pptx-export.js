@@ -57,9 +57,11 @@ function extractSections(html) {
     const $sec = $(sec);
     // h1 优先,否则 h2/h3(action title 语义)
     // 直接子 h1/h2/h3 优先(主标题语义,对齐 export-pptx 的 section 直接子处理)。
-    // 不用 find:dark-tech 等模板每页有多个嵌套 h2/h3(终端标签),find().first() 命中嵌套小标题
-    // 而非主 h1 → 误报"缺 h1"。已知局限:嵌套在 div/cover 内的主 h1 不校验(9 examples 主标题
-    // 均为 section 直接子;若未来模板把主 h1 嵌套,再优化为"直接子优先,无则 find h1")。
+    // test-pptx 曾试 find('h1,h2,h3').first() 致 template-02-dark-tech slide 2/4 误报"缺 h1";
+    // reviewer 二次复核定位真因:h2 含引号,PPTX XML 实体编码 & norm 不解码 → 前 6 字符失配
+    // (非"嵌套 h2/h3 命中错误"——dark-tech 每页只 1 h2 + h4 终端标签,h4 不被本选择器匹配)。
+    // 已修 norm() 加实体解码(见上);children 仍更稳(主标题 = section 直接子语义)。
+    // find 的嵌套 h1 覆盖留作未来优化(9 examples 主标题均为直接子,当前无 case)。
     const h1El = $sec.children('h1,h2,h3').first();
     const h1 = h1El.text().replace(/\s+/g, ' ').trim();
     return { h1 };
@@ -87,7 +89,16 @@ async function inspectPptx(pptxPath) {
   return slides;
 }
 
-function norm(s) { return (s || '').replace(/\s+/g, '').toLowerCase(); }
+function norm(s) {
+  // 解码 PPTX XML 实体(<a:t> 文本可能把 " 编码为 &quot; 等)。
+  // reviewer 二次复核定位:dark-tech slide 2/4 的 h2 含引号,norm 不解码 → 前 6 字符失配 → h1 误报。
+  return (s || '')
+    .replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+    .replace(/&#(\d+);/g, (_, d) => String.fromCharCode(+d))
+    .replace(/\s+/g, '')
+    .toLowerCase();
+}
 
 // ─── 主流程 ─────────────────────────────────────────────────
 
