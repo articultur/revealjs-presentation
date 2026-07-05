@@ -170,6 +170,13 @@ function measure(file) {
     //   命中 "1/2" 等非对峙语境）。改为要求 A6 标志性结构——带 ≈ 的比率裁决或 class 标记。
     faceOff: /class="[^"]*\b(?:face-off|faceoff|versus|compare)\b|≈\s*\d+\s*\/\s*\d/.test(html),
     evidenceTable: /<table[\s\S]*accent[\s\S]*<\/table>/i.test(html) || /class="[^"]*ledger\b/i.test(html),
+    // 2026-07 扩充(G002-②):原表只认 brutalist/editorial 原语 → dark-tech/nature/memphis/isometric
+    // 这些高辨识主题 deck 的原生形式全漏,metaphor=0 被系统性打低分(eval-design 假阴性)。
+    terminalChrome: /\bterminal\b|\bprompt\b|\bcursor\b|blink|telemetry|\bconsole\b/i.test(html),
+    notebookCraft: /\bnotebook\b|\btwine\b|\bsketch\b|\bleaf\b|\bcanvas\b|\bsage\b/i.test(html),
+    memphisPop: /\bmemphis\b|\bbubble\b|\bsquiggle\b|\bsticker\b/i.test(html),
+    isoBlueprint: /iso-(?:stack|layer|block|grid|metric)|\b30deg\b|\bblueprint\b|axonometric/i.test(html),
+    filmLeader: /film-leader|countdown|clapper|clapboard|\bletterbox\b/i.test(html),
   };
   const nativeCount = Object.values(nativeSignals).filter(Boolean).length;
 
@@ -441,6 +448,23 @@ if (goldenFile && fs.existsSync(path.resolve(goldenFile)) && results.length) {
   }
 }
 
-console.log('\n  注：本脚本是 advisory（退出码恒 0）。设计强度是"要够的天花板"，不是 pass/fail 地板。');
+const gateMode = process.argv.includes('--gate');
+if (gateMode) {
+  // G002-① 反 slop 地板:scaleContrast≥2.5(允许 dark-tech 驾驶舱合理低尺度,阻断 <2.5 真太平)
+  // + metaphor≥1(至少一个主题原生形式,防无主题语法的纯模板)。扩词汇后 9 examples 全过。
+  // m 是 for 循环局部变量;这里遍历 results(单文件 grade-gate 调用时 length=1,多文件要求全过)。
+  const failures = [];
+  for (const r of results) {
+    const nativeHit = Object.values(r.m.nativeSignals).filter(Boolean).length;
+    const scaleOk = r.m.scaleContrast >= 2.5;
+    const metaphorOk = nativeHit >= 1;
+    if (!scaleOk || !metaphorOk) failures.push(`${r.m.file}: scaleContrast ${r.m.scaleContrast}:1${scaleOk ? '' : '(✗<2.5)'}, metaphor ${nativeHit}${metaphorOk ? '' : '(✗<1)'}`);
+  }
+  const gateFail = failures.length > 0;
+  if (gateFail) failures.forEach(msg => console.log(`  ✗ ${msg}`));
+  console.log(`\n  --gate 反 slop 地板 (${results.length} file(s), 阈值 scaleContrast≥2.5 & metaphor≥1) → ${gateFail ? 'FAIL' : 'PASS'}`);
+  process.exit(gateFail ? 1 : 0);
+}
+console.log('\n  注：本脚本是 advisory（默认退出码 0，除非 --gate）。设计强度是"要够的天花板"；--gate 把 scaleContrast≥2.5 且 metaphor≥1 作为反 slop 地板（防无主题形式的纯模板）。');
 console.log('  四维不达标 → 回 references/design-fundamentals.md §5 四维自检，重做而非微调。\n');
 process.exit(0);

@@ -281,6 +281,25 @@ function runTextBreak(filePath) {
   };
 }
 
+// ─── G12 · 反 slop 地板(design-strength --gate:scaleContrast≥2.5 且 metaphor≥1) ───
+function runDesignStrength(filePath) {
+  const result = spawnSync('node', [path.join(SCRIPTS_DIR, 'design-strength-check.js'), filePath, '--gate'], {
+    encoding: 'utf8', timeout: 180_000,
+    env: { ...process.env, NODE_NO_WARNINGS: '1' },
+  });
+  if (result.error) return { passed: false, error: result.error.message };
+  const stdout = result.stdout || '';
+  const m = stdout.match(/→ (PASS|FAIL)/);
+  const gateResult = m ? m[1] : null;
+  const parseFailed = gateResult === null;
+  return {
+    passed: result.status === 0 && !parseFailed && gateResult === 'PASS',
+    gateResult,
+    exitCode: result.status,
+    stdout: stdout.slice(-400),
+  };
+}
+
 // ─── Main ─────────────────────────────────────────────────────
 
 const results = [];
@@ -353,7 +372,12 @@ for (const file of files) {
     console.log(`  G11 text-break:      ${textBreak.passed ? '✓ no word/number split' : fail(`✗ ${textBreak.issueCount || '?'} break(s)`)}${textBreak.error ? ` (${textBreak.error})` : ''}`);
   }
 
-  const allPassed = lint.passed && validate.passed && overlap.passed && mainClaim.passed && evidence.passed && colorRole.passed && contrast.passed && canvas.passed && overflow.passed && spatial.passed && textBreak.passed;
+  const strength = runDesignStrength(abs);
+  if (!jsonOnly) {
+    console.log(`  G12 design-strength: ${strength.passed ? '✓ scaleContrast≥2.5 & metaphor≥1' : fail(`✗ ${strength.gateResult || strength.error || '反 slop 地板未达'}`)}`);
+  }
+
+  const allPassed = lint.passed && validate.passed && overlap.passed && mainClaim.passed && evidence.passed && colorRole.passed && contrast.passed && canvas.passed && overflow.passed && spatial.passed && textBreak.passed && strength.passed;
   if (!jsonOnly) console.log(`  → ${allPassed ? pass('PASS') : fail('FAIL')}`);
 
   results.push({
@@ -371,6 +395,7 @@ for (const file of files) {
       checkOverflow: { passed: overflow.passed, issueCount: overflow.issueCount || 0, exitCode: overflow.exitCode || 0, error: overflow.error || null },
       spatialIntegrity: { passed: spatial.passed, issueCount: spatial.issueCount || 0, exitCode: spatial.exitCode || 0, error: spatial.error || null },
       textBreak: { passed: textBreak.passed, issueCount: textBreak.issueCount || 0, exitCode: textBreak.exitCode || 0, error: textBreak.error || null },
+      designStrength: { passed: strength.passed, gateResult: strength.gateResult || null, exitCode: strength.exitCode || 0 },
     },
   });
 }
@@ -412,6 +437,7 @@ if (jsonOnly) {
       if (!f.gates?.checkOverflow?.passed) reasons.push(`check-overflow fail (${f.gates?.checkOverflow?.issueCount || '?'} issues)`);
       if (!f.gates?.spatialIntegrity?.passed) reasons.push(`spatial-integrity fail (${f.gates?.spatialIntegrity?.issueCount || '?'} issues)`);
       if (!f.gates?.textBreak?.passed) reasons.push(`text-break fail (${f.gates?.textBreak?.issueCount || '?'} breaks)`);
+      if (!f.gates?.designStrength?.passed) reasons.push(`design-strength fail (${f.gates?.designStrength?.gateResult || '?'})`);
       console.log(failDim(`  ✗ ${path.basename(f.file)}: ${reasons.join(', ') || f.error}`));
     }
   }
