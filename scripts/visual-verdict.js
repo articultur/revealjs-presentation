@@ -208,6 +208,9 @@ async function callOpenAI(slides) {
   if (!apiKey) {
     throw new Error('OPENAI_API_KEY is not set. Run with --dry-run to inspect prompts without calling the model.');
   }
+  if (process.env.VISUAL_VERDICT_OPT_IN !== '1') {
+    throw new Error('VISUAL_VERDICT_OPT_IN=1 is required to send deck screenshots to the vision model (prevents accidental external upload). Without it, use --dry-run, or run via qa.js with --visual-signoff after a human review.');
+  }
 
   const content = [
     { type: 'input_text', text: userPrompt(slides) },

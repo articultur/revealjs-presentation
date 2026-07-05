@@ -11,6 +11,11 @@
  *   node scripts/qa.js --no-visual deck.html
  *   node scripts/qa.js --visual-dry-run --allow-visual-pending deck.html
  *   node scripts/qa.js --image-audit deck.html
+ *   node scripts/qa.js --visual-signoff deck.html   # 人工视觉复核签字(放行 BLOCKED 感官层)
+ *
+ * Visual verdict gating: real model review requires OPENAI_API_KEY + VISUAL_VERDICT_OPT_IN=1
+ * (default off). Without both, visual-verdict is UNSKIPPABLE-BLOCKED — sign off manually with
+ * --visual-signoff / VISUAL_VERDICT_SIGNOFF=1 only after a human visual review.
  *
  * Exit codes:
  *   0 - every required gate passed
@@ -49,6 +54,9 @@ const noVisual = args.includes('--no-visual');
 const forceVisual = args.includes('--visual');
 const visualDryRun = args.includes('--visual-dry-run');
 const allowVisualPending = args.includes('--allow-visual-pending');
+// 感官层(visual-verdict)无法自动审时的人工签字逃生口;授权截图外发到 vision 模型。
+const visualSignoff = args.includes('--visual-signoff') || process.env.VISUAL_VERDICT_SIGNOFF === '1';
+const visualOptIn = process.env.VISUAL_VERDICT_OPT_IN === '1';
 const forceImageAudit = args.includes('--image-audit');
 const noImageAudit = args.includes('--no-image-audit');
 const outArgIndex = optionIndex(['--out', '--output']);
@@ -61,6 +69,7 @@ const knownFlags = new Set([
   '--visual',
   '--visual-dry-run',
   '--allow-visual-pending',
+  '--visual-signoff',
   '--image-audit',
   '--no-image-audit',
   '--out',
@@ -112,8 +121,17 @@ function isImageDriven(filePath) {
 function visualMode() {
   if (noVisual) return 'skip';
   if (visualDryRun) return 'dry-run';
-  if (forceVisual) return 'model';
-  return process.env.OPENAI_API_KEY ? 'model' : 'dry-run';
+  // 真实模型评审 = 外发截图到 vision 模型。必须同时满足 OPENAI_API_KEY + 显式 opt-in
+  // (VISUAL_VERDICT_OPT_IN=1,默认关防意外外发)。无 key 或未 opt-in → blocked,不再静默
+  // 降级 dry-run 假通过(评估 P0 修复项 G001-③:感官缺陷只靠 visual-verdict,失能时必须
+  // 强制人工签字,不能让 G1-G10 全绿的 deck 蒙混交付)。
+  if (forceVisual) {
+    if (!process.env.OPENAI_API_KEY) return 'blocked-no-key';
+    if (!visualOptIn) return 'blocked-no-optin';
+    return 'model';
+  }
+  if (process.env.OPENAI_API_KEY && visualOptIn) return 'model';
+  return 'blocked';
 }
 
 function summarizeOutput(result) {
@@ -200,6 +218,27 @@ for (const file of files) {
   }
 
   const visualOut = path.join(outRoot, `${path.basename(file, '.html')}-visual-verdict`);
+  if (mode === 'blocked' || mode === 'blocked-no-key' || mode === 'blocked-no-optin') {
+    const reason = mode === 'blocked-no-key'
+      ? 'OPENAI_API_KEY 未配置'
+      : mode === 'blocked-no-optin'
+        ? 'VISUAL_VERDICT_OPT_IN=1 未授权截图外发'
+        : '无 key 或未授权外发';
+    const verdictPath = path.join(visualOut, 'visual-verdict.json');
+    if (visualSignoff) {
+      fs.mkdirSync(visualOut, { recursive: true });
+      fs.writeFileSync(verdictPath, JSON.stringify({
+        passed: true, skipped: true, reason: 'human-signoff',
+        blockedReason: reason, signoff: '--visual-signoff/VISUAL_VERDICT_SIGNOFF=1',
+        source: abs,
+      }, null, 2));
+      record(true, `visual-verdict BLOCKED → 人工签字放行 (${reason}; artifact: ${verdictPath})`);
+    } else {
+      record(false, `visual-verdict UNSKIPPABLE-BLOCKED: ${reason}; 感官层无法自动审,需人工视觉复核签字 (--visual-signoff 或 VISUAL_VERDICT_SIGNOFF=1)`);
+    }
+    continue;
+  }
+
   const visualArgs = [abs, '--out', visualOut];
   if (mode === 'dry-run') visualArgs.push('--dry-run');
   const visual = runNode(`visual-verdict ${mode}`, 'visual-verdict.js', visualArgs, 420_000);

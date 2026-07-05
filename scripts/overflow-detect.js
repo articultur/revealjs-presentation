@@ -34,6 +34,17 @@
     return !!ignored;
   }
 
+  // absolute/fixed 后代脱离文档流,却被 scrollWidth/Height 计入 → 装饰性 abs-SVG 在
+  // overflow:hidden 单元里常误报 CONTENT_H/W。这类越界由 VP_* 边界检测负责,
+  // content-overflow 检测应忽略 out-of-flow 后代(评估 P0 修复项 G001-②)。
+  function hasOutOfFlowDescendant(el) {
+    for (const desc of el.querySelectorAll('*')) {
+      const pos = window.getComputedStyle(desc).position;
+      if (pos === 'absolute' || pos === 'fixed') return true;
+    }
+    return false;
+  }
+
   function comprehensiveOverflowScan(options = {}) {
   const sectionNodes = options.sections
     ? Array.from(options.sections)
@@ -81,10 +92,10 @@
       if (!hasExplicitOverflow && !isTextElement && (hasWidthConstraint || hasHeightConstraint)) {
         // 排除代码块等预期有溢出的元素
         const isPreOrCode = el.tagName === 'PRE' || el.tagName === 'CODE';
-        if (hasWidthConstraint && el.scrollWidth > el.clientWidth + 2 && !isPreOrCode) {
+        if (hasWidthConstraint && el.scrollWidth > el.clientWidth + 2 && !isPreOrCode && !hasOutOfFlowDescendant(el)) {
           issues.push({ type: 'CONTENT_W', val: Math.round(el.scrollWidth - el.clientWidth) });
         }
-        if (hasHeightConstraint && el.scrollHeight > el.clientHeight + 2) {
+        if (hasHeightConstraint && el.scrollHeight > el.clientHeight + 2 && !hasOutOfFlowDescendant(el)) {
           issues.push({ type: 'CONTENT_H', val: Math.round(el.scrollHeight - el.clientHeight) });
         }
       }

@@ -232,13 +232,24 @@ function runSpatialIntegrity(filePath) {
     env: { ...process.env, NODE_NO_WARNINGS: '1' },
   });
   if (result.error) return { passed: false, error: result.error.message };
-  const m = (result.stdout || '').match(/(\d+) spatial issue\(s\)/);
-  const issueCount = m ? parseInt(m[1], 10) : 0;
+  const stderr = result.stderr?.trim() || '';
+  const stdout = result.stdout || '';
+  const m = stdout.match(/(\d+) spatial issue\(s\)/);
+  // test-spatial-integrity 无 issue 时输出 "spatial integrity clear"(不含数字),只靠正则
+  // 会让正常 deck 误判 parse failed → fail-closed 误杀。clear 信号 → issueCount=0;有 issue → 正则取 N。
+  const isClear = /spatial integrity clear|OK: spatial integrity/i.test(stdout);
+  const issueCount = m ? parseInt(m[1], 10) : (isClear ? 0 : null);
+  // 脚本内部 bug 说明 G10 失效;门禁必须 fail-closed,避免坏检测静默放行(对齐 G9 runCheckOverflow)。
+  const scriptBug = /ReferenceError|TypeError|SyntaxError|^Error:/m.test(stderr);
+  const parseFailed = issueCount === null;
   return {
-    passed: result.status === 0,
+    passed: !scriptBug && !parseFailed && issueCount === 0,
     issueCount,
     exitCode: result.status,
-    stderr: result.stderr?.trim() || null,
+    stderr: stderr || null,
+    error: scriptBug
+      ? 'spatial-integrity internal script error'
+      : (parseFailed ? 'spatial-integrity issue count parse failed' : null),
   };
 }
 
@@ -249,13 +260,24 @@ function runTextBreak(filePath) {
     env: { ...process.env, NODE_NO_WARNINGS: '1' },
   });
   if (result.error) return { passed: false, error: result.error.message };
-  const m = (result.stdout || '').match(/(\d+) break issue\(s\)/);
-  const issueCount = m ? parseInt(m[1], 10) : 0;
+  const stderr = result.stderr?.trim() || '';
+  const stdout = result.stdout || '';
+  const m = stdout.match(/(\d+) break issue\(s\)/);
+  // test-text-break 无 issue 时输出 "no text break"(不含数字),只靠正则会让正常 deck
+  // 误判 parse failed → fail-closed 误杀。clear 信号 → issueCount=0;有 issue → 正则取 N。
+  const isClear = /no text break|OK: no text breaks/i.test(stdout);
+  const issueCount = m ? parseInt(m[1], 10) : (isClear ? 0 : null);
+  // 脚本内部 bug 说明 G11 失效;门禁必须 fail-closed,避免坏检测静默放行(对齐 G9 runCheckOverflow)。
+  const scriptBug = /ReferenceError|TypeError|SyntaxError|^Error:/m.test(stderr);
+  const parseFailed = issueCount === null;
   return {
-    passed: result.status === 0,
+    passed: !scriptBug && !parseFailed && issueCount === 0,
     issueCount,
     exitCode: result.status,
-    stderr: result.stderr?.trim() || null,
+    stderr: stderr || null,
+    error: scriptBug
+      ? 'text-break internal script error'
+      : (parseFailed ? 'text-break issue count parse failed' : null),
   };
 }
 
