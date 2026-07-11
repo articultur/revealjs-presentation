@@ -22,7 +22,7 @@ tokens/
 |---|---|---|---|
 | **base.css** | semantic 映射契约(`--bg`/`--text`/`--accent` 同名) | 共享,写一次 | Material 3 semantic tokens |
 | **`<style>.css`** | primitive(原始色值 `--c-*` + 字体 `--f-*`) | 每风格一个文件 | Material 3 primitive tokens |
-| template HTML | layout 骨架 + 组件 CSS | 9 个 template | component tokens(版式与风格正交) |
+| template HTML | layout 骨架 + 组件 CSS | 10 个 template | component tokens(版式与风格正交) |
 
 **关键**:template 是「版式骨架」,**与风格正交**。token 决定风格 primitive,但不能单独决定主题是否成立。PPT 服务于内容:当内容需要新的现实隐喻或 proof object 时,必须改写内容语义和 layout variant。
 

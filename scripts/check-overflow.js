@@ -144,4 +144,8 @@ const overflowDetectCode = fs.readFileSync(path.join(__dirname, 'overflow-detect
     }
   }
   process.exit(1);
-})();
+})().catch(err => {
+  console.error('check-overflow failed:', (err && err.message) ? err.message : String(err));
+  console.error('  Missing Playwright browser? Run: npx playwright install chromium');
+  process.exit(2);
+});

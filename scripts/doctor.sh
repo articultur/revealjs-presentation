@@ -24,6 +24,25 @@ else
   echo "[doctor] INFO: node/npm not found — local dev server unavailable (not required for basic use)"
 fi
 
+# --- Playwright browser binary (required by 8 of 12 grade-gate gates + most tests) ---
+if command -v node >/dev/null 2>&1; then
+  PW_CHECK="$(node -e "
+    try {
+      const { chromium } = require('playwright');
+      const fs = require('fs');
+      const p = chromium.executablePath();
+      if (!fs.existsSync(p)) { console.log('MISSING:' + p); process.exit(1); }
+      console.log('OK');
+    } catch (e) { console.log('NO_MODULE'); process.exit(1); }
+  " 2>/dev/null || true)"
+  case "$PW_CHECK" in
+    OK) echo "[doctor] OK: Playwright chromium binary present" ;;
+    MISSING:*) echo "[doctor] ERROR: Playwright chromium binary missing — G2/G3/G7/G8/G9/G10/G11 gates and most tests fail ambiguously"; echo "[doctor]        Fix: npx playwright install chromium"; echo "[doctor]        Missing: ${PW_CHECK#MISSING:}"; WARN=$((WARN+1)) ;;
+    NO_MODULE) echo "[doctor] WARN: Playwright npm package not installed (npm install)"; WARN=$((WARN+1)) ;;
+    *) echo "[doctor] WARN: Playwright binary check inconclusive"; WARN=$((WARN+1)) ;;
+  esac
+fi
+
 # --- impeccable skill ---
 IMPECCABLE_FOUND=0
 SEARCH_PATHS=(

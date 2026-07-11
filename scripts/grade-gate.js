@@ -87,6 +87,13 @@ function runLint(filePath) {
   }
 }
 
+// Shared fail-closed: a JS error in a gate script's stderr means the detector
+// itself broke (e.g. missing Playwright binary → unhandled launch error). The gate
+// must fail-closed, never silently pass. Mirrors G9-G11's scriptBug pattern.
+function detectScriptBug(stderr) {
+  return /(?:Reference|Type|Syntax|Range|URI|Eval|Aggregate)Error|^Error:/m.test(stderr || '');
+}
+
 function runValidate(filePath) {
   const result = spawnSync('node', [path.join(SCRIPTS_DIR, 'validate.js'), filePath], {
     encoding: 'utf8',
@@ -98,11 +105,19 @@ function runValidate(filePath) {
   // Parse the total from stdout for evidence
   const totalMatch = result.stdout.match(/检测结果:\s*(\d+)\s*个问题/);
   const total = totalMatch ? parseInt(totalMatch[1], 10) : null;
+  // Fail-closed: a clean validate.js run ALWAYS prints a count (total === 0).
+  // total === null means stdout was unparseable — treat as failure (mirrors G9/G10/G11
+  // parseFailed), never as a pass. Same defensive class as the missing-browser case.
+  const parseFailed = total === null;
+  const scriptBug = detectScriptBug(result.stderr);
   return {
-    passed: result.status === 0 && (total === 0 || total === null),
+    passed: result.status === 0 && total === 0 && !scriptBug,
     total,
+    parseFailed,
+    scriptBug,
     exitCode: result.status,
     stderr: result.stderr?.trim() || null,
+    error: scriptBug ? 'validate internal script error' : (parseFailed ? 'validate total parse failed' : null),
   };
 }
 
@@ -113,11 +128,14 @@ function runLabelOverlap(filePath) {
   });
   if (result.error) return { passed: false, error: result.error.message, overlaps: null };
   // exit 0 = no overlaps, exit 1 = overlaps found, exit 2 = error
+  const scriptBug = detectScriptBug(result.stderr);
   return {
-    passed: result.status === 0,
+    passed: result.status === 0 && !scriptBug,
     overlaps: result.status === 1 ? 'found' : (result.status === 2 ? 'error' : 'none'),
+    scriptBug,
     exitCode: result.status,
     stderr: result.stderr?.trim() || null,
+    error: scriptBug ? 'label-overlap internal script error' : null,
   };
 }
 
@@ -134,12 +152,15 @@ function runLintMainClaim(filePath) {
     const m = line.match(/slide\s+(\d+):\s*pin="([^"]+)"\s*main="([^"]*)"/);
     if (m) violations.push({ slide: parseInt(m[1]), pin: m[2], mainExcerpt: m[3] });
   }
+  const scriptBug = detectScriptBug(result.stderr);
   return {
-    passed: result.status === 0,
+    passed: result.status === 0 && !scriptBug,
     violationCount: violations.length,
     violations,
+    scriptBug,
     exitCode: result.status,
     stderr: result.stderr?.trim() || null,
+    error: scriptBug ? 'lint-main-claim internal script error' : null,
   };
 }
 
@@ -149,10 +170,13 @@ function runEvidenceLedger(filePath) {
     timeout: 30_000,
   });
   if (result.error) return { passed: false, error: result.error.message };
+  const scriptBug = detectScriptBug(result.stderr);
   return {
-    passed: result.status === 0,
+    passed: result.status === 0 && !scriptBug,
+    scriptBug,
     exitCode: result.status,
     stderr: result.stderr?.trim() || null,
+    error: scriptBug ? 'evidence-ledger internal script error' : null,
   };
 }
 
@@ -162,10 +186,13 @@ function runColorRole(filePath) {
     timeout: 30_000,
   });
   if (result.error) return { passed: false, error: result.error.message };
+  const scriptBug = detectScriptBug(result.stderr);
   return {
-    passed: result.status === 0,
+    passed: result.status === 0 && !scriptBug,
+    scriptBug,
     exitCode: result.status,
     stderr: result.stderr?.trim() || null,
+    error: scriptBug ? 'color-role internal script error' : null,
   };
 }
 
@@ -177,11 +204,14 @@ function runContrastAA(filePath) {
   });
   if (result.error) return { passed: false, error: result.error.message };
   const violationCount = (result.stdout.match(/^     slide \d+:/gm) || []).length;
+  const scriptBug = detectScriptBug(result.stderr);
   return {
-    passed: result.status === 0,
+    passed: result.status === 0 && !scriptBug,
     violationCount,
+    scriptBug,
     exitCode: result.status,
     stderr: result.stderr?.trim() || null,
+    error: scriptBug ? 'contrast-aa internal script error' : null,
   };
 }
 
@@ -193,11 +223,14 @@ function runCanvasFill(filePath) {
   });
   if (result.error) return { passed: false, error: result.error.message };
   const shortCount = (result.stdout.match(/^     slide \d+:/gm) || []).length;
+  const scriptBug = detectScriptBug(result.stderr);
   return {
-    passed: result.status === 0,
+    passed: result.status === 0 && !scriptBug,
     shortCount,
+    scriptBug,
     exitCode: result.status,
     stderr: result.stderr?.trim() || null,
+    error: scriptBug ? 'canvas-fill internal script error' : null,
   };
 }
 

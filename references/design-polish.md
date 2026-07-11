@@ -346,7 +346,7 @@
     <div style="width:35%; background:var(--c-accent);
                 display:flex; align-items:flex-end; padding:3em 2em;">
       <div>
-        <div style="font-size:6em; font-weight:700; color:oklch(98% 0.01 80);
+        <div style="font-size:6em; font-weight:600; color:oklch(98% 0.01 80);
                     line-height:1; letter-spacing: 0;">03</div>
         <div style="font-size:0.9em; color:oklch(from var(--c-accent) l c h / 0.7);
                     margin-top:0.5em; text-transform:uppercase; letter-spacing:0.08em;">
@@ -384,7 +384,7 @@
 ```html
 <section style="display:flex; align-items:center; justify-content:center; height:100%;">
   <div style="text-align:center;">
-    <div style="font-size:clamp(4em, 7em, 9em); font-weight:700;
+    <div style="font-size:clamp(4em, 7em, 9em); font-weight:600;
                 line-height:0.9; letter-spacing: 0; color:var(--c-accent);">
       97<span style="font-size:0.4em; font-weight:400; letter-spacing:0;">%</span>
     </div>
@@ -455,7 +455,7 @@
                 oklch(from var(--c-accent) l c h / 0.05) 100%);
                 display:flex; align-items:center; justify-content:center;">
       <!-- 可替换为 <img> -->
-      <div style="font-size:8em; font-weight:700; color:oklch(from var(--c-accent) l c h / 0.08);
+      <div style="font-size:8em; font-weight:600; color:oklch(from var(--c-accent) l c h / 0.08);
                   letter-spacing: 0; line-height:1;">
         &rarr;
       </div>

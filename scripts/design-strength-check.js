@@ -38,8 +38,17 @@ if (!files.length) {
 
 const BASE_PX = 30; // reveal font-size 通常 28-30px，按 30 折算
 
-function parseSize(str) {
+function parseSize(str, cssVars) {
   if (!str) return null;
+  // Resolve var(--name) references from :root
+  if (cssVars && str.includes('var(')) {
+    const varMatch = str.match(/var\(\s*(--[\w-]+)\s*\)/);
+    if (varMatch && cssVars[varMatch[1]]) {
+      str = cssVars[varMatch[1]];
+    } else {
+      return null;
+    }
+  }
   // clamp(a, b, c) → 取 max (c)
   const clamp = str.match(/clamp\([^,]+,\s*[^,]+,\s*([^)]+)\)/i);
   if (clamp) str = clamp[1];
@@ -50,12 +59,26 @@ function parseSize(str) {
   return null;
 }
 
+function resolveCssVars(html) {
+  const vars = {};
+  const rootBlock = html.match(/:root\s*\{([^}]*)\}/);
+  if (rootBlock) {
+    const varRe = /(--[\w-]+)\s*:\s*([^;]+)/g;
+    let m;
+    while ((m = varRe.exec(rootBlock[1])) !== null) {
+      vars[m[1].trim()] = m[2].trim();
+    }
+  }
+  return vars;
+}
+
 function allFontSizes(html) {
   const sizes = [];
-  const re = /font-size\s*:\s*([^;"')]+)/gi;
+  const cssVars = resolveCssVars(html);
+  const re = /font-size\s*:\s*([^;"']+)/gi;
   let m;
   while ((m = re.exec(html)) !== null) {
-    const v = parseSize(m[1]);
+    const v = parseSize(m[1], cssVars);
     if (v && v > 0) sizes.push(v);
   }
   return sizes;

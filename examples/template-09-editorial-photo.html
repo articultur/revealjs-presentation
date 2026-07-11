@@ -86,7 +86,7 @@
     .ph-cover em { color: var(--c-accent-2); }
     .ph-cover .cover-deck { color: rgba(238, 228, 206, 0.88); font-size: 0.74em; max-width: 600px; margin-top: 0.9em; line-height: 1.55; }
     .ph-cover .cover-meta { margin-top: 1.2em; font-family: var(--f-mono); font-size: 0.42em; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(238, 228, 206, 0.68); }
-    .cover-code { position: absolute; right: 76px; bottom: 62px; z-index: 2; width: 132px; font-family: var(--f-condensed); font-size: 4.55em; letter-spacing: 0.03em; color: rgba(238,228,206,0.12); writing-mode: vertical-rl; line-height: 0.72; overflow: hidden; }
+    .cover-code { position: absolute; right: 76px; bottom: 62px; z-index: 3; width: 132px; font-family: var(--f-condensed); font-size: 4.55em; letter-spacing: 0.03em; color: rgba(238,228,206,0.12); writing-mode: vertical-rl; line-height: 0.72; overflow: hidden; }
     .cover-stamp { position: absolute; top: 56px; right: 72px; background: var(--c-accent); color: var(--c-bg-paper); font-family: var(--f-mono); font-size: 0.42em; letter-spacing: 0.18em; padding: 0.4em 0.9em; text-transform: uppercase; transform: rotate(-2deg); z-index: 10; }
 
     /* IP2 大片对开 */
@@ -117,6 +117,7 @@
     /* IP4 章节页 */
     .ph-section { color: var(--c-bg); }
     .ph-section .section-content { position: relative; z-index: 2; display: flex; flex-direction: column; justify-content: flex-end; width: 100%; height: 100%; padding: 56px 72px 76px; }
+    .ph-section .section-content .kicker { position: relative; z-index: 1; }
     .ph-section h2 { color: var(--c-bg-paper); font-size: 2.55em; line-height: 1.02; max-width: 840px; }
     .ph-section em { color: var(--c-accent-2); }
     .ph-section .section-caption { color: rgba(238, 228, 206, 0.84); font-size: 0.76em; max-width: 620px; margin-top: 0.7em; }
@@ -212,8 +213,8 @@
       <!-- 1 · IP1 满版照片封面（文字通用占位 · 图 picsum 占位） -->
       <!-- 满版图:必须原图 URL(≥2200px),禁 Wikimedia /thumb/ 缩略图。picsum 仅占位示范。 -->
       <section class="ph-cover deck-flex" data-background="#11100d">
-        <img class="hero-img overlay" src="https://picsum.photos/seed/city-cover-pano/1920/1080" alt="">
-        <div class="hero-gradient"></div>
+        <img class="hero-img overlay" src="https://picsum.photos/seed/city-cover-pano/1920/1080" alt="" data-qa-ignore="decorative">
+        <div class="hero-gradient" data-qa-ignore="decorative"></div>
         <div class="cover-code">{CITY}</div>
         <div class="cover-content">
           <span class="kicker on-dark">Volume I · 城市影像志</span>
@@ -228,8 +229,8 @@
 
       <!-- 2 · IP4 章节页 I（起源 / 老城） -->
       <section class="ph-section deck-flex" data-background="#11100d">
-        <img class="hero-img section-dim" src="https://picsum.photos/seed/city-origin-old/1920/1080" alt="">
-        <div class="section-gradient"></div>
+        <img class="hero-img section-dim" src="https://picsum.photos/seed/city-origin-old/1920/1080" alt="" data-qa-ignore="decorative">
+        <div class="section-gradient" data-qa-ignore="decorative"></div>
         <div class="section-content">
           <span class="kicker on-dark">Chapter I · 起源</span>
           <h2>这里,是城市的<em>起点</em>。</h2>
@@ -242,7 +243,7 @@
       <!-- 3 · IP2 大片对开（地标深描） -->
       <section class="ph-spread deck-flex" data-background="#11100d">
         <div class="img-side">
-          <img class="muted-img" src="https://picsum.photos/seed/city-landmark-detail/1280/1080" alt="">
+          <img class="muted-img" src="https://picsum.photos/seed/city-landmark-detail/1280/1080" alt="" data-qa-ignore="decorative">
         </div>
         <div class="text-side">
           <span class="kicker">PLATE · {地标名} / Landmark</span>
@@ -302,7 +303,7 @@
       <!-- 6 · IP5 图 + 数据锚点（文物 / 历史物证） -->
       <section class="ph-stat deck-flex" data-background="#11100d">
         <div class="img-side">
-          <img class="muted-img" src="https://picsum.photos/seed/city-artifact/1280/1080" alt="">
+          <img class="muted-img" src="https://picsum.photos/seed/city-artifact/1280/1080" alt="" data-qa-ignore="decorative">
         </div>
         <div class="num-side">
           <span class="kicker">Artifact · {文物名}</span>
@@ -351,8 +352,8 @@
 
       <!-- 9 · IP4 章节页 II（实用信息 / 路线） -->
       <section class="ph-section deck-flex" data-background="#11100d">
-        <img class="hero-img section-dim" src="https://picsum.photos/seed/city-axis-route/1920/1080" alt="">
-        <div class="section-gradient"></div>
+        <img class="hero-img section-dim" src="https://picsum.photos/seed/city-axis-route/1920/1080" alt="" data-qa-ignore="decorative">
+        <div class="section-gradient" data-qa-ignore="decorative"></div>
         <div class="section-content">
           <span class="kicker on-dark">Chapter II · 实用信息</span>
           <h2>第一次来,看这<em>三件事</em>就够了。</h2>

@@ -10,12 +10,12 @@
  *
  * 权威来源(实装,不可改):
  *   - scripts/grade-gate.js      G1-G12(十二门禁,allPassed 链 12 项)
- *   - examples/template-*.html   9 个 seed template(01-09)
+ *   - examples/template-*.html   10 个 seed template(01-10)
  *   - references/failure-gates.md §1-§19(19 条失败门禁)
  *
  * 校验内容:
  *   1. 旧门禁计数词(十一/十/八门禁、G1-G10、G1-G11、G1–G10 en-dash)
- *   2. 旧 template 计数(8 套已实现、8 implemented、all eight、template-01..08)
+ *   2. 旧 template 计数(9 套已实现、9 implemented、all nine、template-01..09)
  *   3. 旧失败门禁计数(13 条、15 条失败门禁)
  *
  * 豁免:references/template-differentiation-audit.md(行 3 自述历史档案,
@@ -39,12 +39,17 @@ const FORBIDDEN = [
   { re: /G1-G10/g, name: '旧门禁代号「G1-G10」(应为 G1-G12)' },
   { re: /G1–G11/g, name: '旧门禁代号「G1–G11」en-dash(应为 G1–G12)' },
   { re: /G1–G10/g, name: '旧门禁代号「G1–G10」en-dash(应为 G1–G12)' },
-  // template 数:权威 = 9 套(01..09)
-  { re: /8 套已实现/g, name: '旧 template 数「8 套已实现」(应为 9 套)' },
-  { re: /8 implemented/g, name: '旧 template 数「8 implemented」(应为 9 implemented)' },
+  // template 数:权威 = 10 套(01..10)
+  { re: /9 套已实现/g, name: '旧 template 数「9 套已实现」(应为 10 套)' },
+  { re: /9 implemented/g, name: '旧 template 数「9 implemented」(应为 10 implemented)' },
   { re: /all eight gates/gi, name: '旧门禁数「all eight gates」(应为 all twelve gates)' },
-  { re: /for all eight\b/g, name: '旧 template 数「for all eight」(应为 for all nine)' },
-  { re: /template-01\.\.08/g, name: '旧 template 范围「template-01..08」(应为 01..09)' },
+  { re: /for all nine\b/g, name: '旧 template 数「for all nine」(应为 for all ten)' },
+  { re: /template-01\.\.09/g, name: '旧 template 范围「template-01..09」(应为 01..10)' },
+  { re: /9 template\b/g, name: '旧 template 数「9 template」(应为 10)' },
+  { re: /9 个 seed template/g, name: '旧 template 数「9 个 seed template」(应为 10)' },
+  { re: /9 个形状/g, name: '旧 template 数「9 个形状」(应为 10 个形状)' },
+  { re: /9 个 template/g, name: '旧 template 数「9 个 template」(应为 10)' },
+  { re: /种子模板（8 套）/g, name: '旧 template 数「种子模板（8 套）」(应为 10 套)' },
   // 失败门禁数:权威 = 19 条(§1-§19)
   { re: /13 条失败门禁/g, name: '旧失败门禁数「13 条失败门禁」(应为 19 条)' },
   { re: /15 条失败门禁/g, name: '旧失败门禁数「15 条失败门禁」(应为 19 条)' },
@@ -63,7 +68,7 @@ function walkMd(dir) {
   for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
     const p = path.join(dir, ent.name);
     if (ent.isDirectory()) {
-      if (ent.name === 'node_modules' || ent.name === '.git' || ent.name === '.impeccable' || ent.name === '.omc' || ent.name === '.claude') continue;
+      if (ent.name === 'node_modules' || ent.name === '.git' || ent.name === '.impeccable' || ent.name === '.omc' || ent.name === '.claude' || ent.name === 'revealjs-presentation-workspace') continue;
       out.push(...walkMd(p));
     } else if (ent.name.endsWith('.md')) {
       out.push(p);
@@ -100,7 +105,7 @@ for (const file of files) {
 console.log('╔══════════════════════════════════════════════╗');
 console.log('║  lint-doc-counts · 文档计数 vs 实装一致性     ║');
 console.log('╚══════════════════════════════════════════════╝');
-console.log(`  权威:G1-G12(十二门禁)· 9 seed template · §1-§19(19 条失败门禁)`);
+console.log(`  权威:G1-G12(十二门禁)· 10 seed template · §1-§19(19 条失败门禁)`);
 console.log(`  扫描 ${files.length} 个文档(.md + scripts/*.js;豁免 ${EXEMPT.size})`);
 
 if (findings.length === 0) {
@@ -115,5 +120,5 @@ for (const f of findings) {
   console.log(`    ${f.snippet}`);
   console.log('');
 }
-console.log('  修复:把旧计数改为权威值(十二门禁/G1-G12/9 套/template-01..09/19 条)');
+console.log('  修复:把旧计数改为权威值(十二门禁/G1-G12/10 套/template-01..10/19 条)');
 process.exit(1);

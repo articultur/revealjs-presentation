@@ -41,7 +41,7 @@ const waitArg = args.find(arg => arg.startsWith('--wait='));
 const waitMs = waitArg ? Number(waitArg.split('=')[1]) : 1500;  // 字体加载需 ≥1.5s,防 FOUT 闪烁致截图中字体未就位(误判)
 
 if (!htmlFile) {
-  console.error('Usage: node scripts/visual-verdict.js <html-file> [--out dir] [--slides 2,5] [--dry-run] [--model=name]');
+  console.error('Usage: node scripts/visual-verdict.js <html-file> [--out dir] [--slides 2,5] [--dry-run] [--model=name] [--provider=responses|chat]');
   process.exit(2);
 }
 
@@ -61,6 +61,12 @@ const selectedSlides = slidesArgIndex >= 0 && args[slidesArgIndex + 1]
 
 const model = modelArg ? modelArg.split('=')[1] : (process.env.OPENAI_VISUAL_MODEL || 'gpt-4.1');
 const apiKey = process.env.OPENAI_API_KEY;
+// Provider-agnostic endpoint + transport. OpenAI-native -> Responses API; any
+// OpenAI-compatible proxy (GLM/CC-Switch, Azure, local) -> Chat Completions.
+const baseURL = (process.env.OPENAI_BASE_URL || process.env.VISUAL_VERDICT_BASE_URL || 'https://api.openai.com/v1').replace(/\/+$/, '');
+const providerArg = args.find(arg => arg.startsWith('--provider='));
+const provider = providerArg ? providerArg.split('=')[1]
+  : (process.env.VISUAL_VERDICT_PROVIDER || (baseURL.includes('openai.com') ? 'responses' : 'chat'));
 const qaDir = path.join(outDir, 'screenshots');
 const verdictPath = path.join(outDir, 'visual-verdict.json');
 const promptPath = path.join(outDir, 'visual-verdict-prompt.md');
@@ -212,50 +218,70 @@ async function callOpenAI(slides) {
     throw new Error('VISUAL_VERDICT_OPT_IN=1 is required to send deck screenshots to the vision model (prevents accidental external upload). Without it, use --dry-run, or run via qa.js with --visual-signoff after a human review.');
   }
 
-  const content = [
-    { type: 'input_text', text: userPrompt(slides) },
-    ...slides.flatMap(slide => ([
-      { type: 'input_text', text: `Screenshot for slide ${slide.slide}` },
-      { type: 'input_image', image_url: slide.image_url },
-    ])),
-  ];
+  // Provider-agnostic. OpenAI-native uses the Responses API; any OpenAI-compatible
+  // endpoint (GLM/CC-Switch, Azure, local) uses Chat Completions with image_url parts.
+  // Point a proxy at the service via OPENAI_BASE_URL + OPENAI_API_KEY + OPENAI_VISUAL_MODEL;
+  // provider is auto-detected from the base URL (openai.com -> responses, else -> chat),
+  // overridable with --provider=responses|chat or VISUAL_VERDICT_PROVIDER.
+  const headers = {
+    Authorization: `Bearer ${apiKey}`,
+    'Content-Type': 'application/json',
+  };
 
-  const response = await fetch('https://api.openai.com/v1/responses', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
+  let endpoint, reqBody;
+  if (provider === 'chat') {
+    endpoint = `${baseURL}/chat/completions`;
+    reqBody = {
+      model,
+      messages: [
+        { role: 'system', content: systemPrompt() },
+        { role: 'user', content: [
+          { type: 'text', text: userPrompt(slides) },
+          ...slides.flatMap(slide => ([
+            { type: 'text', text: `Screenshot for slide ${slide.slide}` },
+            { type: 'image_url', image_url: { url: slide.image_url } },
+          ])),
+        ] },
+      ],
+      // strict:false for broad OpenAI-compatible support (not all enforce strict mode).
+      response_format: { type: 'json_schema', json_schema: { name: 'visual_verdict', strict: false, schema } },
+    };
+  } else {
+    endpoint = `${baseURL}/responses`;
+    reqBody = {
       model,
       input: [
         { role: 'system', content: [{ type: 'input_text', text: systemPrompt() }] },
-        { role: 'user', content },
+        { role: 'user', content: [
+          { type: 'input_text', text: userPrompt(slides) },
+          ...slides.flatMap(slide => ([
+            { type: 'input_text', text: `Screenshot for slide ${slide.slide}` },
+            { type: 'input_image', image_url: slide.image_url },
+          ])),
+        ] },
       ],
-      text: {
-        format: {
-          type: 'json_schema',
-          name: 'visual_verdict',
-          strict: true,
-          schema,
-        },
-      },
-    }),
-  });
-
-  const body = await response.json().catch(() => null);
-  if (!response.ok) {
-    throw new Error(`OpenAI API error ${response.status}: ${JSON.stringify(body)}`);
+      text: { format: { type: 'json_schema', name: 'visual_verdict', strict: true, schema } },
+    };
   }
 
-  const outputText = body.output_text || (body.output || [])
-    .flatMap(item => item.content || [])
-    .map(part => part.text || '')
-    .filter(Boolean)
-    .join('\n');
-  if (!outputText) throw new Error(`No output_text in model response: ${JSON.stringify(body).slice(0, 1000)}`);
+  const response = await fetch(endpoint, { method: 'POST', headers, body: JSON.stringify(reqBody) });
+  const body = await response.json().catch(() => null);
+  if (!response.ok) {
+    throw new Error(`Vision API error ${response.status} (${provider} @ ${endpoint}): ${JSON.stringify(body).slice(0, 800)}`);
+  }
 
-  return JSON.parse(outputText);
+  const outputText = provider === 'chat'
+    ? (body.choices?.[0]?.message?.content || '')
+    : (body.output_text || (body.output || [])
+        .flatMap(item => item.content || [])
+        .map(part => part.text || '')
+        .filter(Boolean)
+        .join('\n'));
+  if (!outputText) throw new Error(`No output from ${provider} response: ${JSON.stringify(body).slice(0, 800)}`);
+
+  // Tolerate providers that wrap JSON in markdown fences or prose.
+  const jsonMatch = outputText.match(/\{[\s\S]*\}/);
+  return JSON.parse(jsonMatch ? jsonMatch[0] : outputText);
 }
 
 (async () => {

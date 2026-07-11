@@ -647,4 +647,8 @@ function readPhysicalContract(file) {
     process.exit(1);
   }
   console.log('\nOK: spatial integrity clear.');
-})();
+})().catch(err => {
+  console.error('spatial-integrity failed:', (err && err.message) ? err.message : String(err));
+  console.error('  Missing Playwright browser? Run: npx playwright install chromium');
+  process.exit(2);
+});

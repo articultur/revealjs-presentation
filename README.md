@@ -43,7 +43,7 @@ bash scripts/install-all.sh    # 一键安装所有可选依赖
 
 没有 Node.js？没关系——核心功能（生成 + 查看 + 导出）全在浏览器中完成。
 
-## 种子模板（8 套）
+## 种子模板（10 套）
 
 每套模板是一份已验证的设计语法 seed（配色 + 字体 + 语气 + 页面原语），对应 `examples/` 下的完整 HTML 范例。
 
@@ -57,6 +57,8 @@ bash scripts/install-all.sh    # 一键安装所有可选依赖
 | template-06-brutalist | 野兽派 / 反模板（裸露硬边框、荧光警示） | AI 批判、先锋创意、宣言式、反潮流品牌 |
 | template-07-memphis | 80s Memphis 复古（撞色色块、几何、粗描边） | 创意机构、活动、作品集、文化品牌 |
 | template-08-isometric | 等距 3D 信息图（30° 立体层叠、侧视网格） | 平台架构、系统流程、路线图、阶段规划 |
+| template-09-editorial-photo | 影像编辑（全幅摄影、图说证物、图册节奏） | 城市 / 旅行 / 美食 / 产品实拍、影像驱动叙事 |
+| template-10-clinical-trial | 监管档案（临床顶线、证据活页、监管量表） | 临床试验 topline、证据 binder、合规汇报 |
 
 > 模板只是 voice seed，不是终态。每次生成前先产出「设计语法说明 + 设计契约」，主骨架由 `references/layout-archetypes.md` 的 archetype 组合而成，**不原样套模板**（否则触发失败门禁 #9）。详见 [SKILL.md](SKILL.md) 的 Theme-to-Design Router。
 
@@ -76,7 +78,7 @@ revealjs-presentation/
 ├── README.md             # 本文件
 ├── DESIGN.md · GUIDE.md · PRODUCT.md   # 项目设计 / 指南 / 产品说明
 ├── package.json          # Node.js 依赖
-├── examples/             # 9 套种子模板（template-01..09）
+├── examples/             # 10 套种子模板（template-01..10）
 ├── references/           # 24 份设计参考文档 + template-invariants.json
 │   ├── layered-architecture.md       # 六层架构 + 概念交叉索引
 │   ├── design-fundamentals.md        # 设计四维根（尺度/张力/用色/隐喻→形式）

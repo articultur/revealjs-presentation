@@ -67,6 +67,19 @@
 - **Manufacturing rules**:每页最多 1 个主 proof object;物理表面型对象必须和承载面共享坐标系。
 - **QA checks**:`visual-verdict` 必须能判断 proof object 是否解释 action title;`test-spatial-integrity.js` 查坐标漂移。
 
+#### 无 proof / 情绪主题:重新定义 proof object 为"文字证据物"(2026-07 最佳实践)
+
+乡愁 / 文学 / 宣言类主题,用户明确"不要数据 / 图表 / 截图"。skill 的 action-title + proof-object 框架看似冲突,但 **proof object 不必是图表或数字——文字本身可以是 proof object**,只要它被赋予"证据物"的物质形态。e6-with 乡愁 deck(grade-gate ALL PASS + design-strength 100/100)实测验证:
+
+| 文字证据物形态 | 例子 |
+|---|---|
+| 感官清单 | "它有气味:灶台、雨后泥土、晒过的棉被"——五感罗列即证据 |
+| 家书 / 菜谱 / 未寄出的信 | 借生活文本的物理形态(信纸、菜谱卡)承载情绪,文本即 proof |
+| 离开编年 | "2015 北上 / 2018 成家 / 2022 父亲走了"——个人时间线即证据 |
+| 满版引言页 | 余光中《乡愁》整诗满版——诗歌本身是 proof object |
+
+两条铁律:① **不要因"无数据"塞假数据 / 假图表**(违反用户意图,也触发反模式);② **不要拒绝生成**(情绪主题同样需要视觉设计)。把 proof object 从"图表"泛化到"任何承载主张的可视物",用版式(满版、清单、信纸、引言)给文字证据物物质感。设计契约照常填(尺度 / 用色 / archetype),proof object 类型标"文字证据物"即可。
+
 ### Motion / 动画
 
 - **Use when**:内容有时间、状态变化、机制运行或演示节奏:组装 assembly、流动 flow、增长 growth、状态切换 state、对比揭示 reveal。

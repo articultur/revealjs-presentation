@@ -203,5 +203,9 @@ echo "  本地预览：npm run start → http://localhost:4173"
 echo "════════════════════════════════════════════════════════════"
 echo ""
 
-# Exit with 0 even if there are errors — these are all optional
+# Exit non-zero when a dependency failed. Playwright is REQUIRED (8/12 grade-gate
+# gates + most tests); http-server/impeccable are optional but also counted in $ERRORS.
+if [[ $ERRORS -gt 0 ]]; then
+  exit 1
+fi
 exit 0

@@ -81,6 +81,13 @@ async function validate() {
   }, { timeout: 20000 }).catch(() => {
     console.error('Reveal.js 未检测到（>20s），可能是 CDN 加载失败或非 reveal 文件。');
   });
+  // Fail-closed: Reveal 未就绪时,扫描会针对未渲染 DOM 产生误导性「0 问题」假通过。
+  const revealReady = await page.evaluate(() => typeof Reveal !== 'undefined' && typeof Reveal.isReady === 'function' && Reveal.isReady());
+  if (!revealReady) {
+    console.error('❌ Reveal.js 未就绪 — validate 终止(fail-closed,exit 2)');
+    await browser.close();
+    process.exit(2);
+  }
   await page.waitForTimeout(500); // 额外等待动画完成
 
   // 注入溢出检测脚本

@@ -165,6 +165,7 @@ const expectedTemplates = [
   'examples/template-07-memphis.html',
   'examples/template-08-isometric.html',
   'examples/template-09-editorial-photo.html',
+  'examples/template-10-clinical-trial.html',
 ];
 
 const genericMarkerRe = /^(?:hero|card|panel|section|content|block|item|box)$/i;

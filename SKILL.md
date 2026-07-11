@@ -75,7 +75,7 @@ CDN 加载 reveal.js + Google Fonts，用户**无需安装任何东西**。
 | P1 | 需求+设计语法 | ● | 场景/时长/听众 + ghost deck + Theme-to-Design Router 六行说明 + **内容-版式贴合度预检**（内容形状 / 主 proof object / 版式为何服务它）+ **元素语义策略**（每页元素清单 / 动画解释任务 / 必须或禁用的元素族）+ **动效决策**（按 §动效决策清单,定每页动效类型:无 / fragment 逐步 / CSS 循环 / CSS 进场;循环 ≤3 处/deck,fragment ≤30% 页面;过"关掉测试"）。**⚠ 输出后必须 STOP，等用户"继续 / 进 P4 / 改 X"才能生成 HTML——擅自生成 = 违规** |
 | P2 | 输出方案 | ◐ | 内容结构、视觉方向 |
 | P3 | 设计评审 | ● | 反模式检查 + **内容-版式贴合度评审**（proof object 是否解释主张 / 是否内容被硬塞进模板 / 版式不解释主张）+ **内容-元素贴合度评审**（元素是否解释 action title / 动画是否解释机制而非装饰 / 图标、表格、图片、代码是否抢主 proof object）+ 优化方向。**⚠ Gate 模式下输出后必须 STOP，等用户确认优化方向** |
-| P4 | 生成初稿 | ● | 先读 `references/element-semantics.md` 做元素语义路由,显式分派 13 类元素: proof object / motion / icon / table / data-viz / diagram / image / code / metric / quote-evidence / annotation / page furniture / whitespace,再加载对应专项文件。**按 P1 动效决策**给适当页面加动效(加载 `references/motion-delight.md` 对应 recipe:fragment 逐步揭示工艺/堆叠、CSS 循环 flow/pulse/glow 给持续传输/传导页、CSS 进场 grow 给对比条;封面/void-page/精确数据页不加;SVG 元素 fragment 用纯 opacity 禁 transform)。**两条路径**:**内容在 9 template 覆盖** → 套 template 但重写 proof object 和页面骨架;**不在覆盖** → 先声明 style gap → `scripts/content-router.js` 路由 archetype(A1-A12 + 主题变体)→ `scripts/generate-archetype-deck.js` 生成(四层架构闭合,见 [tokens/README.md](tokens/README.md) 与 [`references/off-template-style-gap.md`](references/off-template-style-gap.md))。两种都过 **十二门禁**(`grade-gate.js` 全绿 = G1-G12 全过;机器判 verdict,不可手动放行) |
+| P4 | 生成初稿 | ● | 先读 `references/element-semantics.md` 做元素语义路由,显式分派 13 类元素: proof object / motion / icon / table / data-viz / diagram / image / code / metric / quote-evidence / annotation / page furniture / whitespace,再加载对应专项文件。**按 P1 动效决策**给适当页面加动效(加载 `references/motion-delight.md` 对应 recipe:fragment 逐步揭示工艺/堆叠、CSS 循环 flow/pulse/glow 给持续传输/传导页、CSS 进场 grow 给对比条;封面/void-page/精确数据页不加;SVG 元素 fragment 用纯 opacity 禁 transform)。**两条路径**:**内容在 10 template 覆盖** → 套 template 但重写 proof object 和页面骨架;**不在覆盖** → 先声明 style gap → `scripts/content-router.js` 路由 archetype(A1-A12 + 主题变体)→ `scripts/generate-archetype-deck.js` 生成(四层架构闭合,见 [tokens/README.md](tokens/README.md) 与 [`references/off-template-style-gap.md`](references/off-template-style-gap.md))。两种都过 **十二门禁**(`grade-gate.js` 全绿 = G1-G12 全过;机器判 verdict,不可手动放行) |
 | P5 | 优化迭代 | ● | 按规模执行优化（详见 references/pipeline-phases.md「Phase 5」） |
 | P6 | 最终检查 | ◐ | 专业/发布会级必跑；快速模式 ≥12 页、密集数据或视觉结构调整时跑；复核**视觉语义与内容-版式贴合度/内容-元素贴合度**，确认每页元素清单服务 action title；`visual-verdict` 或人工审阅有 blocker 就回 P3/P5 |
 
@@ -214,7 +214,7 @@ slide 画布 **1280×720px**，可用空间 ≈ 1120×580px，每页安全预算
 
 ### Style Gap 硬约束:模板外内容不硬套
 
-当内容不符合现有 9 个 seed template 的范围,或最近模板会让主题错位时,必须进入 [`references/off-template-style-gap.md`](references/off-template-style-gap.md) 路径。**PPT 服务于内容,不是内容服务于模板**:不要把临床试验、法律案卷、金融台账、水墨叙事、品牌系统等内容硬塞进最近的 editorial/dark-tech/gradient 外观。
+当内容不符合现有 10 个 seed template 的范围,或最近模板会让主题错位时,必须进入 [`references/off-template-style-gap.md`](references/off-template-style-gap.md) 路径。**PPT 服务于内容,不是内容服务于模板**:不要把临床试验、法律案卷、金融台账、水墨叙事、品牌系统等内容硬塞进最近的 editorial/dark-tech/gradient 外观。
 
 Style gap 必须补齐四件套:
 
@@ -257,12 +257,13 @@ Layout 变体:____。
 | 讲**创意 / 活动 / 作品集 / 复古文化** | **07** memphis |
 | 讲**平台 / 路线图 / 分层 / 阶段规划** | **08** isometric |
 | 讲**城市 / 旅游 / 美食 / 产品实拍**（图像即内容，实景是 proof object） | **09** editorial-photo |
+| 讲**临床试验 / 监管 dossier / 疗效与安全性证据**（监管提交，数据即 proof object） | **10** clinical-trial |
 
 **歧义判据**（一行沾两样时，看主命题动词）：讲发展/讲故事 → 历程(01)；讲怎么跑/排障 → 系统(02)；讲怎么搭/组成 → 结构(03)；讲登场/亮相 → 发布(04)；**看长什么样（实景是 proof）→ 图像(09)，看多大/多少/怎么跑（数据/论证是 proof）→ 版式(01-08)**。同名主题看主命题：杭州风光→09，杭州经济/历史→01/03；产品实拍→09，产品架构→03；餐厅品牌册→09，餐厅经营数据→02。图像驱动先读 `references/image-driven-deck.md` 按 §4 工作流搜图（Wikimedia Commons），再排版。
 
 **worked example**：`AI 大模型发展史` → 历程 → **01**（不是 02：虽是技术，主干是"编年"不是"系统运行"）；`单体→三层架构迁移` → 结构 → **03**；`新产品发布会` → 发布 → **04**；`SRE 故障复盘` → 系统 → **02**。
 
-**不硬套（硬约束）**：9 个形状都不沾（如纯金融台账、临床实验报告、法律案卷），或命中形状但视觉隐喻会讲偏,就进入 Style Gap 路径（见上）。说清"为什么现有种子都不行",再新建一次性语法或 archetype 变体。把内容塞进不合适的种子比新建更糟——硬套是比"发明癖"更大的失败。
+**不硬套（硬约束）**：10 个形状都不沾（如纯金融台账、临床实验报告、法律案卷），或命中形状但视觉隐喻会讲偏,就进入 Style Gap 路径（见上）。说清"为什么现有种子都不行",再新建一次性语法或 archetype 变体。把内容塞进不合适的种子比新建更糟——硬套是比"发明癖"更大的失败。
 
 ### 必填六行（P1 结束前完成）
 
@@ -318,7 +319,7 @@ archetype 序列：每页分配一个 archetype（A1-A12，见 layout-archetypes
 |---|------|--------|
 | 1 | 原生语法 | 品牌/平台 deck 必须有该对象的界面证据，不只是"科技感/年轻化" |
 | 2 | 审美通道 | 用 Fraunces/DM Sans/玻璃卡/通用渐变要先说明为什么主题就是这个媒介 |
-| 3 | 证据台账 | 所有精确数字必须标 `verified / user-provided / illustrative`；"公开披露"不够 |
+| 3 | 证据台账 | 所有精确数字必须标英文 `verified / user-provided / illustrative`（**G5 只认英文关键词**，中文"已核实/示意"不算）；"公开披露"不够 |
 | 4 | 主命题进场 | pin/页码不能承担本页唯一主题；主视觉区必须读得到主命题 |
 | 5 | 颜色角色 | 主命题用最高层级颜色；强调色不做随机高亮 |
 | 6 | 密度溢出阻断 | `validate.js` `total > 0` = 必须修复；拆页优先（见 §2 优先级） |
@@ -326,15 +327,15 @@ archetype 序列：每页分配一个 archetype（A1-A12，见 layout-archetypes
 | 8 | fragment 首屏 | 初始截图必须有可读核心结论，不能全藏在 fragment 后 |
 | 9 | 骨架换皮门禁 | 同一套"左标题 + 右图形"换 5 套颜色 = 失败；class 名要反映主题对象 |
 | 10 | 跨模板相似度 | 5-10 张首页并排，去色后还像同一套 = 失败；金融像 cockpit，城市像 GIS |
-| 11 | 种子模板对象契约 | 维护已实现的 `examples/template-01..09` 必须通过 `test-reference-contract.js` |
+| 11 | 种子模板对象契约 | 维护已实现的 `examples/template-01..10` 必须通过 `test-reference-contract.js` |
 | 12 | 高风险布局预警 | 2×2 + 长标题、4-8 卡、密集时间线 + fragment 都易溢出，先用紧凑版 |
 | 13 | **Pin 安全区** | 必须跑 `test-pin-collision.js`，OK 才能交付；详见上文「关键约束 §3」 |
 | 14 | **空间完整性** | proof object 必须和承载面共享坐标系；SVG 文字不得裁切/继承描边；数据趋势线禁用会反射上翘的 `T` |
 | 15 | **视觉语义评审** | 图示/图表页跑 `visual-verdict.js`；blocker 必须修，dry-run 不等于模型通过 |
 
-## 种子模板（9 套已实现）
+## 种子模板（10 套已实现）
 
-每个模板在 `examples/template-01..09-*.html` 有完整示例，class 命名和领域对象登记在 `references/template-invariants.json`。**使用种子模板时必须改变叙事结构和页面骨架，不只换字体/颜色/背景**（失败模式 #9）。
+每个模板在 `examples/template-01..10-*.html` 有完整示例，class 命名和领域对象登记在 `references/template-invariants.json`。**使用种子模板时必须改变叙事结构和页面骨架，不只换字体/颜色/背景**（失败模式 #9）。
 
 | 模板 | 设计语法 | 适用场景 |
 |------|---------|---------|
@@ -347,8 +348,9 @@ archetype 序列：每页分配一个 archetype（A1-A12，见 layout-archetypes
 | `template-07-memphis` | 80s Memphis 复古（撞色色块、几何三角/圆/波浪、粗描边、不对称散落） | 创意机构、活动、作品集、文化品牌、营销 |
 | `template-08-isometric` | 等距 3D 信息图（30° 立体层叠、Edge/Mesh/Data 架构栈、侧视网格） | 平台架构、系统流程、路线图、阶段规划 |
 | `template-09-editorial-photo` | 杂志大片 / 城市画册（满版照片封面、图文对开、网格画廊、图+数据锚点） | 城市、旅游、地产、美食、产品摄影、活动纪实 |
+| `template-10-clinical-trial` | 临床试验 / 监管 dossier（dossier masthead、试验臂 arm-rail、试验设计矩阵、CR/PR/SD/PD 响应堆叠、Kaplan-Meier 曲线、亚组 forest plot、安全性矩阵） | 临床试验 topline、监管简报、疗效证据 dossier、医学科学交流 |
 
-> 另有 10 套设计语法（金融终端、临床实验室、城市基建、法律案卷、奢侈工坊、影视分镜、动画节奏、系统流程、代码走查、数据可视化）登记在 `references/design-polish.md` 作扩展参考，**尚未落地为种子 HTML**——其 "Template 06-15" 是逻辑章节序号，不对应 `examples/` 文件；需要时新建，别引用不存在的 `template-10..15`（注：`template-09` 已落地为 editorial-photo）。
+> design-polish.md 登记 10 套设计语法（金融终端、临床实验室、城市基建、法律案卷、奢侈工坊、影视分镜、动画节奏、系统流程、代码走查、数据可视化），其中**临床实验室（clinical-lab）已落地为 `examples/template-10-clinical-trial.html`**，其余 9 套仍为扩展参考、尚未落地为种子 HTML。design-polish.md 的 "Template 06-15" 是逻辑章节序号，不对应 `examples/` 文件（注：`examples/template-09` 是 editorial-photo、`examples/template-10` 是 clinical-trial，均与 design-polish 章节号无关）。
 
 ### 已知局限（高几何精度风格 + 全局防溢出）
 

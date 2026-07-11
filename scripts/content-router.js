@@ -5,7 +5,7 @@
 /**
  * content-router.js — 内容 → 版式原语路由器(四层架构 ② 内容路由层)
  * ====================================================================
- * 实验性原型(2026-06):验证「内容不在 9 template 覆盖,也能靠 archetype
+ * 实验性原型(2026-06):验证「内容不在 10 template 覆盖,也能靠 archetype
  * 组合拼出高质量 deck 骨架」。填补 layout-archetypes(① 原语)与 tokens
  * (③ 风格)之间的 ② 内容路由层 —— 让「选版式」从「人选 template」升级到
  * 「内容驱动选 archetype」。
@@ -74,7 +74,7 @@ const DETECT_RULES = [
 function detectContentType(section) {
   const text = `${section.title || ''} ${section.body || ''}`.trim();
   if (section.index === 0) return 'cover';
-  if (section.index === section.total - 1 && /结尾|结束|谢谢|总结|展望|下一步/.test(text)) return 'closing';
+  if (section.index === section.total - 1 && /结尾|结束|谢谢|总结|展望|下一步|conclusion|closing|summary|thank you|next steps/i.test(text)) return 'closing';
   const signal = Object.assign(new String(text), {
     __hasImageCompare: Boolean(section.img_a && section.img_b),
   });
@@ -132,9 +132,9 @@ function routeDeck(input) {
   };
 }
 
-// ── 内置 demo:III 期临床试验(医疗主题,不在 9 template 覆盖)──
+// ── 内置 demo:III 期临床试验(医疗主题,不在 10 template 覆盖)──
 const MEDICAL_DEMO = {
-  topic: 'III 期临床试验结果汇报(医疗主题 — 不在 9 template 覆盖)',
+  topic: 'III 期临床试验结果汇报(医疗主题 — 不在 10 template 覆盖)',
   voice: 'editorial-quiet',
   sections: [
     { title: '封面',       body: 'III 期临床试验结果汇报 · CX-204 治疗晚期 NSCLC' },
@@ -155,7 +155,7 @@ function main() {
   let input;
   if (!arg || arg === '--demo') {
     input = MEDICAL_DEMO;
-    console.log('═══ content-router DEMO · 医疗主题(不在 9 template 覆盖)═══\n');
+    console.log('═══ content-router DEMO · 医疗主题(不在 10 template 覆盖)═══\n');
   } else {
     input = JSON.parse(require('fs').readFileSync(arg, 'utf8'));
   }

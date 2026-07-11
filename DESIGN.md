@@ -8,7 +8,7 @@ The system must generate decks whose structure, proof objects, typography, motio
 
 ## Evidence Surfaces
 
-- `examples/template-01-editorial-serif.html` through `examples/template-09-editorial-photo.html` are the current seed examples (01-05 original grammars; 06-08 brutalist / memphis / isometric — three orthogonal styles; 09 editorial-photo — image-driven grammar for city/travel/food/product topics).
+- `examples/template-01-editorial-serif.html` through `examples/template-10-clinical-trial.html` are the current seed examples (01-05 original grammars; 06-08 brutalist / memphis / isometric — three orthogonal styles; 09 editorial-photo — image-driven grammar for city/travel/food/product topics; 10 clinical-trial — regulatory dossier grammar for clinical trial topline / evidence binder).
 - `SKILL.md` is the generation workflow contract.
 - `references/design-principles.md` and `references/design-polish.md` define the visual quality bar.
 - `references/layered-architecture.md` defines the six-layer generation contract across production, style, argument, taste, QA, and task governance.
@@ -86,6 +86,18 @@ Do not use a sample ledger plus route board plus specimen claim in rigid columns
 
 Templates 06 (brutalist), 07 (memphis), 08 (isometric) each push one orthogonal style to its limit and give every page a distinct spatial primitive rather than repeating a single skeleton. See the seed table in `SKILL.md` and the per-template `designGrammar` / `coverObjects` / `deckObjects` in `references/template-invariants.json`. The same non-negotiable standard applies: after mentally removing colors and fonts, no two templates may share a skeleton.
 
+## Template 10 Method: Clinical Regulatory Dossier
+
+Use a clinical evidence-binder system:
+
+- Dossier masthead (double-rule header band), treatment/control arm rail, endpoint stamp, registry metadata sidebar, dose bar.
+- The proof object is the clinical evidence exhibit itself: trial design matrix, CR/PR/SD/PD response stack, Kaplan-Meier survival curve, subgroup forest plot, safety matrix.
+- The treatment arm always carries the highest color tier (oxblood); the control arm is muted. Safety is presented honestly, never dramatized. Motion is zero.
+- Every precise metric carries an English evidence label (verified / user-provided / illustrative); fictional seed data is marked illustrative.
+- The layout should read like a printed regulatory submission binder: cream paper, ink, measured tables, direct-annotated curves.
+
+Do not use an editorial folio grid plus plate book as the cover skeleton — the dossier must expose clinical-native objects (dossier masthead, arm rail, endpoint stamp, trial schema) from the first slide.
+
 ## Verification Gate
 
 Before claiming a template improvement:
@@ -94,4 +106,4 @@ Before claiming a template improvement:
 2. Run `node scripts/visual-qa.js <file> --annotate-overflow --out <dir>`.
 3. Compare contact sheets with colors mentally removed. Similar skeletons fail even if lint passes.
 
-Resolved: the seed set is `template-01..09` (9 implemented). `references/template-invariants.json` is the canonical machine-readable contract for all nine. The 10 design grammars in `references/design-polish.md` (financial-terminal, clinical-lab, …) are unimplemented references with logical chapter numbering — they do not correspond to `examples/` filenames.
+Resolved: the seed set is `template-01..10` (10 implemented). `references/template-invariants.json` is the canonical machine-readable contract for all ten. Of the 10 design grammars in `references/design-polish.md` (financial-terminal, clinical-lab, …), clinical-lab has landed as `examples/template-10-clinical-trial.html`; the other 9 remain unimplemented references with logical chapter numbering that do not correspond to `examples/` filenames.

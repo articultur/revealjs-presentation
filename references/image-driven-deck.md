@@ -363,6 +363,11 @@ Slide 02 · proof · image role: landmark detail · why_this_image: ____ · sour
 
 默认用**外链 URL**(演示场景都在线),交付时说明"图依赖 Wikimedia CDN,离线/限流时需下载内联"。**防限流**:IP3 网格 ≤6 张;关键页(封面 IP1 / 章节页 IP4)的图优先 base64 内联或本地化,确保首屏必现;全 deck >12 张外链图时,考虑把半数关键图内联。
 
+**`audit-image-assets.js` 并发拉图也会触发 IP 级 429(2026-07 实测)**:audit 验证图可达时并发请求每张外链图,同一 IP 短时间打 >10 次 upload.wikimedia.org 会触发 **IP 级 429**(不只是单图限流,是整个 IP 窗口冻结,持续数分钟到数十分钟不恢复)。此时改走"全量下载内联"也还是 429(IP 还在冷却)。处置三步:
+1. **保留外链 URL,不要硬下载内联**——429 冷却期下载必然失败,外链反而能在用户浏览器(不同 IP)正常加载
+2. **加 `onerror` 优雅降级**:`<img src="…" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">` + 同位放 accent 渐变兜底层(照片失败时切纯色底,版式文字照常可读,不垮页)
+3. **audit 报 broken-image blocker 时人工复核**:若 onerror 降级已就位、外链在浏览器实际可达(换 IP/网络验证),把 audit 的 broken 判定记为"429 假阳性"而非真断链,不阻塞交付 —— 别为冷却期 429 反复重试浪费时间
+
 ---
 
 ## §5 杭州 worked example

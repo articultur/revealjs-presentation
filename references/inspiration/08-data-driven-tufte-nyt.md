@@ -39,7 +39,7 @@
 
 ## 我们的实现(这个风格的子集)
 
-**当前无专门 data-driven template**。这是「风格 > template」的典型——Data-Driven 风格存在且强大,但我们 9 个 template 还没专门实现。做数据 PPT 时,从 [data-viz.md](../data-viz.md) 取 Tufte 原则,落到 template-01 editorial-serif 或 template-03 minimal-spatial 上。**该考虑加 template-10 data-driven**。
+**当前无专门 data-driven template**。这是「风格 > template」的典型——Data-Driven 风格存在且强大,但我们 10 个 template 还没专门实现。做数据 PPT 时,从 [data-viz.md](../data-viz.md) 取 Tufte 原则,落到 template-01 editorial-serif 或 template-03 minimal-spatial 上。**未来可新增 data-driven 种子(template-10 已落地为 clinical-trial)**。
 
 ## 一句话
 

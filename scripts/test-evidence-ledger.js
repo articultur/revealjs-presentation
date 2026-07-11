@@ -104,6 +104,9 @@ for (const file of files) {
         // Remove dates, versions, bare years, CSS units before metric detection
         let cleanedText = textContent.replace(DATE_RE, '');
         cleanedText = cleanedText.replace(/\bv?\d+\.\d+\.\d+(?:-rc\d*|-beta\d*)?\b/g, ''); // semver: 4.6.1, v4.6.1-rc
+        // CC license 版本号不是 metric："CC BY 2.0" / "CC BY-SA 4.0" / "CC BY-NC 3.0"
+        // （image-driven deck photo credit 常见，曾把 2.0/4.0 误判为未标指标 — e5-with-2 发现）
+        cleanedText = cleanedText.replace(/\bCC(?:[- ]?(?:BY|NC|SA|ND))+(?:\s+\d+(?:\.\d+)?)?\b/gi, '');
         cleanedText = cleanedText.replace(IGNORE_RE, ' '); // strip CSS units, years, versions, hex colors
         cleanedText = cleanedText.replace(/\b(?:19|20)\d{2}\b/g, ''); // bare years
 

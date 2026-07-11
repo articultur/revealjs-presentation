@@ -12,7 +12,7 @@
  *   结构化内容 → content-router 路由(②) → A1-A12 archetype 骨架(①)
  *   → 套 token(③,内联) → deck.html → lint/visual-verdict 校验(④)
  *
- * 实验性生成器(非交付模板):证明"内容不在 9 template 覆盖也能靠
+ * 实验性生成器(非交付模板):证明"内容不在 10 template 覆盖也能靠
  * archetype 组合生成高质量 deck"。产物放 output/(gitignore),不进 examples/。
  *
  * 用法:
@@ -39,7 +39,7 @@ function readTokensInline(voice) {
   const base = fs.readFileSync(path.join(TOKENS_DIR, 'base.css'), 'utf8');
   const tokenPath = path.join(TOKENS_DIR, `${voice}.css`);
   if (!fs.existsSync(tokenPath)) {
-    throw new Error(`Missing style token primitive: tokens/${voice}.css`);
+    throw new Error(`Missing style token primitive: tokens/${voice}.css. Supported: ${Object.keys(VOICE_FONTS).join(', ')}.`);
   }
   const prim = fs.readFileSync(tokenPath, 'utf8');
   return base + '\n' + prim;
@@ -278,7 +278,8 @@ function assembleDeck(input, routed) {
   const tokens = readTokensInline(voice);
   const fonts = VOICE_FONTS[voice];
   if (!fonts) {
-    throw new Error(`Missing voice font mapping: ${voice}`);
+    const supported = Object.keys(VOICE_FONTS).join(', ');
+    throw new Error(`Missing voice font mapping: ${voice}. Supported voices: ${supported}. To add: insert a VOICE_FONTS entry + tokens/${voice}.css.`);
   }
   const pptxClient = readPptxClientInline();
   const sections = routed.routes.map((r, i) => fillArchetype(r, input.sections[i], i, routed.routes.length, input)).join('\n');
@@ -326,7 +327,7 @@ Reveal.initialize({width:1280,height:720,margin:0.04,hash:true,slideNumber:'c/t'
 </body></html>`;
 }
 
-// ── 内置医疗 demo(结构化 sections,不在 9 template 覆盖)──
+// ── 内置医疗 demo(结构化 sections,不在 10 template 覆盖)──
 const MEDICAL = {
   topic: 'III 期临床试验结果 · CX-204',
   voice: 'editorial-serif',
