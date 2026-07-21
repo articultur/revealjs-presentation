@@ -18,6 +18,10 @@
     "visual-qa": "node scripts/visual-qa.js",
     "visual-verdict": "node scripts/visual-verdict.js",
     "qa": "node scripts/qa.js",
+    "route": "node scripts/route-deck.js",
+    "skeleton-diff": "node scripts/skeleton-diff.js",
+    "seed:quality": "node scripts/check-seed-quality.js --registry",
+    "seed:collision": "node scripts/check-seed-collision.js --all",
     "validate": "node scripts/validate.js",
     "test:validate-overflow": "node scripts/test-validate-overflow.js",
     "test:reference-contract": "node scripts/test-reference-contract.js",
@@ -33,7 +37,9 @@
     "test:doc-counts": "node scripts/lint-doc-counts.js",
     "test:deck-stats": "node scripts/test-deck-stats.js",
     "test:font-loading": "node scripts/test-font-loading.js examples/template-*.html",
-    "test": "npm run test:deck-stats && npm run test:doc-counts && npm run test:validate-overflow && npm run test:reference-contract && npm run test:launch-grade-contract && npm run test:qa-system-contract && npm run gate && npm run test:off-template-regression && npm run test:lint-main-claim && npm run test:initial-slide-visible && npm run test:text-collision && npm run test:pin-collision && npm run test:text-break && npm run test:font-loading && npm run test:pptx-export",
+    "test:route-deck": "node scripts/route-deck.js --selftest",
+    "test:skeleton-diff": "node scripts/skeleton-diff.js --selftest",
+    "test": "npm run test:deck-stats && npm run test:doc-counts && npm run test:validate-overflow && npm run test:reference-contract && npm run test:launch-grade-contract && npm run test:qa-system-contract && npm run gate && npm run test:off-template-regression && npm run test:lint-main-claim && npm run test:initial-slide-visible && npm run test:text-collision && npm run test:pin-collision && npm run test:text-break && npm run test:font-loading && npm run test:pptx-export && npm run test:route-deck && npm run test:skeleton-diff && npm run seed:quality",
     "doctor": "bash scripts/doctor.sh"
   },
   "dependencies": {

@@ -1,6 +1,6 @@
 # 验证脚本与门禁完整参考
 
-> 本文件是 SKILL.md 「验证」节的完整展开。SKILL.md 只保留「三层 + 指针」摘要，所有脚本清单、阻断条件、门禁对照、覆盖映射在此。
+> 本文件是 SKILL.md 「验证」节的完整展开。SKILL.md 只保留「三层 + 指针」摘要，所有脚本清单、阻断条件、门禁对照、覆盖映射、**路径 × 模式验收矩阵**（统一验收入口 `qa.js`）在此。
 >
 > 配套流程上下文见 `pipeline-phases.md`，画布/溢出启发式见 `visual-check.md`。
 
@@ -8,7 +8,7 @@
 
 | 层 | 脚本 | 性质 | 失败处置 |
 |---|---|---|---|
-| **地板（合规）** | `grade-gate.js` 全绿（十二门禁 G1-G12 合一） | 硬约束、机器判、不可人工放行 | 任一红灯 → 回 P5 重生成 |
+| **地板（合规）** | `grade-gate.js` 全绿（十四门禁 G1-G14 合一） | 硬约束、机器判、不可人工放行 | 任一红灯 → 回 P5 重生成 |
 | **天花板（设计强度）** | `design-strength-check.js` 四维（尺度/用色/张力/隐喻） | advisory（退出码恒 0），但任一维不达标 = 回炉重做骨架，**不是微调** | 退化信号：全 deck display ≤2.5em、无满版色块面板、全是通用卡片 |
 | **元素级天花板** | `element-quality-check.js` 四子分（动画/图标/表格/流程图）+ `references/element-semantics.md` 元素语义清单 | advisory，子分 ≥70 达标；语义问题进入视觉评审 | emoji 当图标 / 图标不主题跟随 / 表格违反 data-ink / 元素不服务 action title |
 | **视觉语义评审** | `visual-verdict.js`（截图 + 视觉模型 + JSON verdict） | 模型辅助；抓固定脚本盲区,补盲元素语义问题 | blocker → 回 P5；**无 key / 未 opt-in = UNSKIPPABLE-BLOCKED**（非 dry-run 假通过,G001），需 `--visual-signoff` / `VISUAL_VERDICT_SIGNOFF=1` 人工签字 + `VISUAL_VERDICT_OPT_IN=1`（默认关防外发）才放行 |
@@ -20,9 +20,9 @@
 
 **元素语义边界**：`element-quality-check.js` 只能稳定检查客观元素质量（动画配置、图标实现、表格 data-ink、流程图结构）。它不能可靠判断“这个元素为什么存在”。当问题是动画只是装饰、图标抢 proof object、表格不该表达趋势、图片/代码/引用没有解释 action title 时,必须用 `visual-verdict.js` 或人工审阅补盲,并回到 P1/P3 改元素语义或 proof object。
 
-## 十二门禁（G1-G12，grade-gate.js 合一）
+## 十四门禁（G1-G14，grade-gate.js 合一）
 
-`grade-gate.js <file>` 一次跑完十二门禁，退出码 1 = 任一红灯，**机器判 verdict，禁止人工放行**（案例：v15.0 把「15 页」压成 12 页时主观放行导致翻车）。
+`grade-gate.js <file>` 一次跑完十四门禁，退出码 1 = 任一红灯，**机器判 verdict，禁止人工放行**（案例：v15.0 把「15 页」压成 12 页时主观放行导致翻车）。
 
 | 门禁 | 脚本 | 检查 | 阻断条件 |
 |------|------|------|----------|
@@ -36,17 +36,23 @@
 | **G8** | `test-canvas-fill.js` | section 占满画布（对齐 visual-check 画布一致性） | 退出码 1 = section 未占满画布（内容高度矮盒 / 页间画布不一致） |
 | **G9** | `check-overflow.js` | Playwright bbox 溢出/叠放专项（**G004 起复用 `overflow-detect.js` 的 `comprehensiveOverflowScan` 共享扫描器**:data-qa-ignore 统一豁免 + sectionRect 边界自动适配 `Reveal.getScale()` 消除 letterbox/scale<1 漏报）：①VP_TOP/RIGHT/BOTTOM/LEFT 越界 ②CONTENT_W/H 内容溢出 ③CHILD_Ovf Flex/Grid 撑破 ④TIMELINE_DESC_TOO_TALL ⑤TEXT_OVERLAP_BAR；纯感官类留给 visual-verdict | 退出码 1 = bbox issueCount > 0 |
 | **G10** | `test-spatial-integrity.js` | proof object 与物理表面坐标系一致；读取 `template-invariants.json` 的 `physicalContract`；页标/北向标/pin 不压关键对象；图纸尺寸链对齐外墙；SVG `<text>` 不被 viewport 裁切、不继承可见描边；数据图曲线不使用易反射失真的 `T` 命令 | 退出码 1 = surface containment / physicalContract drift / page-label frame collision / north-mark heading collision / pin-object collision / plan aspect drift / dimension-wall mismatch / marker-label collision / SVG text clipping/stroke / data-curve smooth-T |
-| **G11** | `test-text-break.js` | 词/数字跨行断裂（用户最痛「一个词变两行」）：L1 数字+紧贴 %/×/x 与英文连续字母词跨行（Range.getClientRects ≥2 top）+ L2 CJK 孤字行 + **L2 孤标点行**（widow/runt punctuation，「单独的句号」）+ L3a nodejieba 中文通用词跨行（可选）+ **L4 避头尾**（kinsoku，句号/闭标点不能行首、开括号不能行尾）；适用短文本高权重区（h1-h3 或 claim 类，ownText ≤30）；创意短语（价格屠夫/终点裁决 jieba 切不准）归 L3b 视觉评审（判别规则见 `failure-gates.md` §19） | 退出码 1 = 词/数字/CJK 词跨行、孤字/孤标点或避头尾违例（issueCount > 0） |
+| **G11** | `test-text-break.js` | 词/数字跨行断裂（用户最痛「一个词变两行」）：L1 数字+紧贴 %/×/x 与英文连续字母词跨行（Range.getClientRects ≥2 top）+ L2 CJK 孤字行 + **L2 孤标点行**（widow/runt punctuation，「单独的句号」）+ L3a nodejieba 中文通用词跨行（可选）+ **L4 避头尾**（kinsoku，句号/闭标点不能行首、开括号不能行尾）；适用短文本高权重区（h1-h3 或 claim 类，ownText ≤30）；创意短语（价格屠夫/终点裁决 jieba 切不准）归 L3b 视觉评审（G11 规范权威出处与 L3b 判别规则见 `failure-gates.md` §19） | 退出码 1 = 词/数字/CJK 词跨行、孤字/孤标点或避头尾违例（issueCount > 0） |
 | **G12** | `design-strength-check.js --gate` | **反 slop 地板**（G002 新增）：scaleContrast≥2.5（尺度对比代理）+ nativeSignals metaphor≥1（主题原生隐喻原语命中,含 terminal/notebook/memphis/iso/film 五原语扩展） | 退出码 1 = 四维代理未达反 slop 地板 → 回炉重做骨架,非微调 |
+| **G13** | `test-text-collision.js` | 文字碰撞（test-label-overlap 的渲染层叠盲区）：margin-swallow（通配 reset 吞 inline margin-top）/ stack-occlude（高 z-index 遮文字叶子）/ shape-overflow（文字超形父 content box） | 退出码 1 = 文字碰撞 issueCount > 0 |
+| **G14** | `test-pin-collision.js` | .pin 辅助索引区与内容重叠（产生 ghost text / 不可读叠加）；pin 是辅助索引,内容压 pin = 阻断（`data-qa-ignore="decorative"` 可豁免纯装饰） | 退出码 1 = pin collision |
 
 **G6 vs G7 分工**：G6 是**相对**层级检查——主命题对比度必须高于 pin/页脚，保证「最重要的事最醒目」；G7 是**绝对** WCAG AA——任何文本对它的实际底色必须 ≥4.5:1（大字 ≥3:1）。两者互补、不可互替：G6 过了不代表无障碍达标（这正是 2.96:1 白字粉卡能绿过的原因），G7 补上这个洞。
 
 ## 完整脚本清单（按用途分组）
 
 ```bash
+# 统一验收入口 —— 生成后验收一次跑完（地板 + 天花板 + 元素 + 图像 + 视觉）
+node scripts/qa.js <file>                             # 全量: grade-gate 十四门禁 + design-strength 品质总分 ≥75 + element-quality + 图像驱动自动 audit + visual-verdict 三态(pass/blocked/signoff)
+node scripts/qa.js --visual-signoff <file>            # visual 层无 key/未 opt-in = BLOCKED, 人工视觉复核后签字放行
+
 # 地板（合规）—— 交付前必跑，全绿才放行
-node scripts/grade-gate.js <file>                      # 十二门禁合一 = 合规地板
-node scripts/grade-gate.js --json <file>               # JSON 输出（供 eval 框架消费）
+node scripts/grade-gate.js <file>                      # 十四门禁合一 = 合规地板
+node scripts/grade-gate.js --json <file>               # JSON 输出（供外部评估断言消费）
 
 # 天花板（设计强度）—— advisory，但任一维不达标回炉重做骨架
 node scripts/design-strength-check.js <file>           # 四维主度量（尺度/用色/张力/隐喻）+ contentSpecificity 子分（盯数字软化）
@@ -61,8 +67,8 @@ node scripts/lint-design.js <file> --verbose            # 含 P2 建议 + 精致
 node scripts/validate.js <file>                         # Playwright 溢出检测 + 截图
 node scripts/validate.js <file> --fix                   # 检测 + 自动修复 + 重检
 
-# 十二门禁单项（grade-gate 内部调用，也可单独跑）
-node scripts/test-pin-collision.js <file>               # Pin/水印与正文重叠检测（失败门禁 #13）
+# 十四门禁单项（grade-gate 内部调用，也可单独跑）
+node scripts/test-pin-collision.js <file>               # .pin 区与内容重叠检测（G14；曾为失败门禁 #13 专项脚本，现合一进 grade-gate）
 node scripts/test-label-overlap.js <file>               # 标签互相重叠 + 跨 slide 泄露（G3）
 node scripts/test-lint-main-claim.js <file>             # 主命题进场门禁（G4）
 node scripts/test-evidence-ledger.js <file>             # 证据台账门禁（G5）
@@ -104,7 +110,7 @@ node scripts/lint-reference-docs.js                     # 参考文档代码示�
 
 | 脚本 | 阻断条件 |
 |------|----------|
-| `grade-gate.js` | 退出码 1 = 十二门禁任一红灯（机器判，不可人工放行） |
+| `grade-gate.js` | 退出码 1 = 十四门禁任一红灯（机器判，不可人工放行） |
 | `lint-design.js` | 退出码 1 = 存在 P0 违规 |
 | `validate.js` | 输出 `total > 0` = 真实布局溢出 |
 | `test-pin-collision.js` | 退出码 1 = Pin 与正文重叠 |
@@ -124,17 +130,29 @@ node scripts/lint-reference-docs.js                     # 参考文档代码示�
 
 ## 各模式最低验证要求
 
+**统一验收入口**：生成后验收跑 `node scripts/qa.js <file>` 全量——十四门禁地板（grade-gate）+ design-strength 品质总分 ≥75 + element-quality 元素子分 + 图像驱动自动触发 audit-image-assets + visual-verdict 三态（pass / blocked / signoff）。`grade-gate.js` 仍是地板；`generate-deck.js --gates` 只跑地板+design-strength，**不等于全量验收**。下表按层分解三种模式的最低要求；路径维度（A/B/C）见下「路径 × 模式验收矩阵」。
+
 | 模式 | 地板 | 天花板 | 视觉评审 |
 |------|------|--------|----------|
-| **快速模式** | `grade-gate.js` 全绿（必跑） | `design-strength-check.js` 四维达标（必跑） | ≥12 页、含密集数据/图表、或视觉结构调整时加跑 `visual-qa.js --annotate-overflow`；图表/图示页建议 `visual-verdict.js`；图像驱动 deck 必跑 `audit-image-assets.js` |
+| **快速模式** | `grade-gate.js` 全绿（必跑，走 `qa.js`） | `design-strength-check.js` 四维达标（必跑，走 `qa.js`，品质总分 ≥75） | `visual-verdict.js` 必跑（走 `qa.js` 全量）：无 key / 未 opt-in = UNSKIPPABLE-BLOCKED → 人工视觉复核后 `--visual-signoff` / `VISUAL_VERDICT_SIGNOFF=1` 签字放行；≥12 页、含密集数据/图表、或视觉结构调整时加跑 `visual-qa.js --annotate-overflow`；图像驱动 deck 必跑 `audit-image-assets.js`（`qa.js` 自动检测触发） |
 | **专业模式** | P4 生成后立即跑 | P5/P6 跑 | P6 必跑 `visual-qa.js --annotate-overflow --show-fragments`；有模型 key 时必跑 `visual-verdict.js`；图像驱动 deck 必跑 `audit-image-assets.js` |
 | **发布会级** | 必跑 | 必跑 + `--golden` 对比 | 必跑逐页截图审阅 + LLM `visual-verdict.js` + PPTX 导出证明 + `test-launch-grade-contract.js` |
+
+### 路径 × 模式验收矩阵（单一真相）
+
+三条路径的生成后验收统一如下（与 SKILL.md「路径选择」表互指；各层的模式增量见上表）。**三路径都要求 `node scripts/qa.js <file>` 全量，任何路径不得止步于地板。**
+
+| 路径 | 快速模式 | 专业模式 | 发布会级 |
+|---|---|---|---|
+| **A 种子快速** | `node scripts/qa.js <file>` 全量；visual 无 key / 未 opt-in = blocked → 人工复核后 `--visual-signoff` 签字放行。scaffold 复制产物（标 `requiresRewrite: true`）先重写 cover/proof/mechanism/close ≥2 个 role 骨架（`failure-gates.md` §9）再验收，只换文字/配色 = 换皮拒收；scaffold 场景验收跑 `node scripts/qa.js <file> --seed examples/<seed>.html`（`--seed` 加跑 skeleton-diff 结构级换皮门禁，骨架相似度 >70% = 硬失败） | 同左 + P6 `visual-qa.js --annotate-overflow --show-fragments` 逐页审阅 | 同左 + golden-reference 对标 + `design-strength-check.js --golden` 回归 + PPTX 导出证明 + `test-launch-grade-contract.js` |
+| **B 组合通用** | `node scripts/qa.js <file>` 全量——**不得止于 `generate-deck.js --gates`**（它只跑地板+design-strength，缺 element-quality / 图像 audit / visual-verdict） | 同 A | 同 A |
+| **C B 解法生成** | `node scripts/qa.js <file>` 全量；沉淀 case 前另过事后 6 维验收（`seed-quality-standard.md`）+ `check-seed-collision.js` | 同 A | 同 A |
 
 **调垂直平衡时**：`visual-check.js <file>` 报每页重点重心/跨度/画布一致性（启发式，**非阻断**）。它和 visual-qa 分工不同，冲突时信 visual-qa。指标解读、可接受取舍与假阳性见 `visual-check.md`。
 
 **图片驱动盲区**：固定 bbox 脚本看不出“照片廉价”“图不解释主题”“封面和章节重复导致素材感”。先跑 `audit-image-assets.js` 抓客观硬伤（分辨率、放大、断图、重复、背景漂移），再跑 `visual-verdict.js` 让视觉模型判断语义和设计感。城市/旅游/美食/产品摄影 deck 缺任一项，都不能声称完成视觉校验。
 
-**视觉语义盲区**：固定脚本只能稳定抓几何事实；当问题是“图示不知道在表达什么”“文字合法但读不清”“图表不解释 action title”“图片没有解释页面主张”时，跑 `visual-verdict.js`。它使用同一套截图与固定 rubric，把视觉模型输出保存为 `visual-verdict.json`。`--dry-run` 只证明截图和 prompt 已生成，不代表模型判定通过。**但若有视觉的会话模型（opus/sonnet）在场，可 Read dry-run 截图 + 按 rubric 判定，等价 visual-verdict 但用 Claude 视觉代替外部 API**——第 5 层在任何有视觉的 Claude Code 会话都可用，不必依赖外部 key。
+**视觉语义盲区**：固定脚本只能稳定抓几何事实；当问题是“图示不知道在表达什么”“文字合法但读不清”“图表不解释 action title”“图片没有解释页面主张”时，跑 `visual-verdict.js`。它使用同一套截图（带 `--show-fragments`，逐 fragment 状态截图，初始隐藏层也进评审）与固定 rubric，把视觉模型输出保存为 `visual-verdict.json`。`--dry-run` 只证明截图和 prompt 已生成，不代表模型判定通过。**但若有视觉的会话模型（opus/sonnet）在场，可 Read dry-run 截图 + 按 rubric 判定，等价 visual-verdict 但用 Claude 视觉代替外部 API**——第 5 层在任何有视觉的 Claude Code 会话都可用，不必依赖外部 key。
 
 ## impeccable 审计覆盖映射
 
@@ -154,6 +172,6 @@ node scripts/lint-reference-docs.js                     # 参考文档代码示�
 
 ## 评估框架集成
 
-eval runner 用 `grade-gate.js --json` 的 `passed` 字段作为客观断言——`passed: true` 仅当十二门禁全部通过。禁止 grader 用主观判断覆盖机器 verdict（v15.0 把「15 页」压成 12 页时曾因主观放行翻车）。
+仓内 evals/ 已移除（Wave 2 起），不再内置 eval runner；外部评估如需客观断言，用 `grade-gate.js --json` 的 `passed` 字段——`passed: true` 仅当十四门禁全部通过。禁止 grader 用主观判断覆盖机器 verdict（v15.0 把「15 页」压成 12 页时曾因主观放行翻车）。
 
 如果未执行验证，在最终回复中**明确说明**。

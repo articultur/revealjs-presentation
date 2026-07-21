@@ -61,6 +61,7 @@
 - 主要内容节点用 absolute 坐标硬摆，导致缩放或导出风险。
 - 数据、用户量、商业指标没有来源、口径或"示意"标注。
 - 视觉 QA 未审阅截图，只报告 lint/validate 通过。
+- 发布会级验收必须跑 `node scripts/visual-verdict.js <file> --launch`：launch 模式下 `weak-design-impact` / `ai-template-tell` / `weak-native-form` 的 warning 升级为 blocker，且 weak-design-impact ≥3 页或占比 ≥1/3 追加 deck 级 blocker——「合规但平庸」即不通过（互指 `failure-gates.md` §15）。
 - 页脚 `pin` 里的主题词没有进入主视觉区域，导致用户必须看页脚才知道这页在讲什么。
 - 改动单页视觉结构后未重新截图复核，或截图中仍有顶边/底边裁切、导航遮挡、主标题弱于脚注。
 - PPTX 未导出或导出后核心标题/结论/proof object 丢失。

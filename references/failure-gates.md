@@ -4,7 +4,7 @@
 
 任何门禁触发都视为阻断项，优先级高于"看起来风格统一"。
 
-十二门禁（lint + validate + label-overlap + lint-main-claim + evidence-ledger + color-role + contrast-aa + canvas-fill + check-overflow + spatial-integrity + text-break + design-strength）自动覆盖关键约束与设计硬规则；失败门禁由十二门禁及 test-pin-collision / test-reference-contract 等专项脚本联合检查。
+十四门禁（lint + validate + label-overlap + lint-main-claim + evidence-ledger + color-role + contrast-aa + canvas-fill + check-overflow + spatial-integrity + text-break + design-strength + text-collision + pin-collision）自动覆盖关键约束与设计硬规则；G13 text-collision / G14 pin-collision 已合一进 grade-gate（此前为门禁外专项脚本；test-reference-contract 等仍为独立专项）。
 
 ---
 
@@ -95,7 +95,7 @@ lint 通过不等于布局通过。若溢出来自信息密度，**优先级**�
 
 如果多个模板都落成"左信息栏 + 中央主物件 + 右结论栏"，也属于换皮失败。
 
-使用种子模板时，至少重写 `cover / proof / mechanism / close` 中的**两个**页面骨架，并让 class 命名反映主题原生对象，例如：
+使用种子模板时，至少重写 `cover / proof / mechanism / close` 中的**两个**（2/4）页面骨架，并让 class 命名反映主题原生对象——这也是路径 A scaffold 复制模式（`generate-deck.js` seed 短路复制种子 HTML，输出标 `requiresRewrite: true`）的强制验收：scaffold 只借 voice/签名原语底子，≥2 个 role 骨架不重写 = 换皮（互指 SKILL.md「voice / layout 解耦」），例如：
 
 `blueprint-sheet` · `dimension-chain` · `title-block` · `main-screen` · `audience-floor` · `camera-frame` · `notebook-spread` · `specimen-envelope` · `terminal-shell` · `price-ladder` · `civic-command` · `handoff-bus` · `failure-rail` · `editor-stage` · `analysis-bench` · `question-rail` · `sample-rail` · `endpoint-strip` · `issue-board` · `lookbook-strip` · `cue-stack`
 
@@ -117,7 +117,7 @@ lint 通过不等于布局通过。若溢出来自信息密度，**优先级**�
 
 ## 11. 种子模板对象契约 / Seed Object Contract
 
-维护已实现的 `examples/template-01` 到 `template-08` 时，每个模板都必须保留 `references/template-invariants.json` 中登记的：
+维护已实现的 `examples/template-01` 到 `template-10` 时，每个模板都必须保留 `references/template-invariants.json` 中登记的：
 
 - cover/proof/mechanism/close 角色
 - 首屏领域对象
@@ -219,7 +219,9 @@ node scripts/test-spatial-integrity.js <file>
 node scripts/visual-verdict.js <file> --out /tmp/<deck>-verdict
 ```
 
-该脚本会先用 `visual-qa` 渲染截图，再把截图和固定 rubric 交给视觉模型，输出 `visual-verdict.json`。以下类别中的 `blocker` 都必须回到 storyboard / P5 修复：
+发布会级/惊艳场景改用 `node scripts/visual-verdict.js <file> --launch`（见 `launch-grade.md` 门禁）：`weak-design-impact` / `ai-template-tell` / `weak-native-form` 的 warning 升级为 blocker，weak-design-impact ≥3 页或占比 ≥1/3 再追加 deck 级 blocker，「合规但平庸」即不通过。
+
+该脚本会先用 `visual-qa` 渲染截图（**带 `--show-fragments`**：逐 fragment 状态各截一张，初始藏在 fragment 后的揭示层也进评审，不会只审初始可见态），再把截图和固定 rubric 交给视觉模型，输出 `visual-verdict.json`。以下类别中的 `blocker` 都必须回到 storyboard / P5 修复：
 
 - `unclear-proof-object`：图示不知道在表达什么，或只是装饰。
 - `unreadable-label`：标签没有几何重叠，但投影尺度不可读。
@@ -315,6 +317,8 @@ node scripts/test-font-loading.js <file>          # 遍历每页,exit 1 = blocke
 **生成时防错**（主策略，见 SKILL.md 关键约束 §1）：`font-family` 栈在 generic fallback（`sans-serif`/`serif`）前带窄体 fallback（`'Arial Narrow'`），大字与角元素水平间距 ≥ 50px。`auto-fix.js` 兜底注入窄体 fallback（在 generic 前，FOUT 时优先用窄体）。
 
 ## 19. 文字断行门禁 / Text Break Gate（G11 · 2026-06 新增）
+
+本节是 G11 规范的权威出处（五层检测细节 + L3b 判别规则）；门禁总表与阻断条件汇总见 `validation.md` 的十四门禁表。
 
 用户最痛的视觉缺陷之一：「一个词/数字变成两行」—— `47.3%`→`47.3`+`%`、`response`→`respo`+`nse`、`价格屠夫`→`价格`+`屠夫`、单字甩到下一行。`scripts/test-text-break.js` 在 1280×720 视口渲染每页，对短文本高权重区（`<h1>`-`<h3>` 或 class 含 `pin|claim|proof|metric|stat|statement|headline|kicker|eyebrow|title-block|quote`，ownText 可见字符 ≤30）做多层检测（L1+L2+L2孤标点+L3a+L4 脚本硬判，L3b 视觉评审）：
 

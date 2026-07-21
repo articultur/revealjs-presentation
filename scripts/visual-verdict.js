@@ -13,6 +13,7 @@
  *   node scripts/visual-verdict.js deck.html --out output/deck-verdict
  *   node scripts/visual-verdict.js deck.html --slides 2,5,6
  *   node scripts/visual-verdict.js deck.html --dry-run
+ *   node scripts/visual-verdict.js deck.html --launch   发布会级:平庸/AI 味 warning 升级为 blocker
  *
  * Environment:
  *   OPENAI_API_KEY       required unless --dry-run
@@ -30,30 +31,35 @@ const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
 
-const args = process.argv.slice(2);
-const htmlFile = args.find(arg => !arg.startsWith('--'));
+// require.main 守卫:被 require 时跳过 CLI 引导,computeVerdict 可在无 key 环境独立单测
+const isCli = require.main === module;
+const args = isCli ? process.argv.slice(2) : [];
+const htmlFile = args.find(arg => !arg.startsWith('--')) || null;
 const outArgIndex = args.indexOf('--out');
 const slidesArgIndex = args.indexOf('--slides');
 const dryRun = args.includes('--dry-run');
 const skipCapture = args.includes('--skip-capture');
+const launchMode = args.includes('--launch');  // 发布会级「平庸即 blocker」:weak-design-impact 等 warning 升级为 blocker
 const modelArg = args.find(arg => arg.startsWith('--model='));
 const waitArg = args.find(arg => arg.startsWith('--wait='));
 const waitMs = waitArg ? Number(waitArg.split('=')[1]) : 1500;  // 字体加载需 ≥1.5s,防 FOUT 闪烁致截图中字体未就位(误判)
 
-if (!htmlFile) {
-  console.error('Usage: node scripts/visual-verdict.js <html-file> [--out dir] [--slides 2,5] [--dry-run] [--model=name] [--provider=responses|chat]');
+if (isCli && !htmlFile) {
+  console.error('Usage: node scripts/visual-verdict.js <html-file> [--out dir] [--slides 2,5] [--dry-run] [--launch] [--model=name] [--provider=responses|chat]');
   process.exit(2);
 }
 
-const filePath = path.resolve(htmlFile);
-if (!fs.existsSync(filePath)) {
+const filePath = htmlFile ? path.resolve(htmlFile) : null;
+if (isCli && filePath && !fs.existsSync(filePath)) {
   console.error(`File not found: ${filePath}`);
   process.exit(2);
 }
 
-const outDir = outArgIndex >= 0 && args[outArgIndex + 1]
-  ? path.resolve(args[outArgIndex + 1])
-  : path.join(path.dirname(filePath), `${path.basename(filePath, '.html')}-visual-verdict`);
+const outDir = !filePath
+  ? null
+  : outArgIndex >= 0 && args[outArgIndex + 1]
+    ? path.resolve(args[outArgIndex + 1])
+    : path.join(path.dirname(filePath), `${path.basename(filePath, '.html')}-visual-verdict`);
 
 const selectedSlides = slidesArgIndex >= 0 && args[slidesArgIndex + 1]
   ? new Set(args[slidesArgIndex + 1].split(',').map(s => Number(s.trim())).filter(Boolean))
@@ -67,11 +73,11 @@ const baseURL = (process.env.OPENAI_BASE_URL || process.env.VISUAL_VERDICT_BASE_
 const providerArg = args.find(arg => arg.startsWith('--provider='));
 const provider = providerArg ? providerArg.split('=')[1]
   : (process.env.VISUAL_VERDICT_PROVIDER || (baseURL.includes('openai.com') ? 'responses' : 'chat'));
-const qaDir = path.join(outDir, 'screenshots');
-const verdictPath = path.join(outDir, 'visual-verdict.json');
-const promptPath = path.join(outDir, 'visual-verdict-prompt.md');
+const qaDir = outDir ? path.join(outDir, 'screenshots') : null;
+const verdictPath = outDir ? path.join(outDir, 'visual-verdict.json') : null;
+const promptPath = outDir ? path.join(outDir, 'visual-verdict-prompt.md') : null;
 
-fs.mkdirSync(outDir, { recursive: true });
+if (isCli) fs.mkdirSync(outDir, { recursive: true });
 
 function readJson(jsonPath) {
   return JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
@@ -90,6 +96,9 @@ function captureScreenshots() {
     '--out',
     qaDir,
     '--annotate-overflow',
+    // fragment 隐藏内容参与评审(2026-07 验收修复):默认截图里 fragment 不可见,
+    // 视觉模型会漏审逐步揭示的内容(也可能把"未展开的 fragment"误判成内容缺失)。
+    '--show-fragments',
     `--wait=${waitMs}`,
   ], {
     encoding: 'utf8',
@@ -284,7 +293,46 @@ async function callOpenAI(slides) {
   return JSON.parse(jsonMatch ? jsonMatch[0] : outputText);
 }
 
-(async () => {
+// launch 模式「平庸即 blocker」:以下类别(平庸/AI 味/原生形式缺失)的 warning 升级为 blocker
+const LAUNCH_ESCALATE_CATEGORIES = new Set(['weak-design-impact', 'ai-template-tell', 'weak-native-form']);
+
+/**
+ * 判定合成纯函数(无 key 可单测):模型原始 verdict → 最终 passed。
+ * 非 launch 模式行为与历史一致:passed = verdict.passed && 无 blocker,issues 原样返回。
+ * launch 模式(发布会级「平庸即 blocker」):
+ *   1. weak-design-impact / ai-template-tell / weak-native-form 的 warning 升级为 blocker,
+ *      并在条目上显式标注 escalated 字段(↑launch 模式升级,不静默);
+ *   2. deck 级规则:weak-design-impact 页数 ≥3 或占比 ≥1/3(取更严)→ 追加一条 deck 级 blocker(slide 0)。
+ */
+function computeVerdict(verdict, options = {}) {
+  const launch = !!options.launch;
+  const issues = (verdict.issues || []).map(issue => ({ ...issue }));
+  if (launch) {
+    for (const issue of issues) {
+      if (issue.severity === 'warning' && LAUNCH_ESCALATE_CATEGORIES.has(issue.category)) {
+        issue.severity = 'blocker';
+        issue.escalated = '↑launch 模式升级 warning→blocker';
+      }
+    }
+    const weakPages = new Set(issues.filter(issue => issue.category === 'weak-design-impact').map(issue => issue.slide));
+    const totalSlides = options.totalSlides || Math.max(weakPages.size, ...issues.map(issue => issue.slide || 0));
+    const weakRatio = totalSlides > 0 ? weakPages.size / totalSlides : 0;
+    if (weakPages.size >= 3 || weakRatio >= 1 / 3) {
+      issues.push({
+        slide: 0,  // 0 = deck 级判定(非单页)
+        severity: 'blocker',
+        category: 'weak-design-impact',
+        evidence: `↑launch deck 级规则:weak-design-impact ${weakPages.size}/${totalSlides} 页(≥3 页或占比 ≥1/3),「合规但平庸」不予通过`,
+        suggestedFix: '回到 storyboard / P5:为平庸页做强主视觉决定(颜色场 / 大字 / 原型切换),而非只修到合规。',
+        escalated: '↑launch deck 级规则新增 blocker',
+      });
+    }
+  }
+  const blockers = issues.filter(issue => issue.severity === 'blocker');
+  return { ...verdict, issues, passed: verdict.passed && blockers.length === 0, launch };
+}
+
+if (isCli) (async () => {
   try {
     captureScreenshots();
     const { manifest, slides } = buildReviewPayload();
@@ -307,6 +355,7 @@ async function callOpenAI(slides) {
         passed: null,
         skipped: true,
         reason: 'dry-run',
+        launch: launchMode,
         model,
         source: filePath,
         screenshots: path.relative(process.cwd(), qaDir),
@@ -314,15 +363,15 @@ async function callOpenAI(slides) {
         slidesReviewed: slides.map(slide => slide.slide),
       };
       fs.writeFileSync(verdictPath, JSON.stringify(result, null, 2));
-      console.log(`visual verdict dry-run: ${verdictPath}`);
+      console.log(`visual verdict dry-run: ${verdictPath}${launchMode ? '（launch 模式：模型判定后将按发布会级标准把平庸/AI 味 warning 升级为 blocker）' : ''}`);
       process.exit(0);
     }
 
-    const verdict = await callOpenAI(slides);
+    const verdict = computeVerdict(await callOpenAI(slides), { launch: launchMode, totalSlides: slides.length });
     const blockers = verdict.issues.filter(issue => issue.severity === 'blocker');
+    const escalated = verdict.issues.filter(issue => issue.escalated);
     const result = {
       ...verdict,
-      passed: verdict.passed && blockers.length === 0,
       model,
       source: filePath,
       screenshotManifest: manifest.source,
@@ -330,12 +379,12 @@ async function callOpenAI(slides) {
     };
     fs.writeFileSync(verdictPath, JSON.stringify(result, null, 2));
 
-    console.log(`visual verdict: ${result.passed ? 'PASS' : 'FAIL'}`);
+    console.log(`visual verdict: ${result.passed ? 'PASS' : 'FAIL'}${launchMode ? '（launch 模式：平庸/AI 味即 blocker）' : ''}`);
     console.log(`  file: ${verdictPath}`);
-    console.log(`  issues: ${result.issues.length} (${blockers.length} blocker)`);
+    console.log(`  issues: ${result.issues.length} (${blockers.length} blocker${launchMode ? `, 其中 ${escalated.length} 条 ↑launch 模式升级/新增` : ''})`);
     if (!result.passed) {
       for (const issue of result.issues.filter(issue => issue.severity !== 'note').slice(0, 8)) {
-        console.log(`  slide ${issue.slide} [${issue.severity}/${issue.category}]: ${issue.evidence}`);
+        console.log(`  slide ${issue.slide} [${issue.severity}/${issue.category}]${issue.escalated ? ` ${issue.escalated}` : ''}: ${issue.evidence}`);
       }
     }
     process.exit(result.passed ? 0 : 1);
@@ -352,3 +401,5 @@ async function callOpenAI(slides) {
     process.exit(2);
   }
 })();
+
+module.exports = { computeVerdict };

@@ -12,6 +12,7 @@
  *   node scripts/qa.js --visual-dry-run --allow-visual-pending deck.html
  *   node scripts/qa.js --image-audit deck.html
  *   node scripts/qa.js --visual-signoff deck.html   # 人工视觉复核签字(放行 BLOCKED 感官层)
+ *   node scripts/qa.js --seed examples/template-01-editorial-serif.html deck.html   # 路径 A scaffold 改写后验收(换皮门禁)
  *
  * Visual verdict gating: real model review requires OPENAI_API_KEY + VISUAL_VERDICT_OPT_IN=1
  * (default off). Without both, visual-verdict is UNSKIPPABLE-BLOCKED — sign off manually with
@@ -26,6 +27,7 @@
 const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
+const { THRESHOLD: SKELETON_THRESHOLD } = require('./skeleton-diff.js'); // 换皮判定门槛(相似度 >70%)
 
 const ROOT = path.resolve(__dirname, '..');
 const SCRIPTS = __dirname;
@@ -36,7 +38,7 @@ function optionIndex(names) {
 }
 
 function positionalFiles() {
-  const valueFlags = new Set(['--out', '--output']);
+  const valueFlags = new Set(['--out', '--output', '--seed']);
   const result = [];
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
@@ -63,6 +65,10 @@ const outArgIndex = optionIndex(['--out', '--output']);
 const outRoot = outArgIndex >= 0 && args[outArgIndex + 1]
   ? path.resolve(args[outArgIndex + 1])
   : path.join(ROOT, 'qa-output');
+// --seed:路径 A scaffold 改写后的验收——提供时在视觉层之后加跑 skeleton-diff 换皮门禁
+// (骨架与种子结构相似度 >70% = 硬失败);不提供时行为完全不变。
+const seedArgIndex = optionIndex(['--seed']);
+const seedArg = seedArgIndex >= 0 ? args[seedArgIndex + 1] : null;
 
 const knownFlags = new Set([
   '--no-visual',
@@ -74,6 +80,7 @@ const knownFlags = new Set([
   '--no-image-audit',
   '--out',
   '--output',
+  '--seed',
 ]);
 const unknownFlags = args.filter(arg => arg.startsWith('--') && !knownFlags.has(arg));
 
@@ -82,8 +89,13 @@ if (unknownFlags.length) {
   process.exit(2);
 }
 
+if (seedArgIndex >= 0 && (!seedArg || seedArg.startsWith('--'))) {
+  console.error('Usage: --seed 需要种子文件路径或种子名(如 examples/template-01-editorial-serif.html)');
+  process.exit(2);
+}
+
 if (!files.length) {
-  console.error('Usage: node scripts/qa.js [--no-visual|--visual|--visual-dry-run] [--image-audit|--no-image-audit] [--out dir] <deck.html> [deck2.html]');
+  console.error('Usage: node scripts/qa.js [--no-visual|--visual|--visual-dry-run] [--image-audit|--no-image-audit] [--seed seed.html] [--out dir] <deck.html> [deck2.html]');
   process.exit(2);
 }
 
@@ -109,6 +121,11 @@ function parseQualityScore(stdout) {
   return match ? Number(match[1]) : null;
 }
 
+function parseSkeletonSimilarity(stdout) {
+  const match = stdout.match(/总相似度:\s*(\d+)%/);
+  return match ? Number(match[1]) : null;
+}
+
 function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
 }
@@ -124,7 +141,7 @@ function visualMode() {
   // 真实模型评审 = 外发截图到 vision 模型。必须同时满足 OPENAI_API_KEY + 显式 opt-in
   // (VISUAL_VERDICT_OPT_IN=1,默认关防意外外发)。无 key 或未 opt-in → blocked,不再静默
   // 降级 dry-run 假通过(评估 P0 修复项 G001-③:感官缺陷只靠 visual-verdict,失能时必须
-  // 强制人工签字,不能让 G1-G12 全绿的 deck 蒙混交付)。
+  // 强制人工签字,不能让 G1-G14 全绿的 deck 蒙混交付)。
   if (forceVisual) {
     if (!process.env.OPENAI_API_KEY) return 'blocked-no-key';
     if (!visualOptIn) return 'blocked-no-optin';
@@ -214,55 +231,65 @@ for (const file of files) {
   const mode = visualMode();
   if (mode === 'skip') {
     console.log('  - visual-verdict skipped by --no-visual');
-    continue;
-  }
-
-  const visualOut = path.join(outRoot, `${path.basename(file, '.html')}-visual-verdict`);
-  if (mode === 'blocked' || mode === 'blocked-no-key' || mode === 'blocked-no-optin') {
-    const reason = mode === 'blocked-no-key'
-      ? 'OPENAI_API_KEY 未配置'
-      : mode === 'blocked-no-optin'
-        ? 'VISUAL_VERDICT_OPT_IN=1 未授权截图外发'
-        : '无 key 或未授权外发';
-    const verdictPath = path.join(visualOut, 'visual-verdict.json');
-    if (visualSignoff) {
-      fs.mkdirSync(visualOut, { recursive: true });
-      fs.writeFileSync(verdictPath, JSON.stringify({
-        passed: true, skipped: true, reason: 'human-signoff',
-        blockedReason: reason, signoff: '--visual-signoff/VISUAL_VERDICT_SIGNOFF=1',
-        source: abs,
-      }, null, 2));
-      record(true, `visual-verdict BLOCKED → 人工签字放行 (${reason}; artifact: ${verdictPath})`);
-    } else {
-      record(false, `visual-verdict UNSKIPPABLE-BLOCKED: ${reason}; 感官层无法自动审,需人工视觉复核签字 (--visual-signoff 或 VISUAL_VERDICT_SIGNOFF=1)`);
-    }
-    continue;
-  }
-
-  const visualArgs = [abs, '--out', visualOut];
-  if (mode === 'dry-run') visualArgs.push('--dry-run');
-  const visual = runNode(`visual-verdict ${mode}`, 'visual-verdict.js', visualArgs, 420_000);
-  const verdictPath = path.join(visualOut, 'visual-verdict.json');
-  let verdict = null;
-  try {
-    verdict = fs.existsSync(verdictPath) ? readJson(verdictPath) : null;
-  } catch {
-    // handled by record below
-  }
-
-  if (mode === 'dry-run' && verdict?.passed !== true) {
-    record(
-      allowVisualPending,
-      allowVisualPending
-        ? `visual-verdict dry-run artifact recorded (${verdictPath})`
-        : 'visual-verdict pending: dry-run is not a model pass',
-      summarizeOutput(visual),
-    );
   } else {
+    const visualOut = path.join(outRoot, `${path.basename(file, '.html')}-visual-verdict`);
+    if (mode === 'blocked' || mode === 'blocked-no-key' || mode === 'blocked-no-optin') {
+      const reason = mode === 'blocked-no-key'
+        ? 'OPENAI_API_KEY 未配置'
+        : mode === 'blocked-no-optin'
+          ? 'VISUAL_VERDICT_OPT_IN=1 未授权截图外发'
+          : '无 key 或未授权外发';
+      const verdictPath = path.join(visualOut, 'visual-verdict.json');
+      if (visualSignoff) {
+        fs.mkdirSync(visualOut, { recursive: true });
+        fs.writeFileSync(verdictPath, JSON.stringify({
+          passed: true, skipped: true, reason: 'human-signoff',
+          blockedReason: reason, signoff: '--visual-signoff/VISUAL_VERDICT_SIGNOFF=1',
+          source: abs,
+        }, null, 2));
+        record(true, `visual-verdict BLOCKED → 人工签字放行 (${reason}; artifact: ${verdictPath})`);
+      } else {
+        record(false, `visual-verdict UNSKIPPABLE-BLOCKED: ${reason}; 感官层无法自动审,需人工视觉复核签字 (--visual-signoff 或 VISUAL_VERDICT_SIGNOFF=1)`);
+      }
+    } else {
+      const visualArgs = [abs, '--out', visualOut];
+      if (mode === 'dry-run') visualArgs.push('--dry-run');
+      const visual = runNode(`visual-verdict ${mode}`, 'visual-verdict.js', visualArgs, 420_000);
+      const verdictPath = path.join(visualOut, 'visual-verdict.json');
+      let verdict = null;
+      try {
+        verdict = fs.existsSync(verdictPath) ? readJson(verdictPath) : null;
+      } catch {
+        // handled by record below
+      }
+
+      if (mode === 'dry-run' && verdict?.passed !== true) {
+        record(
+          allowVisualPending,
+          allowVisualPending
+            ? `visual-verdict dry-run artifact recorded (${verdictPath})`
+            : 'visual-verdict pending: dry-run is not a model pass',
+          summarizeOutput(visual),
+        );
+      } else {
+        record(
+          visual.status === 0 && !visual.error && verdict?.passed === true,
+          `visual-verdict model pass (${verdictPath})`,
+          summarizeOutput(visual),
+        );
+      }
+    }
+  }
+
+  // 换皮门禁(仅提供 --seed 时加跑):路径 A scaffold 改写验收——骨架与种子结构相似度
+  // >70% = 换皮嫌疑(失败门禁 #9),硬失败,与 grade-gate 红灯同级。
+  if (seedArg) {
+    const diff = runNode('skeleton-diff', 'skeleton-diff.js', [abs, '--seed', seedArg, '--gate']);
+    const similarity = parseSkeletonSimilarity(diff.stdout);
     record(
-      visual.status === 0 && !visual.error && verdict?.passed === true,
-      `visual-verdict model pass (${verdictPath})`,
-      summarizeOutput(visual),
+      diff.status === 0 && !diff.error,
+      `skeleton-diff vs 种子骨架相似度 ${similarity ?? 'unknown'}% <= ${SKELETON_THRESHOLD}%`,
+      summarizeOutput(diff),
     );
   }
 }

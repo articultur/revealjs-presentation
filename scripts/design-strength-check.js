@@ -72,6 +72,48 @@ function resolveCssVars(html) {
   return vars;
 }
 
+// 扫描净化（2026-07 验收修复）：分析前一次性剔除 HTML 注释与 <script> 块。
+// 内联 pptx 导出 JS 里的 console/cursor/bubble 会被 nativeSignals 当主题原语误命中，
+// 注释与 JS 字符串里的 font-size/词汇也会污染 scaleContrast/具体度等全文扫描。
+// 保留 <style> 块与文档结构；只删"永远不会是设计信号"的噪音。所有子检测统一用净化后文本。
+function stripNoise(html) {
+  return html
+    .replace(/<!--[\s\S]*?-->/g, '')
+    .replace(/<script\b[^>]*\/>/gi, '')
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script\s*>/gi, '');
+}
+
+// anchorNumeral 辅助（2026-07 收紧）：保留字号检测，但要求承载元素内容是数字——
+// 超大字号标题 ≠ 数字锚点；数字锚点的标志是"超大字号 + 纯数字内容"（章节号/锚数字）。
+function isNumericContent(inner) {
+  const text = inner.replace(/<[^>]+>/g, '').replace(/&[a-z]+;/gi, '').trim();
+  // 数字内容：含数字且全由数字/量纲字符构成（4.8M / 42% / ¥4.2亿 / §01 都算；MAKELOUD 这类纯文字标题不算）
+  return text.length > 0 && text.length <= 16 && /\d/.test(text) && /^[\d\s.,%°×+\-–—/:;#¥$€￥()·§KMBkmb万亿]+$/.test(text);
+}
+// clamp 分支要求 [4-6]em 落在参数边界上,防 "2.4em" 里的 "4em" 误命中(原版同样有此 quirk,一并修正)
+const BIG_NUM_SIZE = /font-size\s*:\s*(?:clamp\((?:[^;,]+,\s*)*[4-6](?:\.\d+)?em|[4-6](?:\.\d+)?em)/i;
+function hasAnchorNumeral(html, styleBlocks) {
+  let m;
+  // (a) 内联样式：大字号元素开标签后的直接文本（可含一层内联包装）必须是数字。
+  //     只读开标签 + 后续片段，不做闭合配对——配对正则会吞掉嵌套子元素造成系统性漏检。
+  const tagRe = /<(\w+)[^>]*\bstyle\s*=\s*"([^"]*)"[^>]*>([\s\S]{0,200}?)<\/\w+>/gi;
+  while ((m = tagRe.exec(html)) !== null) {
+    if (BIG_NUM_SIZE.test(m[2]) && isNumericContent(m[3])) return true;
+  }
+  // (b) class 规则：样式块里声明大字号的 class（含 .a .b .num 多级选择器，取链上每个类名），
+  //     找用该 class 且内容为数字的元素
+  const ruleRe = /([^{}]+)\{([^}]*)\}/g;
+  while ((m = ruleRe.exec(styleBlocks)) !== null) {
+    if (!BIG_NUM_SIZE.test(m[2])) continue;
+    for (const cm of m[1].matchAll(/\.([\w-]+)/g)) {
+      const elRe = new RegExp(`<\\w+[^>]*class\\s*=\\s*"[^"]*\\b${cm[1]}\\b[^"]*"[^>]*>([\\s\\S]*?)<\\/\\w+>`, 'i');
+      const el = html.match(elRe);
+      if (el && isNumericContent(el[1])) return true;
+    }
+  }
+  return false;
+}
+
 function allFontSizes(html) {
   const sizes = [];
   const cssVars = resolveCssVars(html);
@@ -115,7 +157,7 @@ function classOf(attrs) {
 
 function measure(file) {
   const abs = path.resolve(file);
-  const html = fs.readFileSync(abs, 'utf8');
+  const html = stripNoise(fs.readFileSync(abs, 'utf8')); // 净化后文本，下文所有子检测统一使用
   const sections = extractTopSections(html);
 
   // 1. 尺度对比：全 deck 最大字号（display 候选 ≥2em）/ 1em 基线
@@ -181,25 +223,36 @@ function measure(file) {
   const layoutVariety = sections.length ? distinct / sections.length : 0;
 
   // 主题原生形式信号（archetype 原语出现）
+  // ── 收紧（2026-07 验收修复）：原散文词汇正则会命中正文/脚本里的普通单词
+  //    （"open the console"、pptx JS 的 cursor/bubble、散文里的 blueprint），造成系统性假阳性。
+  //    改为只认 class/CSS 结构模式（class 属性词根 / CSS 类选择器 / 结构性样式）。
+  //    宁缺毋滥：假阳性比漏报更伤——漏报只少一分 advisory，假阳性会让无主题语法的纯模板混过 --gate。
   const nativeSignals = {
     masthead: /\.masthead\b|border-top:\s*3px\s+double/i.test(html),
     headlineRule: /headline-rule|height:\s*4px/i.test(html),
     stamp: /class="[^"]*\bstamp\b/i.test(html),
-    anchorNumeral: /font-size\s*:\s*clamp\([^)]*5em|font-size\s*:\s*[4-6](?:\.\d+)?em/i.test(html),
+    anchorNumeral: hasAnchorNumeral(html, styleBlocks),
     pullquote: /pullquote|border-top:[^;]*border-bottom:[^;]*padding/i.test(html),
     kpiCard: /kpi-card|\.kpi\b/i.test(html),
-    registerAxis: /register|timeline-marks|\.tl-node\b/i.test(html),
+    // class 含 register/axis 词根，或 .register/.tl-node/.timeline-marks 类选择器（不认正文单词）
+    registerAxis: /class\s*=\s*"[^"]*\b(?:register|axis|timeline-marks|tl-node)[\w-]*|\.(?:register|tl-node|timeline-marks)\b/i.test(html),
     // 收紧（2026-06）：原 `1\/[0-9]` 误命中比例/章节号（实测北京 deck 无 A6 对峙页却被判 true，
     //   命中 "1/2" 等非对峙语境）。改为要求 A6 标志性结构——带 ≈ 的比率裁决或 class 标记。
     faceOff: /class="[^"]*\b(?:face-off|faceoff|versus|compare)\b|≈\s*\d+\s*\/\s*\d/.test(html),
     evidenceTable: /<table[\s\S]*accent[\s\S]*<\/table>/i.test(html) || /class="[^"]*ledger\b/i.test(html),
     // 2026-07 扩充(G002-②):原表只认 brutalist/editorial 原语 → dark-tech/nature/memphis/isometric
     // 这些高辨识主题 deck 的原生形式全漏,metaphor=0 被系统性打低分(eval-design 假阴性)。
-    terminalChrome: /\bterminal\b|\bprompt\b|\bcursor\b|blink|telemetry|\bconsole\b/i.test(html),
-    notebookCraft: /\bnotebook\b|\btwine\b|\bsketch\b|\bleaf\b|\bcanvas\b|\bsage\b/i.test(html),
-    memphisPop: /\bmemphis\b|\bbubble\b|\bsquiggle\b|\bsticker\b/i.test(html),
-    isoBlueprint: /iso-(?:stack|layer|block|grid|metric)|\b30deg\b|\bblueprint\b|axonometric/i.test(html),
-    filmLeader: /film-leader|countdown|clapper|clapboard|\bletterbox\b/i.test(html),
+    // 2026-07 收紧:下面五个扩充信号一律改 class/CSS 结构模式,不认散文词汇。
+    // dark-tech 原语:class 含 terminal/console/prompt/cursor/telemetry 词根,或 @keyframes blink
+    terminalChrome: /class\s*=\s*"[^"]*\b(?:terminal|console|prompt|cursor|telemetry)[\w-]*|\.(?:terminal|console|prompt|cursor|telemetry)\b|@keyframes\s+[\w-]*blink/i.test(html),
+    // nature/手账原语:class 含 notebook/twine/sketch/leaf/sage 词根,或同名类选择器/设计 token
+    notebookCraft: /class\s*=\s*"[^"]*\b(?:notebook|twine|sketch|leaf|sage)[\w-]*|\.(?:notebook|twine|sketch|leaf|sage)[\w-]*|--[\w-]*(?:twine|leaf|sage)\b/i.test(html),
+    // memphis 原语:class/类选择器含 memphis/bubble/squiggle/sticker 词根
+    memphisPop: /class\s*=\s*"[^"]*\b(?:memphis|bubble|squiggle|sticker)[\w-]*|\.(?:memphis|bubble|squiggle|sticker)[\w-]*/i.test(html),
+    // isometric 原语:iso- 前缀 class、CSS 30deg 旋转/倾斜、class 含 blueprint/axonometric 词根
+    isoBlueprint: /class\s*=\s*"(?:[^"]*[\s"-])?iso-[\w-]*|\.[\w-]*iso-[\w-]*|(?:rotate|skew[XY]?)\(\s*-?30deg|class\s*=\s*"[^"]*\b(?:blueprint|axonometric)[\w-]*/i.test(html),
+    // film 原语:class/类选择器含 film-leader/countdown/clapper/clapboard/letterbox 词根
+    filmLeader: /class\s*=\s*"[^"]*\b(?:film-leader|countdown|clapper|clapboard|letterbox)[\w-]*|\.(?:film-leader|countdown|clapper|clapboard|letterbox)\b/i.test(html),
   };
   const nativeCount = Object.values(nativeSignals).filter(Boolean).length;
 
@@ -210,6 +263,10 @@ function measure(file) {
   // 5. archetype 节奏（2026-06）：归一化每页 archetype，检测过度使用 + 连续重复
   //    修"分数虚高但节奏平庸"——北京 deck 97 分但 IP2 出现 3 次、全深底无呼吸。
   const archetypes = sections.map(s => {
+    // data-archetype 优先（2026-07 验收修复）：路径 B 产物 section 带显式 archetype 身份，
+    // 直接用它判定节奏；无属性时 fallback 到 class 首 token 推断。
+    const da = s.attrs.match(/data-archetype\s*=\s*["']([^"']+)["']/i);
+    if (da && da[1].trim()) return da[1].trim();
     const cls = classOf(s.attrs);
     const ph = cls.match(/\bph-[\w-]+/);            // image-driven deck: ph-cover/ph-spread/...
     if (ph) return ph[0];

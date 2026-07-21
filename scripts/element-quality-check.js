@@ -83,11 +83,23 @@ function measureMotion(html, sections) {
   const m1Bad = badTransition.length + badDataTransition.length;
   if (m1Bad) { score -= Math.min(30, m1Bad * 15); details.push(`M1 过渡违规 ×${m1Bad}(convex/concave/zoom)`); }
 
-  // M2 easing 合规:禁 bounce/elastic/back/overshoot 弹性曲线
-  const badEase = html.match(/cubic-bezier\s*\([^)]*\)|animation-timing[^;}]*(back|elastic|bounce)|transition-timing[^;}]*(back|elastic|bounce)/gi) || [];
-  const bounceKw = html.match(/\b(back|elastic|bounce|overshoot)\b/gi) || [];
-  const m2Bad = badEase.length + (bounceKw.length > 0 && /cubic-bezier/i.test(html) ? 1 : 0);
-  if (m2Bad) { score -= Math.min(20, m2Bad * 10); details.push(`M2 弹性 easing ×${m2Bad}`); }
+  // M2 easing 合规:只罚 bounce/elastic/back 类廉价缓动——
+  //   (a) 关键词形式:timing-function / animation 引用 back|elastic|bounce|overshoot
+  //   (b) cubic-bezier y 参数越界(<0 或 >1 → 物理过冲 = 弹性效果)
+  //   普通 cubic-bezier 一律放行;项目推荐曲线 cubic-bezier(0.22,1,0.36,1)(SKILL.md §动效)显式豁免。
+  //   收紧(2026-07 验收修复):原实现无差别命中所有 cubic-bezier,误伤合规缓动——
+  //   宁缺毋滥,假阳性比漏报更伤。
+  let m2Bad = 0;
+  const cheapEaseKw = html.match(/(?:animation|transition)-timing-function\s*:[^;}]*\b(?:back|elastic|bounce|overshoot)\b/gi) || [];
+  const cheapAnimKw = html.match(/\banimation(?:-name)?\s*:[^;}]*\b(?:bounce|elastic|overshoot)\b/gi) || [];
+  m2Bad += cheapEaseKw.length + cheapAnimKw.length;
+  for (const b of html.matchAll(/cubic-bezier\s*\(([^)]*)\)/gi)) {
+    if (b[0].replace(/\s+/g, '') === 'cubic-bezier(0.22,1,0.36,1)') continue; // 项目推荐曲线,显式豁免
+    const nums = b[1].split(',').map(x => parseFloat(x));
+    if (nums.length !== 4 || nums.some(n => !Number.isFinite(n))) continue;
+    if (nums[1] < 0 || nums[1] > 1 || nums[3] < 0 || nums[3] > 1) m2Bad++; // y 越界 = 过冲弹性
+  }
+  if (m2Bad) { score -= Math.min(20, m2Bad * 10); details.push(`M2 弹性 easing ×${m2Bad}(bounce/elastic/back 关键词或 bezier y 越界)`); }
 
   // M3 reduced-motion 覆盖
   const hasReduced = /@media[^{]*prefers-reduced-motion/i.test(html);
@@ -102,12 +114,19 @@ function measureMotion(html, sections) {
   }
   if (overDelay) { score -= Math.min(15, overDelay * 5); details.push(`M4 stagger >150ms ×${overDelay}`); }
 
-  // M5 动效密度:fragment / section 比值
-  const fragCount = (html.match(/class="[^"]*\bfragment\b/gi) || []).length;
-  const ratio = sections.length ? fragCount / sections.length : 0;
-  if (sections.length && (ratio < 0.3 || ratio > 2.0)) {
+  // M5 动效克制(SKILL.md §动效克制上限硬规则):零动效不扣分——克制优先,不动效是合法选择;
+  //   只罚超限动效:循环应用点 >3(grep animation:...infinite 计数)或 fragment 页占比 >30%。
+  //   反转(2026-07 验收修复):原实现罚"动效太少"(ratio<0.3 扣分),与克制哲学直接矛盾。
+  const loopPoints = (html.match(/\banimation\s*:[^;}]*\binfinite\b/gi) || []).length;
+  const fragPages = sections.filter(s => /class="[^"]*\bfragment\b/i.test(s.html)).length;
+  const fragShare = sections.length ? fragPages / sections.length : 0;
+  if (loopPoints > 3) {
     score -= 10;
-    details.push(`M5 动效密度异常 ${ratio.toFixed(2)}(0.3–2.0 为佳;fragment ${fragCount}/section ${sections.length})`);
+    details.push(`M5 循环动效超限 ×${loopPoints} 应用点(硬上限 ≤3/deck)`);
+  }
+  if (sections.length && fragShare > 0.3) {
+    score -= 10;
+    details.push(`M5 fragment 页占比 ${(fragShare * 100).toFixed(0)}% 超限(硬上限 ≤30% 页面,${fragPages}/${sections.length})`);
   }
 
   // M6 签名动效(bonus,+10 上限):收紧——必须有动画驱动的明确签名模式
@@ -118,7 +137,7 @@ function measureMotion(html, sections) {
     (/clip-path/i.test(html) && /@keyframes|animation\s*:/i.test(html));           // clip-path 揭示
   if (signature) { score = Math.min(100, score + 10); details.push('M6 ✓ 含签名动效(+10)'); }
 
-  return { score: Math.max(0, Math.min(100, score)), details, present: true, metrics: { m1Bad, m2Bad, hasReduced, overDelay, fragCount, ratio, signature } };
+  return { score: Math.max(0, Math.min(100, score)), details, present: true, metrics: { m1Bad, m2Bad, hasReduced, overDelay, loopPoints, fragPages, fragShare: +fragShare.toFixed(2), signature } };
 }
 
 // ─── icon 子分 ────────────────────────────────────────────────
