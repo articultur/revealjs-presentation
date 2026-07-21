@@ -729,7 +729,7 @@ strong { font-weight: 600; color: var(--c-fg); }
 
 ### 六行路由卡
 
-生成前必须先写路由卡：
+生成前必须先写路由卡（即 `SKILL.md` §必填六行，本节为其完整说明）：
 
 ```text
 主题本质：这不是在讲 ____，而是在讲 ____。
@@ -760,7 +760,7 @@ Proof object：必须可视化证明 ____，不能只写成 bullet。
 
 ### 证据台账 / Evidence Ledger
 
-视觉可信度不只来自排版，也来自数字是否站得住。所有精确数字必须在生成阶段建立证据台账：
+视觉可信度不只来自排版，也来自数字是否站得住。所有精确数字必须在生成阶段建立证据台账（门禁判定见 `references/failure-gates.md` §3 证据台账 / Evidence Ledger Gate）：
 
 | 字段 | 要求 |
 |------|------|
@@ -816,7 +816,7 @@ Proof object：必须可视化证明 ____，不能只写成 bullet。
 - **骨架差异检查**：把颜色和字体临时拿掉后，如果两个模板仍然是同一套版式，只是右侧图形不同，就不合格。每个模板至少要在 cover、proof、mechanism、closing 四类页面里改变两类页面动作。
 - **原生命名检查**：模板 class 名必须暴露主题对象，不接受通用 `hero / card / section / panel` 贯穿到底。金融用 `terminal / ticker / order-book`，临床用 `sample-rail / endpoint-strip / assay-board`，法律用 `docket-tabs / clause-margin / issue-board`，动画用 `cue-stack / timeline-stage / easing-panel`。
 - **首页并排检查**：新增或改造多个模板时，把首页截图并排看；如果 3 张以上共享“巨型标题 + 单个右侧物件”或“上标题 + 下卡片墙”，必须重构。模板新鲜感来自物理界面差异，不来自 palette 差异。优先把首页做成该领域的原生界面：交易终端 cockpit、GIS 城市运行图、系统 handoff 运行板、编辑器调试现场、分析 notebook，而不是把标题卡片贴在证明物旁边。
-- **种子模板对象清单**：当前已实现 5 套种子模板（01-05），均登记在 `references/template-invariants.json`，包含 cover/proof/mechanism/close 角色、首屏领域对象、全 deck proof object 和禁用旧 fallback，并接受 `scripts/test-reference-contract.js` 的自动门禁。下文 Template 06-15 为设计语法扩展参考（尚未落地为种子 HTML，无 CSS token 块，无 invariants.json 条目，需按其设计语法新建）；新增任何种子模板时不能只新增主题色，也要新增对应的页面原语和 proof object。
+- **种子模板对象清单**：当前已实现 10 套种子模板（`examples/template-01` 至 `template-10`），均登记在 `references/template-invariants.json`，包含 cover/proof/mechanism/close 角色、首屏领域对象、全 deck proof object 和禁用旧 fallback，并接受 `scripts/test-reference-contract.js` 的自动门禁。下文 Template 06-15 为设计语法扩展参考（章节编号不对应 `examples/` 文件名；其中 Template 07 临床实验室已落地为 `template-10-clinical-trial.html`，其余 9 套尚未落地为种子 HTML，无 CSS token 块，无 invariants.json 条目，需按其设计语法新建）；新增任何种子模板时不能只新增主题色，也要新增对应的页面原语和 proof object。
 
 ### Template 01：社论衬线 (editorial-serif)
 
@@ -1012,7 +1012,7 @@ Proof object：必须可视化证明 ____，不能只写成 bullet。
 - [ ] 大标题用 italic 或轻字重（不是 700+ bold）
 - [ ] ALL CAPS 有 letter-spacing ≥0.06em
 - [ ] 大标题（32px+）`letter-spacing: 0`（禁止负 tracking，参见硬规则 #4）
-- [ ] 字重范围在 200-600 内，签名时刻元素可例外使用 700
+- [ ] 字重范围在 200-600 内，签名时刻元素可例外使用 700（详见 `references/design-principles.md` §字重范围 200-600）
 
 ### 颜色场
 

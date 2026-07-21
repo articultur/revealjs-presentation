@@ -19,9 +19,12 @@
  * Usage:
  *   node scripts/test-font-loading.js <html-file>
  *
+ * 严重度:宽度差 > 15% = warning(:183);间距 < 50px = warning,仅 0px
+ * 重叠(gap === 0)= blocker(:124)。
+ *
  * Exit codes:
- *   0 - no blocker(宽度差 < 15% 且间距 ≥ 50px)
- *   1 - blocker(宽度差 ≥ 15% 或间距 < 50px,需修:font-family 加窄体
+ *   0 - 无 blocker(无 0px 重叠;warning 不影响退出码,:203)
+ *   1 - 有 blocker(大字与角元素 0px 重叠,需修:font-family 加窄体
  *       fallback / 缩大字 / 移角元素)
  *   2 - usage/setup error
  */

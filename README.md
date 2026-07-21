@@ -62,6 +62,21 @@ bash scripts/install-all.sh    # 一键安装所有可选依赖
 
 > 模板只是 voice seed，不是终态。每次生成前先产出「设计语法说明 + 设计契约」，主骨架由 `references/layout-archetypes.md` 的 archetype 组合而成，**不原样套模板**（否则触发失败门禁 #9）。详见 [SKILL.md](SKILL.md) 的 Theme-to-Design Router。
 
+## 风格空间：适配任意主题/风格（不止 10 模板）
+
+10 个种子模板是已验证的 voice seed，**不是表达天花板**。voice（风格肤色）× archetype（版式构图）正交组合 = 14 voice × 12 archetype 表达空间，且 voice 可任意扩展。
+
+- **14 voice 库**：`tokens/voices.json` 单一真相源 —— editorial-serif / chinese-ink-wash（legacy）+ consulting / minimal / data / launch / education / pitch / technical / editorial / brutalist / luxury / illustrated / retro。
+- **任意风格词自动路由**：`node scripts/voice-router.js "赛博朋克 / 和风 / 金融 / 本草纲目 / JWST 星云 …"` → 推荐 voice + 6 维推断 + 备选（中英文 + 长尾关键词）；命中沉淀 case（`tokens/seed-cases.json`）返回 `caseRef` 指向 case.md + seed.html 作 B 解法参考。
+- **组合生成（路径 B，风格任意时默认）**：`node scripts/generate-deck.js --input deck.json`（voice 缺省或 `'auto'` 时自动推断）→ archetype 组合 → 十四门禁。
+- **加新风格** = `tokens/voices.json` 加一条 + `node scripts/build-voice-tokens.js`，无需改代码。详见 [`references/style-space.md`](references/style-space.md)。
+
+```bash
+node scripts/voice-router.js --demo              # 看主题→voice 路由示例
+node scripts/generate-deck.js --demo --gates     # 组合生成 + 门禁串联
+node scripts/build-voice-tokens.js --check       # 校验 voice registry
+```
+
 ## 设计语言 demo（可生成）
 
 ```bash
@@ -79,9 +94,10 @@ revealjs-presentation/
 ├── DESIGN.md · GUIDE.md · PRODUCT.md   # 项目设计 / 指南 / 产品说明
 ├── package.json          # Node.js 依赖
 ├── examples/             # 10 套种子模板（template-01..10）
-├── references/           # 24 份设计参考文档 + template-invariants.json
+├── references/           # 31 份设计参考文档 + inspiration/ + seed-gallery/ + template-invariants.json
 │   ├── layered-architecture.md       # 六层架构 + 概念交叉索引
 │   ├── design-fundamentals.md        # 设计四维根（尺度/张力/用色/隐喻→形式）
+│   ├── style-space.md                # 风格空间（voice × archetype 正交组合）
 │   ├── layout-archetypes.md          # 12 个布局 archetype 引擎库
 │   ├── layout-patterns.md            # 通用容器（列表/流程/代码/网格）
 │   ├── content-budget.md             # 内容预算 / 溢出决策树
@@ -90,20 +106,28 @@ revealjs-presentation/
 │   ├── css-skeleton.md               # CSS 骨架 + reveal 陷阱
 │   ├── design-polish.md              # 设计精致度 / 语法 / 容器处方
 │   ├── design-principles.md          # 配色 / 字体 / 反模式
+│   ├── element-semantics.md          # 元素语义总入口（论证任务→专项实现）
 │   ├── icon-system.md                # inline SVG 图标库
 │   ├── diagram-system.md             # 流程/树/时序/关系/状态图
 │   ├── data-viz.md                   # 数据可视化组件
 │   ├── table-system.md               # 表格系统 / data-ink
 │   ├── image-system.md               # 图片滤镜 / 裁切 / 设备框
+│   ├── image-driven-deck.md          # 图像驱动 deck（找图 / 选图 / 排图）
 │   ├── motion-delight.md             # 动效时机 / easing / 高级模式
 │   ├── visual-check.md               # 垂直平衡启发式
 │   ├── technical-specs.md            # CDN / Reveal 配置 / 三端适配
 │   ├── failure-gates.md              # 19 条失败门禁
-│   ├── validation.md                 # 验证脚本与门禁总参考（三层模型/十二门禁/阻断表）
+│   ├── validation.md                 # 验证脚本与门禁总参考（三层模型/十四门禁/阻断表）
+│   ├── design-generation-workflow.md # B 解法生成 workflow（主题→设计 DNA→deck）
+│   ├── off-template-style-gap.md     # 模板外风格 gap 契约（四件套补齐）
+│   ├── seed-creation-workflow.md     # 种子沉淀 workflow（B 解法子流程，可选）
+│   ├── seed-quality-standard.md      # 好种子 6 维验收标准
 │   ├── pipeline-phases.md            # 专业模式 Phase Gate
 │   ├── launch-grade.md               # 发布会级标准
 │   ├── template-differentiation-audit.md  # 跨模板相似度审计
 │   ├── impeccable-integration.md     # impeccable 集成
+│   ├── inspiration/                  # 标杆库（11 份风格拆解 + showcases/）
+│   ├── seed-gallery/                 # 种子 case 库（SEED-CASE-INDEX + 3 case）
 │   └── template-invariants.json      # 种子模板对象契约数据
 ├── scripts/             # 工具脚本（验证 / 导出 / 安装 / lint）
 └── tests/               # 测试 fixtures

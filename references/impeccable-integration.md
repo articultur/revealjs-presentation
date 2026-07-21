@@ -2,6 +2,17 @@
 
 > 本文档详细说明如何将 impeccable 设计框架的每个命令和参考应用到 reveal.js 演示文稿场景。
 
+## 规则优先级
+
+impeccable 是通用前端设计框架，本仓 `SKILL.md` 的硬规则针对演示场景另有约束。**两者冲突时，以本仓硬规则为准**，impeccable 的其余指导照常参考。
+
+具体例子——负 tracking：
+
+- impeccable 允许 display 标题 `letter-spacing` 最低至 `-0.04em`（其 SKILL.md 排版节）
+- 本仓 `SKILL.md` 设计硬规则 #4 要求大标题 `letter-spacing: 0`，**禁止负 tracking**——投影、PPTX 导出、中文混排都会把负字距挤压变脏
+
+落地时执行后者。
+
 ## 核心定位
 
 演示文稿属于 **brand 寄存器**（design IS the product）——观众对设计的印象就是交付物本身。因此：

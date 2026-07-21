@@ -72,6 +72,7 @@
 | template-07 memphis | Memphis |
 | template-08 isometric | Isometric/Technical |
 | template-09 editorial-photo | Photographic |
+| template-10 clinical-trial | Data-Driven |
 
 ## 镇库实物(showcases/)
 

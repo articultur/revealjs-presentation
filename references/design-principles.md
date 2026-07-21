@@ -46,17 +46,7 @@
 
 ### 颜色场背景
 
-> 背景不是画布，它就是颜色本身。
-
-```css
-/* ✅ 颜色场：整个 slide 就是一种颜色 */
-.reveal section { background: var(--c-bg); }
-
-/* ❌ 不要在颜色场上加装饰纹理 */
-/* 点阵、网格线、渐变叠加——这些是"在颜色上加东西"，不如选对颜色 */
-```
-
-浅色模板用纸质背景色（cream `#fafadf`、bone `#f0ece3`、ivory），不是纯白 `#fff`。深色模板用有色彩倾向的深色（深海军蓝 `#2a3870`、暖炭 `#1c2644`），不是纯黑 `#000`。
+> 背景不是画布，它就是颜色本身。颜色场、可选纹理与渐变叠加的完整规则详见 `references/design-polish.md` §背景与颜色场；具体背景色值见下文 §配色方案 → 背景色选择。
 
 ### 强调色极端克制
 
@@ -68,48 +58,15 @@
 
 ### 字重范围 200-600
 
-```css
-/* ✅ 优雅的字重范围 */
-h1 { font-weight: 400; font-style: italic; }  /* 大标题用 italic，不用 bold */
-h2 { font-weight: 600; }
-p  { font-weight: 300; }                       /* 正文用轻字重 */
-
-/* ❌ 避免 700-900 */
-/* 粗重字重制造"厚重感"而非"存在感"。存在感来自字号和字间距，不来自字重。 */
-```
+> 粗重字重（700-900）制造"厚重感"而非"存在感"。四档字重表与示例详见下文 §字体系统 → 字重范围 200-600。
 
 ### 强调通过反转实现
 
-在 italic 风格的模板中，`<em>` 标签不是变斜体，而是反转：
-
-```css
-/* 正常文字是 italic，强调文字反转回 roman + accent 色 */
-.display { font-style: italic; }
-.display em { font-style: normal; font-weight: 600; color: var(--c-accent); }
-```
-
-这个技巧让强调色出现得极其自然——它只在需要被"读出来"的词语上。
+在 italic 风格的模板中，`<em>` 标签不是变斜体，而是反转回 roman + accent 色——强调色只在需要被"读出来"的词语上出现。完整写法（含非 italic 模板的 strong 规则）详见 `references/design-polish.md` §微细节润色 → 强调反转。
 
 ### Pin 注释系统
 
-每页左下角放置一个等宽字体的小注释，标注页码和主题信息。这是从印刷排版借鉴的"页码+章节标记"：
-
-```css
-.pin {
-  position: absolute;
-  bottom: 32px;
-  left: 72px;
-  font-family: var(--f-mono);
-  font-size: 0.5em;
-  color: var(--c-fg-3);   /* 最淡的层级 */
-  letter-spacing: 0.06em;   /* 最淡的层级 */
-  z-index: 10;
-}
-```
-
-```html
-<div class="pin">03 / 技术架构</div>
-```
+每页左下角放置一个等宽字体的小注释，标注页码和主题信息——从印刷排版借鉴的"页码+章节标记"。CSS、HTML 与使用规则详见 `references/design-polish.md` §微细节润色 → Pin 注释系统。
 
 ### 12 条设计原则总结
 
