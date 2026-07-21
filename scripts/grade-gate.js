@@ -27,6 +27,9 @@
  *   G9  check-overflow.js        issueCount = 0    (bbox overflow / overlap)
  *   G10 test-spatial-integrity.js exit 0           (surface drift / clipped SVG text)
  *   G11 test-text-break.js       exit 0            (词/数字跨行断裂)
+ *   G12 design-strength-check.js --gate PASS       (反 slop 地板:scaleContrast≥2.5 & metaphor≥1)
+ *   G13 test-text-collision.js   exit 0            (margin-swallow / stack-occlude / shape-overflow)
+ *   G14 test-pin-collision.js    exit 0            (.pin 辅助索引区不与内容重叠)
  *
  * Usage:
  *   node scripts/grade-gate.js <file.html> [<file2.html> ...]
@@ -333,6 +336,59 @@ function runDesignStrength(filePath) {
   };
 }
 
+// ─── G13 · 文字碰撞（margin-swallow / stack-occlude / shape-overflow；test-label-overlap 的渲染层叠盲区） ───
+function runTextCollision(filePath) {
+  const result = spawnSync('node', [path.join(SCRIPTS_DIR, 'test-text-collision.js'), filePath], {
+    encoding: 'utf8', timeout: 180_000,
+    env: { ...process.env, NODE_NO_WARNINGS: '1' },
+  });
+  if (result.error) return { passed: false, error: result.error.message };
+  const stderr = result.stderr?.trim() || '';
+  const stdout = result.stdout || '';
+  const m = stdout.match(/FAIL: (\d+) text collision/);
+  // test-text-collision 无 issue 时输出 "OK: no text collisions"(不含数字),只靠正则
+  // 会让正常 deck 误判 parse failed → fail-closed 误杀。clear 信号 → issueCount=0;有 issue → 正则取 N。
+  const isClear = /OK: no text collisions/i.test(stdout);
+  const issueCount = m ? parseInt(m[1], 10) : (isClear ? 0 : null);
+  // 脚本内部 bug 说明 G13 失效;门禁必须 fail-closed,避免坏检测静默放行(对齐 G9/G10/G11)。
+  const scriptBug = /(?:Reference|Type|Syntax|Range|URI|Eval|Aggregate)Error|^Error:/m.test(stderr);
+  const parseFailed = issueCount === null;
+  return {
+    passed: !scriptBug && !parseFailed && issueCount === 0,
+    issueCount,
+    exitCode: result.status,
+    stderr: stderr || null,
+    error: scriptBug
+      ? 'text-collision internal script error'
+      : (parseFailed ? 'text-collision issue count parse failed' : null),
+  };
+}
+
+// ─── G14 · pin 碰撞（.pin 辅助索引区不与内容重叠;failure-gates.md「任何 collision 视为阻断项」) ───
+function runPinCollision(filePath) {
+  const result = spawnSync('node', [path.join(SCRIPTS_DIR, 'test-pin-collision.js'), filePath], {
+    encoding: 'utf8', timeout: 180_000,
+    env: { ...process.env, NODE_NO_WARNINGS: '1' },
+  });
+  if (result.error) return { passed: false, error: result.error.message };
+  const stderr = result.stderr?.trim() || '';
+  const stdout = result.stdout || '';
+  const m = stdout.match(/FAIL: (\d+) pin collision/);
+  const isClear = /OK: all pin regions clear/i.test(stdout);
+  const issueCount = m ? parseInt(m[1], 10) : (isClear ? 0 : null);
+  const scriptBug = /(?:Reference|Type|Syntax|Range|URI|Eval|Aggregate)Error|^Error:/m.test(stderr);
+  const parseFailed = issueCount === null;
+  return {
+    passed: !scriptBug && !parseFailed && issueCount === 0,
+    issueCount,
+    exitCode: result.status,
+    stderr: stderr || null,
+    error: scriptBug
+      ? 'pin-collision internal script error'
+      : (parseFailed ? 'pin-collision issue count parse failed' : null),
+  };
+}
+
 // ─── Main ─────────────────────────────────────────────────────
 
 const results = [];
@@ -410,7 +466,17 @@ for (const file of files) {
     console.log(`  G12 design-strength: ${strength.passed ? '✓ scaleContrast≥2.5 & metaphor≥1' : fail(`✗ ${strength.gateResult || strength.error || '反 slop 地板未达'}`)}`);
   }
 
-  const allPassed = lint.passed && validate.passed && overlap.passed && mainClaim.passed && evidence.passed && colorRole.passed && contrast.passed && canvas.passed && overflow.passed && spatial.passed && textBreak.passed && strength.passed;
+  const textCollision = runTextCollision(abs);
+  if (!jsonOnly) {
+    console.log(`  G13 text-collision:  ${textCollision.passed ? '✓ no text collision' : fail(`✗ ${textCollision.issueCount || '?'} collision(s)`)}${textCollision.error ? ` (${textCollision.error})` : ''}`);
+  }
+
+  const pinCollision = runPinCollision(abs);
+  if (!jsonOnly) {
+    console.log(`  G14 pin-collision:   ${pinCollision.passed ? '✓ pin regions clear' : fail(`✗ ${pinCollision.issueCount || '?'} collision(s)`)}${pinCollision.error ? ` (${pinCollision.error})` : ''}`);
+  }
+
+  const allPassed = lint.passed && validate.passed && overlap.passed && mainClaim.passed && evidence.passed && colorRole.passed && contrast.passed && canvas.passed && overflow.passed && spatial.passed && textBreak.passed && strength.passed && textCollision.passed && pinCollision.passed;
   if (!jsonOnly) console.log(`  → ${allPassed ? pass('PASS') : fail('FAIL')}`);
 
   results.push({
@@ -429,6 +495,8 @@ for (const file of files) {
       spatialIntegrity: { passed: spatial.passed, issueCount: spatial.issueCount || 0, exitCode: spatial.exitCode || 0, error: spatial.error || null },
       textBreak: { passed: textBreak.passed, issueCount: textBreak.issueCount || 0, exitCode: textBreak.exitCode || 0, error: textBreak.error || null },
       designStrength: { passed: strength.passed, gateResult: strength.gateResult || null, exitCode: strength.exitCode || 0 },
+      textCollision: { passed: textCollision.passed, issueCount: textCollision.issueCount || 0, exitCode: textCollision.exitCode || 0, error: textCollision.error || null },
+      pinCollision: { passed: pinCollision.passed, issueCount: pinCollision.issueCount || 0, exitCode: pinCollision.exitCode || 0, error: pinCollision.error || null },
     },
   });
 }
@@ -471,6 +539,8 @@ if (jsonOnly) {
       if (!f.gates?.spatialIntegrity?.passed) reasons.push(`spatial-integrity fail (${f.gates?.spatialIntegrity?.issueCount || '?'} issues)`);
       if (!f.gates?.textBreak?.passed) reasons.push(`text-break fail (${f.gates?.textBreak?.issueCount || '?'} breaks)`);
       if (!f.gates?.designStrength?.passed) reasons.push(`design-strength fail (${f.gates?.designStrength?.gateResult || '?'})`);
+      if (!f.gates?.textCollision?.passed) reasons.push(`text-collision fail (${f.gates?.textCollision?.issueCount || '?'} collisions)`);
+      if (!f.gates?.pinCollision?.passed) reasons.push(`pin-collision fail (${f.gates?.pinCollision?.issueCount || '?'} collisions)`);
       console.log(failDim(`  ✗ ${path.basename(f.file)}: ${reasons.join(', ') || f.error}`));
     }
   }

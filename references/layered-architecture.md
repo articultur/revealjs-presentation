@@ -2,7 +2,7 @@
 
 这份文档记录对外部项目 / skill 思路的调研结论，并把真正适合本仓库的部分收敛成 PPT 生成流程。原则很简单：只吸收能提高交付质量、可验证性或生成稳定性的做法；不把外部项目当作必须安装的依赖。
 
-十二门禁（lint + validate + label-overlap + lint-main-claim + evidence-ledger + color-role + contrast-aa + canvas-fill + check-overflow + spatial-integrity + text-break + design-strength）自动覆盖关键约束与设计硬规则；失败门禁由十二门禁及 test-pin-collision / test-reference-contract 等专项脚本联合检查。
+十四门禁（lint + validate + label-overlap + lint-main-claim + evidence-ledger + color-role + contrast-aa + canvas-fill + check-overflow + spatial-integrity + text-break + design-strength）自动覆盖关键约束与设计硬规则；失败门禁由十四门禁及 test-pin-collision / test-reference-contract 等专项脚本联合检查。
 
 ## 调研结论
 

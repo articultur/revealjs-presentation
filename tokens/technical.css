@@ -1,0 +1,20 @@
+/* voice: technical — Technical Architecture
+ * AUTO-GENERATED from tokens/voices.json by scripts/build-voice-tokens.js — do not edit by hand.
+ * 改风格改 voices.json 后重跑: node scripts/build-voice-tokens.js
+ * primitive 契约见 tokens/README.md (semantic 映射层在 base.css)。
+ * 字体栈带窄体 fallback 防 FOUT 重叠 (见 technical-specs.md)。
+ */
+:root {
+  /* 颜色 primitive */
+  --c-bg: oklch(12% 0.02 228);
+  --c-fg: oklch(92% 0.015 218);
+  --c-fg-2: oklch(72% 0.04 218);
+  --c-fg-3: oklch(52% 0.04 218);
+  --c-accent: oklch(76% 0.11 204);
+  --c-border: oklch(32% 0.025 228);
+
+  /* 字体 primitive */
+  --f-display: 'Afacad', 'Noto Sans SC', 'Arial Narrow', system-ui, sans-serif;
+  --f-body: 'Afacad', 'Noto Sans SC', 'Arial Narrow', system-ui, sans-serif;
+  --f-mono: 'Chivo Mono', ui-monospace, 'Courier New', monospace;
+}

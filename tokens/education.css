@@ -1,0 +1,20 @@
+/* voice: education — Education Workshop
+ * AUTO-GENERATED from tokens/voices.json by scripts/build-voice-tokens.js — do not edit by hand.
+ * 改风格改 voices.json 后重跑: node scripts/build-voice-tokens.js
+ * primitive 契约见 tokens/README.md (semantic 映射层在 base.css)。
+ * 字体栈带窄体 fallback 防 FOUT 重叠 (见 technical-specs.md)。
+ */
+:root {
+  /* 颜色 primitive */
+  --c-bg: oklch(96% 0.022 142);
+  --c-fg: oklch(21% 0.045 148);
+  --c-fg-2: oklch(42% 0.055 148);
+  --c-fg-3: oklch(60% 0.05 148);
+  --c-accent: oklch(48% 0.13 156);
+  --c-border: oklch(76% 0.04 142);
+
+  /* 字体 primitive */
+  --f-display: 'Afacad', 'Noto Sans SC', 'Arial Narrow', system-ui, sans-serif;
+  --f-body: 'Afacad', 'Noto Sans SC', 'Arial Narrow', system-ui, sans-serif;
+  --f-mono: 'Chivo Mono', ui-monospace, 'Courier New', monospace;
+}

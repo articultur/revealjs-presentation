@@ -1,0 +1,215 @@
+{
+  "$comment": "Voice registry — 单一真相源。每个 voice = 一套风格 primitive(配色+字体)+ 风格关键词 + 6 维气质坐标。build-voice-tokens.js 读取本文件生成 tokens/<name>.css(对齐 tokens/README.md primitive 契约)。加新风格 = 加一条 voice。voice(风格肤色)与 layout(archetype 构图)正交,任意 voice × 任意 archetype 可组合。legacy: editorial-serif.css / chinese-ink-wash.css 已存在但尚未迁入本 registry(迁移时合并,不破坏已有)。",
+  "version": 1,
+  "fontPool": {
+    "$comment": "字体池全部为非 Reflex-reject 的 Google Fonts,带 SC fallback + 窄体 fallback(防 FOUT 重叠,见 technical-specs.md)。",
+    "serifDisplay": "'Literata', 'Noto Serif SC', Georgia, 'Arial Narrow', serif",
+    "sansBody": "'Afacad', 'Noto Sans SC', 'Arial Narrow', system-ui, sans-serif",
+    "mono": "'Chivo Mono', ui-monospace, 'Courier New', monospace",
+    "serifGoogleFonts": "family=Literata:opsz,wght@7..72,400;7..72,600;7..72,700&family=Afacad:wght@400;500;600;700&family=Chivo+Mono:wght@400;500;600&family=Noto+Serif+SC:wght@500;700&family=Noto+Sans+SC:wght@400;500;700",
+    "sansGoogleFonts": "family=Afacad:wght@400;500;600;700&family=Chivo+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700"
+  },
+  "dimensionsKey": {
+    "$comment": "1-5/7 语义坐标,供 voice-router 做主题气质匹配 + style-space.md 坐标系。",
+    "value": "明度 1=深暗 5=高亮",
+    "saturation": "饱和 1=近灰 5=艳丽",
+    "hue": "主色相(oklch hue 0-360)",
+    "weight": "字重 1=细 7=超粗",
+    "density": "信息密度 1=疏 5=密",
+    "motion": "动度 1=静 5=动"
+  },
+  "voices": [
+    {
+      "name": "consulting",
+      "label": "Business Consulting",
+      "keywords": ["商务", "咨询", "决策", "memo", "管理层", "战略", "复盘", "board", "strategy", "decision", "汇报", "述职"],
+      "dimensions": { "value": 4, "saturation": 2, "hue": 22, "weight": 4, "density": 4, "motion": 1 },
+      "colors": {
+        "--c-bg": "oklch(96% 0.01 240)",
+        "--c-fg": "oklch(18% 0.018 248)",
+        "--c-fg-2": "oklch(45% 0.03 248)",
+        "--c-fg-3": "oklch(62% 0.025 248)",
+        "--c-accent": "oklch(48% 0.12 22)",
+        "--c-border": "oklch(76% 0.02 248)"
+      },
+      "fonts": { "display": "serif", "googleFonts": "serif" },
+      "note": "决策 memo 气质,serif display 文气稳重"
+    },
+    {
+      "name": "minimal",
+      "label": "Minimal Keynote",
+      "keywords": ["极简", "keynote", "CEO", "演讲", "发布会开场", "观点", "minimal", "quiet", "留白", "主张"],
+      "dimensions": { "value": 5, "saturation": 1, "hue": 20, "weight": 3, "density": 2, "motion": 1 },
+      "colors": {
+        "--c-bg": "oklch(99% 0.002 250)",
+        "--c-fg": "oklch(18% 0.018 248)",
+        "--c-fg-2": "oklch(45% 0.03 248)",
+        "--c-fg-3": "oklch(62% 0.025 248)",
+        "--c-accent": "oklch(42% 0.1 20)",
+        "--c-border": "oklch(80% 0.015 250)"
+      },
+      "fonts": { "display": "serif", "googleFonts": "serif" },
+      "note": "极端留白,一句主张占视觉中心"
+    },
+    {
+      "name": "data",
+      "label": "Data Storytelling",
+      "keywords": ["数据", "经营", "分析", "研究", "报告", "行业", "data", "dashboard", "analytics", "指标", "趋势"],
+      "dimensions": { "value": 1, "saturation": 2, "hue": 204, "weight": 4, "density": 5, "motion": 2 },
+      "colors": {
+        "--c-bg": "oklch(14% 0.026 253)",
+        "--c-fg": "oklch(94% 0.014 248)",
+        "--c-fg-2": "oklch(74% 0.04 230)",
+        "--c-fg-3": "oklch(55% 0.04 230)",
+        "--c-accent": "oklch(74% 0.12 204)",
+        "--c-border": "oklch(35% 0.03 253)"
+      },
+      "fonts": { "display": "sans", "googleFonts": "sans" },
+      "note": "深色仪表盘,图表墙 + 标注承载结论"
+    },
+    {
+      "name": "launch",
+      "label": "Product Launch",
+      "keywords": ["发布", "新品", "demo", "版本", "产品", "launch", "product", "drop", "stage", "亮相", "舞台"],
+      "dimensions": { "value": 1, "saturation": 3, "hue": 306, "weight": 5, "density": 3, "motion": 4 },
+      "colors": {
+        "--c-bg": "oklch(16% 0.05 285)",
+        "--c-fg": "oklch(96% 0.01 285)",
+        "--c-fg-2": "oklch(76% 0.06 286)",
+        "--c-fg-3": "oklch(58% 0.06 286)",
+        "--c-accent": "oklch(72% 0.12 306)",
+        "--c-border": "oklch(36% 0.05 285)"
+      },
+      "fonts": { "display": "sans", "googleFonts": "sans" },
+      "note": "舞台现场,设备框 + cue stack"
+    },
+    {
+      "name": "education",
+      "label": "Education Workshop",
+      "keywords": ["教育", "培训", "课程", "工作坊", "教学", "学员", "education", "workshop", "training", "课件"],
+      "dimensions": { "value": 4, "saturation": 3, "hue": 156, "weight": 4, "density": 3, "motion": 2 },
+      "colors": {
+        "--c-bg": "oklch(96% 0.022 142)",
+        "--c-fg": "oklch(21% 0.045 148)",
+        "--c-fg-2": "oklch(42% 0.055 148)",
+        "--c-fg-3": "oklch(60% 0.05 148)",
+        "--c-accent": "oklch(48% 0.13 156)",
+        "--c-border": "oklch(76% 0.04 142)"
+      },
+      "fonts": { "display": "sans", "googleFonts": "sans" },
+      "note": "田野清新,lesson path + worksheet。accent 深化到 48% 保浅底 AA"
+    },
+    {
+      "name": "pitch",
+      "label": "Pitch Deck",
+      "keywords": ["融资", "销售", "提案", "商务", "pitch", "investment", "sales", "proposal", "BP", "路演"],
+      "dimensions": { "value": 2, "saturation": 3, "hue": 86, "weight": 5, "density": 4, "motion": 3 },
+      "colors": {
+        "--c-bg": "oklch(23% 0.055 54)",
+        "--c-fg": "oklch(95% 0.02 70)",
+        "--c-fg-2": "oklch(78% 0.04 70)",
+        "--c-fg-3": "oklch(60% 0.04 70)",
+        "--c-accent": "oklch(82% 0.12 86)",
+        "--c-border": "oklch(40% 0.05 54)"
+      },
+      "fonts": { "display": "sans", "googleFonts": "sans" },
+      "note": "判断路径可视化,problem→traction→ask"
+    },
+    {
+      "name": "technical",
+      "label": "Technical Architecture",
+      "keywords": ["技术", "架构", "SRE", "系统", "监控", "终端", "开发", "technical", "architecture", "console", "排障", "dev"],
+      "dimensions": { "value": 1, "saturation": 2, "hue": 204, "weight": 4, "density": 5, "motion": 2 },
+      "colors": {
+        "--c-bg": "oklch(12% 0.02 228)",
+        "--c-fg": "oklch(92% 0.015 218)",
+        "--c-fg-2": "oklch(72% 0.04 218)",
+        "--c-fg-3": "oklch(52% 0.04 218)",
+        "--c-accent": "oklch(76% 0.11 204)",
+        "--c-border": "oklch(32% 0.025 228)"
+      },
+      "fonts": { "display": "sans", "googleFonts": "sans" },
+      "note": "控制室 console,swimlane + failure rail"
+    },
+    {
+      "name": "editorial",
+      "label": "Editorial Magazine",
+      "keywords": ["编辑", "杂志", "品牌", "人物", "趋势", "文化", "editorial", "magazine", "feature", "策展", "档案"],
+      "dimensions": { "value": 4, "saturation": 3, "hue": 28, "weight": 4, "density": 3, "motion": 1 },
+      "colors": {
+        "--c-bg": "oklch(95% 0.008 78)",
+        "--c-fg": "oklch(21% 0.045 54)",
+        "--c-fg-2": "oklch(43% 0.05 54)",
+        "--c-fg-3": "oklch(60% 0.045 54)",
+        "--c-accent": "oklch(52% 0.14 28)",
+        "--c-border": "oklch(74% 0.03 78)"
+      },
+      "fonts": { "display": "serif", "googleFonts": "serif" },
+      "note": "视觉报道,feature spread + art block + 栏目节奏。⚠ 名字 editorial 指 magazine 杂志风;与 legacy editorial-serif(临床/档案 serif,已落地 template-10)是两个不同 voice"
+    },
+    {
+      "name": "brutalist",
+      "label": "Brutalist Poster",
+      "keywords": ["野兽", "brutalist", "宣言", "批判", "先锋", "反潮流", "poster", "raw", "硬核", "抗议"],
+      "dimensions": { "value": 5, "saturation": 4, "hue": 114, "weight": 7, "density": 4, "motion": 1 },
+      "colors": {
+        "--c-bg": "oklch(94% 0.018 96)",
+        "--c-fg": "oklch(10% 0.012 96)",
+        "--c-fg-2": "oklch(32% 0.03 96)",
+        "--c-fg-3": "oklch(50% 0.03 96)",
+        "--c-accent": "oklch(48% 0.19 114)",
+        "--c-border": "oklch(20% 0.015 96)"
+      },
+      "fonts": { "display": "sans", "googleFonts": "sans" },
+      "note": "裸露硬边框 + 荧光警示,uppercase。accent 深化到 58% 保浅底 AA"
+    },
+    {
+      "name": "luxury",
+      "label": "Luxury Atelier",
+      "keywords": ["奢侈", "高端", "时尚", "美妆", "生活方式", "luxury", "atelier", "premium", "精品", "高定"],
+      "dimensions": { "value": 1, "saturation": 1, "hue": 72, "weight": 3, "density": 2, "motion": 1 },
+      "colors": {
+        "--c-bg": "oklch(18% 0.028 54)",
+        "--c-fg": "oklch(91% 0.02 72)",
+        "--c-fg-2": "oklch(75% 0.035 72)",
+        "--c-fg-3": "oklch(55% 0.035 72)",
+        "--c-accent": "oklch(78% 0.04 72)",
+        "--c-border": "oklch(35% 0.03 54)"
+      },
+      "fonts": { "display": "serif", "googleFonts": "serif" },
+      "note": "深底金调,plinth + material rail + lookbook 留白"
+    },
+    {
+      "name": "illustrated",
+      "label": "Illustrated Workshop",
+      "keywords": ["手绘", "插画", "共创", "儿童", "轻培训", "illustrated", "handmade", "sticker", "亲子", "活泼"],
+      "dimensions": { "value": 4, "saturation": 3, "hue": 42, "weight": 4, "density": 3, "motion": 3 },
+      "colors": {
+        "--c-bg": "oklch(97% 0.025 84)",
+        "--c-fg": "oklch(22% 0.04 74)",
+        "--c-fg-2": "oklch(46% 0.045 74)",
+        "--c-fg-3": "oklch(62% 0.04 74)",
+        "--c-accent": "oklch(50% 0.15 42)",
+        "--c-border": "oklch(78% 0.04 84)"
+      },
+      "fonts": { "display": "sans", "googleFonts": "sans" },
+      "note": "暖色亲近感,sticker notes + 轻微错位。accent 深化到 58% 保浅底 AA"
+    },
+    {
+      "name": "retro",
+      "label": "Retro Memphis",
+      "keywords": ["复古", "memphis", "80s", "campaign", "作品集", "retro", "vintage", "geometric", "怀旧", "撞色"],
+      "dimensions": { "value": 3, "saturation": 5, "hue": 330, "weight": 6, "density": 4, "motion": 4 },
+      "colors": {
+        "--c-bg": "oklch(91% 0.06 82)",
+        "--c-fg": "oklch(20% 0.04 268)",
+        "--c-fg-2": "oklch(37% 0.06 268)",
+        "--c-fg-3": "oklch(54% 0.06 268)",
+        "--c-accent": "oklch(46% 0.17 330)",
+        "--c-border": "oklch(72% 0.06 82)"
+      },
+      "fonts": { "display": "sans", "googleFonts": "sans" },
+      "note": "几何撞色,memphis grid + ticket。accent 深化到 55% 保浅底 AA"
+    }
+  ]
+}

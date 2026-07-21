@@ -1,6 +1,16 @@
 #!/usr/bin/env node
 'use strict';
 
+/**
+ * generate-style-examples.js — 12 设计语言横向对比 demo 生成器(产物未纳入 git)
+ *
+ * ⚠ 数据来源迁移说明:配色/字体的单一真相源已迁至 tokens/voices.json(经
+ *   scripts/build-voice-tokens.js 编译)。本脚本的 12 voice 是该 registry 的
+ *   历史来源,保留 per-voice layout 原语(cover/slide2/slide3 硬编码 HTML)用于
+ *   横向对比。新增 voice(第 13+)不会自动出现在本 demo —— 主生成路径用
+ *   scripts/generate-deck.js(支持全部 voice)。改配色请改 voices.json,勿改此处。
+ */
+
 const fs = require('fs');
 const path = require('path');
 

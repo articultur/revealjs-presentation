@@ -9,7 +9,7 @@
  * 旧计数残留,命中即 fail,防止漂移回归。
  *
  * 权威来源(实装,不可改):
- *   - scripts/grade-gate.js      G1-G12(十二门禁,allPassed 链 12 项)
+ *   - scripts/grade-gate.js      G1-G14(十四门禁,allPassed 链 14 项;G13 text-collision + G14 pin-collision 2026-07-20 升级)
  *   - examples/template-*.html   10 个 seed template(01-10)
  *   - references/failure-gates.md §1-§19(19 条失败门禁)
  *
@@ -31,18 +31,22 @@ const ROOT = path.resolve(__dirname, '..');
 
 // 旧计数残留(被 G005 淘汰,出现 = 漂移回归)
 const FORBIDDEN = [
-  // 门禁数:权威 = 十二门禁(G1-G12)
-  { re: /十一门禁/g, name: '旧门禁数「十一门禁」(应为十二门禁)' },
-  { re: /十门禁/g, name: '旧门禁数「十门禁」(应为十二门禁)' },
-  { re: /八门禁/g, name: '旧门禁数「八门禁」(应为十二门禁)' },
-  { re: /G1-G11/g, name: '旧门禁代号「G1-G11」(应为 G1-G12)' },
-  { re: /G1-G10/g, name: '旧门禁代号「G1-G10」(应为 G1-G12)' },
-  { re: /G1–G11/g, name: '旧门禁代号「G1–G11」en-dash(应为 G1–G12)' },
-  { re: /G1–G10/g, name: '旧门禁代号「G1–G10」en-dash(应为 G1–G12)' },
+  // 门禁数:权威 = 十四门禁(G1-G14;G13 text-collision + G14 pin-collision 2026-07-20 升级,原「十二门禁/G1-G12」降为旧值)
+  { re: /十二门禁/g, name: '旧门禁数「十二门禁」(应为十四门禁;G13/G14 新增)' },
+  { re: /十一门禁/g, name: '旧门禁数「十一门禁」(应为十四门禁)' },
+  { re: /十门禁/g, name: '旧门禁数「十门禁」(应为十四门禁)' },
+  { re: /八门禁/g, name: '旧门禁数「八门禁」(应为十四门禁)' },
+  { re: /G1-G12/g, name: '旧门禁代号「G1-G12」(应为 G1-G14)' },
+  { re: /G1-G11/g, name: '旧门禁代号「G1-G11」(应为 G1-G14)' },
+  { re: /G1-G10/g, name: '旧门禁代号「G1-G10」(应为 G1-G14)' },
+  { re: /G1–G12/g, name: '旧门禁代号「G1–G12」en-dash(应为 G1–G14)' },
+  { re: /G1–G11/g, name: '旧门禁代号「G1–G11」en-dash(应为 G1–G14)' },
+  { re: /G1–G10/g, name: '旧门禁代号「G1–G10」en-dash(应为 G1–G14)' },
   // template 数:权威 = 10 套(01..10)
   { re: /9 套已实现/g, name: '旧 template 数「9 套已实现」(应为 10 套)' },
   { re: /9 implemented/g, name: '旧 template 数「9 implemented」(应为 10 implemented)' },
-  { re: /all eight gates/gi, name: '旧门禁数「all eight gates」(应为 all twelve gates)' },
+  { re: /all eight gates/gi, name: '旧门禁数「all eight gates」(应为 all fourteen gates)' },
+  { re: /all twelve gates/gi, name: '旧门禁数「all twelve gates」(应为 all fourteen gates)' },
   { re: /for all nine\b/g, name: '旧 template 数「for all nine」(应为 for all ten)' },
   { re: /template-01\.\.09/g, name: '旧 template 范围「template-01..09」(应为 01..10)' },
   { re: /9 template\b/g, name: '旧 template 数「9 template」(应为 10)' },
@@ -105,7 +109,7 @@ for (const file of files) {
 console.log('╔══════════════════════════════════════════════╗');
 console.log('║  lint-doc-counts · 文档计数 vs 实装一致性     ║');
 console.log('╚══════════════════════════════════════════════╝');
-console.log(`  权威:G1-G12(十二门禁)· 10 seed template · §1-§19(19 条失败门禁)`);
+console.log(`  权威:G1-G14(十四门禁)· 10 seed template · §1-§19(19 条失败门禁)`);
 console.log(`  扫描 ${files.length} 个文档(.md + scripts/*.js;豁免 ${EXEMPT.size})`);
 
 if (findings.length === 0) {
@@ -120,5 +124,5 @@ for (const f of findings) {
   console.log(`    ${f.snippet}`);
   console.log('');
 }
-console.log('  修复:把旧计数改为权威值(十二门禁/G1-G12/10 套/template-01..10/19 条)');
+console.log('  修复:把旧计数改为权威值(十四门禁/G1-G14/10 套/template-01..10/19 条)');
 process.exit(1);

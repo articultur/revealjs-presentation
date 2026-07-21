@@ -1,0 +1,20 @@
+/* voice: launch — Product Launch
+ * AUTO-GENERATED from tokens/voices.json by scripts/build-voice-tokens.js — do not edit by hand.
+ * 改风格改 voices.json 后重跑: node scripts/build-voice-tokens.js
+ * primitive 契约见 tokens/README.md (semantic 映射层在 base.css)。
+ * 字体栈带窄体 fallback 防 FOUT 重叠 (见 technical-specs.md)。
+ */
+:root {
+  /* 颜色 primitive */
+  --c-bg: oklch(16% 0.05 285);
+  --c-fg: oklch(96% 0.01 285);
+  --c-fg-2: oklch(76% 0.06 286);
+  --c-fg-3: oklch(58% 0.06 286);
+  --c-accent: oklch(72% 0.12 306);
+  --c-border: oklch(36% 0.05 285);
+
+  /* 字体 primitive */
+  --f-display: 'Afacad', 'Noto Sans SC', 'Arial Narrow', system-ui, sans-serif;
+  --f-body: 'Afacad', 'Noto Sans SC', 'Arial Narrow', system-ui, sans-serif;
+  --f-mono: 'Chivo Mono', ui-monospace, 'Courier New', monospace;
+}

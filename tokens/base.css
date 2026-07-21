@@ -21,6 +21,14 @@
   --accent:      var(--c-accent);
   --divider:     var(--c-border);
 
+  /* ── 扩展 primitive fallback(voice 未显式定义时降级,防 var 未定义→样式静默消失)──
+     generate-archetype-deck 引用 --c-bg-paper(A7 KPI 卡背景)/--c-rule(A5/A6/A9 细
+     分隔线)/--c-stamp(A1 印章)。registry voice 只定义 6 个核心 primitive;这 3 个
+     在此 fallback。voice 想自定义(如 editorial-serif 纸色 #fbf6e6)在 primitive 覆盖。 */
+  --c-bg-paper: var(--c-bg);     /* 次背景:未定义时同主背景 */
+  --c-rule:     var(--c-border); /* 细分隔线:未定义时同 border */
+  --c-stamp:    var(--c-accent); /* 印章色:未定义时同 accent */
+
   /* ── 字体语义映射 ──────────────────────────────────
      每个风格 token 文件必须提供:--f-display / --f-body / --f-mono
   ──────────────────────────────────────────────────────── */

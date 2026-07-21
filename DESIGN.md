@@ -14,6 +14,7 @@ The system must generate decks whose structure, proof objects, typography, motio
 - `references/layered-architecture.md` defines the six-layer generation contract across production, style, argument, taste, QA, and task governance.
 - `references/template-invariants.json` is the machine-readable contract for template-native objects.
 - `scripts/lint-design.js`, `scripts/validate.js`, `scripts/visual-qa.js`, and `scripts/grade-gate.js` are required verification surfaces.
+- `tokens/voices.json` + `tokens/seed-cases.json` + `scripts/voice-router.js` + `scripts/generate-deck.js` + `scripts/build-voice-tokens.js` + `scripts/check-seed-collision.js` are the voice/style routing surface — 14 voice × 12 archetype 组合生成（风格任意时默认路径 B，不止 10 种子模板）。`voice-router.js` 也路由沉淀 case 库（`seed-cases.json`：本草纲目 / JWST 星云 / 纪念碑谷…），命中返回 `caseRef` 作 B 解法参考 DNA；`check-seed-collision.js` 是新种子注册前的字体/色相撞车机器闭环。见 `references/style-space.md`。
 
 ## Layered Contract
 
@@ -102,7 +103,7 @@ Do not use an editorial folio grid plus plate book as the cover skeleton — the
 
 Before claiming a template improvement:
 
-1. Run `node scripts/grade-gate.js <file>` (all twelve gates: G1 lint + G2 validate + G3 label-overlap + G4 lint-main-claim + G5 evidence-ledger + G6 color-role + G7 contrast-aa + G8 canvas-fill + G9 check-overflow + G10 spatial-integrity + G11 text-break + G12 design-strength).
+1. Run `node scripts/grade-gate.js <file>` (all fourteen gates: G1 lint + G2 validate + G3 label-overlap + G4 lint-main-claim + G5 evidence-ledger + G6 color-role + G7 contrast-aa + G8 canvas-fill + G9 check-overflow + G10 spatial-integrity + G11 text-break + G12 design-strength + G13 text-collision + G14 pin-collision).
 2. Run `node scripts/visual-qa.js <file> --annotate-overflow --out <dir>`.
 3. Compare contact sheets with colors mentally removed. Similar skeletons fail even if lint passes.
 
