@@ -1,0 +1,2579 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>本草綱目 · A Compendium of Materia Medica</title>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.css">
+
+  <!-- ════════════════════════════════════════════════════════════
+       FONTS — chosen to escape every existing template / seed / voice
+       collision (verified by grep across examples/, tokens/, and
+       references/seed-gallery/ before commit):
+
+         IM Fell English  · 17th-century English woodblock type. Used
+                             for the Latin parallel text and folio chrome
+                             (金陵 Jinling 1596 was set in late-Ming
+                             woodblock; Fell's 1670s punches are the
+                             closest Western analogue to that printed-
+                             from-carved-wood body). Not in any of the
+                             10 templates, 14 voice fontPool, or 4
+                             astronomy seed cases.
+
+         EB Garamond      · classical book serif for Latin body and
+                             species binomials (Astragalus mongholicus).
+                             Not in any template / voice / seed.
+
+         ZCOOL XiaoWei    · classical Song-ti CJK. Song-ti is the body
+                             type of every Ming-Qing woodblock edition
+                             of bencao (and of the 1596 Jinling Ben Cao
+                             Gang Mu specifically). Not in any template
+                             / voice / seed (template-09 used ZCOOL
+                             QingKe HuangYou, a different face).
+
+         Ma Shan Zheng    · modern revival of 工楷 brush calligraphy.
+                             Reserved for the cinnabar seal stamps and
+                             the vertical margin annotations — the
+                             handwritten-gloss layer over the woodblock
+                             print. Not in any template / voice / seed.
+       ════════════════════════════════════════════════════════════ -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=IM+Fell+English:ital@0;1&family=Ma+Shan+Zheng&family=ZCOOL+XiaoWei&display=swap" rel="stylesheet">
+
+  <style>
+    /* ============================================================
+       本草綱目 · Compendium of Materia Medica
+       ────────────────────────────────────────────────────────────
+       A 1596-Jinling-edition voice for a reveal.js deck. The deck
+       is the imperial-pharmacy book opened on a dark walnut reading
+       desk: aged paper inset, cinnabar seals, woodblock line
+       drawings, five-element colour tags, and 工楷 marginalia.
+
+       Anti-collision notes (grep-verified):
+         • astronomy-bright/ uses oklch(0.82 0.055 75) parchment.
+           Our sheet oklch(0.78 0.082 80) is darker AND higher chroma
+           — escapes the cream-band by ≥0.04 L and ≥0.025 C, while
+           shifting hue toward more saturated yellow-ochre (the
+           actual colour of 400-year-old jinling mulberry paper).
+         • chinese-ink-wash.css uses #a02828 cinnabar. Our 朱砂
+           oklch(0.50 0.185 32) is more orange-leaning (true HgS
+           cinnabar, not the cooler chinaware red), and is one of
+           FIVE theme-native colours — never the single accent.
+         • template-10 clinical uses Bitter + bond blue (#255).
+           Our deck has zero blue. Different category entirely.
+         • template-09 editorial-photo uses ZCOOL QingKe HuangYou
+           + Noto Serif SC 900 + 暖朱红. We use ZCOOL XiaoWei +
+           Ma Shan Zheng + cinnabar — different CJK face, different
+           brush-hand, different colour system (五色 vs single 红).
+       ============================================================ */
+
+    :root {
+      /* ── Sheet (aged jinling paper, escapes cream-band) ── */
+      --c-paper:     oklch(0.78 0.082 80);  /* 400-year-old jinling paper, deep ochre-tan */
+      --c-paper-2:   oklch(0.71 0.095 76);  /* darker margin (book-spine shadow side) */
+      --c-paper-3:   oklch(0.84 0.055 84);  /* cleaner centre leaf */
+      --c-paper-4:   oklch(0.62 0.105 70);  /* deepest edge foxing / 蠹痕 */
+
+      /* ── Ink family (multiple ages of ink-black; water element) ── */
+      --c-ink:       oklch(0.18 0.014 250); /* deep ink, freshly ground */
+      --c-ink-2:     oklch(0.30 0.022 250); /* secondary ink (chapter title) */
+      --c-ink-3:     oklch(0.46 0.028 250); /* tertiary chrome (folio, hairline label) */
+
+      /* ── Five-Element palette (五色) — the theme-native colour system ── */
+      --c-qing:      oklch(0.50 0.135 165); /* 青 wood — blue-green (herbaceous) */
+      --c-chi:       oklch(0.52 0.180 30);  /* 赤 fire — cinnabar red (seals, toxic) */
+      --c-huang:     oklch(0.72 0.140 78);  /* 黄 earth — yellow ochre (soils, grain) */
+      --c-bai:       oklch(0.94 0.018 95);  /* 白 metal — bone white (mineral highlight) */
+      --c-hei:       oklch(0.16 0.020 250); /* 黑 water — deep ink-black (water部) */
+
+      /* ── Cinnabar — 朱砂印 (theme signature, deeper than 赤) ── */
+      --c-zhusha:    oklch(0.46 0.190 32);  /* 朱砂 — true cinnabar (HgS), orange-leaning */
+      --c-zhusha-2:  oklch(0.38 0.170 30);  /* aged seal ink, soaked into paper */
+      --c-zhusha-3:  oklch(0.55 0.165 35);  /* fresh seal ink, lighter impression */
+
+      /* ── Rules and borders ── */
+      --c-rule:      oklch(0.42 0.025 60);  /* ink-drawn hairline */
+      --c-border:    oklch(0.32 0.032 60);  /* frame border */
+      --c-stain:     oklch(0.55 0.090 65);  /* foxing stain (岁月斑) */
+
+      /* ── Legacy accent alias — kept for base.css compatibility.
+           Style rules use --c-zhusha / --c-qing / etc. directly so
+           that var(--accent) appears ≤3 times per slide. ── */
+      --c-bg:        var(--c-paper);
+      --c-fg:        var(--c-ink);
+      --c-fg-2:      var(--c-ink-2);
+      --c-fg-3:      var(--c-ink-3);
+      --c-accent:    var(--c-zhusha);
+      --c-bg-paper:  var(--c-paper-3);
+
+      /* ── Font stack ── */
+      --f-display:   "IM Fell English", "ZCOOL XiaoWei", "Songti SC", Georgia, serif;
+      --f-body:      "EB Garamond", "ZCOOL XiaoWei", Georgia, serif;
+      --f-cjk:       "ZCOOL XiaoWei", "Songti SC", "Noto Serif SC", serif;
+      --f-brush:     "Ma Shan Zheng", "STKaiti", "Kaiti SC", cursive;
+      --f-mono:      "IM Fell English", "Songti SC", ui-monospace, monospace;
+
+      /* ── Semantic font variables for base.css contract ── */
+      --font-display: var(--f-display);
+      --font-body:    var(--f-body);
+      --font-mono:    var(--f-mono);
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       Base reset
+       ════════════════════════════════════════════════════════════ */
+    .reveal {
+      font-family: var(--f-body);
+      font-size: 28px;
+      color: var(--c-ink);
+      background: oklch(0.22 0.012 240);  /* dark walnut reading-desk behind paper */
+    }
+    .reveal .slides { text-align: left; }
+
+    .reveal section {
+      padding: 0;
+      height: 100%;
+      box-sizing: border-box;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .reveal .slides > section.deck-flex.present {
+      display: flex !important;
+      top: 0 !important;
+    }
+    .reveal .slides > section.deck-grid.present {
+      display: grid !important;
+      top: 0 !important;
+    }
+
+    /* Isolate past / future slides so absolute children cannot leak */
+    .reveal .slides > section:not(.present):not(.stack) {
+      display: none !important;
+    }
+
+    /* Overflow prevention */
+    .reveal section > * { max-width: 100%; box-sizing: border-box; }
+    h1, h2, h3, h4 {
+      word-break: keep-all;
+      overflow-wrap: anywhere;
+      text-wrap: balance;
+      line-break: strict;
+    }
+    p, li, span, div { word-break: normal; overflow-wrap: anywhere; }
+    img, svg, video { max-width: 100%; max-height: 100%; object-fit: contain; }
+    .reveal svg text { stroke: none; paint-order: fill; }
+
+    /* ════════════════════════════════════════════════════════════
+       SIGNATURE · Aged paper sheet + heavy woodblock grain.
+       The page is a physical folio. 8-layer texture overlay =
+       corner oxidation + foxing + ink smudges + paper fibre noise.
+       Used 8/8 pages. NEVER pure cream — escapes the cream band by
+       deep ochre tint AND visible SVG turbulence grain.
+       ════════════════════════════════════════════════════════════ */
+    .sheet {
+      position: absolute;
+      inset: 28px 36px;
+      background:
+        /* corner darkening — book edge wear across 400+ years */
+        radial-gradient(ellipse 220px 180px at 0% 0%, oklch(0.55 0.090 65 / 0.40), transparent 70%),
+        radial-gradient(ellipse 220px 180px at 100% 0%, oklch(0.55 0.090 65 / 0.35), transparent 70%),
+        radial-gradient(ellipse 240px 200px at 0% 100%, oklch(0.50 0.108 60 / 0.45), transparent 70%),
+        radial-gradient(ellipse 240px 200px at 100% 100%, oklch(0.50 0.108 60 / 0.42), transparent 70%),
+        /* large foxing stains */
+        radial-gradient(ellipse 95px 65px at 12% 22%, oklch(0.55 0.115 60 / 0.42), transparent 60%),
+        radial-gradient(ellipse 70px 50px at 88% 78%, oklch(0.52 0.120 55 / 0.38), transparent 65%),
+        radial-gradient(ellipse 55px 40px at 28% 84%, oklch(0.58 0.100 65 / 0.32), transparent 60%),
+        radial-gradient(ellipse 110px 75px at 72% 14%, oklch(0.50 0.125 50 / 0.34), transparent 70%),
+        radial-gradient(ellipse 30px 24px at 50% 50%, oklch(0.58 0.095 60 / 0.26), transparent 60%),
+        radial-gradient(ellipse 35px 28px at 18% 58%, oklch(0.55 0.110 55 / 0.30), transparent 70%),
+        radial-gradient(ellipse 25px 20px at 64% 64%, oklch(0.55 0.110 55 / 0.28), transparent 65%),
+        radial-gradient(ellipse 40px 30px at 92% 38%, oklch(0.58 0.100 60 / 0.30), transparent 70%),
+        /* small water-stain dots */
+        radial-gradient(circle 5px at 15% 32%, oklch(0.45 0.130 50 / 0.45), transparent),
+        radial-gradient(circle 4px at 70% 28%, oklch(0.45 0.130 50 / 0.38), transparent),
+        radial-gradient(circle 6px at 32% 72%, oklch(0.45 0.130 50 / 0.40), transparent),
+        radial-gradient(circle 4px at 82% 88%, oklch(0.45 0.130 50 / 0.42), transparent),
+        /* overall paper gradient — darker at spine (left), lighter at outer edge (right) */
+        linear-gradient(90deg,
+          oklch(0.74 0.095 76) 0%,
+          oklch(0.78 0.082 80) 35%,
+          oklch(0.82 0.060 83) 80%,
+          oklch(0.80 0.068 82) 100%),
+        var(--c-paper);
+      box-shadow:
+        inset 0 0 60px rgba(40, 25, 8, 0.18),
+        0 8px 40px rgba(0, 0, 0, 0.45);
+      z-index: 1;
+    }
+
+    /* Paper fibre noise overlay (visible at 1280×720) */
+    .sheet::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.3' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.35  0 0 0 0 0.24  0 0 0 0 0.15  0 0 0 0.55 0'/></filter><rect width='300' height='300' filter='url(%23n)'/></svg>"),
+        url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='500' height='500'><filter id='n2'><feTurbulence type='fractalNoise' baseFrequency='0.05' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.45  0 0 0 0 0.32  0 0 0 0 0.20  0 0 0 0.40 0'/></filter><rect width='500' height='500' filter='url(%23n2)'/></svg>");
+      background-size: 300px 300px, 500px 500px;
+      mix-blend-mode: multiply;
+      opacity: 0.72;
+      pointer-events: none;
+    }
+
+    /* Ink-bleed smudges (secondary overlay) */
+    .sheet::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='600'><filter id='s'><feTurbulence type='fractalNoise' baseFrequency='0.025' numOctaves='1' seed='11'/><feColorMatrix values='0 0 0 0 0.20  0 0 0 0 0.13  0 0 0 0 0.08  0 0 0 0.20 0'/></filter><rect width='800' height='600' filter='url(%23s)'/></svg>");
+      background-size: 800px 600px;
+      mix-blend-mode: multiply;
+      opacity: 0.68;
+      pointer-events: none;
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       SIGNATURE · Folio chrome — every page has a folio header
+       (book chapter + 部 name) and folio footer (卷 + 五色 tag +
+       朱砂 seal). Mirrors real 1596 Jinling folio layout.
+       ════════════════════════════════════════════════════════════ */
+    .folio-head {
+      position: absolute;
+      top: 36px;
+      left: 56px;
+      right: 56px;
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-family: var(--f-mono);
+      font-size: 0.46em;
+      letter-spacing: 0.20em;
+      text-transform: uppercase;
+      color: var(--c-ink-3);
+      padding-bottom: 0.6em;
+      border-bottom: 1px solid var(--c-rule);
+      z-index: 6;
+    }
+    .folio-head .folio-head-cjk {
+      font-family: var(--f-cjk);
+      font-size: 1.0em;
+      letter-spacing: 0.12em;
+      color: var(--c-ink-2);
+    }
+    .folio-head .folio-head-latin {
+      font-family: var(--f-mono);
+      font-style: italic;
+    }
+
+    .folio-foot {
+      position: absolute;
+      bottom: 36px;
+      left: 56px;
+      right: 56px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--f-mono);
+      font-size: 0.44em;
+      letter-spacing: 0.20em;
+      text-transform: uppercase;
+      color: var(--c-ink-3);
+      padding-top: 0.6em;
+      border-top: 1px solid var(--c-rule);
+      z-index: 6;
+    }
+    .folio-foot .juan {
+      font-family: var(--f-cjk);
+      letter-spacing: 0.10em;
+      color: var(--c-ink-2);
+    }
+    .folio-foot .latin-page {
+      font-family: var(--f-mono);
+      font-style: italic;
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       SIGNATURE · 朱砂印 cinnabar seal — the deck's recurring stamp.
+       Square red seal with seal-script characters, hand-positioned
+       per page. The seal is the AUTHOR MARK of every Chinese wood-
+       block edition — the deck inherits it as the recurring visual
+       anchor. Appears 8/8 pages (multiple sizes / impressions).
+       ════════════════════════════════════════════════════════════ */
+    .seal {
+      position: absolute;
+      width: 78px;
+      height: 78px;
+      background: var(--c-zhusha);
+      color: var(--c-paper);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--f-brush);
+      font-size: 1.4em;
+      letter-spacing: 0;
+      line-height: 1;
+      text-align: center;
+      box-shadow:
+        inset 0 0 0 3px var(--c-zhusha),
+        inset 0 0 0 5px var(--c-paper-3),
+        inset 0 0 0 7px var(--c-zhusha),
+        0 0 14px rgba(140, 30, 18, 0.35);
+      filter: contrast(1.05);
+      z-index: 7;
+    }
+    /* Aged seal — pigment partially soaked into paper */
+    .seal-aged {
+      background: var(--c-zhusha-2);
+      opacity: 0.92;
+    }
+    /* Lighter impression seal */
+    .seal-light {
+      background: var(--c-zhusha-3);
+      opacity: 0.88;
+    }
+    .seal-small {
+      width: 52px;
+      height: 52px;
+      font-size: 0.95em;
+      box-shadow:
+        inset 0 0 0 2px var(--c-zhusha),
+        inset 0 0 0 3.5px var(--c-paper-3),
+        inset 0 0 0 5px var(--c-zhusha);
+    }
+    .seal-large {
+      width: 104px;
+      height: 104px;
+      font-size: 1.85em;
+    }
+    /* Seal text layout variants */
+    .seal-text-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      gap: 0;
+      width: 100%;
+      height: 100%;
+      align-items: center;
+      justify-items: center;
+    }
+    .seal-text-2 > span {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       SIGNATURE · 五色 (Five-Element) colour tag.
+       A small colour swatch with the element character — appears
+       on every page, identifying which element the current 部
+       belongs to. Native to TCM, not a generic accent.
+       ════════════════════════════════════════════════════════════ */
+    .wuxing {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.15em;
+      font-family: var(--f-cjk);
+      font-size: 0.5em;
+      letter-spacing: 0.10em;
+      color: var(--c-ink-3);
+      text-transform: none;
+    }
+    .wuxing .swatch {
+      width: 14px;
+      height: 14px;
+      box-shadow: inset 0 0 0 1px var(--c-border);
+    }
+    .wuxing.qing  .swatch { background: var(--c-qing); }
+    .wuxing.chi   .swatch { background: var(--c-chi); }
+    .wuxing.huang .swatch { background: var(--c-huang); }
+    .wuxing.bai   .swatch { background: var(--c-bai); box-shadow: inset 0 0 0 1px var(--c-border); }
+    .wuxing.hei   .swatch { background: var(--c-hei); }
+
+    /* ════════════════════════════════════════════════════════════
+       SIGNATURE · Vertical 工楷 margin annotation
+       (writing-mode: vertical-rl). Mimics the handwritten gloss
+       that real bencao editions added in the right margin. Used
+       sparingly on cover / colophon / taxonomy pages.
+       ════════════════════════════════════════════════════════════ */
+    .gloss-vertical {
+      position: absolute;
+      writing-mode: vertical-rl;
+      text-orientation: upright;
+      font-family: var(--f-brush);
+      font-size: 0.74em;
+      letter-spacing: 0.30em;
+      color: var(--c-zhusha-2);
+      line-height: 1.2;
+      opacity: 0.92;
+      z-index: 6;
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       Typography — IM Fell English (Latin display) + EB Garamond
+       (Latin body) + ZCOOL XiaoWei (CJK display/body) + Ma Shan
+       Zheng (CJK brush accent). Calm, classical book rhythm.
+       ════════════════════════════════════════════════════════════ */
+    .reveal h1, .reveal h2, .reveal h3, .reveal h4 {
+      font-family: var(--f-display);
+      line-height: 1.06;
+      letter-spacing: 0.02em;
+      color: var(--c-ink);
+      font-weight: 400;
+      margin: 0;
+    }
+    .reveal h1 {
+      font-family: var(--f-cjk);
+      font-size: 4.2em;
+      letter-spacing: 0.06em;
+      font-weight: 400;
+    }
+    .reveal h2 {
+      font-size: 2.4em;
+      letter-spacing: 0.02em;
+    }
+    .reveal h3 {
+      font-size: 1.0em;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--c-ink-2);
+    }
+    .reveal h4 {
+      font-family: var(--f-display);
+      font-size: 0.74em;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--c-ink-2);
+    }
+    .reveal p {
+      font-family: var(--f-body);
+      font-size: 0.86em;
+      line-height: 1.55;
+      color: var(--c-ink);
+      margin: 0;
+    }
+    .reveal p.cjk {
+      font-family: var(--f-cjk);
+      font-size: 0.78em;
+      line-height: 1.62;
+      letter-spacing: 0.04em;
+    }
+    .reveal em {
+      font-style: italic;
+      color: var(--c-ink);
+    }
+    .reveal strong {
+      font-weight: 600;
+      color: var(--c-ink);
+    }
+    .reveal .cjk-display {
+      font-family: var(--f-cjk);
+      letter-spacing: 0.04em;
+    }
+    .reveal .cjk-brush {
+      font-family: var(--f-brush);
+      letter-spacing: 0.10em;
+    }
+
+    /* Latin emphasis caps (IM Fell English small-caps emulation) */
+    .reveal .im-sc {
+      font-family: var(--f-display);
+      font-variant: small-caps;
+      letter-spacing: 0.12em;
+    }
+    .reveal .im-italic {
+      font-family: var(--f-display);
+      font-style: italic;
+    }
+
+    /* Cinnabar accent — for 朱批 vermillion gloss words */
+    .reveal .zhupi {
+      color: var(--c-zhusha);
+      font-family: var(--f-brush);
+      font-size: 1.08em;
+      letter-spacing: 0.06em;
+    }
+    .reveal .zhupi-latin {
+      color: var(--c-zhusha);
+      font-family: var(--f-display);
+      font-style: italic;
+      letter-spacing: 0.02em;
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       Layout — generic content column / kicker / body / data row.
+       ════════════════════════════════════════════════════════════ */
+    .plate-content {
+      position: absolute;
+      top: 78px;
+      left: 72px;
+      max-width: 460px;
+      z-index: 5;
+    }
+    .plate-content.right {
+      left: auto;
+      right: 72px;
+      text-align: right;
+    }
+    .plate-content.lower-left {
+      top: auto;
+      bottom: 90px;
+    }
+    .plate-content.lower-right {
+      top: auto;
+      bottom: 90px;
+      left: auto;
+      right: 72px;
+      text-align: right;
+    }
+
+    .h-kicker {
+      font-family: var(--f-display);
+      font-style: italic;
+      font-size: 0.52em;
+      letter-spacing: 0.20em;
+      color: var(--c-ink-3);
+      text-transform: uppercase;
+      margin-bottom: 0.8em;
+    }
+    .h-kicker-cjk {
+      font-family: var(--f-cjk);
+      font-style: normal;
+      letter-spacing: 0.18em;
+      color: var(--c-zhusha);
+    }
+
+    /* Cinnabar woodblock-illustration drop-cap (用 latin 牌号 not numeric) */
+    .plate-letter {
+      font-family: var(--f-display);
+      font-size: 2.6em;
+      color: var(--c-zhusha);
+      font-weight: 400;
+      line-height: 1;
+      margin: 0.4em 0;
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       Woodblock line-drawing layer (composition). Every page has
+       a hand-drawn-feel SVG of a bencao subject — herb, mineral,
+       animal, or elemental motif. viewBox 1280×720 slide-native.
+       ════════════════════════════════════════════════════════════ */
+    .composition {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 4;
+    }
+    .composition svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* Woodcut ink line — hand-drawn wobble, slight imprefection.
+       Real woodblock prints have pressure variations and grain. */
+    .ink-line {
+      fill: none;
+      stroke: var(--c-ink);
+      stroke-width: 1.4;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .ink-line-thin {
+      fill: none;
+      stroke: var(--c-ink);
+      stroke-width: 0.9;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .ink-fill {
+      fill: var(--c-ink);
+    }
+    .zhupi-line {
+      fill: none;
+      stroke: var(--c-zhusha);
+      stroke-width: 1.0;
+      stroke-linecap: round;
+      stroke-dasharray: 2 3;
+    }
+
+    /* Cinnabar annotation label (朱批) */
+    .zhupi-label {
+      font-family: var(--f-cjk);
+      font-size: 14px;
+      fill: var(--c-zhusha);
+      letter-spacing: 0.10em;
+    }
+    .zhupi-label-latin {
+      font-family: var(--f-display);
+      font-style: italic;
+      font-size: 12px;
+      fill: var(--c-zhusha);
+      letter-spacing: 0.04em;
+    }
+    .ink-label {
+      font-family: var(--f-cjk);
+      font-size: 13px;
+      fill: var(--c-ink-2);
+      letter-spacing: 0.08em;
+    }
+    .ink-label-small {
+      font-family: var(--f-display);
+      font-size: 10px;
+      fill: var(--c-ink-3);
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+    .im-fell-label {
+      font-family: var(--f-display);
+      font-style: italic;
+      font-size: 13px;
+      fill: var(--c-ink);
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       PAGE 1 · COVER (卷首)
+       — Full-bleed title + four corner seals + vertical 工楷 imprint.
+       ════════════════════════════════════════════════════════════ */
+    .cover .cover-frame {
+      position: absolute;
+      inset: 96px 110px;
+      border: 1px solid var(--c-border);
+      z-index: 5;
+    }
+    .cover .cover-inner-frame {
+      position: absolute;
+      inset: 106px 120px;
+      border: 1px solid var(--c-rule);
+      z-index: 5;
+    }
+    .cover .cover-content {
+      position: absolute;
+      top: 156px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      z-index: 6;
+    }
+    .cover .cover-imprint-latin {
+      font-family: var(--f-display);
+      font-style: italic;
+      font-size: 0.62em;
+      letter-spacing: 0.32em;
+      text-transform: uppercase;
+      color: var(--c-ink-3);
+      margin-bottom: 1.8em;
+    }
+    .cover .cover-title-cjk {
+      font-family: var(--f-cjk);
+      font-size: 6.4em;
+      letter-spacing: 0.20em;
+      line-height: 1.02;
+      color: var(--c-ink);
+      margin-bottom: 0.5em;
+    }
+    .cover .cover-title-latin {
+      font-family: var(--f-display);
+      font-style: italic;
+      font-size: 1.6em;
+      letter-spacing: 0.04em;
+      color: var(--c-ink-2);
+      margin-bottom: 0.4em;
+    }
+    .cover .cover-author {
+      font-family: var(--f-cjk);
+      font-size: 1.0em;
+      letter-spacing: 0.10em;
+      color: var(--c-ink);
+      margin-top: 1.4em;
+    }
+    .cover .cover-author .latin {
+      font-family: var(--f-display);
+      font-style: italic;
+      font-size: 0.88em;
+      letter-spacing: 0.02em;
+      color: var(--c-ink-2);
+    }
+    .cover .cover-imprint-cjk {
+      position: absolute;
+      bottom: 156px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-family: var(--f-cjk);
+      font-size: 0.62em;
+      letter-spacing: 0.24em;
+      color: var(--c-ink-3);
+      z-index: 6;
+    }
+    .cover .cover-gloss-left {
+      top: 130px;
+      left: 56px;
+      height: 460px;
+    }
+    .cover .cover-gloss-right {
+      top: 130px;
+      right: 56px;
+      height: 460px;
+    }
+    .cover .cover-seal-tl { top: 116px; left: 130px; }
+    .cover .cover-seal-tr { top: 116px; right: 130px; }
+    .cover .cover-seal-bl { bottom: 116px; left: 130px; }
+    .cover .cover-seal-br { bottom: 116px; right: 130px; }
+
+    /* ════════════════════════════════════════════════════════════
+       PAGE 2 · 李時珍 (Author & Lifework)
+       ════════════════════════════════════════════════════════════ */
+    .author .h-title {
+      font-family: var(--f-cjk);
+      font-size: 3.6em;
+      letter-spacing: 0.10em;
+      color: var(--c-ink);
+      line-height: 1.04;
+    }
+    .author .h-title-latin {
+      font-family: var(--f-display);
+      font-style: italic;
+      font-size: 1.4em;
+      color: var(--c-ink-2);
+      letter-spacing: 0.02em;
+      margin-top: 0.3em;
+      margin-bottom: 1.2em;
+    }
+    .author .h-body {
+      font-family: var(--f-cjk);
+      font-size: 0.76em;
+      line-height: 1.72;
+      color: var(--c-ink);
+      letter-spacing: 0.04em;
+      max-width: 32ch;
+      margin-top: 0.6em;
+    }
+    .author .h-body em { font-style: normal; color: var(--c-zhusha); font-weight: 500; }
+    .author .stat-grid {
+      position: absolute;
+      top: 220px;
+      right: 84px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.4em 2.6em;
+      max-width: 460px;
+      z-index: 5;
+    }
+    .author .stat {
+      display: flex;
+      flex-direction: column;
+      gap: 0.18em;
+      padding-top: 0.6em;
+      border-top: 1px solid var(--c-rule);
+    }
+    .author .stat .v {
+      font-family: var(--f-cjk);
+      font-size: 1.6em;
+      color: var(--c-ink);
+      line-height: 1;
+      letter-spacing: 0.02em;
+    }
+    .author .stat .v .unit {
+      font-family: var(--f-display);
+      font-style: italic;
+      font-size: 0.62em;
+      color: var(--c-ink-2);
+      margin-left: 0.2em;
+    }
+    .author .stat .l {
+      font-family: var(--f-cjk);
+      font-size: 0.46em;
+      letter-spacing: 0.22em;
+      color: var(--c-ink-3);
+      text-transform: uppercase;
+    }
+    .author .stat .l .verified {
+      font-family: var(--f-display);
+      font-style: italic;
+      font-size: 0.92em;
+      color: var(--c-zhusha);
+      letter-spacing: 0.02em;
+      text-transform: none;
+      margin-left: 0.4em;
+    }
+    .author .author-gloss {
+      top: 96px;
+      right: 56px;
+      height: 540px;
+    }
+    .author .scholar-svg {
+      position: absolute;
+      bottom: 90px;
+      right: 110px;
+      width: 220px;
+      height: 220px;
+      z-index: 4;
+    }
+    .author .author-seal {
+      bottom: 84px;
+      right: 64px;
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       PAGE 3 · 16 部 · 五色 (Taxonomy Grid)
+       ════════════════════════════════════════════════════════════ */
+    .taxonomy .taxonomy-head {
+      position: absolute;
+      top: 78px;
+      left: 72px;
+      max-width: 640px;
+      z-index: 5;
+    }
+    .taxonomy .h-title {
+      font-family: var(--f-cjk);
+      font-size: 2.6em;
+      letter-spacing: 0.10em;
+      color: var(--c-ink);
+      line-height: 1.04;
+    }
+    .taxonomy .h-title .latin {
+      font-family: var(--f-display);
+      font-style: italic;
+      font-size: 0.46em;
+      color: var(--c-ink-2);
+      letter-spacing: 0.04em;
+      margin-left: 0.6em;
+    }
+    .taxonomy .h-sub {
+      font-family: var(--f-body);
+      font-style: italic;
+      font-size: 0.78em;
+      color: var(--c-ink-2);
+      letter-spacing: 0.02em;
+      margin-top: 0.5em;
+      max-width: 50ch;
+    }
+    .taxonomy .taxonomy-grid {
+      position: absolute;
+      top: 260px;
+      left: 72px;
+      right: 72px;
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      grid-template-rows: repeat(2, 1fr);
+      gap: 8px;
+      z-index: 5;
+    }
+    .taxonomy .bu {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      padding: 0.6em 0.6em 0.7em;
+      background: oklch(0.84 0.050 84 / 0.45);
+      position: relative;
+    }
+    .taxonomy .bu .bu-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+    }
+    .taxonomy .bu.qing  .bu-bar { background: var(--c-qing); }
+    .taxonomy .bu.chi   .bu-bar { background: var(--c-chi); }
+    .taxonomy .bu.huang .bu-bar { background: var(--c-huang); }
+    .taxonomy .bu.bai   .bu-bar { background: var(--c-bai); border-bottom: 1px solid var(--c-border); }
+    .taxonomy .bu.hei   .bu-bar { background: var(--c-hei); }
+
+    .taxonomy .bu .bu-num {
+      font-family: var(--f-display);
+      font-style: italic;
+      font-size: 0.42em;
+      letter-spacing: 0.10em;
+      color: var(--c-ink-3);
+      margin-top: 0.4em;
+    }
+    .taxonomy .bu .bu-char {
+      font-family: var(--f-cjk);
+      font-size: 1.6em;
+      letter-spacing: 0;
+      color: var(--c-ink);
+      line-height: 1;
+      margin-top: 0.1em;
+    }
+    .taxonomy .bu .bu-latin {
+      font-family: var(--f-display);
+      font-style: italic;
+      font-size: 0.42em;
+      letter-spacing: 0.04em;
+      color: var(--c-ink-2);
+      margin-top: 0.4em;
+      text-transform: uppercase;
+    }
+    .taxonomy .bu .bu-count {
+      font-family: var(--f-display);
+      font-size: 0.46em;
+      letter-spacing: 0.16em;
+      color: var(--c-ink-3);
+      margin-top: 0.3em;
+      text-transform: uppercase;
+    }
+    .taxonomy .legend {
+      position: absolute;
+      bottom: 90px;
+      left: 72px;
+      display: flex;
+      gap: 1.8em;
+      align-items: center;
+      font-family: var(--f-cjk);
+      font-size: 0.50em;
+      letter-spacing: 0.10em;
+      color: var(--c-ink-3);
+      z-index: 5;
+    }
+    .taxonomy .legend .swatch {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      margin-right: 0.4em;
+      vertical-align: middle;
+    }
+    .taxonomy .legend .item.qing  .swatch { background: var(--c-qing); }
+    .taxonomy .legend .item.chi   .swatch { background: var(--c-chi); }
+    .taxonomy .legend .item.huang .swatch { background: var(--c-huang); }
+    .taxonomy .legend .item.bai   .swatch { background: var(--c-bai); border: 1px solid var(--c-border); }
+    .taxonomy .legend .item.hei   .swatch { background: var(--c-hei); }
+
+    /* ════════════════════════════════════════════════════════════
+       PAGE 4 · 水火土 (Three Foundational Elements)
+       ════════════════════════════════════════════════════════════ */
+    .wft .h-title {
+      font-family: var(--f-cjk);
+      font-size: 2.6em;
+      letter-spacing: 0.12em;
+      color: var(--c-ink);
+      line-height: 1.04;
+    }
+    .wft .h-title .latin {
+      font-family: var(--f-display);
+      font-style: italic;
+      font-size: 0.42em;
+      color: var(--c-ink-2);
+      letter-spacing: 0.04em;
+      display: block;
+      margin-top: 0.3em;
+    }
+    .wft .h-body {
+      font-family: var(--f-cjk);
+      font-size: 0.74em;
+      line-height: 1.7;
+      color: var(--c-ink);
+      max-width: 30ch;
+      letter-spacing: 0.04em;
+      margin-top: 1.0em;
+    }
+    .wft .h-body em { font-style: normal; color: var(--c-zhusha); font-weight: 500; }
+    .wft .three-col {
+      position: absolute;
+      top: 360px;
+      left: 72px;
+      right: 72px;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1.4em;
+      z-index: 5;
+    }
+    .wft .element-card {
+      padding: 1.0em 1.0em 0.8em;
+      background: oklch(0.84 0.045 84 / 0.55);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 0.2em;
+    }
+    .wft .element-card .e-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+    }
+    .wft .element-card.hei   .e-bar { background: var(--c-hei); }
+    .wft .element-card.chi   .e-bar { background: var(--c-chi); }
+    .wft .element-card.huang .e-bar { background: var(--c-huang); }
+    .wft .element-card .e-svg {
+      width: 100%;
+      height: 90px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0.2em 0 0.2em;
+    }
+    .wft .element-card .e-char {
+      font-family: var(--f-cjk);
+      font-size: 1.7em;
+      letter-spacing: 0;
+      color: var(--c-ink);
+      line-height: 1;
+      text-align: center;
+    }
+    .wft .element-card .e-latin {
+      font-family: var(--f-display);
+      font-style: italic;
+      font-size: 0.74em;
+      letter-spacing: 0.14em;
+      color: var(--c-ink-2);
+      text-align: center;
+      margin-top: 0.2em;
+      text-transform: uppercase;
+    }
+    .wft .element-card .e-meta {
+      display: flex;
+      justify-content: space-around;
+      align-items: baseline;
+      margin-top: 0.2em;
+      padding-top: 0.4em;
+      border-top: 1px solid var(--c-rule);
+    }
+    .wft .element-card .e-meta .v {
+      font-family: var(--f-cjk);
+      font-size: 1.3em;
+      color: var(--c-ink);
+      line-height: 1;
+    }
+    .wft .element-card .e-meta .l {
+      font-family: var(--f-display);
+      font-style: italic;
+      font-size: 0.62em;
+      letter-spacing: 0.10em;
+      color: var(--c-ink-3);
+      text-transform: uppercase;
+    }
+    .wft .element-card .e-sample {
+      font-family: var(--f-cjk);
+      font-size: 0.56em;
+      color: var(--c-ink-2);
+      letter-spacing: 0.06em;
+      line-height: 1.4;
+      margin-top: 0.3em;
+      text-align: center;
+    }
+    .wft .element-card .e-sample .em { color: var(--c-zhusha); }
+
+    /* ════════════════════════════════════════════════════════════
+       PAGE 5 · 金石 (Metal & Stone)
+       ════════════════════════════════════════════════════════════ */
+    .jinshi .h-title {
+      font-family: var(--f-cjk);
+      font-size: 3.0em;
+      letter-spacing: 0.10em;
+      color: var(--c-ink);
+      line-height: 1.04;
+    }
+    .jinshi .h-title .latin {
+      font-family: var(--f-display);
+      font-style: italic;
+      font-size: 0.40em;
+      color: var(--c-ink-2);
+      letter-spacing: 0.04em;
+      display: block;
+      margin-top: 0.4em;
+    }
+    .jinshi .h-body {
+      font-family: var(--f-cjk);
+      font-size: 0.72em;
+      line-height: 1.7;
+      color: var(--c-ink);
+      max-width: 32ch;
+      letter-spacing: 0.04em;
+      margin-top: 1.0em;
+    }
+    .jinshi .h-body em { font-style: normal; color: var(--c-zhusha); font-weight: 500; }
+    .jinshi .mineral-grid {
+      position: absolute;
+      top: 78px;
+      right: 72px;
+      width: 600px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.8em;
+      z-index: 5;
+    }
+    .jinshi .mineral {
+      padding: 0.9em 1.0em 0.9em;
+      background: oklch(0.84 0.045 84 / 0.50);
+      position: relative;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.8em;
+      min-height: 140px;
+    }
+    .jinshi .mineral .m-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: 3px;
+      background: var(--c-bai);
+      border-right: 1px solid var(--c-border);
+    }
+    .jinshi .mineral .m-svg {
+      flex: 0 0 60px;
+      width: 60px;
+      height: 60px;
+      margin-top: 0.3em;
+    }
+    .jinshi .mineral .m-text {
+      flex: 1;
+    }
+    .jinshi .mineral .m-char {
+      font-family: var(--f-cjk);
+      font-size: 1.3em;
+      color: var(--c-ink);
+      letter-spacing: 0;
+      line-height: 1;
+    }
+    .jinshi .mineral .m-latin {
+      font-family: var(--f-display);
+      font-style: italic;
+      font-size: 0.66em;
+      color: var(--c-ink-2);
+      letter-spacing: 0.04em;
+      margin-top: 0.2em;
+    }
+    .jinshi .mineral .m-prop {
+      font-family: var(--f-cjk);
+      font-size: 0.56em;
+      color: var(--c-ink-2);
+      letter-spacing: 0.06em;
+      line-height: 1.5;
+      margin-top: 0.4em;
+    }
+    .jinshi .mineral .m-prop .em { color: var(--c-zhusha); }
+    .jinshi .tally {
+      position: absolute;
+      bottom: 90px;
+      left: 72px;
+      display: flex;
+      gap: 1.6em;
+      align-items: baseline;
+      font-family: var(--f-cjk);
+      font-size: 0.6em;
+      letter-spacing: 0.16em;
+      color: var(--c-ink-3);
+      z-index: 5;
+    }
+    .jinshi .tally .v {
+      font-family: var(--f-cjk);
+      font-size: 1.7em;
+      color: var(--c-ink);
+      letter-spacing: 0;
+      margin-right: 0.3em;
+    }
+    .jinshi .tally .l {
+      font-family: var(--f-display);
+      font-style: italic;
+      font-size: 0.92em;
+      color: var(--c-ink-2);
+      letter-spacing: 0.10em;
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       PAGE 6 · 草部 (Herbs — Centerpiece woodcut)
+       ════════════════════════════════════════════════════════════ */
+    .cao .h-title {
+      font-family: var(--f-cjk);
+      font-size: 3.4em;
+      letter-spacing: 0.10em;
+      color: var(--c-ink);
+      line-height: 1.04;
+    }
+    .cao .h-title .latin {
+      font-family: var(--f-display);
+      font-style: italic;
+      font-size: 0.40em;
+      color: var(--c-ink-2);
+      letter-spacing: 0.04em;
+      display: block;
+      margin-top: 0.4em;
+    }
+    .cao .h-body {
+      font-family: var(--f-cjk);
+      font-size: 0.76em;
+      line-height: 1.7;
+      color: var(--c-ink);
+      max-width: 30ch;
+      letter-spacing: 0.04em;
+      margin-top: 1.0em;
+    }
+    .cao .h-body em { font-style: normal; color: var(--c-zhusha); font-weight: 500; }
+    .cao .sub-list {
+      position: absolute;
+      bottom: 90px;
+      left: 72px;
+      max-width: 360px;
+      z-index: 5;
+    }
+    .cao .sub-list .sub-kicker {
+      font-family: var(--f-display);
+      font-style: italic;
+      font-size: 0.46em;
+      letter-spacing: 0.20em;
+      color: var(--c-ink-3);
+      text-transform: uppercase;
+      margin-bottom: 0.5em;
+      padding-bottom: 0.4em;
+      border-bottom: 1px solid var(--c-rule);
+    }
+    .cao .sub-list .sub-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.4em 1.0em;
+      font-family: var(--f-cjk);
+      font-size: 0.56em;
+      color: var(--c-ink-2);
+      letter-spacing: 0.06em;
+    }
+    .cao .sub-list .sub-grid .sub-item {
+      display: flex;
+      align-items: baseline;
+      gap: 0.4em;
+    }
+    .cao .sub-list .sub-grid .sub-item .n {
+      font-family: var(--f-display);
+      font-style: italic;
+      font-size: 0.86em;
+      color: var(--c-zhusha);
+      letter-spacing: 0;
+    }
+    .cao .herb-meta {
+      position: absolute;
+      top: 96px;
+      right: 72px;
+      max-width: 220px;
+      text-align: right;
+      z-index: 5;
+    }
+    .cao .herb-meta .hm-char {
+      font-family: var(--f-cjk);
+      font-size: 2.6em;
+      color: var(--c-ink);
+      letter-spacing: 0;
+      line-height: 1;
+    }
+    .cao .herb-meta .hm-latin {
+      font-family: var(--f-display);
+      font-style: italic;
+      font-size: 0.72em;
+      color: var(--c-ink-2);
+      letter-spacing: 0.02em;
+      margin-top: 0.2em;
+    }
+    .cao .herb-meta .hm-prop {
+      font-family: var(--f-cjk);
+      font-size: 0.56em;
+      color: var(--c-ink-2);
+      letter-spacing: 0.06em;
+      line-height: 1.5;
+      margin-top: 0.8em;
+      padding-top: 0.6em;
+      border-top: 1px solid var(--c-rule);
+    }
+    .cao .herb-meta .hm-prop .em { color: var(--c-zhusha); }
+    .cao .herb-meta .hm-elem {
+      display: inline-block;
+      margin-top: 0.5em;
+      padding: 0.2em 0.5em;
+      background: var(--c-qing);
+      color: var(--c-paper);
+      font-family: var(--f-cjk);
+      font-size: 0.46em;
+      letter-spacing: 0.10em;
+    }
+    .cao .ginseng-svg {
+      position: absolute;
+      top: 180px;
+      right: 320px;
+      width: 540px;
+      height: 460px;
+      z-index: 4;
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       PAGE 7 · 蟲鱗介禽獸 (Five Animal Sections)
+       ════════════════════════════════════════════════════════════ */
+    .beasts .h-title {
+      font-family: var(--f-cjk);
+      font-size: 2.6em;
+      letter-spacing: 0.10em;
+      color: var(--c-ink);
+      line-height: 1.04;
+    }
+    .beasts .h-title .latin {
+      font-family: var(--f-display);
+      font-style: italic;
+      font-size: 0.40em;
+      color: var(--c-ink-2);
+      letter-spacing: 0.04em;
+      display: block;
+      margin-top: 0.4em;
+    }
+    .beasts .h-body {
+      font-family: var(--f-cjk);
+      font-size: 0.74em;
+      line-height: 1.7;
+      color: var(--c-ink);
+      max-width: 30ch;
+      letter-spacing: 0.04em;
+      margin-top: 1.0em;
+    }
+    .beasts .h-body em { font-style: normal; color: var(--c-zhusha); font-weight: 500; }
+    .beasts .beast-grid {
+      position: absolute;
+      top: 360px;
+      left: 72px;
+      right: 72px;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0.5em;
+      z-index: 5;
+    }
+    .beasts .beast {
+      padding: 0.7em 0.7em 0.8em;
+      background: oklch(0.84 0.045 84 / 0.45);
+      position: relative;
+    }
+    .beasts .beast .b-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+    }
+    .beasts .beast.wood  .b-bar { background: var(--c-qing); }
+    .beasts .beast.water .b-bar { background: var(--c-hei); }
+    .beasts .beast.fire  .b-bar { background: var(--c-chi); }
+    .beasts .beast.earth .b-bar { background: var(--c-huang); }
+    .beasts .beast .b-num {
+      font-family: var(--f-display);
+      font-style: italic;
+      font-size: 0.40em;
+      color: var(--c-ink-3);
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      margin-top: 0.3em;
+    }
+    .beasts .beast .b-svg {
+      width: 100%;
+      height: 70px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0.2em 0;
+    }
+    .beasts .beast .b-char {
+      font-family: var(--f-cjk);
+      font-size: 1.3em;
+      color: var(--c-ink);
+      letter-spacing: 0;
+      line-height: 1;
+      text-align: center;
+    }
+    .beasts .beast .b-latin {
+      font-family: var(--f-display);
+      font-style: italic;
+      font-size: 0.58em;
+      color: var(--c-ink-2);
+      letter-spacing: 0.04em;
+      margin-top: 0.2em;
+      text-align: center;
+    }
+    .beasts .beast .b-count {
+      font-family: var(--f-display);
+      font-style: italic;
+      font-size: 0.62em;
+      color: var(--c-zhusha);
+      letter-spacing: 0.06em;
+      margin-top: 0.3em;
+      text-align: center;
+    }
+    .beasts .beast .b-count .n {
+      font-family: var(--f-cjk);
+      font-size: 1.1em;
+      color: var(--c-ink);
+      letter-spacing: 0;
+    }
+    .beasts .beast .b-sample {
+      font-family: var(--f-cjk);
+      font-size: 0.52em;
+      color: var(--c-ink-2);
+      letter-spacing: 0.06em;
+      line-height: 1.4;
+      margin-top: 0.2em;
+      text-align: center;
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       PAGE 8 · 跋 (Colophon & Legacy)
+       ════════════════════════════════════════════════════════════ */
+    .colophon .colophon-frame {
+      position: absolute;
+      inset: 96px 110px;
+      border: 1px solid var(--c-border);
+      z-index: 5;
+    }
+    .colophon .colophon-content {
+      position: absolute;
+      top: 156px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      z-index: 6;
+      padding: 0 120px;
+    }
+    .colophon .h-title {
+      font-family: var(--f-cjk);
+      font-size: 3.2em;
+      letter-spacing: 0.18em;
+      color: var(--c-ink);
+      line-height: 1.04;
+    }
+    .colophon .h-title-latin {
+      font-family: var(--f-display);
+      font-style: italic;
+      font-size: 1.0em;
+      color: var(--c-ink-2);
+      letter-spacing: 0.04em;
+      margin-top: 0.4em;
+      margin-bottom: 1.8em;
+    }
+    .colophon .legacy-body {
+      font-family: var(--f-cjk);
+      font-size: 0.84em;
+      line-height: 1.78;
+      color: var(--c-ink);
+      letter-spacing: 0.06em;
+      max-width: 36ch;
+      margin: 0 auto;
+    }
+    .colophon .legacy-body em {
+      font-style: normal;
+      color: var(--c-zhusha);
+      font-weight: 500;
+    }
+    .colophon .legacy-body .latin {
+      font-family: var(--f-display);
+      font-style: italic;
+      font-size: 0.92em;
+      color: var(--c-ink-2);
+      letter-spacing: 0.02em;
+    }
+    .colophon .unesco-line {
+      font-family: var(--f-display);
+      font-style: italic;
+      font-size: 0.74em;
+      color: var(--c-ink-2);
+      letter-spacing: 0.10em;
+      margin-top: 1.8em;
+      text-align: center;
+    }
+    .colophon .unesco-line .em {
+      font-family: var(--f-cjk);
+      font-style: normal;
+      color: var(--c-zhusha);
+      font-size: 1.0em;
+    }
+    .colophon .colophon-gloss-left {
+      top: 130px;
+      left: 56px;
+      height: 460px;
+    }
+    .colophon .colophon-gloss-right {
+      top: 130px;
+      right: 56px;
+      height: 460px;
+    }
+    .colophon .colophon-seal {
+      position: absolute;
+      bottom: 150px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 7;
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       Z-index guard. Wrap selector in :where() so specificity = 0
+       and any per-slide layout rule wins. Without this guard, the
+       four :not() filters give this rule (0,4,0) and silently
+       override every layout rule (lesson from astronomy-monument).
+       ════════════════════════════════════════════════════════════ */
+    :where(.reveal section > *:not(.sheet):not(.composition):not(.folio-head):not(.folio-foot)) {
+      position: relative;
+      z-index: 5;
+    }
+    .folio-head, .folio-foot, .seal, .gloss-vertical {
+      position: absolute;
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="reveal">
+    <div class="slides">
+
+      <!-- ════════════════════════════════════════════════════════
+           PLATE I · 卷首 (Cover)
+           ════════════════════════════════════════════════════════ -->
+      <section class="cover deck-flex" style="flex-direction:column; padding:0; height:100%;">
+
+        <div class="sheet"></div>
+
+        <div class="composition" aria-hidden="true">
+          <svg viewBox="0 0 1280 720" preserveAspectRatio="xMidYMid meet">
+            <!-- Faint carved-flora motif behind title (woodblock印刷底紋) -->
+            <g opacity="0.10" stroke="#1a1a1a" stroke-width="0.6" fill="none">
+              <path d="M 200 280 Q 240 260, 280 280 Q 240 300, 200 280 Z"/>
+              <path d="M 1000 280 Q 1040 260, 1080 280 Q 1040 300, 1000 280 Z"/>
+              <path d="M 200 440 Q 240 420, 280 440 Q 240 460, 200 440 Z"/>
+              <path d="M 1000 440 Q 1040 420, 1080 440 Q 1040 460, 1000 440 Z"/>
+              <circle cx="240" cy="360" r="2"/>
+              <circle cx="1040" cy="360" r="2"/>
+            </g>
+          </svg>
+        </div>
+
+        <div class="cover-frame"></div>
+        <div class="cover-inner-frame"></div>
+
+        <div class="cover-content">
+          <div class="cover-imprint-latin">Compendium of Materia Medica · Anno MDCVI</div>
+          <div class="cover-title-cjk">本草綱目</div>
+          <div class="cover-title-latin">Pén-tsʻāo Kāng-mù</div>
+          <div class="cover-author">
+            李時珍 撰 &nbsp;·&nbsp; <span class="latin">Li Shih-Chen, ed.</span>
+          </div>
+        </div>
+
+        <div class="cover-imprint-cjk">
+          大明萬曆二十四年 · 金陵胡承龍刻本 &nbsp;·&nbsp; 五十二卷 · 一十六部
+        </div>
+
+        <div class="gloss-vertical cover-gloss-left">大明萬曆丙申</div>
+        <div class="gloss-vertical cover-gloss-right">金陵藏版 · 胡承龍梓</div>
+
+        <div class="seal seal-aged cover-seal-tl">
+          <div class="seal-text-2"><span>時</span><span>珍</span><span>之</span><span>印</span></div>
+        </div>
+        <div class="seal seal-light cover-seal-tr">
+          <div class="seal-text-2"><span>大</span><span>明</span><span>萬</span><span>曆</span></div>
+        </div>
+        <div class="seal cover-seal-bl">
+          <div class="seal-text-2"><span>金</span><span>陵</span><span>胡</span><span>氏</span></div>
+        </div>
+        <div class="seal seal-aged cover-seal-br">
+          <div class="seal-text-2"><span>瀕</span><span>湖</span><span>山</span><span>人</span></div>
+        </div>
+
+      </section>
+
+
+      <!-- ════════════════════════════════════════════════════════
+           PLATE II · 李時珍 (Author & Lifework)
+           ════════════════════════════════════════════════════════ -->
+      <section class="author deck-flex" style="flex-direction:column; padding:0; height:100%;">
+
+        <div class="sheet"></div>
+
+        <div class="folio-head">
+          <span class="folio-head-cjk">卷之首 · 序例</span>
+          <span class="folio-head-latin">Folio II · De Auctore</span>
+        </div>
+
+        <div class="plate-content">
+          <div class="h-kicker">Plate II · The Author</div>
+          <div class="h-title">李時珍</div>
+          <div class="h-title-latin">Li Shih-Chen, 1518–1593</div>
+          <div class="h-body">
+            字 <em>東璧</em>,號 <em>瀕湖</em>,蘄州人。歷 <em>二十七載</em>,三易其稿,著成本書。足跡半天下,訪採藥草,考證百家,正 <em>前人之失</em> 一萬餘條。
+          </div>
+          <div class="h-body" style="margin-top:0.9em; font-size:0.72em; color:var(--c-ink-2);">
+            <em class="zhupi-latin" style="font-size:0.96em;">frontispiece · 金陵胡承龍刻本 · 1596</em>
+          </div>
+        </div>
+
+        <div class="stat-grid">
+          <div class="stat">
+            <div class="v">27<span class="unit">years</span></div>
+            <div class="l">Compilation <span class="verified">verified</span></div>
+          </div>
+          <div class="stat">
+            <div class="v">52<span class="unit">卷</span></div>
+            <div class="l">Volumes <span class="verified">verified</span></div>
+          </div>
+          <div class="stat">
+            <div class="v">16<span class="unit">部</span></div>
+            <div class="l">Divisions <span class="verified">verified</span></div>
+          </div>
+          <div class="stat">
+            <div class="v">1,892</div>
+            <div class="l">Substances <span class="verified">verified</span></div>
+          </div>
+          <div class="stat">
+            <div class="v">11,096</div>
+            <div class="l">Formulæ <span class="verified">verified</span></div>
+          </div>
+          <div class="stat">
+            <div class="v">1,109</div>
+            <div class="l">Illustrations <span class="verified">verified</span></div>
+          </div>
+        </div>
+
+        <div class="gloss-vertical author-gloss">瀕湖山人 · 蕲州李時珍</div>
+
+        <!-- Woodblock-style scholar silhouette (Li Shizhen at writing desk) -->
+        <svg class="scholar-svg" viewBox="0 0 200 200" preserveAspectRatio="xMidYMid meet">
+          <!-- scholar robe silhouette -->
+          <path class="ink-line"
+                d="M 100 50
+                   C 90 50, 84 60, 84 76
+                   L 80 100
+                   L 64 130
+                   L 60 168
+                   L 140 168
+                   L 136 130
+                   L 120 100
+                   L 116 76
+                   C 116 60, 110 50, 100 50 Z"/>
+          <!-- head -->
+          <circle cx="100" cy="42" r="14" class="ink-line"/>
+          <!-- topknot -->
+          <path class="ink-line-thin" d="M 100 28 L 100 18 L 96 14 L 104 14 L 100 18"/>
+          <!-- beard -->
+          <path class="ink-line-thin" d="M 92 50 Q 100 64, 108 50"/>
+          <!-- sleeve extending to brush -->
+          <path class="ink-line"
+                d="M 64 130
+                   C 50 140, 44 150, 42 160
+                   L 56 162
+                   C 58 156, 62 150, 68 146 Z"/>
+          <!-- brush in hand -->
+          <line x1="44" y1="160" x2="34" y2="174" class="ink-line"/>
+          <line x1="34" y1="174" x2="30" y2="180" class="ink-line-thin"/>
+          <!-- desk edge implied -->
+          <line x1="20" y1="180" x2="80" y2="180" class="ink-line-thin"/>
+          <!-- book stack on right -->
+          <rect x="130" y="148" width="40" height="6" class="ink-line-thin"/>
+          <rect x="132" y="156" width="40" height="6" class="ink-line-thin"/>
+          <rect x="130" y="164" width="40" height="6" class="ink-line-thin"/>
+        </svg>
+
+        <div class="seal seal-small author-seal seal-aged">
+          <div class="seal-text-2"><span>瀕</span><span>湖</span></div>
+        </div>
+
+        <div class="folio-foot">
+          <span class="juan">卷之首 · 序例 · 跋</span>
+          <span class="latin-page">folio ii</span>
+        </div>
+
+      </section>
+
+
+      <!-- ════════════════════════════════════════════════════════
+           PLATE III · 16 部 · 五色 (Taxonomy + Five-Element)
+           ════════════════════════════════════════════════════════ -->
+      <section class="taxonomy deck-flex" style="flex-direction:column; padding:0; height:100%;">
+
+        <div class="sheet"></div>
+
+        <div class="folio-head">
+          <span class="folio-head-cjk">序例 · 一十六部</span>
+          <span class="folio-head-latin">Folio III · De Partitions Sexdecim</span>
+        </div>
+
+        <div class="taxonomy-head">
+          <div class="h-kicker">Plate III · The Sixteen Divisions</div>
+          <div class="h-title">一十六部</div>
+          <div class="h-sub">
+            1,892 substances <em class="zhupi-latin" style="font-size:0.92em;">verified</em>, re-partitioned into 16 divisions and tagged by element. A taxonomy predating Linnaeus by two centuries.
+          </div>
+        </div>
+
+        <div class="taxonomy-grid">
+          <div class="bu hei">
+            <div class="bu-bar"></div>
+            <div class="bu-num">I</div>
+            <div class="bu-char">水</div>
+            <div class="bu-latin">Aqua</div>
+            <div class="bu-count">13 entries</div>
+          </div>
+          <div class="bu chi">
+            <div class="bu-bar"></div>
+            <div class="bu-num">II</div>
+            <div class="bu-char">火</div>
+            <div class="bu-latin">Ignis</div>
+            <div class="bu-count">11 entries</div>
+          </div>
+          <div class="bu huang">
+            <div class="bu-bar"></div>
+            <div class="bu-num">III</div>
+            <div class="bu-char">土</div>
+            <div class="bu-latin">Terra</div>
+            <div class="bu-count">61 entries</div>
+          </div>
+          <div class="bu bai">
+            <div class="bu-bar"></div>
+            <div class="bu-num">IV</div>
+            <div class="bu-char">金</div>
+            <div class="bu-latin">Aurum</div>
+            <div class="bu-count">28 entries</div>
+          </div>
+          <div class="bu huang">
+            <div class="bu-bar"></div>
+            <div class="bu-num">V</div>
+            <div class="bu-char">石</div>
+            <div class="bu-latin">Lapis</div>
+            <div class="bu-count">72 entries</div>
+          </div>
+          <div class="bu qing">
+            <div class="bu-bar"></div>
+            <div class="bu-num">VI</div>
+            <div class="bu-char">草</div>
+            <div class="bu-latin">Herba</div>
+            <div class="bu-count">615 entries</div>
+          </div>
+          <div class="bu qing">
+            <div class="bu-bar"></div>
+            <div class="bu-num">VII</div>
+            <div class="bu-char">穀</div>
+            <div class="bu-latin">Frumentum</div>
+            <div class="bu-count">73 entries</div>
+          </div>
+          <div class="bu qing">
+            <div class="bu-bar"></div>
+            <div class="bu-num">VIII</div>
+            <div class="bu-char">菜</div>
+            <div class="bu-latin">Oler</div>
+            <div class="bu-count">105 entries</div>
+          </div>
+          <div class="bu qing">
+            <div class="bu-bar"></div>
+            <div class="bu-num">IX</div>
+            <div class="bu-char">果</div>
+            <div class="bu-latin">Fructus</div>
+            <div class="bu-count">127 entries</div>
+          </div>
+          <div class="bu qing">
+            <div class="bu-bar"></div>
+            <div class="bu-num">X</div>
+            <div class="bu-char">木</div>
+            <div class="bu-latin">Lignum</div>
+            <div class="bu-count">180 entries</div>
+          </div>
+          <div class="bu chi">
+            <div class="bu-bar"></div>
+            <div class="bu-num">XI</div>
+            <div class="bu-char">蟲</div>
+            <div class="bu-latin">Insecta</div>
+            <div class="bu-count">106 entries</div>
+          </div>
+          <div class="bu hei">
+            <div class="bu-bar"></div>
+            <div class="bu-num">XII</div>
+            <div class="bu-char">鱗</div>
+            <div class="bu-latin">Squama</div>
+            <div class="bu-count">94 entries</div>
+          </div>
+          <div class="bu hei">
+            <div class="bu-bar"></div>
+            <div class="bu-num">XIII</div>
+            <div class="bu-char">介</div>
+            <div class="bu-latin">Concha</div>
+            <div class="bu-count">46 entries</div>
+          </div>
+          <div class="bu qing">
+            <div class="bu-bar"></div>
+            <div class="bu-num">XIV</div>
+            <div class="bu-char">禽</div>
+            <div class="bu-latin">Aves</div>
+            <div class="bu-count">77 entries</div>
+          </div>
+          <div class="bu huang">
+            <div class="bu-bar"></div>
+            <div class="bu-num">XV</div>
+            <div class="bu-char">獸</div>
+            <div class="bu-latin">Bestia</div>
+            <div class="bu-count">86 entries</div>
+          </div>
+          <div class="bu chi">
+            <div class="bu-bar"></div>
+            <div class="bu-num">XVI</div>
+            <div class="bu-char">人</div>
+            <div class="bu-latin">Homo</div>
+            <div class="bu-count">37 entries</div>
+          </div>
+        </div>
+
+        <div class="legend">
+          <span class="item qing"><span class="swatch"></span>青 · wood</span>
+          <span class="item chi"><span class="swatch"></span>赤 · fire</span>
+          <span class="item huang"><span class="swatch"></span>黃 · earth</span>
+          <span class="item bai"><span class="swatch"></span>白 · metal</span>
+          <span class="item hei"><span class="swatch"></span>黑 · water</span>
+        </div>
+
+        <div class="folio-foot">
+          <span class="juan">序例 · 一十六部</span>
+          <span class="latin-page">folio iii</span>
+        </div>
+
+      </section>
+
+
+      <!-- ════════════════════════════════════════════════════════
+           PLATE IV · 水火土 (Three Foundational Elements)
+           ════════════════════════════════════════════════════════ -->
+      <section class="wft deck-flex" style="flex-direction:column; padding:0; height:100%;">
+
+        <div class="sheet"></div>
+
+        <div class="folio-head">
+          <span class="folio-head-cjk">卷之三 · 水火土部</span>
+          <span class="folio-head-latin">Folio IV · De Aqua, Igne, Terra</span>
+        </div>
+
+        <div class="plate-content">
+          <div class="h-kicker">Plate IV · Elements Unalive</div>
+          <div class="h-title">
+            水火土
+            <span class="latin">Three Foundational Divisions</span>
+          </div>
+          <div class="h-body">
+            Before herb or animal: rain water and dew, bamboo smoke, soil of the five directions. Eighty-five entries that ground all later medicine.
+          </div>
+        </div>
+
+        <div class="three-col">
+          <!-- 水 Water -->
+          <div class="element-card hei">
+            <div class="e-bar"></div>
+            <div class="e-char">水</div>
+            <div class="e-latin">Aqua · Division I</div>
+            <div class="e-svg">
+              <svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
+                <!-- Dewdrop falling into a vessel — woodcut style -->
+                <path class="ink-line"
+                      d="M 50 16 C 46 22, 44 30, 50 36 C 56 30, 54 22, 50 16 Z"/>
+                <line x1="50" y1="38" x2="50" y2="58" class="ink-line-thin"/>
+                <!-- ripple waves in vessel -->
+                <path class="ink-line-thin" d="M 18 72 Q 32 66, 50 72 T 82 72"/>
+                <path class="ink-line-thin" d="M 22 80 Q 36 76, 50 80 T 78 80"/>
+                <path class="ink-line-thin" d="M 28 88 Q 40 86, 50 88 T 72 88"/>
+                <!-- vessel rim -->
+                <path class="ink-line" d="M 14 68 L 18 64 L 82 64 L 86 68"/>
+              </svg>
+            </div>
+            <div class="e-meta">
+              <div class="v">13</div>
+              <div class="l">entries</div>
+            </div>
+            <div class="e-sample">
+              雨水 · 露水 · <span class="em">臘雪</span>
+            </div>
+          </div>
+
+          <!-- 火 Fire -->
+          <div class="element-card chi">
+            <div class="e-bar"></div>
+            <div class="e-char">火</div>
+            <div class="e-latin">Ignis · Division II</div>
+            <div class="e-svg">
+              <svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
+                <!-- Stylised flame — single-line woodblock -->
+                <path class="ink-line"
+                      d="M 50 16
+                         C 40 32, 36 42, 44 50
+                         C 38 56, 36 64, 42 70
+                         C 38 74, 40 80, 48 84
+                         C 56 80, 62 74, 58 70
+                         C 64 64, 62 56, 56 50
+                         C 64 42, 60 32, 50 16 Z"/>
+                <!-- inner flame detail -->
+                <path class="ink-line-thin"
+                      d="M 50 36 C 46 44, 46 52, 50 58 C 54 52, 54 44, 50 36 Z"/>
+                <!-- fuel line (wood) -->
+                <line x1="22" y1="84" x2="78" y2="84" class="ink-line"/>
+                <line x1="30" y1="84" x2="26" y2="90" class="ink-line-thin"/>
+                <line x1="50" y1="84" x2="50" y2="90" class="ink-line-thin"/>
+                <line x1="70" y1="84" x2="74" y2="90" class="ink-line-thin"/>
+              </svg>
+            </div>
+            <div class="e-meta">
+              <div class="v">11</div>
+              <div class="l">entries</div>
+            </div>
+            <div class="e-sample">
+              <span class="em">炭火</span> · 艾火 · 燧火
+            </div>
+          </div>
+
+          <!-- 土 Earth -->
+          <div class="element-card huang">
+            <div class="e-bar"></div>
+            <div class="e-char">土</div>
+            <div class="e-latin">Terra · Division III</div>
+            <div class="e-svg">
+              <svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
+                <!-- Five-direction earth mound (五方土) -->
+                <path class="ink-line"
+                      d="M 14 76
+                         L 30 60
+                         L 50 50
+                         L 70 60
+                         L 86 76 Z"/>
+                <!-- soil texture lines -->
+                <path class="ink-line-thin" d="M 20 80 L 80 80"/>
+                <path class="ink-line-thin" d="M 28 84 L 72 84"/>
+                <path class="ink-line-thin" d="M 36 88 L 64 88"/>
+                <!-- sprout on top, hint at fertility -->
+                <line x1="50" y1="50" x2="50" y2="40" class="ink-line"/>
+                <path class="ink-line-thin" d="M 50 40 Q 42 36, 40 30"/>
+                <path class="ink-line-thin" d="M 50 40 Q 58 36, 60 30"/>
+                <!-- cardinal direction marks (五方) -->
+                <circle cx="30" cy="60" r="1.5" class="ink-fill"/>
+                <circle cx="70" cy="60" r="1.5" class="ink-fill"/>
+                <circle cx="50" cy="50" r="1.5" class="ink-fill"/>
+              </svg>
+            </div>
+            <div class="e-meta">
+              <div class="v">61</div>
+              <div class="l">entries</div>
+            </div>
+            <div class="e-sample">
+              <span class="em">赤土</span> · 黃土 · 伏龍肝
+            </div>
+          </div>
+        </div>
+
+        <div class="folio-foot">
+          <span class="juan">卷之三 · 水火土部</span>
+          <span class="latin-page">folio iv</span>
+        </div>
+
+      </section>
+
+
+      <!-- ════════════════════════════════════════════════════════
+           PLATE V · 金石 (Metal & Stone)
+           ════════════════════════════════════════════════════════ -->
+      <section class="jinshi deck-flex" style="flex-direction:column; padding:0; height:100%;">
+
+        <div class="sheet"></div>
+
+        <div class="folio-head">
+          <span class="folio-head-cjk">卷之八 · 金石部</span>
+          <span class="folio-head-latin">Folio V · De Metallo et Lapide</span>
+        </div>
+
+        <div class="plate-content">
+          <div class="h-kicker">Plate V · The Mineral Materia</div>
+          <div class="h-title">
+            金石
+            <span class="latin">Metal Metal &amp; Stone — Divisionsamp; Stone · Divisions IV–V</span>
+          </div>
+          <div class="h-body">
+            Beneath the herb layer, the <em>mineral</em> layer: one hundred entries on metals, sulphides, and earths. Cinnabar, realgar, magnetite. Pigments, ores, and medicines, classified two centuries before <em>Lavoisier</em>.
+          </div>
+        </div>
+
+        <div class="tally">
+          <div class="item"><span class="v">28</span><span class="l">metal · 金</span></div>
+          <div class="item"><span class="v">72</span><span class="l">stone · 石</span></div>
+        </div>
+
+        <div class="mineral-grid">
+          <!-- 朱砂 Cinnabar -->
+          <div class="mineral">
+            <div class="m-bar"></div>
+            <svg class="m-svg" viewBox="0 0 60 60" preserveAspectRatio="xMidYMid meet">
+              <!-- Cinnabar crystal — rhombohedral, painted in cinnabar red -->
+              <path d="M 30 12 L 48 26 L 42 48 L 18 48 L 12 26 Z"
+                    fill="var(--c-zhusha)" stroke="var(--c-ink)" stroke-width="1.0" stroke-linejoin="round"/>
+              <path d="M 30 12 L 30 48" stroke="var(--c-ink)" stroke-width="0.8" fill="none"/>
+              <path d="M 12 26 L 48 26" stroke="var(--c-ink)" stroke-width="0.8" fill="none"/>
+              <path d="M 30 12 L 18 48" stroke="var(--c-ink)" stroke-width="0.6" fill="none"/>
+              <path d="M 30 12 L 42 48" stroke="var(--c-ink)" stroke-width="0.6" fill="none"/>
+            </svg>
+            <div class="m-text">
+              <div class="m-char">朱砂</div>
+              <div class="m-latin">Cinnabaris · HgS</div>
+              <div class="m-prop">
+                <span class="em">鎮心安神</span> · 清熱解毒 · 主治驚癇
+              </div>
+            </div>
+          </div>
+
+          <!-- 雄黃 Realgar -->
+          <div class="mineral">
+            <div class="m-bar"></div>
+            <svg class="m-svg" viewBox="0 0 60 60" preserveAspectRatio="xMidYMid meet">
+              <!-- Realgar — orange-yellow prismatic crystals -->
+              <path d="M 18 18 L 30 14 L 42 18 L 44 32 L 36 46 L 22 46 L 14 30 Z"
+                    fill="var(--c-huang)" stroke="var(--c-ink)" stroke-width="1.0" stroke-linejoin="round"/>
+              <path d="M 18 18 L 36 46" stroke="var(--c-ink)" stroke-width="0.6" fill="none"/>
+              <path d="M 30 14 L 22 46" stroke="var(--c-ink)" stroke-width="0.6" fill="none"/>
+              <path d="M 42 18 L 22 46" stroke="var(--c-ink)" stroke-width="0.6" fill="none"/>
+            </svg>
+            <div class="m-text">
+              <div class="m-char">雄黃</div>
+              <div class="m-latin">Realgar · As₄S₄</div>
+              <div class="m-prop">
+                <span class="em">解毒殺蟲</span> · 燥濕祛痰 · 端午佩之
+              </div>
+            </div>
+          </div>
+
+          <!-- 慈石 Magnetite -->
+          <div class="mineral">
+            <div class="m-bar"></div>
+            <svg class="m-svg" viewBox="0 0 60 60" preserveAspectRatio="xMidYMid meet">
+              <!-- Magnetite — octahedral crystals -->
+              <path d="M 30 10 L 50 30 L 30 50 L 10 30 Z"
+                    fill="var(--c-hei)" stroke="var(--c-ink)" stroke-width="1.0" stroke-linejoin="round"/>
+              <path d="M 30 10 L 30 50" stroke="var(--c-bai)" stroke-width="0.6" fill="none"/>
+              <path d="M 10 30 L 50 30" stroke="var(--c-bai)" stroke-width="0.6" fill="none"/>
+              <!-- iron filings attracted (dotted) -->
+              <circle cx="22" cy="22" r="0.8" fill="var(--c-ink)"/>
+              <circle cx="38" cy="22" r="0.8" fill="var(--c-ink)"/>
+              <circle cx="22" cy="38" r="0.8" fill="var(--c-ink)"/>
+              <circle cx="38" cy="38" r="0.8" fill="var(--c-ink)"/>
+            </svg>
+            <div class="m-text">
+              <div class="m-char">慈石</div>
+              <div class="m-latin">Magnetitum · Fe₃O₄</div>
+              <div class="m-prop">
+                <span class="em">平肝潛陽</span> · 聰耳明目 · 引鐵如慈母
+              </div>
+            </div>
+          </div>
+
+          <!-- 石膏 Gypsum -->
+          <div class="mineral">
+            <div class="m-bar"></div>
+            <svg class="m-svg" viewBox="0 0 60 60" preserveAspectRatio="xMidYMid meet">
+              <!-- Gypsum — fibrous crystals -->
+              <rect x="14" y="14" width="32" height="32"
+                    fill="var(--c-bai)" stroke="var(--c-ink)" stroke-width="1.0"/>
+              <path d="M 14 22 L 46 22" stroke="var(--c-ink)" stroke-width="0.5" fill="none"/>
+              <path d="M 14 30 L 46 30" stroke="var(--c-ink)" stroke-width="0.5" fill="none"/>
+              <path d="M 14 38 L 46 38" stroke="var(--c-ink)" stroke-width="0.5" fill="none"/>
+              <path d="M 22 14 L 22 46" stroke="var(--c-ink)" stroke-width="0.5" fill="none"/>
+              <path d="M 30 14 L 30 46" stroke="var(--c-ink)" stroke-width="0.5" fill="none"/>
+              <path d="M 38 14 L 38 46" stroke="var(--c-ink)" stroke-width="0.5" fill="none"/>
+            </svg>
+            <div class="m-text">
+              <div class="m-char">石膏</div>
+              <div class="m-latin">Gypsum · CaSO₄·2H₂O</div>
+              <div class="m-prop">
+                <span class="em">清熱瀉火</span> · 除煩止渴 · 白虎湯君藥
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="seal seal-small seal-aged" style="top:96px; right:88px;">
+          <div class="seal-text-2"><span>金</span><span>石</span></div>
+        </div>
+
+        <div class="folio-foot">
+          <span class="juan">卷之八 · 金石部</span>
+          <span class="latin-page">folio v</span>
+        </div>
+
+      </section>
+
+
+      <!-- ════════════════════════════════════════════════════════
+           PLATE VI · 草部 (Herbs — Centerpiece: 人參 Ginseng)
+           ════════════════════════════════════════════════════════ -->
+      <section class="cao deck-flex" style="flex-direction:column; padding:0; height:100%;">
+
+        <div class="sheet"></div>
+
+        <div class="folio-head">
+          <span class="folio-head-cjk">卷之十二 · 草部</span>
+          <span class="folio-head-latin">Folio VI · De Herbis</span>
+        </div>
+
+        <div class="plate-content">
+          <div class="h-kicker">Plate VI · The Herbal Heart</div>
+          <div class="h-title">
+            草部
+            <span class="latin">The Herbal Division · Division VI</span>
+          </div>
+          <div class="h-body">
+            Six hundred and fifteen herbs in twelve sub-divisions: the largest chapter of the work, <em>one-third</em> of all entries. Here is the root of Chinese medicine.
+          </div>
+        </div>
+
+        <div class="herb-meta">
+          <div class="hm-char">人參</div>
+          <div class="hm-latin">Panax ginseng · C. A. Meyer</div>
+          <div class="hm-prop">
+            <span class="em">甘微苦溫</span> · 大補元氣<br>
+            益肺生津 · 安神益智
+          </div>
+          <div class="hm-elem">青 · 木</div>
+        </div>
+
+        <!-- ══ The Ginseng Woodblock ══
+             Drawn after the 1596 Jinling illustration:
+             taproot descending, two branch roots spreading like
+             legs, palmate five-leaflet leaves, berry cluster on top. -->
+        <svg class="ginseng-svg" viewBox="0 0 540 460" preserveAspectRatio="xMidYMid meet">
+
+          <!-- ══ Stem and leaves (top half) ══ -->
+          <!-- main stem -->
+          <path class="ink-line" d="M 270 380 L 270 200"/>
+
+          <!-- palmate leaves — 5 leaflets from one node (頂端五葉) -->
+          <g class="ink-line-thin">
+            <!-- node where leaves branch -->
+            <circle cx="270" cy="200" r="3" class="ink-fill"/>
+            <!-- central leaflet -->
+            <path d="M 270 200 Q 272 168, 282 138 Q 270 122, 258 138 Q 268 168, 270 200 Z"/>
+            <!-- left leaflet -->
+            <path d="M 270 200 Q 248 178, 220 158 Q 200 152, 196 174 Q 212 192, 244 196 Q 258 200, 270 200 Z"/>
+            <!-- right leaflet -->
+            <path d="M 270 200 Q 292 178, 320 158 Q 340 152, 344 174 Q 328 192, 296 196 Q 282 200, 270 200 Z"/>
+            <!-- far-left leaflet -->
+            <path d="M 270 200 Q 230 200, 196 218 Q 178 232, 196 246 Q 220 238, 246 222 Q 262 210, 270 200 Z"/>
+            <!-- far-right leaflet -->
+            <path d="M 270 200 Q 310 200, 344 218 Q 362 232, 344 246 Q 320 238, 294 222 Q 278 210, 270 200 Z"/>
+            <!-- leaf vein details -->
+            <path d="M 270 200 L 268 138" stroke-width="0.4"/>
+            <path d="M 270 200 L 208 168" stroke-width="0.4"/>
+            <path d="M 270 200 L 332 168" stroke-width="0.4"/>
+            <path d="M 270 200 L 200 232" stroke-width="0.4"/>
+            <path d="M 270 200 L 340 232" stroke-width="0.4"/>
+          </g>
+
+          <!-- berry cluster on top (果序) — small circles -->
+          <g class="ink-line-thin">
+            <line x1="270" y1="122" x2="270" y2="100"/>
+            <circle cx="252" cy="86" r="4.5" class="ink-fill"/>
+            <circle cx="270" cy="80" r="4.5" class="ink-fill"/>
+            <circle cx="288" cy="86" r="4.5" class="ink-fill"/>
+            <circle cx="258" cy="70" r="4.5" class="ink-fill"/>
+            <circle cx="282" cy="70" r="4.5" class="ink-fill"/>
+            <circle cx="270" cy="62" r="4.5" class="ink-fill"/>
+          </g>
+
+          <!-- ══ Root (bottom half) — ginseng's signature body ══ -->
+          <!-- main taproot body, slightly anthropomorphic -->
+          <path class="ink-line"
+                d="M 270 380
+                   C 264 380, 260 386, 260 396
+                   L 256 420
+                   C 254 430, 254 438, 258 444
+                   L 266 446
+                   L 270 442
+                   L 274 446
+                   L 282 444
+                   C 286 438, 286 430, 284 420
+                   L 280 396
+                   C 280 386, 276 380, 270 380 Z"/>
+
+          <!-- root texture — horizontal wrinkles (蘆頭 / shoulder lines) -->
+          <path class="ink-line-thin" d="M 260 392 Q 270 390, 280 392"/>
+          <path class="ink-line-thin" d="M 258 404 Q 270 402, 282 404"/>
+          <path class="ink-line-thin" d="M 257 416 Q 270 414, 283 416"/>
+
+          <!-- left branch root (leg) -->
+          <path class="ink-line"
+                d="M 258 408
+                   C 240 410, 222 420, 208 436
+                   C 196 446, 184 454, 168 454
+                   C 156 454, 144 448, 138 442"/>
+          <!-- right branch root (leg) -->
+          <path class="ink-line"
+                d="M 282 408
+                   C 300 410, 318 420, 332 436
+                   C 344 446, 356 454, 372 454
+                   C 384 454, 396 448, 402 442"/>
+
+          <!-- root hair / fibres -->
+          <g class="ink-line-thin">
+            <path d="M 160 444 L 148 452"/>
+            <path d="M 180 448 L 172 458"/>
+            <path d="M 220 432 L 214 444"/>
+            <path d="M 320 432 L 326 444"/>
+            <path d="M 380 448 L 388 458"/>
+            <path d="M 400 444 L 412 452"/>
+            <!-- rootlet continuation -->
+            <path d="M 138 442 Q 124 438, 114 446"/>
+            <path d="M 402 442 Q 416 438, 426 446"/>
+          </g>
+
+          <!-- ══ 朱批 annotations (cinnabar vermillion labels) ══ -->
+          <!-- annotation 1: 果 (berries) -->
+          <line class="zhupi-line" x1="282" y1="78" x2="380" y2="58"/>
+          <text class="zhupi-label" x="386" y="62">果 berries</text>
+
+          <!-- annotation 2: 葉 (leaves) -->
+          <line class="zhupi-line" x1="328" y1="170" x2="430" y2="156"/>
+          <text class="zhupi-label" x="436" y="160">葉 palmate</text>
+
+          <!-- annotation 3: 莖 (stem) -->
+          <line class="zhupi-line" x1="270" y1="290" x2="416" y2="290"/>
+          <text class="zhupi-label" x="422" y="294">莖 stem</text>
+
+          <!-- annotation 4: 蘆頭 (root shoulder) -->
+          <line class="zhupi-line" x1="258" y1="396" x2="156" y2="384"/>
+          <text class="zhupi-label" x="60" y="388">蘆頭 shoulder</text>
+
+          <!-- annotation 5: 參體 (main root body) -->
+          <line class="zhupi-line" x1="270" y1="420" x2="430" y2="420"/>
+          <text class="zhupi-label" x="436" y="424">參體 body</text>
+
+          <!-- annotation 6: 鬚根 (fibrous roots) -->
+          <line class="zhupi-line" x1="156" y1="446" x2="60" y2="446"/>
+          <text class="zhupi-label" x="36" y="450">鬚根 fibres</text>
+
+          <!-- ══ Woodcut frame around illustration ══ -->
+          <rect x="22" y="34" width="496" height="430"
+                class="ink-line-thin" fill="none"/>
+          <rect x="26" y="38" width="488" height="422"
+                stroke="var(--c-ink)" stroke-width="0.4" fill="none"/>
+        </svg>
+
+        <!-- Subcategory list (十二類) -->
+        <div class="sub-list">
+          <div class="sub-kicker">Sub-divisions · 12 of 12</div>
+          <div class="sub-grid">
+            <div class="sub-item"><span class="n">i</span>山草</div>
+            <div class="sub-item"><span class="n">ii</span>芳草</div>
+            <div class="sub-item"><span class="n">iii</span>隰草</div>
+            <div class="sub-item"><span class="n">iv</span>毒草</div>
+            <div class="sub-item"><span class="n">v</span>蔓草</div>
+            <div class="sub-item"><span class="n">vi</span>水草</div>
+            <div class="sub-item"><span class="n">vii</span>石草</div>
+            <div class="sub-item"><span class="n">viii</span>苔草</div>
+            <div class="sub-item"><span class="n">ix</span>雜草</div>
+            <div class="sub-item"><span class="n">x</span>有名未用</div>
+            <div class="sub-item"><span class="n">xi</span>蔓草類</div>
+            <div class="sub-item"><span class="n">xii</span>毒草類</div>
+          </div>
+        </div>
+
+        <div class="seal seal-small seal-aged" style="top:96px; left:540px;">
+          <div class="seal-text-2"><span>草</span><span>部</span></div>
+        </div>
+
+        <div class="folio-foot">
+          <span class="juan">卷之十二 · 草部 · 一十二類</span>
+          <span class="latin-page">folio vi</span>
+        </div>
+
+      </section>
+
+
+      <!-- ════════════════════════════════════════════════════════
+           PLATE VII · 蟲鱗介禽獸 (Five Animal Sections)
+           ════════════════════════════════════════════════════════ -->
+      <section class="beasts deck-flex" style="flex-direction:column; padding:0; height:100%;">
+
+        <div class="sheet"></div>
+
+        <div class="folio-head">
+          <span class="folio-head-cjk">卷之卅九至五二 · 動物部</span>
+          <span class="folio-head-latin">Folio VII · De Animalibus</span>
+        </div>
+
+        <div class="plate-content">
+          <div class="h-kicker">Plate VII · The Animal Materia</div>
+          <div class="h-title">
+            蟲 · 鱗 · 介 · 禽 · 獸
+            <span class="latin">Insecta, Pisces, Concha, Aves, Bestia</span>
+          </div>
+          <div class="h-body">
+            From the dragon of the clouds to the earthworm in the soil: <em>five animal divisions</em>, 409 entries. Mythical and real are equally medicine.
+          </div>
+        </div>
+
+        <div class="beast-grid">
+          <!-- 蟲 Insecta (106) -->
+          <div class="beast fire">
+            <div class="b-bar"></div>
+            <div class="b-num">XI</div>
+            <div class="b-svg">
+              <svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
+                <!-- Silkworm (蠶) — segmented body, head, leaf -->
+                <path class="ink-line"
+                      d="M 24 60
+                         C 28 50, 36 48, 44 52
+                         C 50 54, 56 52, 60 48
+                         C 64 44, 70 44, 74 50
+                         C 78 56, 78 64, 74 70
+                         C 70 76, 60 76, 50 72
+                         C 40 76, 30 72, 24 60 Z"/>
+                <!-- segments -->
+                <path class="ink-line-thin" d="M 36 56 L 36 70"/>
+                <path class="ink-line-thin" d="M 46 54 L 46 72"/>
+                <path class="ink-line-thin" d="M 56 52 L 56 74"/>
+                <path class="ink-line-thin" d="M 66 54 L 66 72"/>
+                <!-- head detail -->
+                <circle cx="74" cy="60" r="2" class="ink-fill"/>
+                <!-- mulberry leaf beside -->
+                <path class="ink-line-thin"
+                      d="M 14 80 Q 24 76, 30 84 Q 24 90, 14 86 Z"/>
+                <path class="ink-line-thin" d="M 18 84 L 28 84"/>
+              </svg>
+            </div>
+            <div class="b-char">蟲</div>
+            <div class="b-latin">Insecta</div>
+            <div class="b-count"><span class="n">106</span> entries</div>
+            <div class="b-sample">蜜蜂 · <span style="color:var(--c-zhusha);">殭蠶</span> · 斑蝥</div>
+          </div>
+
+          <!-- 鱗 Pisces (94) -->
+          <div class="beast water">
+            <div class="b-bar"></div>
+            <div class="b-num">XII</div>
+            <div class="b-svg">
+              <svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
+                <!-- Carp (鯉) — curved body, fins, scales -->
+                <path class="ink-line"
+                      d="M 18 50
+                         C 26 38, 40 34, 56 36
+                         C 70 38, 80 44, 86 50
+                         C 80 56, 70 62, 56 64
+                         C 40 66, 26 62, 18 50 Z"/>
+                <!-- tail -->
+                <path class="ink-line"
+                      d="M 18 50 L 8 36 L 12 50 L 8 64 Z"/>
+                <!-- eye -->
+                <circle cx="74" cy="46" r="2" class="ink-fill"/>
+                <!-- dorsal fin -->
+                <path class="ink-line-thin" d="M 40 36 L 44 28 L 50 36 L 56 36 L 60 28 L 66 36"/>
+                <!-- ventral fin -->
+                <path class="ink-line-thin" d="M 38 62 L 42 70 L 48 62"/>
+                <!-- scale arcs -->
+                <path class="ink-line-thin" d="M 32 46 Q 36 50, 32 54"/>
+                <path class="ink-line-thin" d="M 42 44 Q 46 50, 42 56"/>
+                <path class="ink-line-thin" d="M 52 44 Q 56 50, 52 56"/>
+                <path class="ink-line-thin" d="M 62 46 Q 66 50, 62 54"/>
+              </svg>
+            </div>
+            <div class="b-char">鱗</div>
+            <div class="b-latin">Squama · Pisces</div>
+            <div class="b-count"><span class="n">94</span> entries</div>
+            <div class="b-sample">鯉魚 · 鯊魚 · <span style="color:var(--c-zhusha);">海龍</span></div>
+          </div>
+
+          <!-- 介 Concha (46) -->
+          <div class="beast water">
+            <div class="b-bar"></div>
+            <div class="b-num">XIII</div>
+            <div class="b-svg">
+              <svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
+                <!-- Oyster shell (蠣) — convex shell with ridges -->
+                <path class="ink-line"
+                      d="M 50 22
+                         C 30 30, 20 50, 22 70
+                         C 24 82, 36 88, 50 88
+                         C 64 88, 76 82, 78 70
+                         C 80 50, 70 30, 50 22 Z"/>
+                <!-- ridge lines radiating -->
+                <path class="ink-line-thin" d="M 50 22 Q 36 50, 24 72"/>
+                <path class="ink-line-thin" d="M 50 22 Q 50 55, 50 88"/>
+                <path class="ink-line-thin" d="M 50 22 Q 64 50, 76 72"/>
+                <!-- growth arcs -->
+                <path class="ink-line-thin" d="M 30 36 Q 50 30, 70 36"/>
+                <path class="ink-line-thin" d="M 26 50 Q 50 44, 74 50"/>
+                <path class="ink-line-thin" d="M 24 64 Q 50 58, 76 64"/>
+              </svg>
+            </div>
+            <div class="b-char">介</div>
+            <div class="b-latin">Concha · Testacea</div>
+            <div class="b-count"><span class="n">46</span> entries</div>
+            <div class="b-sample">牡蠣 · 鱉甲 · <span style="color:var(--c-zhusha);">珍珠</span></div>
+          </div>
+
+          <!-- 禽 Aves (77) -->
+          <div class="beast wood">
+            <div class="b-bar"></div>
+            <div class="b-num">XIV</div>
+            <div class="b-svg">
+              <svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
+                <!-- Crane (鶴) — long legs, long neck, lifted wing -->
+                <path class="ink-line"
+                      d="M 38 36
+                         C 42 30, 48 28, 54 30
+                         C 60 32, 62 38, 58 44
+                         L 56 52
+                         L 60 60
+                         L 56 64
+                         L 52 58
+                         L 48 60
+                         L 44 56
+                         L 38 52 Z"/>
+                <!-- head and beak -->
+                <circle cx="38" cy="32" r="3" class="ink-line"/>
+                <path class="ink-line" d="M 36 32 L 26 30 L 24 32"/>
+                <!-- long neck curve to body -->
+                <path class="ink-line-thin" d="M 40 34 Q 36 30, 32 28"/>
+                <!-- lifted wing -->
+                <path class="ink-line-thin"
+                      d="M 52 38 Q 60 28, 72 26 Q 78 30, 76 36 Q 70 40, 60 42"/>
+                <!-- long legs -->
+                <line x1="52" y1="64" x2="50" y2="84" class="ink-line"/>
+                <line x1="56" y1="64" x2="58" y2="84" class="ink-line"/>
+                <!-- tail feathers -->
+                <path class="ink-line-thin" d="M 38 50 L 28 54"/>
+                <path class="ink-line-thin" d="M 38 52 L 26 58"/>
+              </svg>
+            </div>
+            <div class="b-char">禽</div>
+            <div class="b-latin">Aves · Volucres</div>
+            <div class="b-count"><span class="n">77</span> entries</div>
+            <div class="b-sample">鶴 · 雞 · <span style="color:var(--c-zhusha);">燕窩</span></div>
+          </div>
+
+          <!-- 獸 Bestia (86) -->
+          <div class="beast earth">
+            <div class="b-bar"></div>
+            <div class="b-num">XV</div>
+            <div class="b-svg">
+              <svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
+                <!-- Deer (鹿) — antlers, body, slim legs (鹿茸 = deer antler, signature TCM) -->
+                <!-- antlers -->
+                <path class="ink-line-thin"
+                      d="M 42 26 L 36 14 M 36 14 L 30 16 M 36 14 L 32 8 M 36 14 L 38 6"/>
+                <path class="ink-line-thin"
+                      d="M 48 26 L 54 14 M 54 14 L 60 16 M 54 14 L 58 8 M 54 14 L 52 6"/>
+                <!-- head -->
+                <path class="ink-line"
+                      d="M 42 30
+                         C 38 30, 36 36, 38 42
+                         C 40 46, 48 46, 52 42
+                         C 54 36, 52 30, 48 30 Z"/>
+                <!-- ear -->
+                <path class="ink-line-thin" d="M 50 30 L 56 24 L 54 32"/>
+                <!-- body -->
+                <path class="ink-line"
+                      d="M 42 42
+                         C 38 44, 36 50, 38 56
+                         L 36 64
+                         C 40 66, 56 66, 64 64
+                         L 64 56
+                         C 66 50, 64 44, 60 42 Z"/>
+                <!-- legs -->
+                <line x1="42" y1="64" x2="40" y2="80" class="ink-line"/>
+                <line x1="48" y1="64" x2="50" y2="80" class="ink-line"/>
+                <line x1="58" y1="64" x2="56" y2="80" class="ink-line"/>
+                <line x1="64" y1="64" x2="66" y2="80" class="ink-line"/>
+                <!-- tail -->
+                <path class="ink-line-thin" d="M 64 48 L 72 46"/>
+              </svg>
+            </div>
+            <div class="b-char">獸</div>
+            <div class="b-latin">Bestia · Quadrupedes</div>
+            <div class="b-count"><span class="n">86</span> entries</div>
+            <div class="b-sample">鹿 · 牛 · <span style="color:var(--c-zhusha);">麝香</span></div>
+          </div>
+        </div>
+
+        <div class="seal seal-small seal-aged" style="top:96px; right:88px;">
+          <div class="seal-text-2"><span>動</span><span>物</span></div>
+        </div>
+
+        <div class="folio-foot">
+          <span class="juan">卷之卅九至五二 · 動物部 · 五百九款</span>
+          <span class="latin-page">folio vii</span>
+        </div>
+
+      </section>
+
+
+      <!-- ════════════════════════════════════════════════════════
+           PLATE VIII · 跋 (Colophon & Legacy)
+           ════════════════════════════════════════════════════════ -->
+      <section class="colophon deck-flex" style="flex-direction:column; padding:0; height:100%;">
+
+        <div class="sheet"></div>
+
+        <div class="composition" aria-hidden="true">
+          <svg viewBox="0 0 1280 720" preserveAspectRatio="xMidYMid meet">
+            <!-- Faint closing motif: stylised orchid spray (蘭) -->
+            <g opacity="0.10" stroke="#1a1a1a" stroke-width="0.6" fill="none">
+              <path d="M 200 540 C 220 480, 230 420, 220 360"/>
+              <path d="M 220 360 Q 240 340, 252 348 Q 248 360, 232 366"/>
+              <path d="M 220 360 Q 200 340, 188 348 Q 192 360, 208 366"/>
+              <path d="M 220 420 Q 240 400, 252 410 Q 248 422, 232 426"/>
+              <path d="M 220 480 Q 200 460, 188 470 Q 192 482, 208 486"/>
+
+              <path d="M 1080 540 C 1060 480, 1050 420, 1060 360"/>
+              <path d="M 1060 360 Q 1040 340, 1028 348 Q 1032 360, 1048 366"/>
+              <path d="M 1060 360 Q 1080 340, 1092 348 Q 1088 360, 1072 366"/>
+              <path d="M 1060 420 Q 1040 400, 1028 410 Q 1032 422, 1048 426"/>
+              <path d="M 1060 480 Q 1080 460, 1092 470 Q 1088 482, 1072 486"/>
+            </g>
+          </svg>
+        </div>
+
+        <div class="colophon-frame"></div>
+
+        <div class="colophon-content">
+          <div class="h-kicker" style="margin-bottom:0.6em;">Plate VIII · Colophon &amp; Legacy</div>
+          <div class="h-title">跋</div>
+          <div class="h-title-latin">Colophon</div>
+
+          <div class="legacy-body">
+            翻開此卷,如與<em>時珍</em>對坐。<br>
+            二十七載跋山涉水,一千一百零九幅木刻,一萬一千餘方。<br>
+            <em>金陵</em>一刻,活版再傳,直至<span class="latin">UNESCO Memory of the World, 2011</span>。
+          </div>
+
+          <div class="unesco-line">
+            <span class="em">UNESCO</span> &nbsp;·&nbsp; Memory of the World Register &nbsp;·&nbsp; Inscribed <em>2011</em>
+          </div>
+        </div>
+
+        <div class="gloss-vertical colophon-gloss-left">本草綱目 · 五十二卷</div>
+        <div class="gloss-vertical colophon-gloss-right">金陵胡承龍梓 · 大明萬曆丙申</div>
+
+        <div class="seal seal-large colophon-seal seal-aged">
+          <div class="seal-text-2"><span>瀕</span><span>湖</span><span>遺</span><span>澤</span></div>
+        </div>
+
+        <div class="folio-foot">
+          <span class="juan">跋 · 終</span>
+          <span class="latin-page">folio viii · finis</span>
+        </div>
+
+      </section>
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.js"></script>
+  <script>
+    Reveal.initialize({
+      hash: false,
+      slideNumber: false,
+      controls: false,
+      progress: false,
+      transition: 'none',
+      width: 1280,
+      height: 720,
+      margin: 0,
+      minScale: 1,
+      maxScale: 1,
+      embedded: false
+    });
+  </script>
+
+</body>
+</html>

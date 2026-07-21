@@ -1,0 +1,51 @@
+{
+  "$comment": "Seed case registry — 沉淀 case 的可路由元数据(单一真相源)。与 voices.json(voice primitive 肤色层)正交:voice primitive = 配色+字体肤色(14 voice 共享 fontPool),case = 完整设计 DNA(独立字体+签名+材质),作 B 解法的参考案例,不套用 HTML(design-generation-workflow.md)。voice-router.js 命中相似主题时返回 caseRef 指路 → 打通「沉淀 case → 可路由 DNA」闭环。加新 case = 先在 references/seed-gallery/<theme>/ 沉淀(case.md + seed.html),跑 check-seed-collision.js 确认无撞车,然后在此加一条。",
+  "version": 1,
+  "cases": [
+    {
+      "name": "tcm-herbal",
+      "label": "本草綱目 TCM Herbal",
+      "keywords": ["本草", "本草纲目", "本草綱目", "中药", "中医", "方剂", "草药", "汉方", "韩医", "南药", "阿育吠陀", "李时珍", "朱砂", "经络", "中药学", "herbal", "materia medica", "tcm"],
+      "dimensions": { "value": 4, "saturation": 2, "hue": 32, "weight": 4, "density": 4, "motion": 1 },
+      "dna": {
+        "fonts": ["IM Fell English", "EB Garamond", "ZCOOL XiaoWei", "Ma Shan Zheng"],
+        "accentHue": 32,
+        "palette": ["paper oklch(0.78 0.082 80)", "ink oklch(0.18 0.014 250)", "zhusha oklch(0.46 0.190 32)", "五色 qing/chi/huang/bai/hei"],
+        "signatures": ["8层纸纹 sheet", "四角朱砂印章", "五色色条", "工楷竖排眉批", "folio head/foot", "木刻白描 SVG", "朱批虚线", "16部 taxonomy grid"]
+      },
+      "casePath": "references/seed-gallery/tcm-herbal/case.md",
+      "deckPath": "references/seed-gallery/tcm-herbal/seed.html",
+      "note": "1596 金陵版本草纲目现代延续:8层纸纹+四角朱印+五色五元素+16部分类+木刻白描。禁套:中医本草≠单色朱砂+水墨(chinese-ink-wash token 套路),要做真实古籍版式"
+    },
+    {
+      "name": "astronomy-nebula",
+      "label": "NASA 星云海报 Astronomy Nebula",
+      "keywords": ["天文", "星空", "宇宙", "行星", "星座", "JWST", "韦伯", "韦伯太空望远镜", "星云", "太空望远镜", "NASA", "深空", "宇宙摄影", "Hubble", "哈勃", "nebula", "星系", "天体摄影", "太空海报", "星际"],
+      "dimensions": { "value": 1, "saturation": 3, "hue": 32, "weight": 7, "density": 3, "motion": 2 },
+      "dna": {
+        "fonts": ["Big Shoulders Display", "Public Sans", "Martian Mono"],
+        "accentHue": 32,
+        "palette": ["carbon WPA ink #0a0a0a", "bone #f4f1ea", "NASA meatball red #fc3d21", "NASA blue #0b3d91", "JWST gold #ffb71b"],
+        "signatures": ["满版 JWST/Hubble 照片", "NASA asset-card", "NASA meatball SVG 任务戳", "Roman plate 编号 I-VIII", "三行 Big Shoulders 900 caps", "annotated callout", "mission patch SVG", "directional scrim wash(5种)"]
+      },
+      "casePath": "references/seed-gallery/astronomy-nebula/case.md",
+      "deckPath": "references/seed-gallery/astronomy-nebula/seed.html",
+      "note": "NASA mid-century poster:满版宇宙摄影+NASA meatball+WPA ink 排版。与 astronomy-monument(柔和深紫几何)是同主题异调性,后续天文 deck 须出新第三调性"
+    },
+    {
+      "name": "astronomy-monument",
+      "label": "纪念碑谷几何梦幻 Monument Valley × Astronomy",
+      "keywords": ["纪念碑谷", "纪念碑", "几何梦幻", "空灵", "静谧", "等距几何", "monument valley", "梦幻几何", "几何块", "紫调", "超现实几何", "calder mobile"],
+      "dimensions": { "value": 2, "saturation": 2, "hue": 270, "weight": 3, "density": 2, "motion": 1 },
+      "dna": {
+        "fonts": ["Tenor Sans", "Pridi", "Cutive Mono"],
+        "accentHue": 270,
+        "palette": ["night-deep #2D1B4E 深紫", "night-mid #4A3478 amethyst", "blush #C9A0C9 红巨星", "cream #F5E8D0 月光", "gold #E8C285 Ida 路径金"],
+        "signatures": ["满版 watercolor wash 渐变", "floating isometric monolith", "Ida princess figure", "30° gold walking-path", "Escher Penrose 阶梯", "Calder mobile", "moon-glow radial-gradient", "Plate Pillar vertical-rl totem"]
+      },
+      "casePath": "references/seed-gallery/astronomy-monument/case.md",
+      "deckPath": "references/seed-gallery/astronomy-monument/seed.html",
+      "note": "Monument Valley × astronomy 交叉:柔和深紫渐变+等距几何块+空灵静谧。无 teal / 无散点 / 无 chart / 无照片。与 astronomy-nebula(NASA poster)是同主题异调性"
+    }
+  ]
+}

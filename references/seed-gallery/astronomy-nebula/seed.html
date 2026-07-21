@@ -1,0 +1,1236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Atlas of the Invisible · JWST Nebulae (Direction B / Full-Bleed)</title>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.css">
+
+  <!--
+    ============================================================
+    ATLAS OF THE INVISIBLE  ·  Direction B: Nebula Full-Bleed Impact
+    ============================================================
+    Aesthetic lineage:
+      - NASA/ESA JWST press-release imagery (2022-2024)
+      - NASA JPL / The Studio "Exoplanet Travel Bureau" poster series (Pentagram-adjacent)
+      - Michael Benson "Cosmos" / "Otherworldy" photographic composites
+      - WPA Federal Art Project mid-century science propaganda posters
+      - NASA Image and Video Library asset-card chrome (compass, scale, instrument)
+
+    What this is NOT:
+      - NOT template-02 dark-tech (no SVG starfield, no IBM teal, no ops dashboard)
+      - NOT astronomy/seed.html (no Cinzel atlas, no Bayer gold, no chart-driven HR diagram)
+      - NOT generic AI astronomy deck (no starfield bg + Inter + card grids)
+
+    All imagery: NASA · ESA · CSA · STScI (public domain, attributed per slide).
+    ============================================================
+  -->
+
+  <!-- Fonts: Big Shoulders Display (WPA/Chicago signboard, NASA-poster condensed caps),
+       Public Sans (US Web Design System, literal federal document body),
+       Martian Mono (wide retro-futuristic, NASA mission-control data tables).
+       Triple-checked against all 10 templates + 14 voices.json + astronomy/seed.html. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;700;900&family=Public+Sans:ital,wght@0,300;0,500;0,700;1,500&family=Martian+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* ============================================================
+       TOKEN SET — NASA poster palette
+       ============================================================
+       Palette rationale (no collision):
+         bg          #0a0a0a   carbon poster ink (WPA Federal Art Project black)
+         fg          #f4f1ea   bone (NASA document paper / Bundy gold-times-old)
+         fg-2        #d6d0c3   mission-print grey
+         fg-3        #8b8479   star-chart faded ink
+         nasa-red    #fc3d21   literal NASA "meatball" red (≠ astronomy seed Hα #d24a3a)
+         nasa-blue   #0b3d91   literal NASA "meatball" blue (no template uses NASA blue)
+         jwst-gold   #ffb71b   JWST mirror gold / JPL sign yellow (≠ astronomy seed Bayer gold)
+         paper       rgba(10,10,10,0.86)  asset-card back (NOT glassmorphism: opaque)
+         border      rgba(244,241,234,0.16) faded celestial-ink rule
+
+       Distinct from astronomy/seed.html:
+         - That deck: cosmic violet-ink + Bayer gold + H-alpha red + Cinzel atlas grammar
+         - This deck: carbon WPA ink + NASA meatball red/blue + JWST gold + NASA poster grammar
+         - Different palette family, different typography, different primitive (photo+asset-card
+           vs. star-plate+chart). Two strangers, not siblings.
+       ============================================================ */
+    :root {
+      --c-bg:        #0a0a0a;
+      --c-fg:        #f4f1ea;
+      --c-fg-2:      #d6d0c3;
+      --c-fg-3:      #8b8479;
+      --c-nasa-red:  #fc3d21;
+      --c-nasa-blue: #0b3d91;
+      --c-jwst-gold: #ffb71b;
+      --c-bg-paper:  rgba(10, 10, 10, 0.86);
+      --c-border:    rgba(244, 241, 234, 0.16);
+      --c-border-strong: rgba(244, 241, 234, 0.34);
+
+      --f-display: "Big Shoulders Display", "Anton", "Futura Extra Bold Condensed", "Impact", sans-serif;
+      --f-body:    "Public Sans", "Helvetica Neue", system-ui, sans-serif;
+      --f-mono:    "Martian Mono", ui-monospace, "JetBrains Mono", monospace;
+
+      --bg:          var(--c-bg);
+      --text:        var(--c-fg);
+      --text-muted:  var(--c-fg-2);
+      --text-subtle: var(--c-fg-3);
+      --accent:      var(--c-nasa-red);
+      --divider:     var(--c-border);
+      --font-display: var(--f-display);
+      --font-body:    var(--f-body);
+      --font-mono:    var(--f-mono);
+    }
+
+    /* ── Reveal base reset, full-bleed sections ── */
+    .reveal { font-family: var(--f-body); font-size: 22px; color: var(--c-fg); background: var(--c-bg); }
+    .reveal .slides { text-align: left; }
+    .reveal section {
+      padding: 0;
+      height: 100%;
+      box-sizing: border-box;
+      overflow: hidden;
+      position: relative;
+      background: #050505;
+      color: var(--c-fg);
+    }
+    .reveal .slides > section.deck-flex.present { display: flex !important; top: 0 !important; }
+    .reveal .slides > section.deck-grid.present { display: grid !important; top: 0 !important; }
+
+    /* Overflow prevention */
+    .reveal section > * { max-width: 100%; box-sizing: border-box; }
+    h1, h2, h3, h4 { word-break: keep-all; overflow-wrap: anywhere; text-wrap: balance; line-break: strict; }
+    p, li, span, div { word-break: normal; overflow-wrap: anywhere; }
+    img, svg, video { max-width: 100%; max-height: 100%; }
+    .reveal svg text { stroke: none; paint-order: fill; }
+
+    /* ── Typography scale (NASA poster dramatic ratio ≈ 9:1 cover, 6:1 section) ── */
+    .reveal h1, .reveal h2, .reveal h3 {
+      font-family: var(--f-display); line-height: 0.86;
+      letter-spacing: 0; color: var(--c-fg);
+      text-transform: uppercase;
+      font-weight: 900;
+      margin: 0;
+    }
+    .reveal p {
+      font-family: var(--f-body); font-size: 0.95em; line-height: 1.55;
+      color: var(--c-fg-2); margin: 0; font-weight: 300;
+    }
+    .reveal em { font-style: italic; color: var(--c-fg); font-weight: 500; }
+    .reveal strong { font-weight: 700; color: var(--c-fg); }
+
+    /* ── Full-bleed image layer ── */
+    .photo {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover; object-position: center;
+      filter: contrast(1.20) saturate(1.36);
+      z-index: 0;
+      pointer-events: none;
+    }
+    /* Scrim for text legibility. NEVER a uniform dark wash — always a directional
+       gradient tuned to each photo's composition so the photo keeps breathing. */
+    .scrim {
+      position: absolute; inset: 0;
+      z-index: 1;
+      pointer-events: none;
+    }
+    .scrim.left   { background: linear-gradient(90deg,  rgba(5,5,5,0.78) 0%, rgba(5,5,5,0.42) 38%, rgba(5,5,5,0) 65%); }
+    .scrim.right  { background: linear-gradient(270deg, rgba(5,5,5,0.78) 0%, rgba(5,5,5,0.42) 38%, rgba(5,5,5,0) 65%); }
+    .scrim.bottom { background: linear-gradient(0deg,  rgba(5,5,5,0.86) 0%, rgba(5,5,5,0.55) 32%, rgba(5,5,5,0) 60%); }
+    .scrim.top    { background: linear-gradient(180deg,rgba(5,5,5,0.78) 0%, rgba(5,5,5,0.30) 30%, rgba(5,5,5,0) 55%); }
+    .scrim.full   { background:
+      linear-gradient(180deg, rgba(5,5,5,0.55) 0%, rgba(5,5,5,0.0) 30%, rgba(5,5,5,0.0) 70%, rgba(5,5,5,0.78) 100%); }
+
+    /* ── Chrome / data layer ── */
+    .stage { position: relative; z-index: 2; width: 100%; height: 100%; }
+
+    /* ── Mission header strip (top, every slide) ── */
+    .mission-strip {
+      position: absolute; top: 30px; left: 60px; right: 60px;
+      display: flex; justify-content: space-between; align-items: center;
+      font-family: var(--f-mono); font-size: 12px;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--c-fg-2);
+      z-index: 4;
+    }
+    .mission-strip .left { display: flex; align-items: center; gap: 18px; }
+    .mission-strip .meatball {
+      width: 18px; height: 18px; border-radius: 50%;
+      background: var(--c-nasa-blue);
+      box-shadow: inset 0 0 0 1px var(--c-fg);
+      position: relative;
+    }
+    .mission-strip .meatball::before {
+      content: ""; position: absolute; left: 50%; top: 50%;
+      width: 7px; height: 7px; transform: translate(-50%, -50%);
+      background: var(--c-fg); border-radius: 50%;
+      box-shadow: 0 0 0 1px var(--c-nasa-blue);
+    }
+    .mission-strip .meatball::after {
+      content: ""; position: absolute; left: -5px; top: -5px;
+      width: 28px; height: 28px; border-radius: 50%;
+      border: 1px solid var(--c-nasa-red);
+      transform: rotate(-18deg) scaleY(0.32);
+    }
+    .mission-strip .right { color: var(--c-fg-3); }
+
+    /* ── Poster title block (lower-left, the Pentagram NASA-Travel-Bureau move) ── */
+    .poster {
+      position: absolute; left: 60px; bottom: 110px;
+      max-width: 70%;
+      z-index: 4;
+    }
+    .poster .eyebrow {
+      font-family: var(--f-mono); font-size: 12px;
+      color: var(--c-nasa-red); letter-spacing: 0.24em; text-transform: uppercase;
+      display: inline-flex; align-items: center; gap: 12px;
+      margin-bottom: 18px;
+    }
+    .poster .eyebrow::before {
+      content: ""; width: 36px; height: 2px; background: var(--c-nasa-red);
+    }
+    .poster h1 {
+      font-size: clamp(3.2em, 7.6em, 8.6em);
+      line-height: 0.8;
+      letter-spacing: 0;
+    }
+    .poster h1 .line { display: block; }
+    .poster h1 .red { color: var(--c-nasa-red); }
+    .poster h1 .blue { color: var(--c-jwst-gold); }
+    .poster h1 .outline {
+      -webkit-text-stroke: 2px var(--c-fg);
+      color: transparent;
+    }
+    .poster .lede {
+      max-width: 540px;
+      font-family: var(--f-body); font-weight: 300;
+      font-size: 0.82em;
+      line-height: 1.5;
+      color: var(--c-fg-2);
+      margin-top: 22px;
+    }
+    .poster .lede em { color: var(--c-fg); font-style: italic; font-weight: 500; }
+
+    /* ── Big stat callout (top-right when present) ── */
+    .stat {
+      position: absolute; top: 96px; right: 60px;
+      max-width: 280px;
+      text-align: right;
+      z-index: 4;
+      font-family: var(--f-display);
+      color: var(--c-fg);
+    }
+    .stat .number {
+      font-size: clamp(2.55em, 4em, 4.36em);
+      line-height: 0.9; font-weight: 900;
+      letter-spacing: 0;
+    }
+    .stat .number .unit {
+      font-size: 0.42em; color: var(--c-jwst-gold); margin-left: 6px;
+      letter-spacing: 0.04em;
+    }
+    .stat .number.red { color: var(--c-nasa-red); }
+    .stat .label {
+      font-family: var(--f-mono); font-size: 11px;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--c-fg-3); margin-top: 8px;
+      line-height: 1.4;
+    }
+
+    /* ── NASA asset-card signature primitive ──
+       Single opaque panel, NOT a card grid. Combines mission tag + data table +
+       compass + credit, the way real NASA press-release images ship. */
+    .asset-card {
+      position: absolute; left: 60px; bottom: 30px;
+      width: 440px;
+      background: var(--c-bg-paper);
+      border: 1px solid var(--c-border-strong);
+      padding: 16px 20px 14px 20px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 14px 18px;
+      z-index: 5;
+      backdrop-filter: none; /* opaque, not glassmorphism */
+    }
+    .asset-card .top-bar {
+      grid-column: 1 / -1;
+      display: flex; justify-content: space-between; align-items: center;
+      padding-bottom: 8px; margin-bottom: 4px;
+      border-bottom: 1px solid var(--c-border);
+    }
+    .asset-card .mission {
+      font-family: var(--f-mono); font-size: 11px;
+      letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--c-nasa-red); font-weight: 700;
+    }
+    .asset-card .release-id {
+      font-family: var(--f-mono); font-size: 10px;
+      letter-spacing: 0.18em;
+      color: var(--c-fg-3);
+    }
+    .asset-card .data-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap: 24px;
+      row-gap: 8px;
+    }
+    .asset-card .field { display: flex; flex-direction: column; gap: 2px; }
+    .asset-card .label {
+      font-family: var(--f-mono); font-size: 9px;
+      letter-spacing: 0.20em; text-transform: uppercase;
+      color: var(--c-fg-3);
+    }
+    .asset-card .value {
+      font-family: var(--f-mono); font-size: 12px; font-weight: 700;
+      color: var(--c-fg); letter-spacing: 0.02em;
+    }
+    .asset-card .value .accent { color: var(--c-jwst-gold); }
+
+    /* Compass (celestial N↑ / E←), real NASA press-release convention */
+    .asset-card .compass-block {
+      grid-row: 2;
+      grid-column: 2;
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      padding-left: 16px;
+      border-left: 1px solid var(--c-border);
+    }
+    .asset-card .compass { width: 56px; height: 56px; }
+    .asset-card .compass text {
+      font-family: var(--f-mono); font-size: 10px;
+      fill: var(--c-fg-2); letter-spacing: 0.10em;
+    }
+    .asset-card .compass line { stroke: var(--c-fg-2); stroke-width: 1; }
+    .asset-card .compass .arrow-n { stroke: var(--c-nasa-red); stroke-width: 1.5; }
+
+    .asset-card .credit {
+      grid-column: 1 / -1;
+      font-family: var(--f-mono); font-size: 10px;
+      letter-spacing: 0.16em; text-transform: uppercase;
+      color: var(--c-fg-3);
+      padding-top: 8px;
+      border-top: 1px solid var(--c-border);
+    }
+
+    /* Scale bar (under photo or inside asset-card) */
+    .scale-bar {
+      grid-column: 1 / -1;
+      display: flex; align-items: center; gap: 10px;
+      padding-top: 6px;
+    }
+    .scale-bar .bar {
+      width: 80px; height: 2px; background: var(--c-fg);
+      position: relative;
+    }
+    .scale-bar .bar::before, .scale-bar .bar::after {
+      content: ""; position: absolute; top: -4px; width: 2px; height: 10px;
+      background: var(--c-fg);
+    }
+    .scale-bar .bar::before { left: 0; }
+    .scale-bar .bar::after { right: 0; }
+    .scale-bar .scale-label {
+      font-family: var(--f-mono); font-size: 10px;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--c-fg-2);
+    }
+
+    /* ── Plate number (lower right, replaces 01/02/03 scaffolding) ── */
+    .plate {
+      position: absolute; right: 60px; bottom: 30px;
+      font-family: var(--f-display); font-weight: 900;
+      font-size: 14px;
+      color: var(--c-fg-3); letter-spacing: 0.32em; text-transform: uppercase;
+      text-align: right;
+      z-index: 4;
+    }
+    .plate .vol {
+      display: block;
+      font-size: 10px; color: var(--c-fg-3);
+      letter-spacing: 0.22em;
+      margin-top: 4px;
+    }
+    .plate .num {
+      display: block;
+      font-size: 48px; line-height: 1; color: var(--c-fg);
+      letter-spacing: -0.02em;
+      margin-top: 6px;
+    }
+
+    /* ── Cover-specific masthead (Slide 1) ── */
+    .cover-masthead {
+      position: absolute; top: 96px; left: 60px; right: 60px;
+      display: flex; justify-content: space-between; align-items: flex-end;
+      z-index: 4;
+    }
+    .cover-masthead .label {
+      font-family: var(--f-mono); font-size: 11px;
+      letter-spacing: 0.32em; text-transform: uppercase;
+      color: var(--c-fg-2);
+    }
+    .cover-masthead .label .accent { color: var(--c-nasa-red); }
+    .cover-masthead .seal {
+      display: flex; flex-direction: column; align-items: flex-end; gap: 4px;
+      font-family: var(--f-mono); font-size: 10px;
+      letter-spacing: 0.20em; text-transform: uppercase;
+      color: var(--c-fg-3);
+    }
+    .cover-masthead .seal .big {
+      font-family: var(--f-display); font-weight: 900;
+      font-size: 20px; color: var(--c-fg); letter-spacing: 0.06em;
+    }
+
+    /* ── Cover title: 3-line NASA-poster bomb ── */
+    .cover-title {
+      position: absolute; left: 60px; bottom: 120px;
+      max-width: 80%;
+      z-index: 4;
+    }
+    .cover-title h1 {
+      font-family: var(--f-display); font-weight: 900;
+      font-size: clamp(4.5em, 6.5em, 7.5em);
+      line-height: 0.8;
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+    .cover-title h1 .line { display: block; }
+    .cover-title h1 .red { color: var(--c-nasa-red); }
+    .cover-title h1 .outline {
+      -webkit-text-stroke: 3px var(--c-fg); color: transparent;
+    }
+    .cover-title .underline {
+      width: 120px; height: 4px; background: var(--c-nasa-red);
+      margin-top: 28px;
+    }
+    .cover-title .sub {
+      font-family: var(--f-body); font-weight: 300; font-style: italic;
+      font-size: 0.95em;
+      color: var(--c-fg-2);
+      margin-top: 22px;
+      max-width: 640px;
+    }
+
+    /* ── Colophon slide 8 specifics ── */
+    .colophon-grid {
+      position: absolute; left: 60px; right: 60px; top: 100px; bottom: 100px;
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 60px;
+      z-index: 4;
+    }
+    .colophon-grid .left h1 {
+      font-size: clamp(3.27em, 6em, 6.9em);
+      line-height: 0.84;
+    }
+    .colophon-grid .right {
+      display: flex; flex-direction: column; gap: 24px;
+      align-self: end;
+    }
+    .mission-patch {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 16px;
+      align-items: center;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--c-border);
+    }
+    .mission-patch:last-child { border-bottom: 0; }
+    .mission-patch .patch-svg { width: 56px; height: 56px; }
+    .mission-patch .patch-meta {
+      display: flex; flex-direction: column; gap: 2px;
+    }
+    .mission-patch .patch-name {
+      font-family: var(--f-display); font-weight: 900;
+      font-size: 18px; color: var(--c-fg);
+      letter-spacing: 0.02em; text-transform: uppercase;
+    }
+    .mission-patch .patch-desc {
+      font-family: var(--f-mono); font-size: 10px;
+      color: var(--c-fg-3); letter-spacing: 0.14em; text-transform: uppercase;
+    }
+
+    /* ── Closing pullquote ── */
+    .pullquote {
+      position: absolute; left: 60px; right: 60px; top: 50%;
+      transform: translateY(-50%);
+      max-width: 920px;
+      z-index: 4;
+    }
+    .pullquote blockquote {
+      font-family: var(--f-display); font-weight: 700;
+      font-size: clamp(1.82em, 3em, 3.45em);
+      line-height: 0.96;
+      letter-spacing: 0;
+      color: var(--c-fg);
+      margin: 0;
+      text-transform: uppercase;
+    }
+    .pullquote blockquote .red { color: var(--c-nasa-red); }
+    .pullquote blockquote .outline { -webkit-text-stroke: 2px var(--c-fg); color: transparent; }
+    .pullquote .cite {
+      font-family: var(--f-mono); font-size: 11px;
+      color: var(--c-fg-3); letter-spacing: 0.20em; text-transform: uppercase;
+      margin-top: 28px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .pullquote .cite::before {
+      content: ""; width: 36px; height: 1px; background: var(--c-fg-3);
+    }
+
+    /* ── You-are-here pale dot ── */
+    .yah {
+      position: absolute; right: 60px; top: 50%;
+      transform: translateY(-50%);
+      display: flex; flex-direction: column; align-items: center; gap: 12px;
+      z-index: 4;
+    }
+    .yah .dot-wrap {
+      width: 80px; height: 80px;
+      display: grid; place-items: center;
+      position: relative;
+    }
+    .yah .dot-wrap::before {
+      content: ""; position: absolute; inset: 0;
+      border-radius: 50%;
+      border: 1px solid var(--c-border-strong);
+    }
+    .yah .dot-wrap::after {
+      content: ""; position: absolute; inset: 16px;
+      border-radius: 50%;
+      border: 1px dashed var(--c-fg-3);
+    }
+    .yah .dot {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: var(--c-jwst-gold);
+      box-shadow: 0 0 4px 1px rgba(255, 183, 27, 0.35);
+    }
+    .yah .label {
+      font-family: var(--f-mono); font-size: 10px;
+      letter-spacing: 0.20em; text-transform: uppercase;
+      color: var(--c-fg-2); text-align: center;
+      line-height: 1.4;
+    }
+    .yah .label .accent { color: var(--c-jwst-gold); }
+
+    /* ── Photo annotation callouts (Slide 7) ── */
+    .annot {
+      position: absolute;
+      display: flex; align-items: center; gap: 10px;
+      font-family: var(--f-mono); font-size: 10px;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--c-fg);
+      z-index: 5;
+    }
+    .annot .dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--c-nasa-red);
+      box-shadow: 0 0 0 2px rgba(252, 61, 33, 0.30);
+      flex-shrink: 0;
+    }
+    .annot.gold .dot { background: var(--c-jwst-gold); box-shadow: 0 0 0 2px rgba(255, 183, 27, 0.30); }
+    .annot .leader {
+      width: 60px; height: 1px; background: var(--c-fg);
+    }
+    .annot .panel {
+      background: var(--c-bg-paper);
+      border: 1px solid var(--c-border-strong);
+      padding: 6px 10px;
+      color: var(--c-fg);
+    }
+    .annot .panel .v { color: var(--c-jwst-gold); }
+
+    /* ── Side spec column (Slide 4 / 6) ── */
+    .side-spec {
+      position: absolute; right: 60px; top: 96px; bottom: 100px;
+      width: 260px;
+      display: flex; flex-direction: column; gap: 16px;
+      z-index: 4;
+    }
+    .side-spec .spec-title {
+      font-family: var(--f-mono); font-size: 11px;
+      letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--c-nasa-red);
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--c-border-strong);
+    }
+    .side-spec .spec-row {
+      display: flex; flex-direction: column; gap: 3px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--c-border);
+    }
+    .side-spec .spec-label {
+      font-family: var(--f-mono); font-size: 9px;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--c-fg-3);
+    }
+    .side-spec .spec-value {
+      font-family: var(--f-display); font-weight: 700;
+      font-size: 22px; color: var(--c-fg);
+      letter-spacing: 0.02em; line-height: 1.1;
+    }
+    .side-spec .spec-value .unit {
+      font-size: 0.55em; color: var(--c-jwst-gold); margin-left: 4px;
+    }
+    .side-spec .spec-note {
+      font-family: var(--f-body); font-size: 12px; font-weight: 300;
+      color: var(--c-fg-2); line-height: 1.45;
+    }
+
+    /* ── Reveal overrides for clean poster mode ── */
+    .reveal .progress, .reveal .slide-number { display: none; }
+    .reveal section.present { opacity: 1 !important; }
+
+    /* Reduced motion respect (although we keep motion minimal) */
+    @media (prefers-reduced-motion: reduce) {
+      * { transition: none !important; animation: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="reveal">
+  <div class="slides">
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         PLATE I · COVER  ·  Pillars of Creation (NIRCam + MIRI composite)
+         ═══════════════════════════════════════════════════════════════════ -->
+    <section class="cover deck-flex" data-plate="I">
+
+      <img class="photo"
+           src="https://esawebb.org/media/archives/images/large/pillarsofcreation_composite.jpg"
+           alt="Pillars of Creation, JWST NIRCam + MIRI composite. Cold dust in MIRI mid-infrared is rendered in warm gold; NIRCam near-infrared star field is rendered in cool indigo. NASA, ESA, CSA, STScI.">
+      <div class="scrim left"></div>
+      <div class="scrim bottom"></div>
+
+      <div class="stage">
+
+        <div class="mission-strip">
+          <div class="left">
+            <span class="meatball" aria-hidden="true"></span>
+            <span>JWST · Deep Field Atlas · Vol. I</span>
+          </div>
+          <div class="right">2022–2026 · Public Domain · <span style="color: var(--c-jwst-gold);">verified</span></div>
+        </div>
+
+        <div class="cover-masthead">
+          <div class="label">
+            A Photographic Atlas <span class="accent">/</span> Eight Plates
+          </div>
+          <div class="seal">
+            <div class="big">EST. MMXXII</div>
+            <div>NIRCam · MIRI · 0.6 – 28 μm</div>
+          </div>
+        </div>
+
+        <div class="cover-title">
+          <h1>
+            <span class="line">Atlas</span>
+            <span class="line outline">of the</span>
+            <span class="line red">Invisible</span>
+          </h1>
+          <div class="underline"></div>
+          <p class="sub">
+            Eight plates from the James Webb Space Telescope, where infrared light
+            <em>reveals what the eye was never built to see</em>: stars being born
+            inside cold dust, suns dying, and galaxies older than the planet that photographs them.
+          </p>
+        </div>
+
+        <div class="plate">
+          <span class="vol">Plate</span>
+          <span class="num">I</span>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         PLATE II · WEBB'S FIRST DEEP FIELD  ·  SMACS 0723.3–7327
+         ═══════════════════════════════════════════════════════════════════ -->
+    <section class="deep-field deck-flex" data-plate="II">
+
+      <img class="photo"
+           src="https://esawebb.org/media/archives/images/large/weic2206a.jpg"
+           alt="Webb's First Deep Field: galaxy cluster SMACS J0723.3-7327. Thousands of galaxies in a sliver of sky the size of a grain of sand held at arm's length. NASA, ESA, CSA, STScI.">
+      <div class="scrim full"></div>
+
+      <div class="stage">
+
+        <div class="mission-strip">
+          <div class="left">
+            <span class="meatball" aria-hidden="true"></span>
+            <span>Plate II · Webb's First Deep Field</span>
+          </div>
+          <div class="right">SMACS J0723.3–7327 · 11 Jul 2022</div>
+        </div>
+
+        <div class="stat">
+          <div class="number">13.1<span class="unit">B yr</span></div>
+          <div class="label">Lookback time<br>to the faintest smudges</div>
+        </div>
+
+        <div class="poster">
+          <div class="eyebrow">Deep Field · Gravitational Lens</div>
+          <h1>
+            <span class="line">Every</span>
+            <span class="line">Speck</span>
+            <span class="line red">a Galaxy.</span>
+          </h1>
+          <p class="lede">
+            A sliver of sky the size of <em>a grain of sand at arm's length</em>.
+            The brightest points are foreground Milky Way stars.
+            Everything else is a galaxy, some seen <em>when the universe was 600 million years old</em>.
+          </p>
+        </div>
+
+        <aside class="asset-card">
+          <div class="top-bar">
+            <span class="mission">JWST · NIRCam</span>
+            <span class="release-id">WEIC 2206 · Released 11 Jul 2022</span>
+          </div>
+          <div class="data-grid">
+            <div class="field"><span class="label">Exposure</span><span class="value">12.5 hr · 6.4–8.7 μm</span></div>
+            <div class="field"><span class="label">Field of view</span><span class="value">2.4 × 2.4 arcmin</span></div>
+            <div class="field"><span class="label">Cluster redshift</span><span class="value">z = 0.39 · 4.6 B ly</span></div>
+            <div class="field"><span class="label">Lens magnification</span><span class="value">×<span class="accent">100</span> (peak)</span></div>
+          </div>
+          <div class="compass-block" aria-label="Celestial compass">
+            <svg class="compass" viewBox="0 0 56 56">
+              <circle cx="28" cy="28" r="22" fill="none" stroke="rgba(244,241,234,0.25)" stroke-width="1"/>
+              <line class="arrow-n" x1="28" y1="48" x2="28" y2="8"/>
+              <line x1="8" y1="28" x2="48" y2="28"/>
+              <polygon points="28,4 24,12 32,12" fill="var(--c-nasa-red)"/>
+              <text x="28" y="11" text-anchor="middle">N</text>
+              <text x="50" y="30" text-anchor="middle">E</text>
+            </svg>
+          </div>
+          <div class="scale-bar">
+            <div class="bar"></div>
+            <div class="scale-label">0.5 arcmin</div>
+          </div>
+          <div class="credit">NASA · ESA · CSA · STScI · Public Domain · <span style="color: var(--c-jwst-gold);">verified</span></div>
+        </aside>
+
+        <div class="plate">
+          <span class="vol">Plate</span>
+          <span class="num">II</span>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         PLATE III · COSMIC CLIFFS  ·  Carina Nebula (NGC 3372)
+         ═══════════════════════════════════════════════════════════════════ -->
+    <section class="carina deck-flex" data-plate="III">
+
+      <img class="photo"
+           src="https://esawebb.org/media/archives/images/large/weic2210a.jpg"
+           alt="Cosmic Cliffs of the Carina Nebula, NGC 3372. A region of star formation at the edge of a giant molecular cloud, sculpted by radiation from massive young stars. NASA, ESA, CSA, STScI.">
+      <div class="scrim bottom"></div>
+      <div class="scrim left"></div>
+
+      <div class="stage">
+
+        <div class="mission-strip">
+          <div class="left">
+            <span class="meatball" aria-hidden="true"></span>
+            <span>Plate III · Cosmic Cliffs</span>
+          </div>
+          <div class="right">NGC 3372 · Carina · 12 Jul 2022</div>
+        </div>
+
+        <div class="poster">
+          <div class="eyebrow">Stellar Nursery · NGC 3372</div>
+          <h1>
+            <span class="line">Where</span>
+            <span class="line">Stars</span>
+            <span class="line red">Are Born.</span>
+          </h1>
+          <p class="lede">
+            Infant stars, some only <em>tens of thousands of years old</em>, blaze through
+            the cradle of cold molecular hydrogen that made them. The "cliffs" are the
+            advancing edge of erosion by a nearby massive star's ultraviolet light,
+            three light-years tall.
+          </p>
+        </div>
+
+        <aside class="asset-card">
+          <div class="top-bar">
+            <span class="mission">JWST · NIRCam</span>
+            <span class="release-id">WEIC 2210 · 12 Jul 2022</span>
+          </div>
+          <div class="data-grid">
+            <div class="field"><span class="label">Distance</span><span class="value">~7,600 ly</span></div>
+            <div class="field"><span class="label">Field height</span><span class="value">~16 ly <span class="accent">(cliffs)</span></span></div>
+            <div class="field"><span class="label">Bright source</span><span class="value">WR 46 · O-type</span></div>
+            <div class="field"><span class="label">Wavelength</span><span class="value">1.87 – 4.8 μm</span></div>
+          </div>
+          <div class="compass-block">
+            <svg class="compass" viewBox="0 0 56 56">
+              <circle cx="28" cy="28" r="22" fill="none" stroke="rgba(244,241,234,0.25)" stroke-width="1"/>
+              <line class="arrow-n" x1="28" y1="48" x2="28" y2="8"/>
+              <line x1="8" y1="28" x2="48" y2="28"/>
+              <polygon points="28,4 24,12 32,12" fill="var(--c-nasa-red)"/>
+              <text x="28" y="11" text-anchor="middle">N</text>
+              <text x="50" y="30" text-anchor="middle">E</text>
+            </svg>
+          </div>
+          <div class="scale-bar">
+            <div class="bar"></div>
+            <div class="scale-label">1 light-year</div>
+          </div>
+          <div class="credit">NASA · ESA · CSA · STScI · Public Domain · <span style="color: var(--c-jwst-gold);">verified</span></div>
+        </aside>
+
+        <div class="plate">
+          <span class="vol">Plate</span>
+          <span class="num">III</span>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         PLATE IV · SOUTHERN RING NEBULA  ·  NGC 3132 (planetary nebula)
+         ═══════════════════════════════════════════════════════════════════ -->
+    <section class="southern-ring deck-flex" data-plate="IV">
+
+      <img class="photo"
+           src="https://esawebb.org/media/archives/images/large/weic2208a.jpg"
+           alt="Southern Ring Nebula, NGC 3132, a planetary nebula. A dying star at center has shed its outer layers in concentric shells of gas. NASA, ESA, CSA, STScI.">
+      <div class="scrim right"></div>
+      <div class="scrim bottom"></div>
+
+      <div class="stage">
+
+        <div class="mission-strip">
+          <div class="left">
+            <span class="meatball" aria-hidden="true"></span>
+            <span>Plate IV · Southern Ring</span>
+          </div>
+          <div class="right">NGC 3132 · Vela · 12 Jul 2022</div>
+        </div>
+
+        <div class="poster">
+          <div class="eyebrow">Planetary Nebula · NGC 3132</div>
+          <h1>
+            <span class="line">A Sun's</span>
+            <span class="line red">Last</span>
+            <span class="line">Breath.</span>
+          </h1>
+          <p class="lede">
+            Two stars at center, one bright, one dim. The dimmer one is a
+            <em>white dwarf</em>: the cooling core of a sun-like star that shed its
+            outer atmosphere in waves. The teal-orange shells glow in its ultraviolet.
+          </p>
+        </div>
+
+        <aside class="asset-card">
+          <div class="top-bar">
+            <span class="mission">JWST · NIRCam + MIRI</span>
+            <span class="release-id">WEIC 2208 · 12 Jul 2022</span>
+          </div>
+          <div class="data-grid">
+            <div class="field"><span class="label">Distance</span><span class="value">~2,000 ly</span></div>
+            <div class="field"><span class="label">Shell diameter</span><span class="value">~0.8 ly</span></div>
+            <div class="field"><span class="label">White dwarf T</span><span class="value">~<span class="accent">110,000 K</span></span></div>
+            <div class="field"><span class="label">Age of shells</span><span class="value">~30,000 yr</span></div>
+          </div>
+          <div class="compass-block">
+            <svg class="compass" viewBox="0 0 56 56">
+              <circle cx="28" cy="28" r="22" fill="none" stroke="rgba(244,241,234,0.25)" stroke-width="1"/>
+              <line class="arrow-n" x1="28" y1="48" x2="28" y2="8"/>
+              <line x1="8" y1="28" x2="48" y2="28"/>
+              <polygon points="28,4 24,12 32,12" fill="var(--c-nasa-red)"/>
+              <text x="28" y="11" text-anchor="middle">N</text>
+              <text x="50" y="30" text-anchor="middle">E</text>
+            </svg>
+          </div>
+          <div class="scale-bar">
+            <div class="bar"></div>
+            <div class="scale-label">0.2 light-year</div>
+          </div>
+          <div class="credit">NASA · ESA · CSA · STScI · Public Domain · <span style="color: var(--c-jwst-gold);">verified</span></div>
+        </aside>
+
+        <div class="plate">
+          <span class="vol">Plate</span>
+          <span class="num">IV</span>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         PLATE V · TARANTULA NEBULA  ·  30 Doradus (LMC)
+         ═══════════════════════════════════════════════════════════════════ -->
+    <section class="tarantula deck-flex" data-plate="V">
+
+      <img class="photo"
+           src="https://esawebb.org/media/archives/images/large/weic2212a.jpg"
+           alt="Tarantula Nebula, 30 Doradus, in the Large Magellanic Cloud. The brightest star-forming region in our Local Group of galaxies, with tens of thousands of young stars. NASA, ESA, CSA, STScI.">
+      <div class="scrim left"></div>
+      <div class="scrim bottom"></div>
+
+      <div class="stage">
+
+        <div class="mission-strip">
+          <div class="left">
+            <span class="meatball" aria-hidden="true"></span>
+            <span>Plate V · Tarantula</span>
+          </div>
+          <div class="right">30 Doradus · LMC · 06 Sep 2022</div>
+        </div>
+
+        <div class="stat">
+          <div class="number red">2,400<span class="unit">+</span></div>
+          <div class="label">New young stars resolved<br>in this single image</div>
+        </div>
+
+        <div class="poster">
+          <div class="eyebrow">Stellar Nursery · Local Group</div>
+          <h1>
+            <span class="line">The Largest</span>
+            <span class="line red">Nursery</span>
+            <span class="line">We Know.</span>
+          </h1>
+          <p class="lede">
+            170,000 light-years away in the Large Magellanic Cloud, the Tarantula's
+            filaments are <em>radiation-carved hydrogen gas</em> hosting the most massive
+            stars ever observed. A working analog to the universe's first star formation.
+          </p>
+        </div>
+
+        <aside class="asset-card">
+          <div class="top-bar">
+            <span class="mission">JWST · NIRCam</span>
+            <span class="release-id">WEIC 2212 · 06 Sep 2022</span>
+          </div>
+          <div class="data-grid">
+            <div class="field"><span class="label">Distance</span><span class="value">~170,000 ly · LMC</span></div>
+            <div class="field"><span class="label">Brightest star</span><span class="value">R136a1 · ~<span class="accent">260 M☉</span></span></div>
+            <div class="field"><span class="label">Field width</span><span class="value">~340 ly</span></div>
+            <div class="field"><span class="label">Wavelength</span><span class="value">2.0 – 4.05 μm</span></div>
+          </div>
+          <div class="compass-block">
+            <svg class="compass" viewBox="0 0 56 56">
+              <circle cx="28" cy="28" r="22" fill="none" stroke="rgba(244,241,234,0.25)" stroke-width="1"/>
+              <line class="arrow-n" x1="28" y1="48" x2="28" y2="8"/>
+              <line x1="8" y1="28" x2="48" y2="28"/>
+              <polygon points="28,4 24,12 32,12" fill="var(--c-nasa-red)"/>
+              <text x="28" y="11" text-anchor="middle">N</text>
+              <text x="50" y="30" text-anchor="middle">E</text>
+            </svg>
+          </div>
+          <div class="scale-bar">
+            <div class="bar"></div>
+            <div class="scale-label">60 light-years</div>
+          </div>
+          <div class="credit">NASA · ESA · CSA · STScI · Public Domain · <span style="color: var(--c-jwst-gold);">verified</span></div>
+        </aside>
+
+        <div class="plate">
+          <span class="vol">Plate</span>
+          <span class="num">V</span>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         PLATE VI · STEPHAN'S QUINTET  ·  Compact galaxy group
+         ═══════════════════════════════════════════════════════════════════ -->
+    <section class="stephan deck-flex" data-plate="VI">
+
+      <img class="photo"
+           src="https://esawebb.org/media/archives/images/large/weic2207a.jpg"
+           alt="Stephan's Quintet, a compact group of five galaxies, four of which are gravitationally interacting. Tidal tails and shock fronts from the collision are visible in mid-infrared. NASA, ESA, CSA, STScI.">
+      <div class="scrim right"></div>
+      <div class="scrim bottom"></div>
+
+      <div class="stage">
+
+        <div class="mission-strip">
+          <div class="left">
+            <span class="meatball" aria-hidden="true"></span>
+            <span>Plate VI · Stephan's Quintet</span>
+          </div>
+          <div class="right">HCG 92 · Pegasus · 12 Jul 2022</div>
+        </div>
+
+        <div class="poster">
+          <div class="eyebrow">Galaxy Collision · HCG 92</div>
+          <h1>
+            <span class="line">When</span>
+            <span class="line">Galaxies</span>
+            <span class="line red">Collide.</span>
+          </h1>
+          <p class="lede">
+            Four galaxies, locked in a 40-million-year gravitational embrace, warp
+            one another into tidal tails and shock-wave star formation. MIRI caught the
+            <em>shock front of the collision</em>, invisible to Hubble.
+          </p>
+        </div>
+
+        <aside class="asset-card">
+          <div class="top-bar">
+            <span class="mission">JWST · NIRCam + MIRI</span>
+            <span class="release-id">WEIC 2207 · 12 Jul 2022</span>
+          </div>
+          <div class="data-grid">
+            <div class="field"><span class="label">Distance (main)</span><span class="value">290 M ly · z ≈ 0.022</span></div>
+            <div class="field"><span class="label">Group span</span><span class="value">~330,000 ly</span></div>
+            <div class="field"><span class="label">Foreground galaxy</span><span class="value">NGC 7320 · 40 M ly</span></div>
+            <div class="field"><span class="label">Shock velocity</span><span class="value">~<span class="accent">800 km/s</span></span></div>
+          </div>
+          <div class="compass-block">
+            <svg class="compass" viewBox="0 0 56 56">
+              <circle cx="28" cy="28" r="22" fill="none" stroke="rgba(244,241,234,0.25)" stroke-width="1"/>
+              <line class="arrow-n" x1="28" y1="48" x2="28" y2="8"/>
+              <line x1="8" y1="28" x2="48" y2="28"/>
+              <polygon points="28,4 24,12 32,12" fill="var(--c-nasa-red)"/>
+              <text x="28" y="11" text-anchor="middle">N</text>
+              <text x="50" y="30" text-anchor="middle">E</text>
+            </svg>
+          </div>
+          <div class="scale-bar">
+            <div class="bar"></div>
+            <div class="scale-label">100,000 light-years</div>
+          </div>
+          <div class="credit">NASA · ESA · CSA · STScI · Public Domain · <span style="color: var(--c-jwst-gold);">verified</span></div>
+        </aside>
+
+        <div class="plate">
+          <span class="vol">Plate</span>
+          <span class="num">VI</span>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         PLATE VII · PILLARS OF CREATION (NIRCam solo, annotated)
+         ═══════════════════════════════════════════════════════════════════ -->
+    <section class="pillars-annot deck-flex" data-plate="VII">
+
+      <img class="photo"
+           src="https://esawebb.org/media/archives/images/large/weic2218b.jpg"
+           alt="Pillars of Creation, JWST NIRCam near-infrared view. Three column-like clouds of cold molecular hydrogen and dust in the Eagle Nebula, M16. NASA, ESA, CSA, STScI.">
+      <div class="scrim full"></div>
+
+      <div class="stage">
+
+        <div class="mission-strip">
+          <div class="left">
+            <span class="meatball" aria-hidden="true"></span>
+            <span>Plate VII · Pillars · NIRCam</span>
+          </div>
+          <div class="right">M16 · Serpens · 19 Oct 2022</div>
+        </div>
+
+        <!-- Annotation callouts positioned over the photo -->
+        <div class="annot gold" style="top: 22%; left: 28%;">
+          <span class="dot"></span>
+          <span class="leader"></span>
+          <span class="panel">Embedded protostar · <span class="v">~10⁴ yr</span></span>
+        </div>
+
+        <div class="annot" style="top: 60%; left: 12%;">
+          <span class="panel">Cold H₂ + dust pillar · <span class="v">~70 ly tall</span></span>
+          <span class="leader"></span>
+          <span class="dot"></span>
+        </div>
+
+        <div class="annot gold" style="bottom: 22%; right: 12%;">
+          <span class="panel">Erosion front · <span class="v">UV from O-type stars</span></span>
+          <span class="leader"></span>
+          <span class="dot"></span>
+        </div>
+
+        <div class="poster" style="bottom: 240px;">
+          <div class="eyebrow">Eagle Nebula · M16 · SH 2-54</div>
+          <h1 style="font-size: clamp(2.18em, 3.6em, 4.36em);">
+            <span class="line">Pillars</span>
+            <span class="line red">of Creation.</span>
+          </h1>
+          <p class="lede">
+            Near-infrared light <em>punches through the dust</em> that hid these
+            structures from Hubble. Embedded protostars blaze as crimson points:
+            <em>not yet stars</em>, caught becoming one.
+          </p>
+        </div>
+
+        <aside class="asset-card">
+          <div class="top-bar">
+            <span class="mission">JWST · NIRCam</span>
+            <span class="release-id">WEIC 2218 · 19 Oct 2022</span>
+          </div>
+          <div class="data-grid">
+            <div class="field"><span class="label">Distance</span><span class="value">6,500 ly · Serpens</span></div>
+            <div class="field"><span class="label">Pillar height</span><span class="value">~4–7 ly each</span></div>
+            <div class="field"><span class="label">Wavelength</span><span class="value">1.87 – 4.05 μm</span></div>
+            <div class="field"><span class="label">Protostars seen</span><span class="value"><span class="accent">dozens</span> (newly revealed)</span></div>
+          </div>
+          <div class="compass-block">
+            <svg class="compass" viewBox="0 0 56 56">
+              <circle cx="28" cy="28" r="22" fill="none" stroke="rgba(244,241,234,0.25)" stroke-width="1"/>
+              <line class="arrow-n" x1="28" y1="48" x2="28" y2="8"/>
+              <line x1="8" y1="28" x2="48" y2="28"/>
+              <polygon points="28,4 24,12 32,12" fill="var(--c-nasa-red)"/>
+              <text x="28" y="11" text-anchor="middle">N</text>
+              <text x="50" y="30" text-anchor="middle">E</text>
+            </svg>
+          </div>
+          <div class="scale-bar">
+            <div class="bar"></div>
+            <div class="scale-label">1 light-year</div>
+          </div>
+          <div class="credit">NASA · ESA · CSA · STScI · Public Domain · <span style="color: var(--c-jwst-gold);">verified</span></div>
+        </aside>
+
+        <div class="plate">
+          <span class="vol">Plate</span>
+          <span class="num">VII</span>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         PLATE VIII · COLOPHON  ·  "Eyes Opened"
+         ═══════════════════════════════════════════════════════════════════ -->
+    <section class="colophon deck-flex" data-plate="VIII">
+
+      <img class="photo"
+           src="https://esawebb.org/media/archives/images/large/weic2218b.jpg"
+           alt="Pillars of Creation, JWST NIRCam. Used as a bookend for the atlas; the same view that opened Plate VII now closes Plate VIII, with the page chrome now becoming the message.">
+      <div class="scrim right"></div>
+      <div class="scrim bottom"></div>
+
+      <div class="stage">
+
+        <div class="mission-strip">
+          <div class="left">
+            <span class="meatball" aria-hidden="true"></span>
+            <span>Plate VIII · Colophon</span>
+          </div>
+          <div class="right">Atlas of the Invisible · JWST · 2022→</div>
+        </div>
+
+        <div class="colophon-grid">
+
+          <div class="left">
+            <div class="eyebrow" style="font-family: var(--f-mono); font-size: 12px; color: var(--c-nasa-red); letter-spacing: 0.24em; text-transform: uppercase; display: inline-flex; align-items: center; gap: 12px; margin-bottom: 18px;">
+              <span style="width: 36px; height: 2px; background: var(--c-nasa-red);"></span>
+              End Plate · Vol. I
+            </div>
+            <h1 style="font-family: var(--f-display); font-weight: 900;">
+              <span class="line">Eyes</span>
+              <span class="line red">Opened</span>
+              <span class="line outline">2022.</span>
+            </h1>
+            <p style="font-family: var(--f-body); font-weight: 300; font-size: 0.82em; line-height: 1.55; color: var(--c-fg-2); margin-top: 26px; max-width: 480px;">
+              Launched Christmas Day 2021. First science images 11 July 2022.
+              These plates are <em>not renderings</em>: they are photographs in light
+              too red for human retinas, captured beyond the Moon, cooled to −233 °C.
+            </p>
+            <p style="font-family: var(--f-mono); font-size: 10px; letter-spacing: 0.20em; text-transform: uppercase; color: var(--c-fg-3); margin-top: 28px;">
+              Image credit (all plates) · NASA · ESA · CSA · STScI · Public Domain · <span style="color: var(--c-jwst-gold);">verified</span>
+            </p>
+          </div>
+
+          <div class="right">
+
+            <div class="mission-patch">
+              <svg class="patch-svg" viewBox="0 0 56 56" aria-hidden="true">
+                <circle cx="28" cy="28" r="22" fill="none" stroke="var(--c-nasa-blue)" stroke-width="1.5"/>
+                <polygon points="28,18 38,24 38,34 28,40 18,34 18,24" fill="none" stroke="var(--c-jwst-gold)" stroke-width="1.5"/>
+                <circle cx="28" cy="29" r="3" fill="var(--c-nasa-red)"/>
+                <text x="28" y="52" text-anchor="middle" font-family="var(--f-mono)" font-size="6" fill="var(--c-fg-2)" letter-spacing="1">JWST</text>
+              </svg>
+              <div class="patch-meta">
+                <span class="patch-name">JWST · L2 Orbit</span>
+                <span class="patch-desc">Launched 25 Dec 2021 · 1.5 M km</span>
+              </div>
+            </div>
+
+            <div class="mission-patch">
+              <svg class="patch-svg" viewBox="0 0 56 56" aria-hidden="true">
+                <rect x="6" y="6" width="44" height="44" fill="none" stroke="var(--c-nasa-red)" stroke-width="1.5"/>
+                <path d="M14 28 L28 14 L42 28 L28 42 Z" fill="none" stroke="var(--c-fg)" stroke-width="1"/>
+                <circle cx="28" cy="28" r="3" fill="var(--c-jwst-gold)"/>
+                <text x="28" y="52" text-anchor="middle" font-family="var(--f-mono)" font-size="6" fill="var(--c-fg-2)" letter-spacing="1">NIRCam</text>
+              </svg>
+              <div class="patch-meta">
+                <span class="patch-name">NIRCam · 0.6–5 μm</span>
+                <span class="patch-desc">Near-IR · primary imager</span>
+              </div>
+            </div>
+
+            <div class="mission-patch">
+              <svg class="patch-svg" viewBox="0 0 56 56" aria-hidden="true">
+                <circle cx="28" cy="28" r="22" fill="none" stroke="var(--c-fg-3)" stroke-width="1"/>
+                <path d="M6 28 Q28 14 50 28 Q28 42 6 28 Z" fill="none" stroke="var(--c-jwst-gold)" stroke-width="1"/>
+                <circle cx="28" cy="28" r="4" fill="var(--c-nasa-blue)"/>
+                <text x="28" y="52" text-anchor="middle" font-family="var(--f-mono)" font-size="6" fill="var(--c-fg-2)" letter-spacing="1">MIRI</text>
+              </svg>
+              <div class="patch-meta">
+                <span class="patch-name">MIRI · 5–28 μm</span>
+                <span class="patch-desc">Mid-IR · cooler 7 K</span>
+              </div>
+            </div>
+
+            <div class="mission-patch">
+              <svg class="patch-svg" viewBox="0 0 56 56" aria-hidden="true">
+                <circle cx="28" cy="28" r="22" fill="none" stroke="var(--c-border-strong)" stroke-width="1"/>
+                <circle cx="28" cy="28" r="10" fill="none" stroke="var(--c-fg-3)" stroke-width="1" stroke-dasharray="2 3"/>
+                <circle cx="28" cy="28" r="2.5" fill="var(--c-jwst-gold)"/>
+                <text x="28" y="52" text-anchor="middle" font-family="var(--f-mono)" font-size="6" fill="var(--c-fg-2)" letter-spacing="1">EARTH</text>
+              </svg>
+              <div class="patch-meta">
+                <span class="patch-name">You Are Here ⊙</span>
+                <span class="patch-desc">Pale blue dot · Carl Sagan, 1994</span>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+        <div class="plate">
+          <span class="vol">Plate</span>
+          <span class="num">VIII</span>
+        </div>
+
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.js"></script>
+<script>
+  Reveal.initialize({
+    hash: true,
+    slideNumber: false,
+    controls: false,
+    progress: false,
+    transition: 'fade',
+    transitionSpeed: 'slow',
+    width: 1280,
+    height: 720,
+    margin: 0,
+    minScale: 1,
+    maxScale: 1
+  });
+</script>
+</body>
+</html>

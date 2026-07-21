@@ -28,3 +28,7 @@ jobs:
       - run: npm test
       # lint 伞：参考文档硬规则 + chrome 元素 AA + 设计 lint
       - run: npm run lint:all
+      # seed 质量防线：注册一致性（seed-cases.json ↔ INDEX ↔ 文件，FAIL exit 1）
+      - run: node scripts/check-seed-quality.js --registry
+      # seed 撞车：字体撞车 exit 1 阻断；色相近似仅 warning（脚本内 exit 0，不误阻断）
+      - run: node scripts/check-seed-collision.js --all
