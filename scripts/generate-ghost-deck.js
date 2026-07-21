@@ -215,7 +215,8 @@ if (isAuto) {
   console.log(`  条件 B 指定模板: ✓ ${condBReason}`);
   console.log('');
   console.log('  → 双条件满足,直接进 P4 生成 HTML,不需 ghost 预览。');
-  console.log('  → 仍跑十二门禁 + design-strength + visual-verdict 验证(校验不省)。');
+  console.log(`  → 路径决策:node scripts/route-deck.js --topic "${brief.topic}"(A 种子 / B voice 组合 / C B 解法)`);
+  console.log('  → 仍跑十四门禁 + design-strength + visual-verdict 验证(校验不省)。');
   process.exit(0);
 }
 
@@ -245,5 +246,5 @@ console.log('  · 方向对 → 回"继续 / 进 P4",我生成 HTML');
 console.log('  · 方向错 → 回"改 X"(如"不是团队数据,是成员介绍"/"要 15 页不是 8 页")');
 console.log('  · 补要点 → 回"加 a/b/c",我重生成 ghost');
 console.log('');
-console.log('  注:本预览不阻塞、低成本纠偏;确认后仍跑十二门禁 + visual-verdict 校验。');
+console.log('  注:本预览不阻塞、低成本纠偏;确认后仍跑十四门禁 + visual-verdict 校验。');
 process.exit(1);
