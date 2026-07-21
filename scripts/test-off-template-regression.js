@@ -247,10 +247,12 @@ fs.writeFileSync(fallbackFixture, JSON.stringify({
   ],
 }, null, 2));
 const fallback = run('generate-archetype-deck implicit fallback', ['scripts/generate-archetype-deck.js', fallbackFixture, path.join(os.tmpdir(), 'off-template-implicit-fallback.html')]);
-if (fallback.status !== 0 && /Deck route cannot use implicit chapter fallback: section 1/.test(fallback.stderr + fallback.stdout)) {
-  pass('implicit chapter fallback fails explicitly');
+// 行为变更（2026-07 内容填充层）：无法分类的段落不再整 deck throw，
+// 而是按 A4 满版分割消费 body 渲染，并在报告里列出「待人工标注段落」。
+if (fallback.status === 0 && /待人工标注段落/.test(fallback.stderr + fallback.stdout) && /\[1\] Unclassified middle/.test(fallback.stderr + fallback.stdout)) {
+  pass('implicit chapter fallback degrades explicitly with annotation report');
 } else {
-  fail('implicit chapter fallback did not fail explicitly', fallback.stdout + fallback.stderr);
+  fail('implicit chapter fallback did not degrade with annotation report', fallback.stdout + fallback.stderr);
 }
 
 console.log('\n[style-gap-token-contract]');

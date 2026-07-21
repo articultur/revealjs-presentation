@@ -15,6 +15,24 @@
  * 实验性生成器(非交付模板):证明"内容不在 10 template 覆盖也能靠
  * archetype 组合生成高质量 deck"。产物放 output/(gitignore),不进 examples/。
  *
+ * 内容填充层(任意文稿 → deck):
+ *   - 8 个吃结构化字段的 archetype(A3/A5/A6/A7/A8/A9/A10/A11)缺字段时,
+ *     extractFields 从自由文本 body 补救抽取;抽不出 → 降级 A4 消费 body,不渲染空网格
+ *   - 无法自动分类的段落(fallback_chapter)不再整 deck throw:按 A4 渲染 +
+ *     生成报告列「待人工标注段落」(routeReportLines)
+ *   - 每个 <section> 带 data-archetype="A1"…"A12"(供 design-strength-check 节奏检测)
+ *
+ * voice 签名表达层(Wave 2,破「12 voice = 同骨架换配色」):
+ *   - <body> 带 voice-<name> class;VOICE_SIGNATURES 每 voice 一段签名 CSS 覆盖层
+ *     (注入 <style> 末尾),把 voices.json note 承诺的签名组件(launch 设备框/cue stack、
+ *     technical swimlane/console、illustrated sticker notes、retro memphis grid/ticket、
+ *     brutalist 硬边框、data 终端读数、consulting 报头双线/档案章…)落成真实 CSS
+ *   - sectionClass 名单落在 <section> 上(供 design-strength nativeSignals 识别);
+ *     dimensions.weight/motion 推导通用气质层(字重/边框硬度/fragment 动效标记)
+ *   - 变体参数消费:panel_ratio(A8 面板比)/node_density(A3 非均匀节点)/anchor_scale
+ *     (A5 锚点字号)/verdict_scale(A6 裁决字号)/highlight_col(A9 高亮列),全部 params
+ *     同时以 data-variant 属性落 section 供后续消费
+ *
  * 用法:
  *   node scripts/generate-archetype-deck.js --demo [out.html]
  *   node scripts/generate-archetype-deck.js input.json [out.html]
@@ -28,11 +46,21 @@ const ROOT = path.resolve(__dirname, '..');
 const TOKENS_DIR = path.join(ROOT, 'tokens');
 const PPTX_CLIENT_PATH = path.join(ROOT, 'scripts', 'export-pptx-client.js');
 
-// voice → Google Fonts URL(editorial-serif 为默认)
-const VOICE_FONTS = {
-  'editorial-serif': 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Source+Serif+4:opsz,wght@8..60,400&family=Noto+Serif+SC:wght@400;600&family=Noto+Sans+SC:wght@400&family=Courier+Prime:wght@400&display=swap',
-  'chinese-ink-wash': 'https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@400;500;700&family=Courier+Prime:wght@400;700&display=swap',
-};
+// voice → Google Fonts URL
+// 单一真相源:tokens/voices.json(经 build-voice-tokens.js 编译)+ legacy 字体映射。
+// 加新 voice = voices.json 加一条 + `node scripts/build-voice-tokens.js`,无需改这里。
+const { build: buildVoiceRegistry, loadRegistry } = require('./build-voice-tokens');
+// registry 按名索引:取 dimensions(weight/motion 气质坐标)推导通用签名层
+const REGISTRY_BY_NAME = {};
+for (const v of loadRegistry().voices || []) REGISTRY_BY_NAME[v.name] = v;
+const VOICE_FONTS = (() => {
+  const registryFonts = buildVoiceRegistry({ dry: true }).fontMap; // { voiceName: googleFontsUrl }
+  const legacy = {
+    'editorial-serif': 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Source+Serif+4:opsz,wght@8..60,400&family=Noto+Serif+SC:wght@400;600&family=Noto+Sans+SC:wght@400&family=Courier+Prime:wght@400&display=swap',
+    'chinese-ink-wash': 'https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@400;500;700&family=Courier+Prime:wght@400;700&display=swap',
+  };
+  return Object.assign({}, registryFonts, legacy);
+})();
 const esc = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
 function readTokensInline(voice) {
@@ -74,21 +102,355 @@ function requireOffTemplateContract(input, routed) {
   }
 }
 
-function requireNoImplicitFallback(routed) {
-  const fallbackRoutes = routed.routes.filter(r => r.fallback_chapter);
-  if (fallbackRoutes.length) {
-    const indexes = fallbackRoutes.map(r => r.index).join(', ');
-    throw new Error(`Deck route cannot use implicit chapter fallback: section ${indexes}`);
+// 无法自动分类的段落(fallback_chapter)不再整 deck throw:
+// 显式按 A4(chapter/满版分割)渲染并消费 body,同时列入「待人工标注段落」
+// 报告(见 routeReportLines),提示人工补 content_type / 结构化字段。
+function listImplicitFallbacks(routed) {
+  return routed.routes.filter(r => r.fallback_chapter).map(r => ({
+    index: r.index,
+    title: r.title,
+    body_preview: String(r.body || '').replace(/\s+/g, ' ').slice(0, 40),
+  }));
+}
+
+// 生成报告行:序列 warning + 待人工标注段落 + 字段抽取失败降级段落。
+// 须在 assembleDeck 之后调用(degraded 标记在渲染期才打上)。
+function routeReportLines(routed) {
+  const lines = [];
+  for (const w of routed.warnings || []) lines.push(`   ⚠ ${w}`);
+  const fallbacks = listImplicitFallbacks(routed);
+  if (fallbacks.length) {
+    lines.push('   ⚠ 待人工标注段落(无法自动分类,已按 A4 满版分割消费 body 渲染;建议补 content_type/结构化字段):');
+    for (const f of fallbacks) lines.push(`     - [${f.index}] ${f.title || '(无标题)'} │ ${f.body_preview}`);
   }
+  const degraded = routed.routes.filter(r => r.degraded);
+  if (degraded.length) {
+    lines.push('   ⚠ 字段抽取失败已降级为 A4 消费 body(原路由缺结构化字段且无法从文本抽取):');
+    for (const r of degraded) lines.push(`     - [${r.index}] ${r.archetype} ${r.title || '(无标题)'}`);
+  }
+  return lines;
+}
+
+// ── 文本 → 结构化字段 轻量抽取(优雅降级)──
+// 8 个吃只读结构化字段的 archetype(A3 nodes / A5 number+evidence / A6 对峙值 /
+// A7 kpis / A8 前后 items / A9 rows / A10 quote / A11 items)缺字段时,先从自由
+// 文本 body 补救抽取;抽不出来 → 返回 null,调用方降级为消费 body 的 A4 版式,
+// 绝不渲染空网格。
+// 启发式局限(有意保守):只认常见中文书写习惯 —— 句首年份/日期、「数字+单位」
+// 短语、vs/对比、引号句、→ 链;跨句表格、隐含对照等复杂语义抽不准,拿不准一律
+// 降级,不硬抽。
+
+// 「数字+单位」短语:每子句取第一个数字,label 取数字前的短修饰语
+function extractNumberPhrases(body) {
+  const out = [];
+  const clauses = String(body || '').split(/[\n;；,，。]/).map(x => x.trim()).filter(Boolean);
+  for (const c of clauses) {
+    const m = c.match(/\d+(?:\.\d+)?\s*(?:%|万|亿|倍|项|个|家|次|天|人|台|条|公里|元|分|小时|pp)?/);
+    if (m) {
+      const label = c.replace(m[0], '').replace(/^[\s的:：为达至到]+|[\s的了。达至到]+$/g, '').trim();
+      out.push({ label: label.slice(0, 12) || '指标', value: m[0].trim() });
+    }
+  }
+  return out;
+}
+
+function extractFields(s, archetype) {
+  const body = String(s.body || '');
+  const text = `${s.title || ''} ${body}`;
+  const clauses = body.split(/[\n;；,，]/).map(x => x.trim()).filter(Boolean);
+  switch (archetype) {
+    case 'A3': { // 日期/年份行 → nodes
+      const nodes = [];
+      for (const c of clauses) {
+        const m = c.match(/((?:19|20)\d{2}\s*年?|\d{1,2}\s*月\s*\d{1,2}\s*日?|\d{1,2}\s*月)\s*[·:：\-—]?\s*(.*)/);
+        if (m) nodes.push({ year: m[1].trim(), title: (m[2] || '').slice(0, 18) || m[1].trim(), desc: '' });
+      }
+      return nodes.length >= 2 ? { nodes } : null;
+    }
+    case 'A5': { // 大数字 → number;其余数字短语 → evidence
+      const m = body.match(/\d+(?:\.\d+)?\s*(?:%|万|亿|倍)/) || body.match(/\d[\d,]{3,}/);
+      if (!m) return null;
+      const evidence = extractNumberPhrases(body).filter(p => p.value !== m[0]).slice(0, 3)
+        .map(p => ({ k: p.label, v: p.value }));
+      return { number: m[0], label: s.title || '', event: s.title || '', evidence };
+    }
+    case 'A6': { // 「A 数值 vs B 数值 / A 对比 B」→ 对峙标签 + 首两个数字做对峙值
+      const vsSrc = /(?:vs\.?|versus|对比|对照)/i.test(body) ? body : text; // 优先在 body 里切(title 里的"对比"不是对峙点)
+      const parts = vsSrc.split(/\s*(?:vs\.?|versus|对比|对照)\s*/i);
+      if (parts.length < 2) return null;
+      const grab = (txt) => {
+        const m = String(txt).match(/\d+(?:\.\d+)?\s*(?:%|万|亿|倍|分钟|小时|天|元|个|项|公里)?/);
+        if (!m) return null;
+        const label = String(txt).replace(m[0], '').replace(/^[\s的为达至到]+|[\s的了。达至到]+$/g, '').trim();
+        return { label: label.slice(0, 10), value: m[0].trim() };
+      };
+      const a = grab(parts[0]);
+      const b = grab(parts.slice(1).join(' '));
+      if (!a || !b) return null;
+      const aNum = parseFloat(a.value), bNum = parseFloat(b.value);
+      const verdict = (isFinite(aNum) && isFinite(bNum) && bNum !== 0)
+        ? (a.value.includes('%') && b.value.includes('%')
+          ? `${(aNum - bNum) > 0 ? '+' : ''}${(aNum - bNum).toFixed(1)}pp`
+          : `${(aNum / bNum).toFixed(1)}×`)
+        : '';
+      return {
+        a_label: a.label || 'A', b_label: b.label || 'B',
+        a_value: a.value, b_value: b.value,
+        verdict, verdict_note: '',
+      };
+    }
+    case 'A7': { // 数字组(≥2 个数字短语)→ kpis
+      const nums = extractNumberPhrases(body);
+      return nums.length >= 2 ? { kpis: nums.slice(0, 4).map(p => ({ label: p.label, value: p.value, note: '' })) } : null;
+    }
+    case 'A8': { // → 链 → 前/后 items
+      const segs = body.split(/\s*(?:→|->)\s*/).map(x => x.trim()).filter(Boolean);
+      if (segs.length < 2) return null;
+      const before = segs[0].split(/[\n;；,，]/).map(x => x.trim()).filter(Boolean);
+      const after = segs.slice(1).join(';').split(/[\n;；,，]/).map(x => x.trim()).filter(Boolean);
+      if (!before.length || !after.length) return null;
+      const red = body.match(/(?:降低|减少|提升|增加|下降|缩短)\s*\d+(?:\.\d+)?\s*(?:%|倍)?/);
+      return { before_items: before, after_items: after, reduction: red ? red[0] : '' };
+    }
+    case 'A9': { // | 分隔行 或 多数字子句 → rows
+      let rows = [];
+      const pipeLines = body.split(/\n/).filter(l => (l.match(/\|/g) || []).length >= 1);
+      if (pipeLines.length >= 2) {
+        rows = pipeLines.map(l => l.split('|').map(c => c.trim()).filter(Boolean));
+      } else {
+        rows = clauses.map(c => {
+          const nums = extractNumberPhrases(c);
+          return nums.length ? [c.replace(/[\d.,%\s]/g, '').slice(0, 10) || nums[0].label, ...nums.map(p => p.value)] : null;
+        }).filter(r => r && r.length >= 2);
+      }
+      if (rows.length < 2) return null;
+      const width = Math.max(...rows.map(r => r.length));
+      const headers = ['项目', ...Array.from({ length: width - 1 }, (_, i) => `数值 ${i + 1}`)];
+      return { headers, rows, highlight_col: 1 };
+    }
+    case 'A10': { // 引号句 → quote(含弯引号);表示/指出 前缀 → who
+      const q = body.match(/["「『“‘]([^"」』”’]{4,})["」』”’]/);
+      if (!q) return null;
+      const who = body.match(/([^\s,，。:：]{2,10}?)(?:表示|指出|认为|说道|评价)/);
+      return { quote: q[1], who: who ? who[1] : (s.who || ''), role: s.role || '' };
+    }
+    case 'A11': { // 编号列表/多子句 → items(编号可跨行也可同行内联;lookbehind 防小数/百分数误判)
+      const numbered = body.split(/\n/).map(l => l.match(/^\s*[1-9][.、)]\s*(.+)/)).filter(Boolean).map(m => m[1].trim());
+      const inline = (body.match(/(?<![\d.])[1-9][.、)]\s*[^;；,，\n]+/g) || [])
+        .map(x => x.replace(/^\s*[1-9][.、)]\s*/, '').trim()).filter(Boolean);
+      const src = numbered.length >= 2 ? numbered : (inline.length >= 2 ? inline : clauses);
+      if (src.length < 2) return null;
+      return { items: src.slice(0, 4).map(c => { const p = c.split(/[:：—-]/); return { t: (p[0] || c).slice(0, 14), d: (p[1] || '').slice(0, 40) }; }) };
+    }
+    default: return null;
+  }
+}
+
+// 各 archetype 的最低字段契约:缺这些字段就渲染不出内容(空网格)
+const REQUIRED_FIELDS = {
+  A3: s => Array.isArray(s.nodes) && s.nodes.length > 0,
+  A5: s => Boolean(s.number),
+  A6: s => Boolean(s.a_value && s.b_value),
+  A7: s => Array.isArray(s.kpis) && s.kpis.length > 0,
+  A8: s => (Array.isArray(s.before_items) && s.before_items.length > 0) || (Array.isArray(s.after_items) && s.after_items.length > 0),
+  A9: s => Array.isArray(s.rows) && s.rows.length > 0,
+  A10: s => Boolean(s.quote), // 只认显式 quote;缺失时先抽取引号句,抽不出再沿用 body(fillArchetype A10 特例)
+  A11: s => Array.isArray(s.items) && s.items.length > 0,
+};
+
+// body 按换行/分号拆段(A4 满版分割消费自由文本用)
+function bodyLines(body) {
+  const lines = String(body || '').split(/[\n;；]+/).map(x => x.trim()).filter(Boolean);
+  return lines.length ? lines : [''];
+}
+
+// ── per-voice 签名覆盖层(Wave 2)──
+// Wave 1 末诊断:同一骨架套 12 个 registry voice,归一化色值后 diff 只剩 1 行 ——
+// voice 间唯一差异是颜色 + display serif/sans 二选一;voices.json note 承诺的签名
+// 组件从未渲染,dimensions 的 weight/motion 维度零排版表达。本层把 note 落成真实 CSS:
+//   - 每 voice 一段签名 CSS 覆盖层(注入 <style> 末尾,只覆盖不重建骨架)
+//   - sectionClass:签名 class 名单,落在 <section> class 上(供 design-strength
+//     nativeSignals 识别 —— 命名对齐既有原语词根:memphis/sticker/console/terminal)
+// 约束(物理契约):只用该 voice token 变量(var(--c-*)/var(--f-*)),不引入新硬编码
+// 色值;不碰 section position/display,不用 vw/vh;覆盖 inline 骨架样式才用 !important
+// (覆盖层语义),且只用于边框/背景类非排字属性。遗留 voice(editorial-serif 等)不在
+// registry,无 dimensions,保持 token 层差异,不强行签名。
+const VOICE_SIGNATURES = {
+  // launch「舞台现场,设备框 + cue stack」(weight 5 / motion 4)
+  launch: {
+    sectionClass: { '*': 'device-frame' },
+    css: `.voice-launch .device-frame{outline:1px solid var(--c-border);outline-offset:-0.55em;}
+.voice-launch .kicker{border-bottom:2px solid var(--c-accent);padding-bottom:0.25em;}
+.voice-launch .pin,.voice-launch .evidence-label{border:1px solid var(--c-border);background:var(--c-bg-paper);padding:0.3em 0.7em;}
+.voice-launch h1,.voice-launch h2,.voice-launch h3{font-weight:700;}`,
+  },
+  // technical「控制室 console,swimlane + failure rail」(weight 4 / motion 2)
+  technical: {
+    sectionClass: { '*': 'console-chrome', A3: 'swimlane' },
+    css: `.voice-technical .console-chrome{box-shadow:inset 4px 0 0 var(--c-border);}
+.voice-technical .kicker{background:var(--c-fg);color:var(--c-bg);padding:0.28em 0.65em;}
+.voice-technical .pin{border-top:2px solid var(--c-accent);padding-top:0.35em;}
+.voice-technical .swimlane h4{border-left:2px solid var(--c-fg);padding-left:0.5em;}
+.voice-technical .swimlane p{border-left:2px solid var(--c-border);padding-left:0.5em;}
+.voice-technical table{border:1px solid var(--c-border);}`,
+  },
+  // illustrated「暖色亲近感,sticker notes + 轻微错位」(weight 4 / motion 3)
+  illustrated: {
+    sectionClass: { A7: 'sticker-notes', A11: 'sticker-notes' },
+    css: `.voice-illustrated .sticker-notes .sig-grid>div{border:2px dashed var(--c-fg-3) !important;border-radius:0.6em;box-shadow:0.12em 0.14em 0 var(--c-border);padding:0.9em !important;}
+.voice-illustrated .sticker-notes .sig-grid>div:nth-child(odd){transform:rotate(-0.6deg);}
+.voice-illustrated .sticker-notes .sig-grid>div:nth-child(even){transform:rotate(0.5deg);}
+.voice-illustrated .kicker{border:1.5px dashed var(--c-accent);border-radius:1em;padding:0.25em 0.7em;align-self:flex-start;}`,
+  },
+  // retro「几何撞色,memphis grid + ticket」(weight 6 / motion 4)
+  retro: {
+    sectionClass: { '*': 'memphis-grid', A12: 'ticket' },
+    css: `.voice-retro .memphis-grid{background-image:repeating-linear-gradient(0deg,var(--c-rule) 0,var(--c-rule) 1px,transparent 1px,transparent 2.6em),repeating-linear-gradient(90deg,var(--c-rule) 0,var(--c-rule) 1px,transparent 1px,transparent 2.6em);}
+.voice-retro .sig-grid>div{box-shadow:0.22em 0.22em 0 var(--c-fg);}
+.voice-retro .ticket .stamp{border-width:3px !important;border-style:dashed !important;padding:0.5em 1em !important;box-shadow:0.25em 0.25em 0 var(--c-fg);}
+.voice-retro h1,.voice-retro h2,.voice-retro h3{font-weight:700;}`,
+  },
+  // brutalist「裸露硬边框 + 荧光警示,uppercase」(weight 7 / motion 1)
+  brutalist: {
+    sectionClass: { '*': 'hard-frame' },
+    css: `.voice-brutalist .hard-frame{box-shadow:inset 0 0 0 3px var(--c-fg);}
+.voice-brutalist .kicker{background:var(--c-fg);color:var(--c-bg);padding:0.28em 0.6em;text-transform:uppercase;letter-spacing:0.16em;}
+.voice-brutalist h1,.voice-brutalist h2,.voice-brutalist h3{font-weight:700;text-transform:uppercase;letter-spacing:0.01em;}
+.voice-brutalist .sig-grid>div{border-width:3px !important;box-shadow:0.25em 0.25em 0 var(--c-fg);}`,
+  },
+  // data「深色仪表盘,图表墙 + 标注承载结论」→ 终端读数面板化(weight 4 / motion 2)
+  data: {
+    sectionClass: { A5: 'terminal-readout', A7: 'terminal-readout', A9: 'terminal-readout' },
+    css: `.voice-data .terminal-readout{outline:1px solid var(--c-border);outline-offset:-0.5em;}
+.voice-data .pin,.voice-data .evidence-label{border:1px solid var(--c-border);background:var(--c-bg-paper);padding:0.3em 0.65em;}
+.voice-data .sig-grid>div{border-top:3px solid var(--c-accent) !important;}
+.voice-data table{border:1px solid var(--c-border);}
+.voice-data th{border-bottom-width:3px !important;}`,
+  },
+  // consulting「决策 memo 气质」→ 报头双线 + 档案章(weight 4 / motion 1)
+  consulting: {
+    sectionClass: { '*': 'memo-head', A12: 'archive-stamp' },
+    css: `.voice-consulting .memo-head{box-shadow:inset 0 3px 0 var(--c-fg),inset 0 5px 0 var(--c-bg),inset 0 6px 0 var(--c-fg);}
+.voice-consulting .archive-stamp .stamp{border-color:var(--c-stamp) !important;color:var(--c-stamp) !important;border-radius:50%;padding:0.9em !important;transform:rotate(-4deg);}
+.voice-consulting .kicker{letter-spacing:0.22em;}
+.voice-consulting h1,.voice-consulting h2,.voice-consulting h3{font-weight:600;}`,
+  },
+  // minimal「极端留白,一句主张占视觉中心」→ 去装饰:正立、轻字重、宽字距(weight 3 / motion 1)
+  minimal: {
+    sectionClass: { '*': 'quiet-frame' },
+    css: `.voice-minimal .reveal section *{font-style:normal !important;}
+.voice-minimal h1,.voice-minimal h2,.voice-minimal h3{font-weight:500;letter-spacing:0.02em;}
+.voice-minimal .kicker{letter-spacing:0.3em;}
+.voice-minimal .pin,.voice-minimal .evidence-label{opacity:0.65;}`,
+  },
+  // education「田野清新,lesson path + worksheet」→ 圆角标签 + worksheet 虚线格(weight 4 / motion 2)
+  education: {
+    sectionClass: { '*': 'lesson-path' },
+    css: `.voice-education .kicker{border:1.5px solid var(--c-accent);border-radius:1em;padding:0.25em 0.7em;align-self:flex-start;}
+.voice-education .sig-grid>div{border-radius:0.7em;}
+.voice-education .lesson-path td{border-bottom-style:dashed !important;}
+.voice-education h1,.voice-education h2,.voice-education h3{font-weight:600;}`,
+  },
+  // pitch「判断路径可视化,problem→traction→ask」→ accent 路标 chip + 加重顶边(weight 5 / motion 3)
+  pitch: {
+    sectionClass: { '*': 'pitch-path' },
+    css: `.voice-pitch .kicker{background:var(--c-accent);color:var(--c-bg);padding:0.3em 0.7em;font-weight:600;align-self:flex-start;}
+.voice-pitch .sig-grid>div{border-top-width:5px !important;}
+.voice-pitch h1,.voice-pitch h2,.voice-pitch h3{font-weight:700;}`,
+  },
+  // editorial「视觉报道,feature spread + art block + 栏目节奏」→ 栏目标题/首字下沉/画框(weight 4 / motion 1)
+  editorial: {
+    sectionClass: { '*': 'feature-spread' },
+    css: `.voice-editorial .kicker{font-family:var(--f-display);font-style:italic;text-transform:none;letter-spacing:0.06em;font-size:0.62em;}
+.voice-editorial section[data-archetype="A2"] p::first-letter{font-family:var(--f-display);font-size:2.8em;line-height:0.9;float:left;padding-right:0.12em;color:var(--c-accent);}
+.voice-editorial section[data-archetype="A4"]>div:first-child{box-shadow:inset 0 0 0 0.45em var(--c-fg),inset 0 0 0 calc(0.45em + 1px) var(--c-bg);}
+.voice-editorial h1,.voice-editorial h2,.voice-editorial h3{font-weight:600;}`,
+  },
+  // luxury「深底金调,plinth + material rail + lookbook 留白」→ 金字轨道 + 轻字重宽字距(weight 3 / motion 1)
+  luxury: {
+    sectionClass: { '*': 'plinth' },
+    css: `.voice-luxury .plinth{box-shadow:inset 1px 0 0 var(--c-accent);}
+.voice-luxury h1,.voice-luxury h2,.voice-luxury h3{font-weight:400;letter-spacing:0.06em;}
+.voice-luxury .kicker{letter-spacing:0.34em;}
+.voice-luxury .pin,.voice-luxury .evidence-label{letter-spacing:0.2em;}`,
+  },
+};
+
+// motion ≥4 → fragment fade-up 默认开启的标记 CSS(配 body.voice-motion-high;
+// 生成的骨架暂产不出 fragment,此为下游手工/后续消费层的默认动效契约;
+// prefers-reduced-motion 媒体查询(!important)仍优先,动效可被系统关闭)
+const MOTION_FRAGMENT_CSS = `.voice-motion-high .reveal .fragment{opacity:0;transform:translateY(0.35em);transition:opacity .45s var(--ease),transform .45s var(--ease);}
+.voice-motion-high .reveal .fragment.visible{opacity:1;transform:none;}`;
+
+// dimensions 推导的通用气质层:weight ≥6 → 更粗 display 字重 + 更硬边框;
+// weight ≤3 → 更轻字重 + 宽字距。先于手写签名注入(同优先级后者胜,签名可精修)。
+function dimensionCss(name, dim) {
+  const v = `.voice-${name}`;
+  if (dim.weight >= 6) return `${v} h1,${v} h2,${v} h3{font-weight:700;}${v} .sig-grid>div{border-width:2px !important;}`;
+  if (dim.weight <= 3) return `${v} h1,${v} h2,${v} h3{font-weight:400;letter-spacing:0.04em;}`;
+  return '';
+}
+
+// 合成 voice 签名:{ css(通用气质层 + 手写签名 + motion 标记), sectionClass, motionHigh }
+const signatureCache = {};
+function buildVoiceSignature(voice) {
+  if (signatureCache[voice]) return signatureCache[voice];
+  const reg = REGISTRY_BY_NAME[voice];
+  const dim = reg && reg.dimensions;
+  const sig = VOICE_SIGNATURES[voice] || null;
+  let css = '';
+  if (dim) css += dimensionCss(voice, dim) + '\n';
+  if (sig) css += sig.css + '\n';
+  const motionHigh = Boolean(dim && dim.motion >= 4);
+  if (motionHigh) css += MOTION_FRAGMENT_CSS + '\n';
+  signatureCache[voice] = { css, sectionClass: (sig && sig.sectionClass) || {}, motionHigh };
+  return signatureCache[voice];
+}
+
+// section 签名 class:通配('*')+ 按 archetype 命中,拼进 class 属性
+function sigSectionClasses(route, input) {
+  const sc = buildVoiceSignature(input.voice).sectionClass;
+  const out = [];
+  if (sc['*']) out.push(sc['*']);
+  if (sc[route.archetype]) out.push(sc[route.archetype]);
+  return out.length ? ' ' + out.join(' ') : '';
+}
+
+// 变体参数落 data-variant 属性:未被版式直接消费的 params 也不丢,供后续消费层读取
+function dataVariantAttr(route) {
+  const p = route.variant_params;
+  if (!p) return '';
+  const s = Object.keys(p).map(k => `${k}:${p[k]}`).join(';');
+  return ` data-variant="${esc(s)}"`;
 }
 
 // ── 12 archetype fill(对齐 references/layout-archetypes.md 骨架,token 化)──
 function fillArchetype(route, s, idx, total, input = {}) {
   const num = String(idx + 1).padStart(2, '0');
+  // 字段契约 + 优雅降级:8 个吃只读结构化字段的 archetype(A3/A5/A6/A7/A8/A9/A10/A11)
+  // 缺字段时,先 extractFields 从 body 补救抽取;仍缺 → 递归按 A4 满版分割渲染并
+  // 消费 body(route.degraded 标记,进生成报告),绝不渲染空网格。
+  const needs = REQUIRED_FIELDS[route.archetype];
+  if (needs && !needs(s)) {
+    const extracted = extractFields(s, route.archetype);
+    const merged = extracted ? Object.assign({}, s, extracted) : null;
+    if (merged && needs(merged)) {
+      s = merged;
+      route.extracted_fields = Object.keys(extracted).join(',');
+    } else if (route.archetype === 'A10' && s.body) {
+      // A10 特例:抽不出引号句但 body 在 → 沿用 body 渲染(非空网格),不降级
+    } else {
+      route.degraded = true;
+      // 降级后按 A4 渲染,原 archetype 的变体参数一并作废(不消费、不落 data-variant)
+      return fillArchetype(Object.assign({}, route, { archetype: 'A4', variant_hint: null, variant_params: null }), s, idx, total, input);
+    }
+  }
   const v = route.variant_hint ? `<!-- variant:${esc(route.variant_hint)} -->` : '';
+  const vAttr = dataVariantAttr(route);          // 变体参数落属性(供后续消费)
+  const sigCls = sigSectionClasses(route, input); // voice 签名 class(供 nativeSignals)
   const evidence = `<div class="evidence-label">${esc(evidenceStatus(s, input))}</div>`;
   const wrap = (inner, cls = 'deck-flex', style = 'height:100%;') =>
-    `<section class="${cls}" data-background="var(--c-bg)" style="${style}">${v}${evidence}${inner}<div class="pin">${num} / ${esc(route.content_type)}</div></section>`;
+    `<section class="${cls}${sigCls}" data-archetype="${route.archetype}"${vAttr} data-background="var(--c-bg)" style="${style}">${v}${evidence}${inner}<div class="pin">${num} / ${esc(route.content_type)}</div></section>`;
 
   switch (route.archetype) {
     // A1 Masthead Cover
@@ -116,11 +478,17 @@ function fillArchetype(route, s, idx, total, input = {}) {
       <div style="height:1px;background:var(--c-border);margin:1.1em 0;"></div>
       <p style="font-size:0.9em;max-width:50ch;color:var(--c-fg-2);">${esc(s.support || '')}</p>`, 'deck-flex', 'flex-direction:column;justify-content:center;padding:0 5em;height:100%;');
 
-    // A3 Register Axis
-    case 'A3': return wrap(`<div class="kicker">${esc(s.title || '编年')}</div>
+    // A3 Register Axis(variant:node_density=non-uniform → 关键节点列宽 1.6fr + 间距收紧)
+    case 'A3': {
+      const nd = route.variant_params && route.variant_params.node_density;
+      const nodeCols = nd === 'non-uniform'
+        ? (s.nodes || []).map(n => (n.accent ? '1.6fr' : '1fr')).join(' ')
+        : `repeat(${Math.min((s.nodes || []).length, 6)},1fr)`;
+      const nodeGap = nd === 'non-uniform' ? '10px' : '14px';
+      return wrap(`<div class="kicker">${esc(s.title || '编年')}</div>
       <h2 style="font-family:var(--f-display);font-size:1.8em;margin:0.3em 0 0.4em;">${esc(s.subtitle || s.title || '')}</h2>
       <div style="position:relative;margin-top:2.2em;padding-top:1.4em;border-top:2px solid var(--c-fg);">
-        <div style="display:grid;grid-template-columns:repeat(${Math.min((s.nodes||[]).length,6)},1fr);gap:14px;">
+        <div style="display:grid;grid-template-columns:${nodeCols};gap:${nodeGap};">
           ${(s.nodes || []).map(n => `<div style="position:relative;padding-top:1.4em;">
             <div style="position:absolute;top:-1.85em;left:0;width:9px;height:9px;border-radius:50%;background:${n.accent ? 'var(--c-accent)' : 'var(--c-fg-3)'};"></div>
             <div style="font-family:var(--f-display);font-style:italic;font-size:1.5em;line-height:1;color:${n.accent ? 'var(--c-accent)' : 'var(--c-fg)'};">${esc(n.year)}</div>
@@ -129,22 +497,26 @@ function fillArchetype(route, s, idx, total, input = {}) {
           </div>`).join('')}
         </div>
       </div>`, 'deck-flex', 'flex-direction:column;padding:2.6em 3em;height:100%;');
+    }
 
-    // A4 Full-Bleed Split
-    case 'A4': return `<section class="deck-flex" data-background="var(--c-bg)" style="height:100%;padding:0;">${v}${evidence}
+    // A4 Full-Bleed Split(body 按行/分号拆段消费,自由文本也能读)
+    case 'A4': return `<section class="deck-flex${sigCls}" data-archetype="A4"${vAttr} data-background="var(--c-bg)" style="height:100%;padding:0;">${v}${evidence}
       <div style="width:42%;background:var(--c-fg);color:var(--c-bg);display:flex;flex-direction:column;justify-content:space-between;padding:2.2em 2em;">
         <div><div class="kicker" style="color:var(--c-bg);opacity:0.82;">${esc(s.title)}</div>
         <h2 style="color:var(--c-bg);margin:0.5em 0 0;">${esc(s.panel_title||s.title)}</h2></div>
         <div style="font-family:var(--f-display);font-style:italic;color:var(--c-bg);font-size:1.1em;">${esc(s.panel_quote||'')}</div>
       </div>
-      <div style="width:58%;display:flex;flex-direction:column;justify-content:center;padding:2.2em 2.6em;">${esc(s.body||'')}</div>
+      <div style="width:58%;display:flex;flex-direction:column;justify-content:center;padding:2.2em 2.6em;gap:0.55em;">${bodyLines(s.body).map(l => `<p style="font-size:0.82em;line-height:1.5;color:var(--c-fg-2);">${esc(l)}</p>`).join('')}</div>
       <div class="pin" style="color:rgba(240,233,216,0.6);">${num} / ${esc(route.content_type)}</div></section>`;
 
-    // A5 Anchor Numeral(variant:显著数据放大)
-    case 'A5': return wrap(`<div style="display:flex;gap:3em;align-items:flex-start;width:100%;">
+    // A5 Anchor Numeral(variant:anchor_scale → 锚点字号上限,显著数据放大)
+    case 'A5': {
+      const as = route.variant_params && route.variant_params.anchor_scale;
+      const numSize = as ? `clamp(4em,${as}em,${(as + 0.8).toFixed(1)}em)` : 'clamp(3.6em,5em,5.6em)';
+      return wrap(`<div style="display:flex;gap:3em;align-items:flex-start;width:100%;">
       <div style="flex:1;">
         <div class="kpi-label" style="color:var(--c-fg-3);font-family:var(--f-mono);font-size:0.5em;letter-spacing:0.16em;text-transform:uppercase;">${esc(s.label||'')}</div>
-        <div style="font-family:var(--f-display);font-size:${route.variant_hint ? 'clamp(4em,5.6em,6.4em)' : 'clamp(3.6em,5em,5.6em)'};font-weight:600;font-style:italic;line-height:1;margin:0.15em 0;color:var(--c-accent);">${esc(s.number||'')}</div>
+        <div style="font-family:var(--f-display);font-size:${numSize};font-weight:600;font-style:italic;line-height:1;margin:0.15em 0;color:var(--c-accent);">${esc(s.number||'')}</div>
         <div style="font-family:var(--f-display);font-style:italic;font-size:1.2em;margin-top:0.4em;">${esc(s.event||s.title||'')}</div>
         <p style="font-size:0.78em;margin-top:0.5em;color:var(--c-fg-2);">${esc(s.note||'')}</p>
         <div style="font-family:var(--f-mono);font-size:0.5em;color:var(--c-fg-3);margin-top:0.6em;letter-spacing:0.1em;text-transform:uppercase;">${esc(s.source||'')}</div>
@@ -153,9 +525,12 @@ function fillArchetype(route, s, idx, total, input = {}) {
         <div class="kpi-label" style="font-family:var(--f-mono);font-size:0.5em;letter-spacing:0.16em;text-transform:uppercase;color:var(--c-fg-2);">证据</div>
         ${(s.evidence || []).map(e => `<div style="display:flex;justify-content:space-between;padding:0.4em 0;border-bottom:1px solid var(--c-rule);font-size:0.7em;"><span style="color:var(--c-fg-2);">${esc(e.k)}</span><b style="font-family:var(--f-mono);color:var(--c-fg);">${esc(e.v)}</b></div>`).join('')}
       </div></div>`, 'deck-flex', 'align-items:center;padding:2.6em 3.2em;height:100%;');
+    }
 
-    // A6 Face-Off Compare
-    case 'A6': return `<section class="deck-flex" data-background="var(--c-bg)" style="height:100%;padding:0;">${v}${evidence}
+    // A6 Face-Off Compare(variant:verdict_scale → 裁决字号;无变体时收 2.2em,对峙变体才放大)
+    case 'A6': {
+      const vscale = route.variant_params && route.variant_params.verdict_scale;
+      return `<section class="deck-flex${sigCls}" data-archetype="A6"${vAttr} data-background="var(--c-bg)" style="height:100%;padding:0;">${v}${evidence}
       <div style="width:52%;background:var(--c-accent);color:var(--c-bg);display:flex;flex-direction:column;justify-content:space-between;padding:1.9em 2.4em;">
         <div><div style="font-family:var(--f-mono);font-size:0.5em;letter-spacing:0.16em;text-transform:uppercase;color:var(--c-bg);opacity:0.8;">${esc(s.a_label||'A')}</div>
         <div style="font-family:var(--f-display);font-size:clamp(3.4em,4.6em,5.2em);font-style:italic;font-weight:600;color:var(--c-bg);line-height:1;">${esc(s.a_value||'')}</div>
@@ -168,24 +543,29 @@ function fillArchetype(route, s, idx, total, input = {}) {
         <div style="font-family:var(--f-mono);font-size:0.5em;color:var(--c-fg-2);">${esc(s.b_unit||'')}</div>
         ${(s.b_details||[]).map(d=>`<div style="font-size:0.62em;color:var(--c-fg-2);border-top:1px solid var(--c-rule);padding-top:0.3em;margin-top:0.3em;">${esc(d)}</div>`).join('')}
         <div style="height:1px;background:var(--c-fg);margin:1.2em 0 0.8em;"></div>
-        <div style="font-family:var(--f-display);font-style:italic;font-size:2.7em;color:var(--c-accent);line-height:1;">${esc(s.verdict||'')}</div>
+        <div style="font-family:var(--f-display);font-style:italic;font-size:${vscale ? `${vscale}em` : '2.2em'};color:var(--c-accent);line-height:1;">${esc(s.verdict||'')}</div>
         <div style="font-family:var(--f-mono);font-size:0.5em;color:var(--c-fg-2);letter-spacing:0.12em;text-transform:uppercase;">${esc(s.verdict_note||'')}</div>
       </div><div class="pin">${num} / ${esc(route.content_type)}</div></section>`;
+    }
 
-    // A7 KPI Grid
+    // A7 KPI Grid(sig-grid:voice 签名卡面 hook)
     case 'A7': return wrap(`<div class="kicker">${esc(s.title||'指标')}</div>
-      <div style="display:grid;grid-template-columns:repeat(${Math.min((s.kpis||[]).length,4)},1fr);gap:1.1em;margin-top:1.4em;">
+      <div class="sig-grid" style="display:grid;grid-template-columns:repeat(${Math.min((s.kpis||[]).length,4)},1fr);gap:1.1em;margin-top:1.4em;">
         ${(s.kpis||[]).map((k,i)=>`<div style="border:1px solid var(--c-fg);background:${i===0?'var(--c-fg)':'var(--c-bg-paper)'};color:${i===0?'var(--c-bg)':'var(--c-fg)'};padding:1.1em 1em;">
           <div style="font-family:var(--f-mono);font-size:0.48em;letter-spacing:0.12em;text-transform:uppercase;opacity:0.8;">${esc(k.label)}</div>
           <div style="font-family:var(--f-display);font-style:italic;font-weight:600;font-size:2.6em;line-height:0.95;color:${i===0?'var(--c-bg)':'var(--c-accent)'};margin-top:0.15em;">${esc(k.value)}</div>
           <div style="font-size:0.58em;opacity:0.75;margin-top:0.2em;">${esc(k.note||'')}</div></div>`).join('')}
       </div>`, 'deck-flex', 'flex-direction:column;justify-content:center;padding:2.6em 3em;height:100%;');
 
-    // A8 Mechanism(items 文字标签 + 衰减条,绝不丢内容;A8 仅适合量化前后对比)
-    case 'A8': return wrap(`<div class="kicker">${esc(s.title||'机制')}</div>
+    // A8 Mechanism(items 文字标签 + 衰减条,绝不丢内容;A8 仅适合量化前后对比;
+    // variant:panel_ratio → 后栏占比(0.38 → 前栏 flex 1.63 / 后栏 1))
+    case 'A8': {
+      const pr = route.variant_params && route.variant_params.panel_ratio;
+      const beforeFlex = pr ? Math.round(((1 - pr) / pr) * 100) / 100 : 1;
+      return wrap(`<div class="kicker">${esc(s.title||'机制')}</div>
       <h2 style="font-family:var(--f-display);font-size:1.8em;margin:0.3em 0 1em;">${esc(s.subtitle||s.title||'')}</h2>
       <div style="display:flex;gap:1.2em;align-items:stretch;">
-        <div style="flex:1;border:1px solid var(--c-border);padding:1em;">
+        <div style="flex:${beforeFlex};border:1px solid var(--c-border);padding:1em;">
           <div style="font-family:var(--f-mono);font-size:0.48em;letter-spacing:0.12em;text-transform:uppercase;color:var(--c-fg-3);margin-bottom:0.5em;">${esc(s.before_label||'前')}</div>
           ${(s.before_items||[]).map((it,i)=>`<div style="margin:0.5em 0;"><div style="font-size:0.62em;color:var(--c-fg-2);margin-bottom:0.25em;">${esc(it)}</div><div style="height:0.5em;background:var(--c-fg);opacity:${0.85-i*0.13};"></div></div>`).join('')}
         </div>
@@ -196,17 +576,22 @@ function fillArchetype(route, s, idx, total, input = {}) {
           <div style="font-family:var(--f-mono);font-size:0.52em;margin-top:0.6em;">${esc(s.reduction||'')}</div>
         </div>
       </div>`, 'deck-flex', 'flex-direction:column;justify-content:center;padding:2.6em 3em;height:100%;');
+    }
 
-    // A9 Evidence Table
-    case 'A9': return wrap(`<div class="kicker">${esc(s.title||'台账')}</div>
+    // A9 Evidence Table(variant:highlight_col 参数优先于字段,主角列 accent 高亮)
+    case 'A9': {
+      const hlCol = (route.variant_params && route.variant_params.highlight_col != null)
+        ? route.variant_params.highlight_col : s.highlight_col;
+      return wrap(`<div class="kicker">${esc(s.title||'台账')}</div>
       <h2 style="font-family:var(--f-display);font-size:1.6em;margin:0.3em 0 0.8em;">${esc(s.subtitle||s.title||'')}</h2>
       <table style="width:100%;border-collapse:collapse;font-family:var(--f-body);font-size:0.66em;">
-        <thead><tr>${(s.headers||[]).map((h,i)=>`<th style="text-align:${i===0?'left':'right'};padding:0.5em;font-family:var(--f-mono);font-size:0.85em;letter-spacing:0.12em;text-transform:uppercase;color:${i===s.highlight_col?'var(--c-accent)':'var(--c-fg-3)'};border-bottom:2px solid var(--c-fg);">${esc(h)}</th>`).join('')}</tr></thead>
-        <tbody>${(s.rows||[]).map(r=>`<tr>${r.map((c,i)=>`<td style="padding:0.55em 0.5em;border-bottom:1px solid var(--c-rule);text-align:${i===0?'left':'right'};color:${i===s.highlight_col?'var(--c-accent)':'var(--c-fg-2)'};font-weight:${i===s.highlight_col?600:400};${i>0?'font-family:var(--f-mono);':''}">${esc(c)}</td>`).join('')}</tr>`).join('')}</tbody>
+        <thead><tr>${(s.headers||[]).map((h,i)=>`<th style="text-align:${i===0?'left':'right'};padding:0.5em;font-family:var(--f-mono);font-size:0.85em;letter-spacing:0.12em;text-transform:uppercase;color:${i===hlCol?'var(--c-accent)':'var(--c-fg-3)'};border-bottom:2px solid var(--c-fg);">${esc(h)}</th>`).join('')}</tr></thead>
+        <tbody>${(s.rows||[]).map(r=>`<tr>${r.map((c,i)=>`<td style="padding:0.55em 0.5em;border-bottom:1px solid var(--c-rule);text-align:${i===0?'left':'right'};color:${i===hlCol?'var(--c-accent)':'var(--c-fg-2)'};font-weight:${i===hlCol?600:400};${i>0?'font-family:var(--f-mono);':''}">${esc(c)}</td>`).join('')}</tr>`).join('')}</tbody>
       </table>`, 'deck-flex', 'flex-direction:column;padding:2.6em 3em;height:100%;');
+    }
 
     // A10 Pullquote
-    case 'A10': return `<section class="deck-grid" data-background="var(--c-bg)" style="grid-template-columns:0.3fr 0.7fr;gap:64px;align-items:center;padding:64px 80px;height:100%;">${v}${evidence}
+    case 'A10': return `<section class="deck-grid${sigCls}" data-archetype="A10"${vAttr} data-background="var(--c-bg)" style="grid-template-columns:0.3fr 0.7fr;gap:64px;align-items:center;padding:64px 80px;height:100%;">${v}${evidence}
       <div style="border-right:1px solid var(--c-border);padding-right:56px;">
         <div style="font-family:var(--f-display);font-style:italic;font-size:4em;color:var(--c-accent);line-height:0.9;">№ ${esc(s.number||'')}</div>
         <div style="font-family:var(--f-mono);font-size:0.5em;letter-spacing:0.12em;text-transform:uppercase;color:var(--c-fg-2);margin-top:0.6em;">${esc(s.title||'引言')}</div>
@@ -216,10 +601,10 @@ function fillArchetype(route, s, idx, total, input = {}) {
       <div style="font-family:var(--f-display);font-style:italic;font-size:1.9em;line-height:1.32;color:var(--c-fg);">"${esc(s.quote||s.body||'')}"</div>
       <div class="pin" style="bottom:24px;">${num} / ${esc(route.content_type)}</div></section>`;
 
-    // A11 Takeaway Roster
+    // A11 Takeaway Roster(sig-grid:voice 签名卡面 hook)
     case 'A11': return wrap(`<div class="kicker">${esc(s.title||'要点')}</div>
       <h2 style="font-family:var(--f-display);font-size:1.8em;margin:0.3em 0 1em;">${esc(s.subtitle||s.title||'')}</h2>
-      <div style="display:grid;grid-template-columns:repeat(${Math.min((s.items||[]).length,3)},1fr);gap:1.4em;">
+      <div class="sig-grid" style="display:grid;grid-template-columns:repeat(${Math.min((s.items||[]).length,3)},1fr);gap:1.4em;">
         ${(s.items||[]).map((it,i)=>`<div style="border-top:3px solid var(--c-accent);padding:0.7em 0;">
           <div style="font-family:var(--f-display);font-style:italic;font-size:2.5em;color:var(--c-accent);line-height:1;">${['i','ii','iii','iv'][i]}.</div>
           <h3 style="font-size:1.1em;margin:0.4em 0 0.25em;">${esc(it.t)}</h3>
@@ -237,7 +622,7 @@ function fillArchetype(route, s, idx, total, input = {}) {
     // IMG · 图像对峙(顶部标题 + 双图并排对比 + 标签;图像驱动主题。proof 是图,非文字)
     case 'IMG': {
       requireFields('image-compare', s, ['img_a', 'img_b', 'a_label', 'b_label']);
-      return `<section class="deck-flex" data-background="var(--c-bg)" style="height:100%;flex-direction:column;padding:0;">${v}${evidence}
+      return `<section class="deck-flex${sigCls}" data-archetype="IMG"${vAttr} data-background="var(--c-bg)" style="height:100%;flex-direction:column;padding:0;">${v}${evidence}
         <div style="padding:1em 1.6em 0.7em;border-bottom:1px solid var(--c-border);">
           <div class="kicker">${esc(s.subtitle||'图像对比')}</div>
           <h2 style="font-family:var(--f-display);font-size:1.7em;font-style:italic;margin:0.2em 0 0;color:var(--c-fg);">${esc(s.title||'')}</h2>
@@ -273,16 +658,21 @@ function assembleDeck(input, routed) {
     throw new Error('Missing required voice token name');
   }
   requireOffTemplateContract(input, routed);
-  requireNoImplicitFallback(routed);
+  // 无法自动分类的段落(fallback_chapter)不再 throw:按 A4 消费 body 渲染,
+  // 清单见 routeReportLines(routed) 的「待人工标注段落」。
   const voice = input.voice;
   const tokens = readTokensInline(voice);
   const fonts = VOICE_FONTS[voice];
   if (!fonts) {
     const supported = Object.keys(VOICE_FONTS).join(', ');
-    throw new Error(`Missing voice font mapping: ${voice}. Supported voices: ${supported}. To add: insert a VOICE_FONTS entry + tokens/${voice}.css.`);
+    throw new Error(`Missing voice font mapping: ${voice}. Supported voices: ${supported}. To add: add a voice entry to tokens/voices.json then run: node scripts/build-voice-tokens.js`);
   }
   const pptxClient = readPptxClientInline();
   const sections = routed.routes.map((r, i) => fillArchetype(r, input.sections[i], i, routed.routes.length, input)).join('\n');
+  // voice 签名层:body 带 voice-<name>(+ motion≥4 时 voice-motion-high 标记),
+  // 签名 CSS 注入 <style> 末尾(覆盖层,只覆盖不重建骨架;只用 token 变量)
+  const sig = buildVoiceSignature(voice);
+  const voiceCls = String(voice).replace(/[^a-z0-9-]/gi, '');
   return `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -310,9 +700,9 @@ ${tokens}
 #pptx-export-btn{position:fixed;top:14px;right:14px;z-index:1000;opacity:0;pointer-events:none;border:1px solid var(--c-border);background:var(--c-bg);color:var(--c-fg);font-family:var(--f-mono);font-size:11px;letter-spacing:0.12em;padding:6px 10px;}
 #pptx-export-btn:focus,#pptx-export-btn:hover,body:hover #pptx-export-btn{opacity:1;pointer-events:auto;}
 @media (prefers-reduced-motion:reduce){.reveal *{transition:none!important;animation:none!important;}}
-</style>
+${sig.css}</style>
 </head>
-<body>
+<body class="voice-${voiceCls}${sig.motionHigh ? ' voice-motion-high' : ''}">
 <div class="reveal"><div class="slides">
 ${sections}
 </div></div>
@@ -386,7 +776,9 @@ function main() {
   console.log('✅ 生成 deck:', path.relative(ROOT, out));
   console.log('   主题:', input.topic);
   console.log('   路由:', routed.deck_check.hint);
+  // 生成报告:序列 warning + 待人工标注段落 + 字段抽取/降级清单
+  for (const line of routeReportLines(routed)) console.log(line);
 }
 
 if (require.main === module) main();
-module.exports = { fillArchetype, assembleDeck, MEDICAL };
+module.exports = { fillArchetype, assembleDeck, extractFields, listImplicitFallbacks, routeReportLines, MEDICAL, VOICE_SIGNATURES, buildVoiceSignature };
