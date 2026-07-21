@@ -22,9 +22,14 @@ const referenceFiles = [
 const staleTokenRe = /var\(--(?:accent|accent-light|accent-dark|bg|bg-subtle|text|text-muted|text-subtle)\)/g;
 
 const failures = [];
+const warnings = [];
 
 function fail(message) {
   failures.push(message);
+}
+
+function warn(message) {
+  warnings.push(message);
 }
 
 function read(relativePath) {
@@ -219,10 +224,20 @@ function assertSelector(templatePath, template, selector, context) {
   }
 }
 
+// 这些种子模板的原生承载面必须有物理契约(与 template-03 建筑图纸同一强制级别),
+// contracts 由 scripts/test-spatial-integrity.js 在渲染态几何执行。
+const physicalContractRequired = new Set([
+  'examples/template-02-dark-tech.html',
+  'examples/template-03-minimal-spatial.html',
+  'examples/template-04-vibrant-gradient.html',
+  'examples/template-09-editorial-photo.html',
+  'examples/template-10-clinical-trial.html',
+]);
+
 function assertPhysicalContract(templatePath, template, invariant) {
   const contract = invariant.physicalContract;
-  if (templatePath === 'examples/template-03-minimal-spatial.html' && !contract) {
-    fail(`${templatePath} must declare a physicalContract for the architectural drawing sheet.`);
+  if (physicalContractRequired.has(templatePath) && !contract) {
+    fail(`${templatePath} must declare a physicalContract for its native physical surface.`);
     return;
   }
   if (!contract) return;
@@ -297,7 +312,7 @@ function readTemplateInvariants() {
 const templateInvariants = readTemplateInvariants();
 const invariantTemplatePaths = Object.keys(templateInvariants.templates).sort();
 if (JSON.stringify(invariantTemplatePaths) !== JSON.stringify([...expectedTemplates].sort())) {
-  fail('references/template-invariants.json must list exactly the 8 expected seed templates.');
+  fail(`references/template-invariants.json must list exactly the ${expectedTemplates.length} expected seed templates.`);
 }
 
 const coverClassOwners = new Map();
@@ -398,6 +413,16 @@ for (const templatePath of expectedTemplates) {
     if (classMarkerExists(template, marker) || cssClassSelectorExists(template, marker)) {
       fail(`${templatePath} still uses fallback cover object "${marker}"; use the stronger native composition instead.`);
     }
+  }
+
+  // forbiddenProse 是散文禁令(schema 的 class marker 表达不了的语义禁令,如「裸图无
+  // overlay」):不做 class 检查,只作为 warning 提示人工审阅,不影响退出码。
+  for (const note of invariant.forbiddenProse || []) {
+    if (typeof note !== 'string' || !note.trim()) {
+      fail(`${templatePath} forbiddenProse entries must be non-empty strings.`);
+      continue;
+    }
+    warn(`${templatePath} forbiddenProse (human review, not machine-checked): ${note}`);
   }
 
   assertPhysicalContract(templatePath, template, invariant);
@@ -507,6 +532,13 @@ if (!fs.existsSync(fixtureAbs)) {
     if (parsed.summary.p0 !== 0 || parsed.summary.p1 !== 0) {
       fail(`${fixturePath} has P0/P1 design issues: ${lint.stdout}`);
     }
+  }
+}
+
+if (warnings.length) {
+  console.warn('Reference contract warnings:');
+  for (const warning of warnings) {
+    console.warn(`- ${warning}`);
   }
 }
 

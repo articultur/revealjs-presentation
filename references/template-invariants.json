@@ -50,6 +50,41 @@
         "mechanism": "signal-page",
         "close": "status-grid"
       },
+      "physicalContract": {
+        "version": 1,
+        "purpose": "The ops console is a physical monitoring surface: the terminal panel must own its readout lines, and the console must not collide with the headline copy. Radar and blips are a decorative layer (data-qa-ignore) and stay outside ownership checks.",
+        "surfaceRules": [
+          {
+            "name": "terminal-owns-readout-lines",
+            "surface": ".terminal",
+            "contents": [
+              ".term-bar",
+              ".line"
+            ],
+            "maxSpillPx": 2,
+            "requireOwnership": true
+          }
+        ],
+        "exclusionRules": [
+          {
+            "name": "terminal-must-not-cover-headline-copy",
+            "a": ".terminal",
+            "b": ".cover-body",
+            "maxIntersectionArea": 1
+          }
+        ],
+        "collisionRules": [
+          {
+            "name": "cursor-does-not-cover-readout-keys",
+            "scope": ".terminal",
+            "a": ".cursor",
+            "b": ".key",
+            "bTextPattern": "eu-|us-|ap-",
+            "maxIntersectionWidthPx": 2,
+            "maxIntersectionHeightPx": 2
+          }
+        ]
+      },
       "forbidden": []
     },
     "examples/template-03-minimal-spatial.html": {
@@ -173,6 +208,52 @@
         "proof": "impact",
         "mechanism": "chat",
         "close": "launch-close"
+      },
+      "physicalContract": {
+        "version": 1,
+        "purpose": "The keynote stage is a physical venue: the main screen hangs inside the stage scene above the audience floor, the camera frame must align with the screen it shoots, and broadcast copy must stay on its screen surface.",
+        "surfaceRules": [
+          {
+            "name": "main-screen-owns-broadcast-copy",
+            "surface": ".main-screen",
+            "contents": [
+              ".screen-tag",
+              "h1",
+              ".sub"
+            ],
+            "maxSpillPx": 2,
+            "requireOwnership": true
+          },
+          {
+            "name": "camera-frame-owns-rec-readouts",
+            "surface": ".camera-frame",
+            "contents": [
+              ".rec",
+              ".timecode"
+            ],
+            "maxSpillPx": 2,
+            "requireOwnership": true
+          }
+        ],
+        "alignmentRules": [
+          {
+            "name": "camera-frame-aligns-with-main-screen",
+            "type": "horizontalEdges",
+            "subject": ".camera-frame",
+            "target": ".main-screen",
+            "maxDeltaPx": 2
+          }
+        ],
+        "placementRules": [
+          {
+            "name": "main-screen-hangs-inside-stage-scene",
+            "subject": ".main-screen",
+            "container": ".stage-scene",
+            "maxLeftInsetPx": 170,
+            "maxTopInsetPx": 40,
+            "minBottomClearancePx": 60
+          }
+        ]
       },
       "forbidden": []
     },
@@ -328,9 +409,50 @@
         "mechanism": "ph-spread",
         "close": "ph-credits"
       },
+      "physicalContract": {
+        "version": 1,
+        "purpose": "The hero photo is a full-bleed physical print: the gradient overlay and cover typography sit on top of it (photo and overlay are data-qa-ignore decorative layers), cover content must own its type, and corner furniture must not collide with the headline layer.",
+        "surfaceRules": [
+          {
+            "name": "cover-content-owns-cover-typography",
+            "surface": ".cover-content",
+            "contents": [
+              ".kicker",
+              "h1",
+              ".cover-deck",
+              ".cover-meta"
+            ],
+            "maxSpillPx": 2,
+            "requireOwnership": true
+          }
+        ],
+        "exclusionRules": [
+          {
+            "name": "cover-stamp-must-not-enter-cover-code",
+            "a": ".cover-stamp",
+            "b": ".cover-code",
+            "maxIntersectionArea": 1
+          }
+        ],
+        "collisionRules": [
+          {
+            "name": "stamp-does-not-cover-headline",
+            "scope": ".ph-cover",
+            "a": ".cover-stamp",
+            "b": "h1",
+            "bTextPattern": "城市|City|照片",
+            "maxIntersectionWidthPx": 2,
+            "maxIntersectionHeightPx": 2
+          }
+        ]
+      },
       "forbidden": [
-        "bare photo without overlay/filter",
-        "stock-photo staging"
+        "hero-img bare",
+        "stock-photo"
+      ],
+      "forbiddenProse": [
+        "bare photo without overlay/filter: every photo must carry a treatment class (hero-img overlay, section-dim, or muted-img) plus its gradient overlay; no raw bare photo ships",
+        "stock-photo staging: no staged stock-photo semantics (see image-driven-deck.md selection rules); the photo is the proof object"
       ]
     },
     "examples/template-10-clinical-trial.html": {
@@ -357,6 +479,52 @@
         "proof": "response-stack",
         "mechanism": "km-curve",
         "close": "dossier-close"
+      },
+      "physicalContract": {
+        "version": 1,
+        "purpose": "The KM curve and forest plot are measured coordinate systems: every axis label, curve, and marker stays inside its plot viewport, median markers and point estimates must not cover value labels, and the reading column must not intrude into the plot panel.",
+        "surfaceRules": [
+          {
+            "name": "plot-viewport-owns-coordinate-marks",
+            "surface": "svg",
+            "contents": [
+              "svg text",
+              "svg circle",
+              "svg polyline",
+              "svg rect"
+            ],
+            "maxSpillPx": 2,
+            "requireOwnership": true
+          }
+        ],
+        "exclusionRules": [
+          {
+            "name": "reading-column-must-not-enter-plot-panel",
+            "a": ".anchor-num",
+            "b": "svg",
+            "maxIntersectionArea": 1
+          }
+        ],
+        "collisionRules": [
+          {
+            "name": "median-marker-does-not-cover-curve-label",
+            "scope": ".km-curve",
+            "a": "svg circle[fill=\"var(--c-drug)\"]",
+            "b": "svg text",
+            "bTextPattern": "mo|Months",
+            "maxIntersectionWidthPx": 2,
+            "maxIntersectionHeightPx": 2
+          },
+          {
+            "name": "point-estimate-does-not-cover-hr-value",
+            "scope": ".forest-plot",
+            "a": "svg rect[fill=\"var(--c-drug)\"]",
+            "b": "svg text",
+            "bTextPattern": "^0\\.",
+            "maxIntersectionWidthPx": 2,
+            "maxIntersectionHeightPx": 2
+          }
+        ]
       },
       "forbidden": []
     }

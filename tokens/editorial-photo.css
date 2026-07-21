@@ -1,0 +1,52 @@
+/* ============================================================
+   editorial-photo.css — 社论摄影 / 图片即内容 风格 primitive
+   ============================================================
+   对应 references/template-invariants.json 的 template-09
+   —— editorial photo spread:满版 hero + 深色渐变 overlay、
+   摄影网格、图 + 数据锚点、全 deck 统一 muted 滤镜。
+
+   primitive 定义这个风格的原始色值与字体栈。
+   semantic 映射由 tokens/base.css 提供(--bg:var(--c-bg) 等)。
+
+   我们的实现:template-09 editorial-photo
+   ============================================================ */
+
+:root {
+  /* ── 颜色(primitive)──────────────────────────────
+     双基底:暗房墨(--c-bg,摄影页)与杂志纸(--c-bg-paper,文字页)。
+     砖红 accent 在纸上 AA(#a92a18 on #eee4ce = 5.48);--c-hot 与
+     --c-accent-2 是暗版上的高亮(6.44 与 10.14,AA),用于 overlay
+     上的强调与数据锚点。--c-stamp 为图注印章红。
+  ──────────────────────────────────────────────────────── */
+  --c-bg:       #11100d;
+  --c-bg-paper: #eee4ce;
+  --c-fg:       #15130f;
+  --c-fg-2:     rgba(21, 19, 15, 0.72);
+  --c-fg-3:     rgba(21, 19, 15, 0.43);
+  --c-accent:   #a92a18;
+  --c-hot:      #ff633d;
+  --c-accent-2: #f0b32f;
+  --c-stamp:    #d83b22;
+  --c-border:   rgba(21, 19, 15, 0.34);
+  --c-rule:     rgba(21, 19, 15, 0.18);
+
+  /* ── 字体(primitive)──────────────────────────────
+     --f-condensed 是图注 / 大标专用的海报窄体(ZCOOL QingKe
+     HuangYou)。字体 fallback 安全约束见 references/technical-specs.md
+     「字体 fallback 安全清单」(大字需窄体 fallback + ≥50px 间距)。
+  ──────────────────────────────────────────────────────── */
+  --f-display:   "Noto Serif SC", 'Arial Narrow', Georgia, serif;
+  --f-body:      "Noto Sans SC", 'Arial Narrow', system-ui, sans-serif;
+  --f-sans:      "Noto Sans SC", 'Arial Narrow', system-ui, sans-serif;
+  --f-condensed: "ZCOOL QingKe HuangYou", "Noto Sans SC", 'Arial Narrow', system-ui, sans-serif;
+  --f-mono:      "Courier Prime", 'Courier New', monospace;
+
+  /* ── 签名背景(配方,由 layout 层铺设)────────────────
+     hero 满版摄影 + 深色渐变 overlay(template-09 hero-gradient;
+     裸图无 overlay 属 forbidden,见 template-invariants.json):
+       background:
+         linear-gradient(100deg, rgba(17,16,13,0.96) 0%, rgba(17,16,13,0.86) 40%,
+           rgba(216,59,34,0.47) 65%, rgba(17,16,13,0.22) 100%),
+         linear-gradient(to top, rgba(17,16,13,0.92), transparent 58%);
+  ──────────────────────────────────────────────────────── */
+}

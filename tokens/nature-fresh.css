@@ -1,0 +1,50 @@
+/* ============================================================
+   nature-fresh.css — 自然清新 / 田野桌面 风格 primitive
+   ============================================================
+   对应 references/design-polish.md「Template 05:自然清新
+   (nature-fresh)」—— 田野桌面 / 工作坊:笔记本、钉图、样本标签、
+   标本信封、观察日志、共创画布。
+
+   primitive 定义这个风格的原始色值与字体栈。
+   semantic 映射由 tokens/base.css 提供(--bg:var(--c-bg) 等)。
+
+   我们的实现:template-05 nature-fresh
+   ============================================================ */
+
+:root {
+  /* ── 颜色(primitive)──────────────────────────────
+     田野纸色 + 墨绿 accent(AA:#3f6c3f on #f4ede0 = 5.26;
+     陶土 --c-clay on 底 = 4.65,AA 可作次级强调)。--c-ink 是手写
+     标注墨绿,--c-twine 是麻绳 / 装订线色,仅用于实物语义。
+  ──────────────────────────────────────────────────────── */
+  --c-bg:       #f4ede0;
+  --c-bg-paper: #faf4e4;
+  --c-bg-card:  #fffaee;
+  --c-fg:       #2a2418;
+  --c-fg-2:     rgba(42, 36, 24, 0.62);
+  --c-fg-3:     rgba(42, 36, 24, 0.34);
+  --c-accent:   #3f6c3f;
+  --c-leaf:     #6ba368;
+  --c-clay:     #a8512c;
+  --c-ink:      #2d4d35;
+  --c-twine:    #b89770;
+  --c-border:   rgba(42, 36, 24, 0.18);
+  --c-rule:     rgba(42, 36, 24, 0.12);
+
+  /* ── 字体(primitive)──────────────────────────────
+     --f-hand 是田野手注(标本标签 / 信封批注)专用手写体。
+     字体 fallback 安全约束见 references/technical-specs.md
+     「字体 fallback 安全清单」(大字需窄体 fallback + ≥50px 间距)。
+  ──────────────────────────────────────────────────────── */
+  --f-display: "Fraunces", "Noto Serif SC", 'Arial Narrow', Georgia, serif;
+  --f-body:    "Work Sans", "Noto Sans SC", 'Arial Narrow', system-ui, sans-serif;
+  --f-hand:    "Caveat", "Noto Sans SC", cursive;
+  --f-mono:    ui-monospace, "SF Mono", 'Courier New', monospace;
+
+  /* ── 签名背景(配方,由 layout 层铺设)────────────────
+     笔记本横线纸(template-05 notebook-spread):
+       background: var(--c-bg-paper);
+       background-image:
+         repeating-linear-gradient(180deg, transparent, transparent 27px, var(--c-rule) 27px, var(--c-rule) 28px);
+  ──────────────────────────────────────────────────────── */
+}

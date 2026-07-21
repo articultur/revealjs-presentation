@@ -1,0 +1,65 @@
+/* ============================================================
+   clinical-trial.css — 临床试验 / 监管档案 风格 primitive
+   ============================================================
+   对应 references/design-polish.md「Template 07:临床实验室
+   (clinical-lab)」设计语法,落地为 template-10 —— 证据装订册、
+   试验组 / 对照组轨道、终点印章、KM 生存曲线、亚组森林图、
+   安全性矩阵。
+
+   primitive 定义这个风格的原始色值与字体栈。
+   semantic 映射由 tokens/base.css 提供(--bg:var(--c-bg) 等)。
+
+   我们的实现:template-10 clinical-trial
+   ============================================================ */
+
+:root {
+  /* ── 颜色(primitive)──────────────────────────────
+     监管档案纸(微冷,非米色)+ 深墨 + 临床蓝(--c-drug 为试验组 /
+     效力语义,AA on bond);--c-ctrl 系为对照组灰;--c-ae 为不良事件
+     警示红(AA on bond);--c-onink-* 为深墨满版上的文字色。
+  ──────────────────────────────────────────────────────── */
+  --c-bg:       oklch(0.93 0.006 150);   /* regulatory bond paper (faintly cool, NOT cream) */
+  --c-bg-paper: oklch(0.96 0.004 150);
+  --c-bg-ink:   oklch(0.20 0.02 150);    /* deep ink full-bleed panel */
+  --c-fg:       oklch(0.16 0.012 150);   /* ink */
+  --c-fg-2:     oklch(0.16 0.012 150 / 0.72);
+  --c-fg-3:     oklch(0.16 0.012 150 / 0.45);
+  --c-drug:     oklch(0.34 0.13 255);    /* deep clinical blue — efficacy / committed accent (AA on bond) */
+  --c-drug-2:   oklch(0.42 0.11 240);    /* secondary blue */
+  --c-ctrl:     oklch(0.16 0.012 150 / 0.30);
+  --c-ctrl-2:   oklch(0.16 0.012 150 / 0.55);
+  --c-border:   oklch(0.16 0.012 150 / 0.18);
+  --c-rule:     oklch(0.16 0.012 150 / 0.12);
+  --c-ae:       oklch(0.36 0.14 28);     /* warning red (AA on bond) */
+  --c-onink-2:  oklch(0.95 0.006 150 / 0.80);
+  --c-onink-3:  oklch(0.95 0.006 150 / 0.50);
+
+  /* primitive 契约别名(base.css semantic 映射引用 --c-accent) */
+  --c-accent:   var(--c-drug);
+
+  /* ── 字体(primitive)──────────────────────────────
+     字体 fallback 安全约束见 references/technical-specs.md
+     「字体 fallback 安全清单」(大字需窄体 fallback + ≥50px 间距)。
+  ──────────────────────────────────────────────────────── */
+  --f-display: "Bitter", "Noto Sans SC", 'Arial Narrow', Georgia, serif;
+  --f-body:    "Hanken Grotesk", "Noto Sans SC", 'Arial Narrow', system-ui, sans-serif;
+  --f-mono:    "Spline Sans Mono", 'Courier New', monospace;
+  --f-sans:    "Hanken Grotesk", "Noto Sans SC", 'Arial Narrow', system-ui, sans-serif;
+
+  /* ── 排版与间距刻度(primitive)─────────────────────
+     Modular type scale(ratio ~1.25,基准 0.82em 正文)+ 间距刻度,
+     与 template-10 一致;data-dense 页面依赖该刻度控制密度。
+  ──────────────────────────────────────────────────────── */
+  --fs-7: 5.96em;  --fs-6: 4.77em;  --fs-5: 3.81em;  --fs-4: 3.05em;
+  --fs-3: 2.44em;  --fs-2: 1.95em;  --fs-1: 1.56em;  --fs-0: 1.05em;
+  --fs-body: 0.82em;
+
+  --sp-1: 0.25em;  --sp-2: 0.5em;  --sp-3: 0.75em;
+  --sp-4: 1em;     --sp-5: 1.5em;  --sp-6: 2em;
+
+  /* ── 签名背景(配方,由 layout 层铺设)────────────────
+     监管装订册纸面:全 deck 统一 --c-bg 档案纸(template-10 以
+     !important 压过 reveal.css 默认白底);证据页用 --c-bg-paper 卡片,
+     机制 / 收尾页用 --c-bg-ink 深墨满版反白。
+  ──────────────────────────────────────────────────────── */
+}

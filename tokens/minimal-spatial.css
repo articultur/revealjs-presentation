@@ -1,0 +1,48 @@
+/* ============================================================
+   minimal-spatial.css — 极简空间 / 建筑制图 风格 primitive
+   ============================================================
+   对应 references/design-polish.md「Template 03:极简空间
+   (minimal-spatial)」—— 建筑制图 / 空间叙事:标题栏、尺寸链、
+   平面图、比例尺、指北针、剖面。
+
+   primitive 定义这个风格的原始色值与字体栈。
+   semantic 映射由 tokens/base.css 提供(--bg:var(--c-bg) 等)。
+
+   我们的实现:template-03 minimal-spatial
+   ============================================================ */
+
+:root {
+  /* ── 颜色(primitive)──────────────────────────────
+     图纸米白 + 墨黑 + 砖红 accent(AA:#b03a1a on #ebe6dc = 4.87,
+     可作正文级强调)。--c-blue 为蓝图标注蓝,仅用于图纸注释语义。
+  ──────────────────────────────────────────────────────── */
+  --c-bg:       #ebe6dc;
+  --c-bg-paper: #f3eee2;
+  --c-fg:       #14130f;
+  --c-fg-2:     rgba(20, 19, 15, 0.62);
+  --c-fg-3:     rgba(20, 19, 15, 0.30);
+  --c-accent:   #b03a1a;
+  --c-blue:     #2d4d6e;
+  --c-border:   rgba(20, 19, 15, 0.40);
+  --c-rule:     rgba(20, 19, 15, 0.18);
+
+  /* ── 字体(primitive)──────────────────────────────
+     --f-narrow 是图纸标题栏 / 尺寸链专用的窄体(Archivo Narrow)。
+     字体 fallback 安全约束见 references/technical-specs.md
+     「字体 fallback 安全清单」(大字需窄体 fallback + ≥50px 间距)。
+  ──────────────────────────────────────────────────────── */
+  --f-display: "Archivo", "Noto Sans SC", 'Arial Narrow', system-ui, sans-serif;
+  --f-narrow:  "Archivo Narrow", "Archivo", "Noto Sans SC", 'Arial Narrow', sans-serif;
+  --f-body:    "Archivo", "Noto Sans SC", 'Arial Narrow', system-ui, sans-serif;
+  --f-mono:    ui-monospace, "SF Mono", 'Courier New', monospace;
+
+  /* ── 签名背景(配方,由 layout 层铺设)────────────────
+     建筑图纸格网(template-03 blueprint-sheet):
+       background: var(--c-bg-paper);
+       background-image:
+         linear-gradient(var(--c-rule) 1px, transparent 1px),
+         linear-gradient(90deg, var(--c-rule) 1px, transparent 1px);
+       background-size: 24px 24px;
+       border: 1px solid var(--c-border);
+  ──────────────────────────────────────────────────────── */
+}

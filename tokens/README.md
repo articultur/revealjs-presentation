@@ -101,9 +101,28 @@ primitive 的字体栈必须遵守 [references/technical-specs.md](../references
 
 - [x] base.css(semantic 契约)
 - [x] editorial-serif.css(template-01 primitive,pilot)
-- [ ] dark-tech / minimal-spatial / vibrant-gradient / nature-fresh / brutalist / memphis / isometric / editorial-photo(推广,待 pilot 验证通过)
+- [x] 种子模板 token 推广:dark-tech / minimal-spatial / vibrant-gradient / nature-fresh / memphis / isometric / editorial-photo / clinical-trial(8 套,从对应 template 的 `:root` 提取,对照见下「种子模板 token」;brutalist 由 voices.json 生成,早已存在)
 - [x] token 扩库机制验证:水墨 primitive [chinese-ink-wash.css](chinese-ink-wash.css)(套 template-01 做一次性验证,pilot deck 未入库;**真正水墨模板需新 layout,属 template-10 范畴,非 token 能单独完成**)
 - [ ] 风格空白扩展:和风 / Y2K / Art Deco(遇新主题时补)
+
+## 种子模板 token
+
+10 套种子模板(`examples/template-01` 至 `template-10`)与 token 文件一一对应;除 brutalist 外均为从对应模板 `:root` 提取的 primitive(含签名背景配方):
+
+| 种子模板 | token 文件 | 备注 |
+|---|---|---|
+| template-01 editorial-serif | [editorial-serif.css](editorial-serif.css) | pilot,沿用原 HEX |
+| template-02 dark-tech | [dark-tech.css](dark-tech.css) | 控制台雷达网格签名背景 |
+| template-03 minimal-spatial | [minimal-spatial.css](minimal-spatial.css) | 建筑图纸格网签名背景 |
+| template-04 vibrant-gradient | [vibrant-gradient.css](vibrant-gradient.css) | 舞台灯光渐变签名背景 |
+| template-05 nature-fresh | [nature-fresh.css](nature-fresh.css) | 笔记本横线纸签名背景 |
+| template-06 brutalist | [brutalist.css](brutalist.css) | 由 voices.json 生成(`node scripts/build-voice-tokens.js`),非逐字提取 |
+| template-07 memphis | [memphis.css](memphis.css) | 底纹五式签名背景,`--c-ink` 别名接入契约 |
+| template-08 isometric | [isometric.css](isometric.css) | 工程坐标格网签名背景,`--c-ink` 别名接入契约 |
+| template-09 editorial-photo | [editorial-photo.css](editorial-photo.css) | hero 满版 + 深色 overlay 签名背景 |
+| template-10 clinical-trial | [clinical-trial.css](clinical-trial.css) | 档案纸 / 深墨双基底,含排版间距刻度 |
+
+模板 HTML 仍是单文件自包含(变量内联在 `<style>`);token 文件是这些 primitive 的**外置复用源**,供换风格与风格空白扩展使用。
 
 ## 颜色空间
 

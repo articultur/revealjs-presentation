@@ -1,0 +1,47 @@
+/* ============================================================
+   vibrant-gradient.css — 活力渐变 / Live Keynote 风格 primitive
+   ============================================================
+   对应 references/design-polish.md「Template 04:活力渐变
+   (vibrant-gradient)」—— 发布会现场:开场大屏、倒计时、观众席、
+   摄像机框、产品登场。
+
+   primitive 定义这个风格的原始色值与字体栈。
+   semantic 映射由 tokens/base.css 提供(--bg:var(--c-bg) 等)。
+
+   我们的实现:template-04 vibrant-gradient
+   ============================================================ */
+
+:root {
+  /* ── 颜色(primitive)──────────────────────────────
+     舞台夜色底 + 品红 accent(AA:#ff3e7f on #0a0612 = 5.96) +
+     聚光琥珀 --c-spot(AA:#ffc857 on #0a0612 = 13.0,倒计时/高光用)。
+     --c-accent-soft 与 --c-beam 是舞台光效透明色,不作文字。
+  ──────────────────────────────────────────────────────── */
+  --c-bg:          #0a0612;
+  --c-bg-stage:    #15091f;
+  --c-fg:          #faf5ff;
+  --c-fg-2:        rgba(250, 245, 255, 0.62);
+  --c-fg-3:        rgba(250, 245, 255, 0.30);
+  --c-accent:      #ff3e7f;
+  --c-accent-deep: #c12158;
+  --c-accent-soft: rgba(255, 62, 127, 0.18);
+  --c-beam:        rgba(255, 62, 127, 0.10);
+  --c-spot:        #ffc857;
+  --c-border:      rgba(250, 245, 255, 0.12);
+
+  /* ── 字体(primitive)──────────────────────────────
+     字体 fallback 安全约束见 references/technical-specs.md
+     「字体 fallback 安全清单」(大字需窄体 fallback + ≥50px 间距)。
+  ──────────────────────────────────────────────────────── */
+  --f-display: "Sora", "Noto Sans SC", 'Arial Narrow', system-ui, sans-serif;
+  --f-body:    "Sora", "Noto Sans SC", 'Arial Narrow', system-ui, sans-serif;
+  --f-mono:    "JetBrains Mono", "SF Mono", 'Courier New', monospace;
+
+  /* ── 签名背景(配方,由 layout 层铺设)────────────────
+     舞台灯光(template-04 launch-cover):底部品红泛光 + 顶部琥珀泛光。
+       background:
+         radial-gradient(ellipse 80% 60% at 50% 110%, rgba(255, 62, 127, 0.22), transparent 60%),
+         radial-gradient(ellipse 70% 55% at 50% 0%, rgba(255, 200, 87, 0.10), transparent 60%),
+         var(--c-bg);
+  ──────────────────────────────────────────────────────── */
+}

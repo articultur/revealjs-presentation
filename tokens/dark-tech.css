@@ -1,0 +1,47 @@
+/* ============================================================
+   dark-tech.css — 深色科技 / 控制室 风格 primitive
+   ============================================================
+   对应 references/design-polish.md「Template 02:深色科技 (dark-tech)」
+   —— 控制室 / 系统演示:实时监控台、雷达、终端、故障演练。
+
+   primitive 定义这个风格的原始色值与字体栈。
+   semantic 映射由 tokens/base.css 提供(--bg:var(--c-bg) 等)。
+
+   我们的实现:template-02 dark-tech
+   ============================================================ */
+
+:root {
+  /* ── 颜色(primitive)──────────────────────────────
+     深夜控制室底色 + 信号青 accent(AA:#50e3c2 on #0b0f14 = 12.0,
+     正文 #e6edf5 on #0b0f14 = 16.3)。warn/alarm/ok 为状态色,仅用于
+     监控读数语义,不作正文。
+  ──────────────────────────────────────────────────────── */
+  --c-bg:       #0b0f14;
+  --c-bg-elev:  #121821;
+  --c-bg-panel: #161f2b;
+  --c-fg:       #e6edf5;
+  --c-fg-2:     rgba(230, 237, 245, 0.62);
+  --c-fg-3:     rgba(230, 237, 245, 0.34);
+  --c-accent:   #50e3c2;
+  --c-warn:     #ffb454;
+  --c-alarm:    #ff5d6c;
+  --c-ok:       #71c994;
+  --c-grid:     rgba(80, 227, 194, 0.10);
+  --c-border:   rgba(230, 237, 245, 0.10);
+
+  /* ── 字体(primitive)──────────────────────────────
+     字体 fallback 安全约束见 references/technical-specs.md
+     「字体 fallback 安全清单」(大字需窄体 fallback + ≥50px 间距)。
+  ──────────────────────────────────────────────────────── */
+  --f-display: "IBM Plex Sans", "Noto Sans SC", 'Arial Narrow', system-ui, sans-serif;
+  --f-body:    "IBM Plex Sans", "Noto Sans SC", 'Arial Narrow', system-ui, sans-serif;
+  --f-mono:    "IBM Plex Mono", "SF Mono", 'Courier New', monospace;
+
+  /* ── 签名背景(配方,由 layout 层铺设)────────────────
+     控制台雷达网格底纹(template-02 control-cover):
+       background:
+         linear-gradient(var(--c-grid) 1px, transparent 1px) 0 0 / 40px 40px,
+         linear-gradient(90deg, var(--c-grid) 1px, transparent 1px) 0 0 / 40px 40px,
+         var(--c-bg);
+  ──────────────────────────────────────────────────────── */
+}

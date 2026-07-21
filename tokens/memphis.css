@@ -1,0 +1,54 @@
+/* ============================================================
+   memphis.css — 80s Memphis / 创意工作室 风格 primitive
+   ============================================================
+   对应 references/template-differentiation-audit.md 的 template-07
+   —— 80s memphis:撞色块、几何形(三角/圆/波浪)、粗黑描边、散点构图。
+
+   primitive 定义这个风格的原始色值与字体栈;模板原生 --c-ink 与
+   --c-mute 经别名接入 primitive 契约(--c-fg 与 --c-fg-2)。
+   semantic 映射由 tokens/base.css 提供(--bg:var(--c-bg) 等)。
+
+   我们的实现:template-07 memphis
+   ============================================================ */
+
+:root {
+  /* ── 颜色(primitive)──────────────────────────────
+     米白纸底 + 墨黑描边 + 高饱和 Memphis 色板。pink 为主 accent;
+     yellow/coral/teal/lime/mint 为撞色块轮换色,仅用于色块与几何
+     装饰,不作正文。--c-pt 是底纹点线色(极浅)。
+  ──────────────────────────────────────────────────────── */
+  --c-bg:     oklch(97% 0.008 90);
+  --c-ink:    oklch(18% 0.01 280);
+  --c-pink:   oklch(68% 0.22 350);
+  --c-yellow: oklch(88% 0.18 90);
+  --c-coral:  oklch(68% 0.17 40);
+  --c-teal:   oklch(72% 0.14 195);
+  --c-lime:   oklch(82% 0.2 130);
+  --c-mint:   oklch(92% 0.06 160);
+  --c-mute:   oklch(42% 0.01 280);
+  --c-pt:     oklch(88% 0.008 280);
+
+  /* primitive 契约别名(base.css semantic 映射引用) */
+  --c-fg:     var(--c-ink);
+  --c-fg-2:   var(--c-mute);
+  --c-fg-3:   oklch(18% 0.01 280 / 0.34);
+  --c-accent: var(--c-pink);
+  --c-border: var(--c-ink);
+
+  /* ── 字体(primitive)──────────────────────────────
+     字体 fallback 安全约束见 references/technical-specs.md
+     「字体 fallback 安全清单」(大字需窄体 fallback + ≥50px 间距)。
+  ──────────────────────────────────────────────────────── */
+  --f-display: 'Bricolage Grotesque', "Noto Sans SC", 'Arial Narrow', system-ui, sans-serif;
+  --f-body:    'Bricolage Grotesque', "Noto Sans SC", 'Arial Narrow', system-ui, sans-serif;
+  --f-mono:    'JetBrains Mono', 'Courier New', monospace;
+
+  /* ── 签名背景(配方,由 layout 层铺设)────────────────
+     Memphis 底纹五式(template-07 bg-dot 与 bg-stripes 等 section 修饰类):
+       bg-dot:      radial-gradient(var(--c-pt) 1.6px, transparent 1.6px) / 20px 20px
+       bg-stripes:  repeating-linear-gradient(45deg, var(--c-pt) 0 1.5px, transparent 1.5px 22px)
+       bg-zig:      双向 135deg 与 225deg 折线 / 22px 22px
+       bg-grid:     正交细线 / 22px 22px
+       bg-terrazzo: 六组彩色水磨石散点(pink 与 yellow 与 teal 等)/ 多尺寸叠加
+  ──────────────────────────────────────────────────────── */
+}

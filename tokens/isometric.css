@@ -1,0 +1,64 @@
+/* ============================================================
+   isometric.css — 等轴测 3D / 平台架构 风格 primitive
+   ============================================================
+   对应 references/template-differentiation-audit.md 的 template-08
+   —— isometric 3d layers:edge/mesh/data 三层堆叠、30 度轴测、
+   sidecar mesh、growth bars、cross-cut security。
+
+   primitive 定义这个风格的原始色值与字体栈;模板原生 --c-ink 与
+   --c-line 经别名接入 primitive 契约(--c-fg 与 --c-border)。
+   semantic 映射由 tokens/base.css 提供(--bg:var(--c-bg) 等)。
+
+   我们的实现:template-08 isometric
+   ============================================================ */
+
+:root {
+  /* ── 颜色(primitive)──────────────────────────────
+     工程图灰白底 + 墨线 + 三层语义色:blue(edge)/ teal(mesh)/
+     orange(data),各带 -d 深色变体(层叠暗面)。--c-panel-a 至
+     --c-panel-g 是等轴层面板七色,仅用于 layer 填充。
+  ──────────────────────────────────────────────────────── */
+  --c-bg:       oklch(96% 0.005 240);
+  --c-surface:  oklch(99% 0.003 240);
+  --c-ink:      oklch(25% 0.02 250);
+  --c-mute:     oklch(50% 0.01 240);
+  --c-line:     oklch(25% 0.02 250);
+  --c-blue:     oklch(58% 0.12 235);
+  --c-blue-d:   oklch(45% 0.13 235);
+  --c-orange:   oklch(72% 0.14 50);
+  --c-orange-d: oklch(60% 0.15 50);
+  --c-teal:     oklch(70% 0.11 180);
+  --c-teal-d:   oklch(58% 0.12 180);
+  --c-grid:     oklch(88% 0.006 240);
+  --c-panel-a:  #12243f;
+  --c-panel-b:  #1a375a;
+  --c-panel-c:  #f7f8fb;
+  --c-panel-d:  #e8eef8;
+  --c-panel-e:  #d6e7fb;
+  --c-panel-f:  #e8f6f2;
+  --c-panel-g:  #f3efe2;
+
+  /* primitive 契约别名(base.css semantic 映射引用) */
+  --c-fg:     var(--c-ink);
+  --c-fg-2:   var(--c-mute);
+  --c-fg-3:   oklch(25% 0.02 250 / 0.34);
+  --c-accent: var(--c-blue);
+  --c-border: var(--c-line);
+
+  /* ── 字体(primitive)──────────────────────────────
+     字体 fallback 安全约束见 references/technical-specs.md
+     「字体 fallback 安全清单」(大字需窄体 fallback + ≥50px 间距)。
+  ──────────────────────────────────────────────────────── */
+  --f-display: 'Outfit', "Noto Sans SC", 'Arial Narrow', system-ui, sans-serif;
+  --f-body:    'Outfit', "Noto Sans SC", 'Arial Narrow', system-ui, sans-serif;
+  --f-mono:    'JetBrains Mono', 'Courier New', monospace;
+
+  /* ── 签名背景(配方,由 layout 层铺设)────────────────
+     工程坐标格网(template-08 全 deck section 底):
+       background-color: var(--c-bg);
+       background-image:
+         linear-gradient(var(--c-grid) 1px, transparent 1px),
+         linear-gradient(90deg, var(--c-grid) 1px, transparent 1px);
+       background-size: 32px 28px;
+  ──────────────────────────────────────────────────────── */
+}
