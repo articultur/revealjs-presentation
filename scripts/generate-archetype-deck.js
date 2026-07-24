@@ -448,7 +448,12 @@ function fillArchetype(route, s, idx, total, input = {}) {
   const v = route.variant_hint ? `<!-- variant:${esc(route.variant_hint)} -->` : '';
   const vAttr = dataVariantAttr(route);          // 变体参数落属性(供后续消费)
   const sigCls = sigSectionClasses(route, input); // voice 签名 class(供 nativeSignals)
-  const evidence = `<div class="evidence-label">${esc(evidenceStatus(s, input))}</div>`;
+  const evArr = Array.isArray(s.evidence) ? s.evidence : [];
+  const evFirst = evArr[0];
+  const evStatus = evFirst ? (evFirst.status || evidenceStatus(s, input)) : evidenceStatus(s, input);
+  const evidence = evFirst
+    ? `<div class="evidence-label" data-evidence-id="${esc(evFirst.id || '')}" data-evidence-status="${esc(evStatus)}">${esc(evStatus)}</div>`
+    : `<div class="evidence-label">${esc(evStatus)}</div>`;
   const wrap = (inner, cls = 'deck-flex', style = 'height:100%;') =>
     `<section class="${cls}${sigCls}" data-archetype="${route.archetype}"${vAttr} data-background="var(--c-bg)" style="${style}">${v}${evidence}${inner}<div class="pin">${num} / ${esc(route.content_type)}</div></section>`;
 
