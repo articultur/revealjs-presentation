@@ -150,6 +150,13 @@
     return map[first] || map[first] || 'Calibri';
   }
 
+  function slideFont(sec) {
+    // 从 slide 主导元素(h1/h2/h3/p/kicker)拿 voice 字体,经 mapFont 映射到 PowerPoint 可用字体;
+    // 替代 29 处硬编码 Calibri(审查 P0:导出丢 voice 字体)。sec 在每个 export* 函数参数 scope 内。
+    var el = sec && sec.querySelector('h1, h2, h3, p, .kicker');
+    return el ? mapFont(getComputedStyle(el).fontFamily) : 'Calibri';
+  }
+
   function isBold(el) { return parseInt(getComputedStyle(el).fontWeight) >= 600; }
 
   function textOf(el) { return (el.textContent || '').trim(); }
@@ -159,6 +166,9 @@
   function isCenterSlide(sec) { return sec.classList.contains('center-slide'); }
 
   function getSlideType(sec) {
+    var byArch = { A1: 'hero', A9: 'table', A7: 'grid', A11: 'grid', A4: 'split' };
+    var arch = sec.getAttribute('data-archetype');
+    if (arch && byArch[arch]) return byArch[arch];
     if (sec.querySelector('.price-duo')) return 'price';
     if (sec.querySelector('.bar-group')) return 'bars';
     if (sec.querySelector('.min-table')) return 'table';
@@ -198,7 +208,7 @@
       var align = isCenterSlide(sec) ? 'center' : 'left';
       slide.addText(text, {
         x: 0.6, y: 1.2, w: 12.8, h: 3,
-        fontSize: Math.min(44, fs), fontFace: 'Calibri',
+        fontSize: Math.min(44, fs), fontFace: slideFont(sec),
         color: color, bold: true, align: align, valign: 'middle',
         lineSpacingMultiple: 1.1, paraSpaceAfter: 0,
       });
@@ -215,7 +225,7 @@
         x: 0.6, y: isQuote ? 1.8 : 4.2 + i * 0.6,
         w: 12.8, h: isQuote ? 2.5 : 0.6,
         fontSize: isQuote ? 22 : Math.min(16, fs),
-        fontFace: 'Calibri', color: color,
+        fontFace: slideFont(sec), color: color,
         align: isCenterSlide(sec) ? 'center' : 'left',
         valign: isQuote ? 'middle' : 'top',
         lineSpacingMultiple: 1.5,
@@ -235,7 +245,7 @@
     if (kicker) {
       slide.addText(textOf(kicker), {
         x: 0.6, y: y, w: 12, h: 0.35,
-        fontSize: 9, color: textMuted, fontFace: 'Calibri',
+        fontSize: 9, color: textMuted, fontFace: slideFont(sec),
         align: 'left', bold: false,
       });
       y += 0.45;
@@ -246,7 +256,7 @@
     if (h2) {
       slide.addText(textOf(h2), {
         x: 0.6, y: y, w: 12, h: 0.7,
-        fontSize: 24, color: getElColor(h2), fontFace: 'Calibri',
+        fontSize: 24, color: getElColor(h2), fontFace: slideFont(sec),
         bold: true, align: 'left',
       });
       y += 0.9;
@@ -273,7 +283,7 @@
             fontSize: isHeader ? 9 : 10,
             bold: isHeader || isHighlight,
             color: color,
-            fontFace: 'Calibri',
+            fontFace: slideFont(sec),
             align: ci === 0 ? 'left' : 'left',
             valign: 'middle',
             border: { pt: 0.5, color: divider },
@@ -305,13 +315,13 @@
 
     var kicker = sec.querySelector('.kicker');
     if (kicker) {
-      slide.addText(textOf(kicker), { x: 0.6, y: y, w: 12, h: 0.35, fontSize: 9, color: textMuted, fontFace: 'Calibri' });
+      slide.addText(textOf(kicker), { x: 0.6, y: y, w: 12, h: 0.35, fontSize: 9, color: textMuted, fontFace: slideFont(sec) });
       y += 0.45;
     }
 
     var h2 = sec.querySelector('h2');
     if (h2) {
-      slide.addText(textOf(h2), { x: 0.6, y: y, w: 12, h: 0.7, fontSize: 24, color: getElColor(h2), fontFace: 'Calibri', bold: true });
+      slide.addText(textOf(h2), { x: 0.6, y: y, w: 12, h: 0.7, fontSize: 24, color: getElColor(h2), fontFace: slideFont(sec), bold: true });
       y += 1.0;
     }
 
@@ -329,7 +339,7 @@
     barRows.forEach(function (row) {
       var label = row.querySelector('.bar-label');
       if (label) {
-        slide.addText(textOf(label), { x: 0.6, y: y, w: 12, h: 0.25, fontSize: 8, color: textMuted, fontFace: 'Calibri', bold: true });
+        slide.addText(textOf(label), { x: 0.6, y: y, w: 12, h: 0.25, fontSize: 8, color: textMuted, fontFace: slideFont(sec), bold: true });
         y += 0.3;
       }
 
@@ -350,7 +360,7 @@
         });
         slide.addText(textOf(val), {
           x: 0.6, y: y - 0.05, w: 0.8, h: 0.28,
-          fontSize: 9, color: color, fontFace: 'Calibri', bold: true, align: 'right',
+          fontSize: 9, color: color, fontFace: slideFont(sec), bold: true, align: 'right',
         });
         y += 0.28;
       });
@@ -366,13 +376,13 @@
 
     var kicker = sec.querySelector('.kicker');
     if (kicker) {
-      slide.addText(textOf(kicker), { x: 0.6, y: y, w: 12, h: 0.35, fontSize: 9, color: textMuted, fontFace: 'Calibri' });
+      slide.addText(textOf(kicker), { x: 0.6, y: y, w: 12, h: 0.35, fontSize: 9, color: textMuted, fontFace: slideFont(sec) });
       y += 0.45;
     }
 
     var h2 = sec.querySelector('h2');
     if (h2) {
-      slide.addText(textOf(h2), { x: 0.6, y: y, w: 12, h: 0.7, fontSize: 24, color: getElColor(h2), fontFace: 'Calibri', bold: true });
+      slide.addText(textOf(h2), { x: 0.6, y: y, w: 12, h: 0.7, fontSize: 24, color: getElColor(h2), fontFace: slideFont(sec), bold: true });
       y += 1.0;
     }
 
@@ -389,7 +399,7 @@
       if (h3) {
         slide.addText(textOf(h3), {
           x: x, y: y, w: colW, h: 0.4,
-          fontSize: 13, color: getElColor(h3), fontFace: 'Calibri', bold: true,
+          fontSize: 13, color: getElColor(h3), fontFace: slideFont(sec), bold: true,
         });
       }
 
@@ -399,12 +409,12 @@
         var bullets = [];
         items.forEach(function (li) {
           var t = textOf(li);
-          if (t) bullets.push({ text: t, options: { bullet: true, color: textMuted, fontSize: 10, fontFace: 'Calibri' } });
+          if (t) bullets.push({ text: t, options: { bullet: true, color: textMuted, fontSize: 10, fontFace: slideFont(sec) } });
         });
         if (bullets.length) {
           slide.addText(bullets, {
             x: x, y: y + 0.45, w: colW, h: 3.5,
-            fontSize: 10, fontFace: 'Calibri', color: textMuted,
+            fontSize: 10, fontFace: slideFont(sec), color: textMuted,
             valign: 'top', wrap: true, lineSpacingMultiple: 1.6,
           });
         }
@@ -420,13 +430,13 @@
 
     var kicker = sec.querySelector('.kicker');
     if (kicker) {
-      slide.addText(textOf(kicker), { x: 0.6, y: y, w: 12, h: 0.35, fontSize: 9, color: textMuted, fontFace: 'Calibri', align: 'center' });
+      slide.addText(textOf(kicker), { x: 0.6, y: y, w: 12, h: 0.35, fontSize: 9, color: textMuted, fontFace: slideFont(sec), align: 'center' });
       y += 0.5;
     }
 
     var h2 = sec.querySelector('h2');
     if (h2) {
-      slide.addText(textOf(h2), { x: 0.6, y: y, w: 12, h: 0.7, fontSize: 24, color: getElColor(h2), fontFace: 'Calibri', bold: true, align: 'center' });
+      slide.addText(textOf(h2), { x: 0.6, y: y, w: 12, h: 0.7, fontSize: 24, color: getElColor(h2), fontFace: slideFont(sec), bold: true, align: 'center' });
       y += 1.2;
     }
 
@@ -442,19 +452,19 @@
       var unitEl = block.querySelector('.price-unit');
 
       if (nameEl) {
-        slide.addText(textOf(nameEl), { x: x, y: y, w: blockW, h: 0.35, fontSize: 9, color: getElColor(nameEl), fontFace: 'Calibri', bold: true, align: 'center', letterSpacing: 3 });
+        slide.addText(textOf(nameEl), { x: x, y: y, w: blockW, h: 0.35, fontSize: 9, color: getElColor(nameEl), fontFace: slideFont(sec), bold: true, align: 'center', letterSpacing: 3 });
       }
       if (numEl) {
-        slide.addText(textOf(numEl), { x: x, y: y + 0.4, w: blockW, h: 1.2, fontSize: 48, color: getElColor(numEl), fontFace: 'Calibri', bold: true, align: 'center', valign: 'middle' });
+        slide.addText(textOf(numEl), { x: x, y: y + 0.4, w: blockW, h: 1.2, fontSize: 48, color: getElColor(numEl), fontFace: slideFont(sec), bold: true, align: 'center', valign: 'middle' });
       }
       if (unitEl) {
-        slide.addText(textOf(unitEl), { x: x, y: y + 1.7, w: blockW, h: 0.3, fontSize: 9, color: textMuted, fontFace: 'Calibri', align: 'center' });
+        slide.addText(textOf(unitEl), { x: x, y: y + 1.7, w: blockW, h: 0.3, fontSize: 9, color: textMuted, fontFace: slideFont(sec), align: 'center' });
       }
     });
 
     var note = sec.querySelector('.price-duo + p, p:last-child');
     if (note) {
-      slide.addText(textOf(note), { x: 1.5, y: y + 2.5, w: 10, h: 0.5, fontSize: 9, color: textMuted, fontFace: 'Calibri', align: 'center' });
+      slide.addText(textOf(note), { x: 1.5, y: y + 2.5, w: 10, h: 0.5, fontSize: 9, color: textMuted, fontFace: slideFont(sec), align: 'center' });
     }
   }
 
@@ -467,13 +477,13 @@
 
     var kicker = sec.querySelector('.kicker');
     if (kicker) {
-      slide.addText(textOf(kicker), { x: 0.6, y: y, w: 12, h: 0.35, fontSize: 9, color: textMuted, fontFace: 'Calibri' });
+      slide.addText(textOf(kicker), { x: 0.6, y: y, w: 12, h: 0.35, fontSize: 9, color: textMuted, fontFace: slideFont(sec) });
       y += 0.45;
     }
 
     var h2 = sec.querySelector('h2');
     if (h2) {
-      slide.addText(textOf(h2), { x: 0.6, y: y, w: 12, h: 0.7, fontSize: 24, color: getElColor(h2), fontFace: 'Calibri', bold: true });
+      slide.addText(textOf(h2), { x: 0.6, y: y, w: 12, h: 0.7, fontSize: 24, color: getElColor(h2), fontFace: slideFont(sec), bold: true });
       y += 1.0;
     }
 
@@ -492,13 +502,13 @@
       var p = item.querySelector('p');
 
       if (tag) {
-        slide.addText(textOf(tag), { x: x, y: iy, w: colW, h: 0.25, fontSize: 8, color: getElColor(tag), fontFace: 'Calibri', bold: true, letterSpacing: 2 });
+        slide.addText(textOf(tag), { x: x, y: iy, w: colW, h: 0.25, fontSize: 8, color: getElColor(tag), fontFace: slideFont(sec), bold: true, letterSpacing: 2 });
       }
       if (h4) {
-        slide.addText(textOf(h4), { x: x, y: iy + 0.3, w: colW, h: 0.3, fontSize: 12, color: getElColor(h4), fontFace: 'Calibri', bold: true });
+        slide.addText(textOf(h4), { x: x, y: iy + 0.3, w: colW, h: 0.3, fontSize: 12, color: getElColor(h4), fontFace: slideFont(sec), bold: true });
       }
       if (p) {
-        slide.addText(textOf(p), { x: x, y: iy + 0.65, w: colW, h: 0.35, fontSize: 9, color: textMuted, fontFace: 'Calibri' });
+        slide.addText(textOf(p), { x: x, y: iy + 0.65, w: colW, h: 0.35, fontSize: 9, color: textMuted, fontFace: slideFont(sec) });
       }
 
       // Divider line
@@ -556,20 +566,20 @@
       if (!text) return;
 
       if (tag === 'h1') {
-        slide.addText(text, { x: 0.6, y: y, w: 12, h: 1.5, fontSize: 36, color: getElColor(el), fontFace: 'Calibri', bold: true, align: 'center', valign: 'middle' });
+        slide.addText(text, { x: 0.6, y: y, w: 12, h: 1.5, fontSize: 36, color: getElColor(el), fontFace: slideFont(sec), bold: true, align: 'center', valign: 'middle' });
         y += 1.7;
       } else if (tag === 'h2') {
-        slide.addText(text, { x: 0.6, y: y, w: 12, h: 0.7, fontSize: 24, color: getElColor(el), fontFace: 'Calibri', bold: true });
+        slide.addText(text, { x: 0.6, y: y, w: 12, h: 0.7, fontSize: 24, color: getElColor(el), fontFace: slideFont(sec), bold: true });
         y += 0.9;
       } else if (tag === 'p') {
         var lines = Math.ceil(text.length / 60);
-        slide.addText(text, { x: 0.6, y: y, w: 12, h: lines * 0.3, fontSize: 12, color: getElColor(el), fontFace: 'Calibri', wrap: true });
+        slide.addText(text, { x: 0.6, y: y, w: 12, h: lines * 0.3, fontSize: 12, color: getElColor(el), fontFace: slideFont(sec), wrap: true });
         y += lines * 0.3 + 0.15;
       } else if (tag === 'ul' || tag === 'ol') {
         var items = el.querySelectorAll('li');
         var bullets = [];
         items.forEach(function (li) { var t = textOf(li); if (t) bullets.push({ text: t, options: { bullet: true } }); });
-        slide.addText(bullets, { x: 0.6, y: y, w: 12, h: 2, fontSize: 10, color: textMuted, fontFace: 'Calibri', wrap: true });
+        slide.addText(bullets, { x: 0.6, y: y, w: 12, h: 2, fontSize: 10, color: textMuted, fontFace: slideFont(sec), wrap: true });
         y += 2.2;
       }
     });
