@@ -27,22 +27,43 @@
  *   content_type 省略或 "auto" = 自动推断;否则显式指定。
  */
 
-// ── content-type → archetype 映射(对齐 references/layout-archetypes.md A1-A12)──
-const ARCHETYPE_MAP = {
-  cover:           { code: 'A1',  name: 'Masthead Cover',     reason: '报头双线 + 巨型标题,建立权威感' },
-  thesis:          { code: 'A2',  name: 'Manifesto Statement', reason: '巨型斜体命题 + 极端留白,让主张成为视觉' },
-  chronology:      { code: 'A3',  name: 'Register Axis',      reason: '横轴里程碑节点,表达编年/路线' },
-  chapter:         { code: 'A4',  name: 'Full-Bleed Split',   reason: '满版面板 × 内容,非对称分隔章节' },
-  'data-anchor':   { code: 'A5',  name: 'Anchor Numeral',     reason: '巨型数字做引力 + 证据列' },
-  comparison:      { code: 'A6',  name: 'Face-Off Compare',   reason: '两值对峙 + 比率裁决' },
-  kpi:             { code: 'A7',  name: 'KPI Grid',           reason: '粗边框卡 + 巨型数字速览' },
-  mechanism:       { code: 'A8',  name: 'Mechanism Diagram',  reason: '前→后转换条,量化机制' },
-  'evidence-table':{ code: 'A9',  name: 'Evidence Table',     reason: '强调列高亮表格,台账/矩阵' },
-  quote:           { code: 'A10', name: 'Pullquote',          reason: '上下双线 + 巨型斜体引言' },
-  takeaways:       { code: 'A11', name: 'Takeaway Roster',    reason: '编号顶边卡阵列,要点/启示' },
-  closing:         { code: 'A12', name: 'Masthead Closing',   reason: '报头收尾,呼应封面' },
-  'image-compare': { code: 'IMG', name: 'Image Face-Off',    reason: '双图并排对比 + 标签(图像驱动:proof 是图本身,见 image-driven-deck.md)' },
+// ── content-type → archetype 映射(name/contentType/roles 从 layout-registry.json 派生,
+//    消除 content-router 与 registry 的 name 双写;reason 是路由解释,保留具体语义)──
+const { getLayout } = require('./layout-registry');
+
+const CONTENT_TYPE_TO_CODE = {
+  cover: 'A1', thesis: 'A2', chronology: 'A3', chapter: 'A4',
+  'data-anchor': 'A5', comparison: 'A6', kpi: 'A7', mechanism: 'A8',
+  'evidence-table': 'A9', quote: 'A10', takeaways: 'A11', closing: 'A12',
+  'image-compare': 'IMG',
 };
+
+const ROUTE_REASONS = {
+  cover:            '报头双线 + 巨型标题,建立权威感',
+  thesis:           '巨型斜体命题 + 极端留白,让主张成为视觉',
+  chronology:       '横轴里程碑节点,表达编年/路线',
+  chapter:          '满版面板 × 内容,非对称分隔章节',
+  'data-anchor':    '巨型数字做引力 + 证据列',
+  comparison:       '两值对峙 + 比率裁决',
+  kpi:              '粗边框卡 + 巨型数字速览',
+  mechanism:        '前→后转换条,量化机制',
+  'evidence-table': '强调列高亮表格,台账/矩阵',
+  quote:            '上下双线 + 巨型斜体引言',
+  takeaways:        '编号顶边卡阵列,要点/启示',
+  closing:          '报头收尾,呼应封面',
+  'image-compare':  '双图并排对比 + 标签(图像驱动:proof 是图本身,见 image-driven-deck.md)',
+};
+
+const ARCHETYPE_MAP = Object.fromEntries(
+  Object.entries(CONTENT_TYPE_TO_CODE).map(([contentType, code]) => {
+    const layout = getLayout(code);
+    return [contentType, {
+      code,
+      name: layout.name,
+      reason: ROUTE_REASONS[contentType] || `内容类型 ${contentType} 使用已登记布局 ${code}`,
+    }];
+  })
+);
 
 // ── archetype 变体规则(对应失败门禁 #9:≥1 主题发明变体)──
 // 返回 { hint, params } = 带真实参数的变体建议;null = 该段不变体(照原 archetype)。

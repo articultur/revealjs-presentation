@@ -1,0 +1,151 @@
+{
+  "version": 1,
+  "layouts": [
+    {
+      "code": "A1",
+      "name": "Masthead Cover",
+      "contentType": "cover",
+      "roles": ["cover"],
+      "requiredProps": ["title"],
+      "optionalProps": ["subtitle", "meta", "body", "facts"],
+      "forbiddenProps": ["rows", "headers"],
+      "mediaSlots": [],
+      "pptxStrategy": "editable"
+    },
+    {
+      "code": "A2",
+      "name": "Manifesto Statement",
+      "contentType": "thesis",
+      "roles": ["context", "decision"],
+      "requiredProps": ["title", "body"],
+      "optionalProps": ["emphasis", "support"],
+      "forbiddenProps": ["rows", "headers", "img_a", "img_b"],
+      "mediaSlots": [],
+      "pptxStrategy": "editable"
+    },
+    {
+      "code": "A3",
+      "name": "Register Axis",
+      "contentType": "chronology",
+      "roles": ["context", "mechanism"],
+      "requiredProps": ["title", "nodes"],
+      "optionalProps": ["subtitle"],
+      "forbiddenProps": ["rows", "headers"],
+      "mediaSlots": [],
+      "pptxStrategy": "hybrid"
+    },
+    {
+      "code": "A4",
+      "name": "Full-Bleed Split",
+      "contentType": "chapter",
+      "roles": ["context"],
+      "requiredProps": ["title", "body"],
+      "optionalProps": ["subtitle"],
+      "forbiddenProps": ["rows", "headers"],
+      "mediaSlots": [],
+      "pptxStrategy": "editable"
+    },
+    {
+      "code": "A5",
+      "name": "Anchor Numeral",
+      "contentType": "data-anchor",
+      "roles": ["proof"],
+      "requiredProps": ["title", "number"],
+      "optionalProps": ["label", "event", "note", "source", "evidence"],
+      "forbiddenProps": ["rows", "headers"],
+      "mediaSlots": [],
+      "pptxStrategy": "editable"
+    },
+    {
+      "code": "A6",
+      "name": "Face-Off Compare",
+      "contentType": "comparison",
+      "roles": ["proof", "decision"],
+      "requiredProps": ["title", "a_value", "b_value"],
+      "optionalProps": ["a_label", "a_unit", "a_details", "b_label", "b_unit", "b_details", "verdict", "verdict_note"],
+      "forbiddenProps": ["rows", "headers"],
+      "mediaSlots": [],
+      "pptxStrategy": "editable"
+    },
+    {
+      "code": "A7",
+      "name": "KPI Grid",
+      "contentType": "kpi",
+      "roles": ["proof"],
+      "requiredProps": ["title", "items"],
+      "optionalProps": ["subtitle"],
+      "forbiddenProps": ["rows", "headers"],
+      "mediaSlots": [],
+      "pptxStrategy": "editable"
+    },
+    {
+      "code": "A8",
+      "name": "Mechanism Diagram",
+      "contentType": "mechanism",
+      "roles": ["mechanism"],
+      "requiredProps": ["title", "before_items", "after_items"],
+      "optionalProps": ["subtitle", "before_label", "after_label", "reduction"],
+      "forbiddenProps": ["rows", "headers"],
+      "mediaSlots": [],
+      "pptxStrategy": "hybrid"
+    },
+    {
+      "code": "A9",
+      "name": "Evidence Table",
+      "contentType": "evidence-table",
+      "roles": ["proof", "decision"],
+      "requiredProps": ["title", "headers", "rows"],
+      "optionalProps": ["subtitle", "highlight_col"],
+      "forbiddenProps": ["img_a", "img_b"],
+      "mediaSlots": [],
+      "pptxStrategy": "editable"
+    },
+    {
+      "code": "A10",
+      "name": "Pullquote",
+      "contentType": "quote",
+      "roles": ["context", "proof"],
+      "requiredProps": ["title", "quote"],
+      "optionalProps": ["number", "who", "role"],
+      "forbiddenProps": ["rows", "headers"],
+      "mediaSlots": [],
+      "pptxStrategy": "editable"
+    },
+    {
+      "code": "A11",
+      "name": "Takeaway Roster",
+      "contentType": "takeaways",
+      "roles": ["decision"],
+      "requiredProps": ["title", "items"],
+      "optionalProps": ["subtitle"],
+      "forbiddenProps": ["rows", "headers"],
+      "mediaSlots": [],
+      "pptxStrategy": "editable"
+    },
+    {
+      "code": "A12",
+      "name": "Masthead Closing",
+      "contentType": "closing",
+      "roles": ["close"],
+      "requiredProps": ["title"],
+      "optionalProps": ["topic", "body", "stamp"],
+      "forbiddenProps": ["rows", "headers"],
+      "mediaSlots": [],
+      "pptxStrategy": "editable"
+    },
+    {
+      "code": "IMG",
+      "name": "Image Face-Off",
+      "contentType": "image-compare",
+      "roles": ["proof"],
+      "requiredProps": ["title", "img_a", "img_b"],
+      "optionalProps": ["a_label", "a_value", "a_detail", "b_label", "b_value", "b_detail"],
+      "forbiddenProps": ["rows", "headers"],
+      "mediaSlots": [
+        { "id": "img_a", "accept": ["image/jpeg", "image/png", "image/webp"], "required": true },
+        { "id": "img_b", "accept": ["image/jpeg", "image/png", "image/webp"], "required": true }
+      ],
+      "pptxStrategy": "hybrid"
+    }
+  ]
+}
