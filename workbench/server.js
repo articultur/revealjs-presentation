@@ -48,6 +48,17 @@ function serveStatic(res, filePath, contentType) {
   fs.createReadStream(filePath).pipe(res);
 }
 
+const putLock = { chain: Promise.resolve() };
+
+function contentTypeFor(file) {
+  const map = {
+    '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.js': 'application/javascript',
+    '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.svg': 'image/svg+xml',
+    '.webp': 'image/webp', '.gif': 'image/gif', '.json': 'application/json',
+  };
+  return map[path.extname(file).toLowerCase()] || 'application/octet-stream';
+}
+
 function safeResolve(rel) {
   const root = path.resolve(outputRoot);
   const resolved = path.resolve(root, rel);
@@ -76,21 +87,26 @@ function handleRequest({ request, response }) {
   if (pathname === '/api/manifest' && method === 'PUT') {
     const ifMatch = request.headers['if-match'];
     if (!ifMatch) return sendJson(response, 428, { error: 'If-Match required' });
-    loadCurrent();
-    if (ifMatch !== cache.etag) return sendJson(response, 409, { error: 'stale manifest — reload' });
-    readBody(request).then((body) => {
-      let parsed;
-      try { parsed = JSON.parse(body); } catch (e) { return sendJson(response, 400, { error: 'invalid json' }); }
-      const v = validateDeckManifest(parsed);
-      if (!v.ok) return sendJson(response, 422, { errors: v.errors });
-      try {
-        writeDeckManifest(manifestPath, parsed);
-      } catch (e) {
-        return sendJson(response, 422, { errors: [e.message] });
-      }
+    // 序列化整个 PUT(check+read+write),防 TOCTOU:两并发 PUT 同 etag 时,第二个在第一个 write 后 check → 409
+    const run = putLock.chain.then(() => new Promise((resolve) => {
       loadCurrent();
-      return sendJson(response, 200, cache.manifest, { etag: cache.etag });
-    });
+      if (ifMatch !== cache.etag) { sendJson(response, 409, { error: 'stale manifest — reload' }); return resolve(); }
+      readBody(request).then((body) => {
+        let parsed;
+        try { parsed = JSON.parse(body); } catch (e) { sendJson(response, 400, { error: 'invalid json' }); return resolve(); }
+        const v = validateDeckManifest(parsed);
+        if (!v.ok) { sendJson(response, 422, { errors: v.errors }); return resolve(); }
+        try {
+          writeDeckManifest(manifestPath, parsed);
+        } catch (e) {
+          sendJson(response, 422, { errors: [e.message] }); return resolve();
+        }
+        loadCurrent();
+        sendJson(response, 200, cache.manifest, { etag: cache.etag });
+        resolve();
+      });
+    }));
+    putLock.chain = run.catch(() => {});
     return;
   }
 
@@ -100,7 +116,8 @@ function handleRequest({ request, response }) {
       const input = manifestToGeneratorInput(cache.manifest);
       const result = generate(input);
       const htmlRel = cache.manifest.output.html;
-      const htmlAbs = path.join(outputRoot, htmlRel);
+      const htmlAbs = safeResolve(htmlRel);
+      if (!htmlAbs) throw new Error('output html path escapes root');
       fs.mkdirSync(path.dirname(htmlAbs), { recursive: true });
       fs.writeFileSync(htmlAbs, result.html);
       return sendJson(response, 200, { ok: true, html: htmlRel });
@@ -111,8 +128,9 @@ function handleRequest({ request, response }) {
 
   if (pathname === '/api/qa' && method === 'POST') {
     loadCurrent();
-    const htmlAbs = path.join(outputRoot, cache.manifest.output.html);
-    const r = spawnSync('node', [path.join(__dirname, '..', 'scripts', 'qa.js'), htmlAbs, '--no-visual'], { encoding: 'utf8' });
+    const htmlAbs = safeResolve(cache.manifest.output.html);
+    if (!htmlAbs) return sendJson(response, 400, { error: 'output path escapes root' });
+    const r = spawnSync('node', [path.join(__dirname, '..', 'scripts', 'qa.js'), htmlAbs, '--no-visual'], { encoding: 'utf8', timeout: 420000 });
     return sendJson(response, r.status === 0 ? 200 : 500, {
       ok: r.status === 0,
       detail: (r.stdout || r.stderr || '').slice(-800),
@@ -121,11 +139,12 @@ function handleRequest({ request, response }) {
 
   if (pathname === '/api/export/pptx' && method === 'POST') {
     loadCurrent();
-    const htmlAbs = path.join(outputRoot, cache.manifest.output.html);
+    const htmlAbs = safeResolve(cache.manifest.output.html);
     const pptxRel = cache.manifest.output.pptx || cache.manifest.output.html.replace(/\.html$/, '.pptx');
-    const pptxAbs = path.join(outputRoot, pptxRel);
+    const pptxAbs = safeResolve(pptxRel);
+    if (!htmlAbs || !pptxAbs) return sendJson(response, 400, { error: 'output path escapes root' });
     fs.mkdirSync(path.dirname(pptxAbs), { recursive: true });
-    const r = spawnSync('node', [path.join(__dirname, '..', 'scripts', 'export-pptx.js'), htmlAbs, '-o', pptxAbs], { encoding: 'utf8' });
+    const r = spawnSync('node', [path.join(__dirname, '..', 'scripts', 'export-pptx.js'), htmlAbs, '-o', pptxAbs], { encoding: 'utf8', timeout: 420000 });
     return sendJson(response, r.status === 0 ? 200 : 500, { ok: r.status === 0, pptx: pptxRel });
   }
 
@@ -147,7 +166,7 @@ function handleRequest({ request, response }) {
       response.end('not found');
       return;
     }
-    response.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
+    response.writeHead(200, { 'content-type': contentTypeFor(abs) });
     fs.createReadStream(abs).pipe(response);
     return;
   }

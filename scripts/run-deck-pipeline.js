@@ -20,6 +20,14 @@ const {
   buildQaSummary,
 } = require('./run-manifest');
 
+function assertInRoot(abs, root) {
+  const r = path.resolve(root);
+  const a = path.resolve(abs);
+  if (a !== r && !a.startsWith(r + path.sep)) {
+    throw new Error('output path escapes outputRoot (traversal blocked): ' + abs);
+  }
+}
+
 function parseArgs(argv) {
   const a = {};
   for (let i = 0; i < argv.length; i++) {
@@ -93,6 +101,7 @@ async function main() {
     const result = generate(input);
     const htmlRel = manifest.output.html;
     const htmlAbs = path.join(outRoot, htmlRel);
+    assertInRoot(htmlAbs, outRoot);
     fs.mkdirSync(path.dirname(htmlAbs), { recursive: true });
     fs.writeFileSync(htmlAbs, result.html);
     recordStage(run, 'render', { ok: true, artifact: htmlRel });
@@ -128,6 +137,7 @@ async function main() {
       recordStage(run, 'visual-model', { ok: true, artifact: 'qa/visual-verdict.json' });
       finalizeRun(run, 'ready');
     } else {
+      recordStage(run, 'visual-model', { ok: false, detail: (vv.stdout || vv.stderr || '').slice(0, 200) });
       finalizeRun(run, 'needs-visual-signoff');
     }
   } else if (visualMode === 'signoff' && a.visualSignoffFile) {

@@ -6,6 +6,7 @@ const path = require('path');
 const crypto = require('crypto');
 const http = require('http');
 const https = require('https');
+const dns = require('dns');
 
 const PRIVATE_HOST_PATTERNS = [
   /^localhost$/i,
@@ -74,18 +75,27 @@ function stageLocal(source, outputDir, allowRoot) {
   };
 }
 
-function fetchRemote(urlString, maxRedirects) {
+async function fetchRemote(urlString, maxRedirects) {
+  let url;
+  try { url = new URL(urlString); } catch (e) { throw new Error(`invalid url: ${urlString}`); }
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') throw new Error(`only http/https allowed: ${urlString}`);
+  // 文本 hostname 检查(localhost / 字面私有 IP)
+  if (isPrivateHost(url.hostname)) throw new Error(`private network rejected: ${url.hostname}`);
+  // DNS 解析防 rebinding:resolved IP 不得私有;连接 pin 到已检查的 IP(不重新解析)
+  const ips = await new Promise((resolve, reject) => {
+    dns.lookup(url.hostname, { all: true }, (e, addrs) => (e ? reject(new Error(`DNS unresolved: ${url.hostname}`)) : resolve(addrs)));
+  });
+  if (!ips.length) throw new Error(`DNS unresolved: ${url.hostname}`);
+  if (ips.some((ip) => isPrivateHost(ip.address))) {
+    throw new Error(`private network rejected (DNS ${ips[0].address}): ${url.hostname}`);
+  }
+  const pinnedIp = ips[0].address;
   return new Promise((resolve, reject) => {
-    let url;
-    try { url = new URL(urlString); } catch (e) { reject(new Error(`invalid url: ${urlString}`)); return; }
-    if (url.protocol !== 'http:' && url.protocol !== 'https:') {
-      reject(new Error(`only http/https allowed: ${urlString}`)); return;
-    }
-    if (isPrivateHost(url.hostname)) {
-      reject(new Error(`private network rejected: ${url.hostname}`)); return;
-    }
     const lib = url.protocol === 'https:' ? https : http;
-    const req = lib.get(url, { timeout: 30000 }, (res) => {
+    const req = lib.get(url, {
+      timeout: 30000,
+      lookup: (host, opts, cb) => cb(null, pinnedIp, 4),
+    }, (res) => {
       if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location && maxRedirects > 0) {
         const next = new URL(res.headers.location, url).toString();
         res.resume();

@@ -23,6 +23,9 @@ function recordStage(run, stageName, result) {
   const at = new Date().toISOString();
   const existing = run.stages.find((s) => s.name === stageName);
   if (existing) {
+    // 防止 stale ok:re-record 时若新 result 未显式声明 ok,清除旧 ok
+    // (否则上次成功的 ok 被保留,finalizeRun 误判该 stage 成功)
+    if (!('ok' in result)) existing.ok = undefined;
     Object.assign(existing, result, { name: stageName, at });
   } else {
     run.stages.push({ name: stageName, ...result, at });

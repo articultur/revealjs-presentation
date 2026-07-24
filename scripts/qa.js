@@ -38,7 +38,7 @@ function optionIndex(names) {
 }
 
 function positionalFiles() {
-  const valueFlags = new Set(['--out', '--output', '--seed']);
+  const valueFlags = new Set(['--out', '--output', '--seed', '--topic']);
   const result = [];
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
@@ -61,6 +61,19 @@ const visualSignoff = args.includes('--visual-signoff') || process.env.VISUAL_VE
 const visualOptIn = process.env.VISUAL_VERDICT_OPT_IN === '1';
 const forceImageAudit = args.includes('--image-audit');
 const noImageAudit = args.includes('--no-image-audit');
+// editorial-contamination(反 template-01 收敛 / Goodhart 补丁)
+//   --topic <t>          传主题(不传则读 <title> 兜底);非 editorial 主题穿档案馆外衣 = fail
+//   --editorial-topic    强制声明 topic 为 editorial 原生(历程/历史/档案…),豁免
+//   --no-editorial-check 跳过本检查
+const topicArgIndex = optionIndex(['--topic']);
+const topicNext = topicArgIndex >= 0 ? args[topicArgIndex + 1] : undefined;
+if (topicArgIndex >= 0 && (!topicNext || topicNext.startsWith('--'))) {
+  console.error('qa.js: --topic 需要一个值(不能是 flag 或空;若主题字面含 -- 请确认它在值位置)');
+  process.exit(2);
+}
+const topicArg = topicNext || '';
+const editorialTopicFlag = args.includes('--editorial-topic');
+const noEditorialCheck = args.includes('--no-editorial-check');
 const outArgIndex = optionIndex(['--out', '--output']);
 const outRoot = outArgIndex >= 0 && args[outArgIndex + 1]
   ? path.resolve(args[outArgIndex + 1])
@@ -81,6 +94,9 @@ const knownFlags = new Set([
   '--out',
   '--output',
   '--seed',
+  '--topic',
+  '--editorial-topic',
+  '--no-editorial-check',
 ]);
 const unknownFlags = args.filter(arg => arg.startsWith('--') && !knownFlags.has(arg));
 
@@ -128,6 +144,12 @@ function parseSkeletonSimilarity(stdout) {
 
 function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+}
+
+function readTitle(filePath) {
+  const html = fs.readFileSync(filePath, 'utf8');
+  const m = html.match(/<title>([^<]*)<\/title>/i);
+  return m ? m[1].trim() : '';
 }
 
 function isImageDriven(filePath) {
@@ -209,6 +231,21 @@ for (const file of files) {
     `element-quality score ${elementJson?.score ?? 'unknown'} pass`,
     summarizeOutput(element),
   );
+
+  // editorial-contamination(反 template-01 收敛 / Goodhart 补丁):非 editorial 主题穿档案馆
+  // 外衣(archive 构件 / editorial 骨架三件套 / serif 展示字)= 设计非从主题生长,颜色与主题
+  // 是贴上去的而非长出来的。与 grade-gate 红灯同级(失败门禁 #9 的审美语言维度补丁)。
+  if (!noEditorialCheck) {
+    const topic = topicArg || readTitle(abs);
+    const ecArgs = [abs, '--topic', topic || '(none)', '--gate'];
+    if (editorialTopicFlag) ecArgs.push('--editorial-topic');
+    const ec = runNode('editorial-contamination', 'check-editorial-contamination.js', ecArgs);
+    record(
+      ec.status === 0 && !ec.error,
+      `editorial-contamination topic「${topic || '(无 title — 传 --topic)'}」未穿 editorial 皮`,
+      summarizeOutput(ec),
+    );
+  }
 
   const shouldAuditImages = forceImageAudit || (!noImageAudit && isImageDriven(abs));
   if (shouldAuditImages) {
