@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "strategies": {
+    "A1": { "mode": "editable", "adapter": "hero" },
+    "A2": { "mode": "editable", "adapter": "statement" },
+    "A3": { "mode": "hybrid", "adapter": "timeline" },
+    "A4": { "mode": "editable", "adapter": "split" },
+    "A5": { "mode": "editable", "adapter": "metric" },
+    "A6": { "mode": "editable", "adapter": "comparison" },
+    "A7": { "mode": "editable", "adapter": "grid" },
+    "A8": { "mode": "hybrid", "adapter": "mechanism" },
+    "A9": { "mode": "editable", "adapter": "table" },
+    "A10": { "mode": "editable", "adapter": "quote" },
+    "A11": { "mode": "editable", "adapter": "grid" },
+    "A12": { "mode": "editable", "adapter": "closing" },
+    "IMG": { "mode": "hybrid", "adapter": "image-compare" }
+  }
+}
