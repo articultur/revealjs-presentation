@@ -6,10 +6,26 @@
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-  <!-- Task 7 fills the controlled editor (deck-title, slide-list, property-panel, media-panel,
-       evidence-panel, qa-status, preview-frame, save-status, route-summary). -->
-  <main id="app">
-    <p>Workbench skeleton — controlled editor lands in Task 7.</p>
+  <header class="app-header">
+    <input id="deck-title" aria-label="演示标题">
+    <div id="route-summary" aria-live="polite"></div>
+    <div id="save-status" aria-live="polite">加载中</div>
+  </header>
+  <main class="workspace">
+    <nav id="slide-list" aria-label="幻灯片列表"></nav>
+    <section class="preview-column">
+      <div class="actions">
+        <button type="button" id="action-render">重新渲染</button>
+        <button type="button" id="action-qa">运行 QA</button>
+        <button type="button" id="action-export">导出 PPTX</button>
+      </div>
+      <iframe id="preview-frame" title="演示预览"></iframe>
+    </section>
+    <aside id="property-panel" aria-label="页面属性">
+      <section id="media-panel" aria-label="媒体"></section>
+      <section id="evidence-panel" aria-label="证据"></section>
+      <section id="qa-status" aria-label="QA 状态">未运行</section>
+    </aside>
   </main>
   <script src="/app.js"></script>
 </body>

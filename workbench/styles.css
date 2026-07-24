@@ -1,3 +1,22 @@
-/* Task 7 fills the editor layout + accessible states. Skeleton placeholder. */
-body { font-family: system-ui, -apple-system, 'PingFang SC', sans-serif; margin: 0; padding: 24px; }
-#app { max-width: 960px; margin: 0 auto; color: #222; }
+body { font-family: system-ui, -apple-system, 'PingFang SC', sans-serif; margin: 0; color: #222; background: #fff; }
+.app-header { display: flex; gap: 16px; align-items: center; padding: 12px 24px; border-bottom: 1px solid #ddd; }
+#deck-title { font-size: 16px; font-weight: 600; min-width: 200px; border: none; border-bottom: 1px solid transparent; }
+#deck-title:focus { border-bottom-color: #0366d6; outline: none; }
+#route-summary, #save-status { font-size: 13px; color: #666; }
+#save-status { margin-left: auto; }
+.workspace { display: grid; grid-template-columns: 220px 1fr 320px; gap: 16px; padding: 16px 24px; height: calc(100vh - 57px); box-sizing: border-box; }
+#slide-list { display: flex; flex-direction: column; gap: 8px; overflow-y: auto; }
+.slide-item { text-align: left; padding: 8px 10px; border: 1px solid #ddd; background: #fff; cursor: pointer; border-radius: 4px; font-size: 13px; }
+.slide-item.selected { border-color: #0366d6; background: #f0f6ff; }
+.preview-column { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.actions { display: flex; gap: 8px; }
+.actions button { padding: 6px 12px; border: 1px solid #ddd; background: #fff; border-radius: 4px; cursor: pointer; font-size: 13px; }
+.actions button:hover { background: #f6f8fa; }
+#preview-frame { flex: 1; border: 1px solid #ddd; border-radius: 4px; width: 100%; }
+#property-panel { overflow-y: auto; padding: 12px; border: 1px solid #ddd; border-radius: 4px; background: #fafafa; }
+.meta { font-size: 12px; color: #666; margin-bottom: 12px; }
+.prop-form { display: flex; flex-direction: column; gap: 8px; }
+.prop-row { display: flex; flex-direction: column; gap: 2px; font-size: 13px; }
+.prop-row input, .prop-row select { padding: 4px 6px; border: 1px solid #ccc; border-radius: 3px; font-size: 13px; }
+#media-panel, #evidence-panel { font-size: 12px; color: #666; margin-top: 12px; }
+#qa-status { font-size: 13px; margin-top: 12px; padding: 8px; background: #fff; border: 1px solid #eee; border-radius: 3px; min-height: 20px; }

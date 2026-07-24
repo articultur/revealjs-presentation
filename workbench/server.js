@@ -15,6 +15,7 @@ const {
   manifestToGeneratorInput,
 } = require('../scripts/deck-manifest');
 const { generate } = require('../scripts/generate-deck');
+const registry = require('../references/layout-registry.json');
 
 // Bound to a single manifest + output root for the process lifetime.
 let manifestPath;
@@ -126,6 +127,10 @@ function handleRequest({ request, response }) {
     fs.mkdirSync(path.dirname(pptxAbs), { recursive: true });
     const r = spawnSync('node', [path.join(__dirname, '..', 'scripts', 'export-pptx.js'), htmlAbs, '-o', pptxAbs], { encoding: 'utf8' });
     return sendJson(response, r.status === 0 ? 200 : 500, { ok: r.status === 0, pptx: pptxRel });
+  }
+
+  if (pathname === '/api/registry' && method === 'GET') {
+    return sendJson(response, 200, registry);
   }
 
   if (pathname === '/api/run' && method === 'GET') {
