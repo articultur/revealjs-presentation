@@ -1,0 +1,29 @@
+{
+  "manifestVersion": "1.0",
+  "deckId": "invalid-deck",
+  "title": "缺失关键字段",
+  "topic": "测试",
+  "language": "zh-CN",
+  "voice": "auto",
+  "route": {
+    "path": "B",
+    "wow": false
+  },
+  "output": {
+    "html": "ppt/index.html"
+  },
+  "slides": [
+    {
+      "role": "proof",
+      "contentType": "data-anchor",
+      "archetype": "A5",
+      "variantParams": {},
+      "props": {
+        "number": "42%"
+      },
+      "mediaSlots": [],
+      "evidence": [],
+      "motionIntent": "none"
+    }
+  ]
+}

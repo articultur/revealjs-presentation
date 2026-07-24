@@ -1,0 +1,66 @@
+{
+  "manifestVersion": "1.0",
+  "deckId": "annual-mobility-2026",
+  "title": "社区慢行交通年度报告",
+  "topic": "社区慢行交通",
+  "audience": "城市规划与交通管理团队",
+  "language": "zh-CN",
+  "voice": "auto",
+  "route": {
+    "path": "B",
+    "wow": false
+  },
+  "output": {
+    "html": "ppt/index.html",
+    "pptx": "ppt/社区慢行交通年度报告.pptx"
+  },
+  "slides": [
+    {
+      "id": "cover",
+      "role": "cover",
+      "contentType": "cover",
+      "archetype": "A1",
+      "variantParams": {},
+      "props": {
+        "title": "社区慢行交通年度报告",
+        "subtitle": "步行与骑行友好社区的年度体检"
+      },
+      "proofObject": {
+        "type": "statement",
+        "claim": "慢行交通正在成为社区更新的基础设施"
+      },
+      "mediaSlots": [],
+      "evidence": [],
+      "motionIntent": "none"
+    },
+    {
+      "id": "share",
+      "role": "proof",
+      "contentType": "data-anchor",
+      "archetype": "A5",
+      "variantParams": {
+        "anchor_scale": 5.6
+      },
+      "props": {
+        "title": "慢行出行分担率",
+        "number": "38%",
+        "body": "中心城区慢行出行分担率达到 38%"
+      },
+      "proofObject": {
+        "type": "metric",
+        "claim": "慢行交通已成为主要出行方式之一"
+      },
+      "mediaSlots": [],
+      "evidence": [
+        {
+          "id": "ev-share-38",
+          "claimId": "share",
+          "status": "user-provided",
+          "label": "38%",
+          "note": "用户提供的年度汇报数据"
+        }
+      ],
+      "motionIntent": "count-in"
+    }
+  ]
+}
