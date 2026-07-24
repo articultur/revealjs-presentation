@@ -30,6 +30,7 @@ const { spawnSync } = require('child_process');
 const { routeVoice } = require('./voice-router');
 const { routeDeck } = require('./content-router');
 const { assembleDeck, routeReportLines } = require('./generate-archetype-deck');
+const { loadDeckManifest, manifestToGeneratorInput } = require('./deck-manifest');
 
 const ROOT = path.resolve(__dirname, '..');
 
@@ -131,6 +132,7 @@ function parseArgs(argv) {
     else if (k === '--input') a.input = argv[++i];
     else if (k === '--out') a.out = argv[++i];
     else if (k === '--voice') a.voice = argv[++i];
+    else if (k === '--manifest') a.manifest = argv[++i];
   }
   return a;
 }
@@ -140,7 +142,15 @@ function main() {
   let input;
   let outFile;
 
-  if (a.demo || !a.input) {
+  if (a.manifest && a.input) {
+    console.error('--manifest and --input are mutually exclusive');
+    process.exit(2);
+  }
+  if (a.manifest) {
+    const manifest = loadDeckManifest(a.manifest);
+    input = manifestToGeneratorInput(manifest);
+    outFile = a.out || path.resolve(path.dirname(a.manifest), manifest.output.html);
+  } else if (a.demo || !a.input) {
     input = JSON.parse(JSON.stringify(DEMO));
     input.voice = 'auto'; // 触发 voice-router 推断(种子未覆盖主题 → 走 assembleDeck)
     outFile = path.join(ROOT, 'output', 'generate-deck-demo.html');
