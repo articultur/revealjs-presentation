@@ -46,11 +46,12 @@
     "test:workbench-server": "node scripts/test-workbench-server.js",
     "test:workbench-contract": "node scripts/test-workbench-contract.js",
     "test:pptx-fidelity": "node scripts/test-pptx-fidelity-contract.js",
+    "test:evidence-sources": "node scripts/test-evidence-sources.js",
     "test:deck-stats": "node scripts/test-deck-stats.js",
     "test:font-loading": "node scripts/test-font-loading.js examples/template-*.html",
     "test:route-deck": "node scripts/route-deck.js --selftest",
     "test:skeleton-diff": "node scripts/skeleton-diff.js --selftest",
-    "test": "npm run test:deck-stats && npm run test:doc-counts && npm run test:deck-manifest && npm run test:layout-registry && npm run test:pipeline && npm run test:media-stage && node scripts/test-workbench-contract.js && npm run test:workbench-server && npm run test:pptx-fidelity && npm run test:validate-overflow && npm run test:reference-contract && npm run test:launch-grade-contract && npm run test:qa-system-contract && npm run gate && npm run test:off-template-regression && npm run test:lint-main-claim && npm run test:initial-slide-visible && npm run test:text-collision && npm run test:pin-collision && npm run test:text-break && npm run test:font-loading && npm run test:pptx-export && npm run test:route-deck && npm run test:skeleton-diff && npm run seed:quality",
+    "test": "npm run test:deck-stats && npm run test:doc-counts && npm run test:deck-manifest && npm run test:layout-registry && npm run test:pipeline && npm run test:media-stage && node scripts/test-workbench-contract.js && npm run test:workbench-server && npm run test:pptx-fidelity && node scripts/test-evidence-sources.js && npm run test:validate-overflow && npm run test:reference-contract && npm run test:launch-grade-contract && npm run test:qa-system-contract && npm run gate && npm run test:off-template-regression && npm run test:lint-main-claim && npm run test:initial-slide-visible && npm run test:text-collision && npm run test:pin-collision && npm run test:text-break && npm run test:font-loading && npm run test:pptx-export && npm run test:route-deck && npm run test:skeleton-diff && npm run seed:quality",
     "doctor": "bash scripts/doctor.sh"
   },
   "dependencies": {

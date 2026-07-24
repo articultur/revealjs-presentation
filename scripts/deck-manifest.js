@@ -62,6 +62,27 @@ function validateDeckManifest(manifest) {
       }
       if (!Array.isArray(slide.mediaSlots)) errors.push(`${prefix}.mediaSlots must be an array`);
       if (!Array.isArray(slide.evidence)) errors.push(`${prefix}.evidence must be an array`);
+      if (Array.isArray(slide.evidence)) {
+        slide.evidence.forEach((ev, ei) => {
+          const p = `${prefix}.evidence[${ei}]`;
+          if (!ev || typeof ev !== 'object') { errors.push(`${p} must be an object`); return; }
+          if (!ev.id || typeof ev.id !== 'string') errors.push(`${p}.id is required`);
+          if (!ev.claimId || typeof ev.claimId !== 'string') errors.push(`${p}.claimId is required`);
+          else if (ev.claimId !== slide.id) errors.push(`${p}.claimId must match the owning slide id`);
+          if (!['verified', 'user-provided', 'illustrative', 'needs-source'].includes(ev.status)) errors.push(`${p}.status is invalid`);
+          if (!ev.label || typeof ev.label !== 'string') errors.push(`${p}.label is required`);
+          if (ev.status === 'verified') {
+            if (!ev.source || typeof ev.source !== 'object') errors.push(`${p}.source is required for verified evidence (url+locator+checkedAt)`);
+            else {
+              if (!ev.source.url || !/^https?:\/\//.test(ev.source.url)) errors.push(`${p}.source.url must be an http(s) URL`);
+              if (!ev.source.locator || typeof ev.source.locator !== 'string') errors.push(`${p}.source.locator is required`);
+              if (!ev.source.checkedAt || !/^\d{4}-\d{2}-\d{2}$/.test(ev.source.checkedAt)) errors.push(`${p}.source.checkedAt must be a YYYY-MM-DD date`);
+            }
+          }
+          if (ev.status === 'user-provided' && (!ev.note || typeof ev.note !== 'string')) errors.push(`${p}.note is required for user-provided evidence`);
+          if (ev.status === 'illustrative' && ev.source) errors.push(`${p}.source is forbidden for illustrative evidence`);
+        });
+      }
     });
   }
   return { ok: errors.length === 0, errors };

@@ -1,0 +1,39 @@
+{
+  "manifestVersion": "1.0",
+  "deckId": "evidence-invalid-deck",
+  "title": "证据来源校验测试",
+  "topic": "测试",
+  "audience": "QA",
+  "language": "zh-CN",
+  "voice": "auto",
+  "route": { "path": "B", "wow": false },
+  "output": { "html": "ppt/index.html" },
+  "slides": [
+    {
+      "id": "cover",
+      "role": "cover",
+      "contentType": "cover",
+      "archetype": "A1",
+      "variantParams": {},
+      "props": { "title": "证据来源校验测试" },
+      "proofObject": { "type": "statement", "claim": "占位命题" },
+      "mediaSlots": [],
+      "evidence": [],
+      "motionIntent": "none"
+    },
+    {
+      "id": "share",
+      "role": "proof",
+      "contentType": "data-anchor",
+      "archetype": "A5",
+      "variantParams": {},
+      "props": { "title": "慢行分担率", "number": "38%" },
+      "proofObject": { "type": "metric", "claim": "慢行交通已成为主要出行方式之一" },
+      "mediaSlots": [],
+      "evidence": [
+        { "id": "ev-missing-source", "claimId": "share", "status": "verified", "label": "38%" }
+      ],
+      "motionIntent": "none"
+    }
+  ]
+}
