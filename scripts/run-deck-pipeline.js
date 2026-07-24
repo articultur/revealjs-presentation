@@ -11,6 +11,7 @@ const {
   manifestToGeneratorInput,
 } = require('./deck-manifest');
 const { generate } = require('./generate-deck');
+const { stageManifestMedia } = require('./media-stage');
 const {
   createRunManifest,
   recordStage,
@@ -43,7 +44,7 @@ function runNode(script, args, timeout = 420000) {
   };
 }
 
-function main() {
+async function main() {
   const a = parseArgs(process.argv.slice(2));
   if (!a.manifest || !a.out) {
     console.error('Usage: node scripts/run-deck-pipeline.js --manifest <file> --out <run-root> [--visual-mode pending|model|signoff]');
@@ -70,8 +71,17 @@ function main() {
     process.exit(1);
   }
 
-  // Stage: media (Task 5 inserts staging here; empty set is a successful no-op for now)
-  recordStage(run, 'media-stage', { ok: true, count: 0 });
+  // Stage: media staging (local allow-root + remote SSRF guard + SHA256 dedup)
+  try {
+    manifest = await stageManifestMedia({ manifest, manifestPath, outputDir: outRoot, allowRoot: path.dirname(manifestPath) });
+    const mediaCount = manifest.slides.reduce((n, s) => n + (Array.isArray(s.mediaSlots) ? s.mediaSlots.filter((m) => m.sha256).length : 0), 0);
+    recordStage(run, 'media-stage', { ok: true, count: mediaCount });
+  } catch (e) {
+    recordStage(run, 'media-stage', { ok: false, error: e.message });
+    finalizeRun(run, 'blocked');
+    writeOut();
+    process.exit(1);
+  }
 
   // Stage: render (convert manifest → generator input → HTML)
   try {
@@ -135,6 +145,6 @@ function main() {
   process.exit(run.state === 'ready' ? 0 : 1);
 }
 
-if (require.main === module) main();
+if (require.main === module) main().catch((e) => { console.error(e.stack || e.message); process.exit(2); });
 
 module.exports = { main, parseArgs };
