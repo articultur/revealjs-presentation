@@ -130,10 +130,16 @@ function handleRequest({ request, response }) {
     loadCurrent();
     const htmlAbs = safeResolve(cache.manifest.output.html);
     if (!htmlAbs) return sendJson(response, 400, { error: 'output path escapes root' });
-    const r = spawnSync('node', [path.join(__dirname, '..', 'scripts', 'qa.js'), htmlAbs, '--no-visual'], { encoding: 'utf8', timeout: 420000 });
+    const r = spawnSync('node', [path.join(__dirname, '..', 'scripts', 'qa.js'), htmlAbs, '--no-visual', '--out', outputRoot], { encoding: 'utf8', timeout: 420000 });
+    const summaryPath = path.join(outputRoot, path.basename(htmlAbs, '.html') + '-qa-summary.json');
+    let summary = null;
+    try {
+      if (fs.existsSync(summaryPath)) summary = JSON.parse(fs.readFileSync(summaryPath, 'utf8'));
+    } catch (e) { /* summary is best-effort; the exit code still drives ok */ }
     return sendJson(response, r.status === 0 ? 200 : 500, {
       ok: r.status === 0,
       detail: (r.stdout || r.stderr || '').slice(-800),
+      summary,
     });
   }
 

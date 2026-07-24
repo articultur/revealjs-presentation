@@ -153,9 +153,21 @@ async function runQA() {
   el('qa-status').textContent = 'QA 运行中(地板,无视觉)';
   const r = await fetch('/api/qa', { method: 'POST' });
   const j = await r.json();
-  el('qa-status').textContent = j.ok
-    ? 'QA 地板通过(grade-gate/design-strength/element-quality/editorial)'
-    : 'QA 有失败 — ' + String(j.detail || '').slice(0, 220);
+  const g = j.summary && j.summary.gates;
+  const labels = { grade: 'grade-gate', designStrength: 'design-strength', elementQuality: 'element-quality', editorialContamination: 'editorial', imageAudit: 'image-audit', visual: 'visual' };
+  if (g) {
+    const order = ['grade', 'designStrength', 'elementQuality', 'editorialContamination', 'imageAudit', 'visual'];
+    const parts = order.filter(k => g[k]).map(k => labels[k] + ':' + g[k]);
+    // 任一必需地板门禁非 pass/skipped → 不显示绿色顶层状态(视觉层在 --no-visual 下为 skipped)
+    const floorClean = ['grade', 'designStrength', 'elementQuality', 'editorialContamination', 'imageAudit']
+      .every(k => g[k] === 'pass' || g[k] === 'skipped');
+    const prefix = (j.ok && floorClean) ? '✓ ' : '⚠ ';
+    el('qa-status').textContent = prefix + parts.join(' · ') + (j.summary.state ? '  [state=' + j.summary.state + ']' : '');
+  } else {
+    el('qa-status').textContent = j.ok
+      ? 'QA 地板通过(grade-gate/design-strength/element-quality/editorial)'
+      : 'QA 有失败 — ' + String(j.detail || '').slice(0, 220);
+  }
 }
 
 async function exportPptx() {

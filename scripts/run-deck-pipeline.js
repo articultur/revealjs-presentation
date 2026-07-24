@@ -18,6 +18,7 @@ const {
   finalizeRun,
   writeRunManifest,
   buildQaSummary,
+  validateVisualSignoff,
 } = require('./run-manifest');
 
 function assertInRoot(abs, root) {
@@ -142,14 +143,32 @@ async function main() {
     }
   } else if (visualMode === 'signoff' && a.visualSignoffFile) {
     const src = path.resolve(a.visualSignoffFile);
+    let signoffOk = false;
+    let signoffErr = '';
     if (!fs.existsSync(src)) {
-      finalizeRun(run, 'needs-visual-signoff');
+      signoffErr = `signoff file not found: ${src}`;
     } else {
-      const destDir = path.join(outRoot, 'qa');
-      fs.mkdirSync(destDir, { recursive: true });
-      fs.copyFileSync(src, path.join(destDir, 'visual-signoff.json'));
-      recordStage(run, 'visual-human-signoff', { ok: true, artifact: 'qa/visual-signoff.json' });
-      finalizeRun(run, 'ready');
+      try {
+        const signoff = JSON.parse(fs.readFileSync(src, 'utf8'));
+        const manifestSibling = path.join(path.dirname(src), 'screenshots-manifest.json');
+        const errs = validateVisualSignoff(signoff, { manifestFile: manifestSibling });
+        if (errs.length) {
+          signoffErr = errs.join('; ');
+        } else {
+          const destDir = path.join(outRoot, 'qa');
+          fs.mkdirSync(destDir, { recursive: true });
+          fs.copyFileSync(src, path.join(destDir, 'visual-signoff.json'));
+          recordStage(run, 'visual-human-signoff', { ok: true, artifact: 'qa/visual-signoff.json' });
+          finalizeRun(run, 'ready');
+          signoffOk = true;
+        }
+      } catch (e) {
+        signoffErr = `signoff parse error: ${e.message}`;
+      }
+    }
+    if (!signoffOk) {
+      recordStage(run, 'visual-human-signoff', { ok: false, error: signoffErr });
+      finalizeRun(run, 'needs-visual-signoff');
     }
   } else {
     finalizeRun(run, 'needs-visual-signoff');

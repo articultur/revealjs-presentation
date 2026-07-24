@@ -3,8 +3,40 @@
 
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 
 const RUN_STATES = new Set(['draft', 'rendered', 'needs-visual-signoff', 'ready', 'blocked']);
+
+// validateVisualSignoff — the durable contract for a human visual review that promotes a run to
+// `ready`. A bare boolean flag is not auditable evidence; a signoff file must name who reviewed,
+// when, which screenshot set (SHA-256 of the screenshots manifest), and a pass decision. When the
+// screenshots manifest is co-located we verify the recorded hash actually matches it, so the
+// signoff cannot be replayed against a different deck's screenshots.
+function validateVisualSignoff(signoff, opts = {}) {
+  const errors = [];
+  if (!signoff || typeof signoff !== 'object' || Array.isArray(signoff)) {
+    return ['signoff must be a JSON object'];
+  }
+  if (!signoff.reviewer || typeof signoff.reviewer !== 'string') {
+    errors.push('reviewer is required (e.g. "human:name") — who performed the visual review');
+  }
+  if (!signoff.reviewedAt || typeof signoff.reviewedAt !== 'string' || Number.isNaN(Date.parse(signoff.reviewedAt))) {
+    errors.push('reviewedAt is required (ISO 8601, e.g. 2026-07-24T10:00:00+08:00)');
+  }
+  if (!signoff.screenshotsManifestSha256 || !/^[0-9a-f]{64}$/.test(signoff.screenshotsManifestSha256)) {
+    errors.push('screenshotsManifestSha256 is required (64 hex chars identifying the reviewed screenshots)');
+  }
+  if (signoff.decision !== 'pass') {
+    errors.push('decision must be "pass" to promote a run to ready');
+  }
+  if (opts.manifestFile && fs.existsSync(opts.manifestFile) && signoff.screenshotsManifestSha256) {
+    const actual = crypto.createHash('sha256').update(fs.readFileSync(opts.manifestFile)).digest('hex');
+    if (actual !== signoff.screenshotsManifestSha256) {
+      errors.push(`screenshotsManifestSha256 does not match ${opts.manifestFile}`);
+    }
+  }
+  return errors;
+}
 const REQUIRED_FOR_READY = ['manifest-validation', 'render', 'qa-floor', 'pptx-fidelity'];
 const VISUAL_STAGES = ['visual-model', 'visual-human-signoff'];
 
@@ -86,6 +118,7 @@ module.exports = {
   finalizeRun,
   writeRunManifest,
   buildQaSummary,
+  validateVisualSignoff,
   RUN_STATES,
   REQUIRED_FOR_READY,
   VISUAL_STAGES,
