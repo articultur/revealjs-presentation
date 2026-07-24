@@ -85,6 +85,31 @@ node scripts/generate-style-examples.js    # 生成 12 份不同设计语言的�
 
 这些是用于横向对比设计语言差异的独立 demo（consulting memo / minimal keynote / data story / product launch / education / pitch / architecture / magazine / brutalist / luxury / illustrated / memphis），由脚本生成、**未纳入 git**；不是种子模板——种子模板见上表。
 
+## 编排与交付（authoring & delivery）
+
+生成只是其中一环。完整链路用一份 **Deck Manifest**(`deck.manifest.json`)作为唯一可编辑状态，串起布局、证据、媒体、视觉签字到导出:
+
+```
+deck.manifest.json  ──►  run-deck-pipeline.js  ──►  run.json(state=ready) + ppt/
+   唯一真相              fail-closed 状态机           可审计交付物
+```
+
+| 环节 | 脚本 / 文件 | 作用 |
+| --- | --- | --- |
+| 布局契约 | `references/layout-registry.json` + `scripts/deck-manifest.js` | 13 个 archetype(A1-A12+IMG)的 props/mediaSlots/pptx 策略;`validateDeckManifest` 强制 schema + 证据语义 |
+| 渲染 | `scripts/generate-deck.js --manifest` | manifest → HTML;每页盖 `data-archetype` + `data-slide-id` + `data-evidence-id`(可追溯) |
+| 媒体 | `scripts/media-stage.js` | 暂存媒体(SSRF 防护 + SHA256 去重);相对路径按 manifest 目录解析 |
+| 状态机 | `scripts/run-manifest.js` + `run-deck-pipeline.js` | draft→rendered→needs-visual-signoff→ready/blocked;`ready` 需 manifest 校验+渲染+QA 地板+PPTX 保真+视觉签字全过 |
+| 工作台 | `workbench/`(server.js + app.js) | 127.0.0.1 受控编辑器,只改 manifest 公开 props(ETag 并发,禁 contenteditable/eval/innerHTML=userValue) |
+| PPTX | `references/pptx-export-strategies.json` + `analyze-pptx-fidelity.js` + `export-pptx.js` | 每个 archetype 声明 editable/hybrid/raster 策略;保真分析 + 导出 |
+| 验收 | `scripts/qa.js` | 十四门禁 + design-strength≥75 + element-quality + editorial + 图像审计 + 视觉层;写结构化 `<deck>-qa-summary.json` |
+
+**证据分级**(manifest `slides[].evidence[]`,`validation.md` 详述):`verified`(须 url+locator+checkedAt)/ `user-provided`(须 note)/ `illustrative`(禁 source)/ `needs-source`(交付阻塞)。
+
+**视觉签字**:生产用 `qa.js --visual-signoff-file signoff.json`(须 reviewer/reviewedAt/screenshotsManifestSha256/decision=pass,可审计);`--visual-signoff`/`VISUAL_VERDICT_SIGNOFF=1` 仅 `NODE_ENV=test` 可用。
+
+**端到端证明**:`npm run test:authoring-e2e` 用 `tests/fixtures/workbench-e2e.manifest.json`(8 页/8 archetype/媒体槽/verified+user-provided 证据/hybrid PPTX/动效/收尾)跑完整链路,断言 `run.json.state===ready` 且每个 artifact 落盘。
+
 ## 结构
 
 ```

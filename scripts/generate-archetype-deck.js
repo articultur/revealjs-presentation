@@ -455,7 +455,7 @@ function fillArchetype(route, s, idx, total, input = {}) {
     ? `<div class="evidence-label" data-evidence-id="${esc(evFirst.id || '')}" data-evidence-status="${esc(evStatus)}">${esc(evStatus)}</div>`
     : `<div class="evidence-label">${esc(evStatus)}</div>`;
   const wrap = (inner, cls = 'deck-flex', style = 'height:100%;') =>
-    `<section class="${cls}${sigCls}" data-archetype="${route.archetype}"${vAttr} data-background="var(--c-bg)" style="${style}">${v}${evidence}${inner}<div class="pin">${num} / ${esc(route.content_type)}</div></section>`;
+    `<section class="${cls}${sigCls}" data-archetype="${route.archetype}"${vAttr} data-slide-id="${esc(s.id || '')}" data-background="var(--c-bg)" style="${style}">${v}${evidence}${inner}<div class="pin">${num} / ${esc(route.content_type)}</div></section>`;
 
   switch (route.archetype) {
     // A1 Masthead Cover
@@ -505,7 +505,7 @@ function fillArchetype(route, s, idx, total, input = {}) {
     }
 
     // A4 Full-Bleed Split(body 按行/分号拆段消费,自由文本也能读)
-    case 'A4': return `<section class="deck-flex${sigCls}" data-archetype="A4"${vAttr} data-background="var(--c-bg)" style="height:100%;padding:0;">${v}${evidence}
+    case 'A4': return `<section class="deck-flex${sigCls}" data-archetype="A4"${vAttr} data-slide-id="${esc(s.id || '')}" data-background="var(--c-bg)" style="height:100%;padding:0;">${v}${evidence}
       <div style="width:42%;background:var(--c-fg);color:var(--c-bg);display:flex;flex-direction:column;justify-content:space-between;padding:2.2em 2em;">
         <div><div class="kicker" style="color:var(--c-bg);opacity:0.82;">${esc(s.title)}</div>
         <h2 style="color:var(--c-bg);margin:0.5em 0 0;">${esc(s.panel_title||s.title)}</h2></div>
@@ -535,7 +535,7 @@ function fillArchetype(route, s, idx, total, input = {}) {
     // A6 Face-Off Compare(variant:verdict_scale → 裁决字号;无变体时收 2.2em,对峙变体才放大)
     case 'A6': {
       const vscale = route.variant_params && route.variant_params.verdict_scale;
-      return `<section class="deck-flex${sigCls}" data-archetype="A6"${vAttr} data-background="var(--c-bg)" style="height:100%;padding:0;">${v}${evidence}
+      return `<section class="deck-flex${sigCls}" data-archetype="A6"${vAttr} data-slide-id="${esc(s.id || '')}" data-background="var(--c-bg)" style="height:100%;padding:0;">${v}${evidence}
       <div style="width:52%;background:var(--c-accent);color:var(--c-bg);display:flex;flex-direction:column;justify-content:space-between;padding:1.9em 2.4em;">
         <div><div style="font-family:var(--f-mono);font-size:0.5em;letter-spacing:0.16em;text-transform:uppercase;color:var(--c-bg);opacity:0.8;">${esc(s.a_label||'A')}</div>
         <div style="font-family:var(--f-display);font-size:clamp(3.4em,4.6em,5.2em);font-style:italic;font-weight:600;color:var(--c-bg);line-height:1;">${esc(s.a_value||'')}</div>
@@ -596,7 +596,7 @@ function fillArchetype(route, s, idx, total, input = {}) {
     }
 
     // A10 Pullquote
-    case 'A10': return `<section class="deck-grid${sigCls}" data-archetype="A10"${vAttr} data-background="var(--c-bg)" style="grid-template-columns:0.3fr 0.7fr;gap:64px;align-items:center;padding:64px 80px;height:100%;">${v}${evidence}
+    case 'A10': return `<section class="deck-grid${sigCls}" data-archetype="A10"${vAttr} data-slide-id="${esc(s.id || '')}" data-background="var(--c-bg)" style="grid-template-columns:0.3fr 0.7fr;gap:64px;align-items:center;padding:64px 80px;height:100%;">${v}${evidence}
       <div style="border-right:1px solid var(--c-border);padding-right:56px;">
         <div style="font-family:var(--f-display);font-style:italic;font-size:4em;color:var(--c-accent);line-height:0.9;">№ ${esc(s.number||'')}</div>
         <div style="font-family:var(--f-mono);font-size:0.5em;letter-spacing:0.12em;text-transform:uppercase;color:var(--c-fg-2);margin-top:0.6em;">${esc(s.title||'引言')}</div>
@@ -627,7 +627,7 @@ function fillArchetype(route, s, idx, total, input = {}) {
     // IMG · 图像对峙(顶部标题 + 双图并排对比 + 标签;图像驱动主题。proof 是图,非文字)
     case 'IMG': {
       requireFields('image-compare', s, ['img_a', 'img_b', 'a_label', 'b_label']);
-      return `<section class="deck-flex${sigCls}" data-archetype="IMG"${vAttr} data-background="var(--c-bg)" style="height:100%;flex-direction:column;padding:0;">${v}${evidence}
+      return `<section class="deck-flex${sigCls}" data-archetype="IMG"${vAttr} data-slide-id="${esc(s.id || '')}" data-background="var(--c-bg)" style="height:100%;flex-direction:column;padding:0;">${v}${evidence}
         <div style="padding:1em 1.6em 0.7em;border-bottom:1px solid var(--c-border);">
           <div class="kicker">${esc(s.subtitle||'图像对比')}</div>
           <h2 style="font-family:var(--f-display);font-size:1.7em;font-style:italic;margin:0.2em 0 0;color:var(--c-fg);">${esc(s.title||'')}</h2>

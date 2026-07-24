@@ -162,7 +162,14 @@ async function stageManifestMedia({ manifest, manifestPath, outputDir, allowRoot
     for (const slot of slide.mediaSlots) {
       if (slot && slot.source && !slot.sha256) {
         try {
-          const staged = await stageMedia({ source: slot.source, outputDir, allowRoot: root });
+          // Resolve relative sources against the manifest directory (a manifest's media references
+          // are relative to the manifest, like an HTML document's src) — not the process CWD, which
+          // would put them outside allowRoot and make portable fixtures fail to stage.
+          let src = slot.source;
+          if (!/^https?:\/\//i.test(src) && !path.isAbsolute(src)) {
+            src = path.resolve(manifestDir, src);
+          }
+          const staged = await stageMedia({ source: src, outputDir, allowRoot: root });
           slot.source = staged.relativePath;
           slot.sha256 = staged.sha256;
           slot.mimeType = staged.mimeType;

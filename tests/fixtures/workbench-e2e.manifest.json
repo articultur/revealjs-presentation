@@ -1,0 +1,191 @@
+{
+  "manifestVersion": "1.0",
+  "deckId": "workbench-e2e-fixture",
+  "title": "工作台端到端验收夹具",
+  "topic": "社区慢行交通",
+  "audience": "城市规划与交通管理团队",
+  "language": "zh-CN",
+  "voice": "data",
+  "route": {
+    "path": "B",
+    "wow": false
+  },
+  "output": {
+    "html": "ppt/index.html",
+    "pptx": "ppt/workbench-e2e.pptx"
+  },
+  "slides": [
+    {
+      "id": "cover",
+      "role": "cover",
+      "contentType": "cover",
+      "archetype": "A1",
+      "variantParams": {},
+      "props": {
+        "title": "社区慢行交通年度报告",
+        "subtitle": "步行与骑行友好社区的年度体检"
+      },
+      "proofObject": {
+        "type": "statement",
+        "claim": "慢行交通正在成为社区更新的基础设施"
+      },
+      "mediaSlots": [],
+      "evidence": [],
+      "motionIntent": "none"
+    },
+    {
+      "id": "thesis",
+      "role": "context",
+      "contentType": "thesis",
+      "archetype": "A2",
+      "variantParams": {},
+      "props": {
+        "title": "慢行优先是社区更新的核心杠杆",
+        "body": "把路权从机动车向步行与骑行倾斜，能同时改善安全、空气与街道活力。"
+      },
+      "proofObject": {
+        "type": "statement",
+        "claim": "慢行优先是社区更新的核心杠杆"
+      },
+      "mediaSlots": [],
+      "evidence": [],
+      "motionIntent": "none"
+    },
+    {
+      "id": "street-section",
+      "role": "mechanism",
+      "contentType": "mechanism",
+      "archetype": "A8",
+      "variantParams": {},
+      "props": {
+        "title": "改造前后的街道断面",
+        "body": "同一截面在慢行改造后，人行与骑行空间显著扩展。"
+      },
+      "proofObject": {
+        "type": "diagram",
+        "claim": "改造前后街道断面对比"
+      },
+      "mediaSlots": [
+        {
+          "source": "media/tiny-source.svg",
+          "role": "image"
+        }
+      ],
+      "evidence": [],
+      "motionIntent": "none"
+    },
+    {
+      "id": "tradeoff",
+      "role": "decision",
+      "contentType": "comparison",
+      "archetype": "A4",
+      "variantParams": {},
+      "props": {
+        "title": "路权再分配",
+        "body": "降低一条车道的通行能力，换取连续的人行与骑行廊道。"
+      },
+      "proofObject": {
+        "type": "statement",
+        "claim": "在通行能力与慢行友好之间权衡"
+      },
+      "mediaSlots": [],
+      "evidence": [],
+      "motionIntent": "none"
+    },
+    {
+      "id": "share",
+      "role": "proof",
+      "contentType": "data-anchor",
+      "archetype": "A5",
+      "variantParams": {
+        "anchor_scale": 5.6
+      },
+      "props": {
+        "title": "慢行出行分担率",
+        "number": "38%",
+        "body": "中心城区慢行出行分担率达到 38%。"
+      },
+      "proofObject": {
+        "type": "metric",
+        "claim": "慢行交通已成为主要出行方式之一"
+      },
+      "mediaSlots": [],
+      "evidence": [
+        {
+          "id": "ev-share-38",
+          "claimId": "share",
+          "status": "verified",
+          "label": "38%",
+          "source": {
+            "url": "https://example.org/mobility-report-2026",
+            "locator": "表 2 · 中心城区慢行分担率",
+            "checkedAt": "2026-06-10"
+          }
+        }
+      ],
+      "motionIntent": "count-in"
+    },
+    {
+      "id": "network",
+      "role": "mechanism",
+      "contentType": "mechanism",
+      "archetype": "A7",
+      "variantParams": {},
+      "props": {
+        "title": "连续廊道如何放大慢行收益",
+        "body": "断点修补、路口稳静化、绿带遮荫三条措施叠加，廊道连续度提升后骑行量同步上升。"
+      },
+      "proofObject": {
+        "type": "diagram",
+        "claim": "连续廊道放大慢行收益的机制"
+      },
+      "mediaSlots": [],
+      "evidence": [
+        {
+          "id": "ev-network-note",
+          "claimId": "network",
+          "status": "user-provided",
+          "label": "内部测算",
+          "note": "用户提供的工程内部测算，未经独立核验。"
+        }
+      ],
+      "motionIntent": "none"
+    },
+    {
+      "id": "voice",
+      "role": "proof",
+      "contentType": "quote",
+      "archetype": "A10",
+      "variantParams": {},
+      "props": {
+        "title": "居民的声音",
+        "body": "现在孩子可以自己走到学校，这条路终于属于街道而不是车库出口。"
+      },
+      "proofObject": {
+        "type": "quote",
+        "claim": "居民对慢行改造的反馈"
+      },
+      "mediaSlots": [],
+      "evidence": [],
+      "motionIntent": "draw"
+    },
+    {
+      "id": "close",
+      "role": "close",
+      "contentType": "closing",
+      "archetype": "A12",
+      "variantParams": {},
+      "props": {
+        "title": "连成慢行网络",
+        "body": "从单条示范街扩展到全区连续慢行网络，让步行与骑行成为默认选项。"
+      },
+      "proofObject": {
+        "type": "statement",
+        "claim": "从示范街扩展到全区慢行网络"
+      },
+      "mediaSlots": [],
+      "evidence": [],
+      "motionIntent": "none"
+    }
+  ]
+}
