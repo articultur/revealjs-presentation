@@ -58,11 +58,31 @@ function writeRunManifest(filePath, run) {
   fs.renameSync(temporary, absolute);
 }
 
+function buildQaSummary(run) {
+  const has = (n) => Boolean(run.stages.find((s) => s.name === n && s.ok === true));
+  return {
+    version: 1,
+    deck: 'run.json',
+    state: run.state,
+    passed: run.state === 'ready',
+    gates: {
+      manifestValidation: has('manifest-validation') ? 'pass' : 'fail',
+      media: has('media-stage') ? 'pass' : 'fail',
+      render: has('render') ? 'pass' : 'fail',
+      gradeGate: has('qa-floor') ? 'pass' : 'fail',
+      pptxFidelity: has('pptx-fidelity') ? 'pass' : 'fail',
+      visual: has('visual-model') ? 'model' : (has('visual-human-signoff') ? 'human-signoff' : 'pending'),
+    },
+    artifacts: run.stages.filter((s) => s.artifact).map((s) => ({ stage: s.name, path: s.artifact })),
+  };
+}
+
 module.exports = {
   createRunManifest,
   recordStage,
   finalizeRun,
   writeRunManifest,
+  buildQaSummary,
   RUN_STATES,
   REQUIRED_FOR_READY,
   VISUAL_STAGES,

@@ -17,6 +17,7 @@ const {
   recordStage,
   finalizeRun,
   writeRunManifest,
+  buildQaSummary,
 } = require('./run-manifest');
 
 function parseArgs(argv) {
@@ -55,7 +56,10 @@ async function main() {
   const outRoot = path.resolve(a.out);
   const runId = `run-${Date.now()}`;
   const run = createRunManifest({ runId, sourceManifest: manifestPath, outputRoot: outRoot });
-  const writeOut = () => writeRunManifest(path.join(outRoot, 'run.json'), run);
+  const writeOut = () => {
+    writeRunManifest(path.join(outRoot, 'run.json'), run);
+    fs.writeFileSync(path.join(outRoot, 'qa-summary.json'), `${JSON.stringify(buildQaSummary(run), null, 2)}\n`);
+  };
 
   // Stage 1: manifest validation (fail-closed)
   let manifest;

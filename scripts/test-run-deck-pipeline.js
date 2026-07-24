@@ -5,6 +5,7 @@ const {
   createRunManifest,
   recordStage,
   finalizeRun,
+  buildQaSummary,
 } = require('./run-manifest');
 
 // Step 1: normal transition to needs-visual-signoff
@@ -83,6 +84,22 @@ recordStage(ready, 'visual-human-signoff', { ok: true, artifact: 'qa/visual-sign
 finalizeRun(ready, 'ready');
 if (ready.state !== 'ready') {
   console.error(`state should be ready, got ${ready.state}`);
+  process.exit(1);
+}
+
+// Step 5: qa-summary is derived from the run state — ready runs must report a visual gate
+const summary = buildQaSummary(ready);
+if (summary.state !== 'ready' || !summary.passed) {
+  console.error('qa-summary must report ready/passed for a ready run');
+  process.exit(1);
+}
+if (summary.gates.visual !== 'human-signoff') {
+  console.error(`qa-summary visual gate should be human-signoff, got ${summary.gates.visual}`);
+  process.exit(1);
+}
+const pendingSummary = buildQaSummary(run);
+if (pendingSummary.passed || pendingSummary.gates.visual !== 'pending') {
+  console.error('needs-visual-signoff run must not pass and must show pending visual gate');
   process.exit(1);
 }
 
