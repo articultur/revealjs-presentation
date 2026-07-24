@@ -95,7 +95,32 @@
             }
           },
           "mediaSlots": { "type": "array" },
-          "evidence": { "type": "array" },
+          "evidence": {
+            "type": "array",
+            "description": "Per-claim evidence sources. Semantic rules (enforced by scripts/deck-manifest.js validateDeckManifest): verified requires source.{url,locator,checkedAt}; user-provided requires note; illustrative forbids source; claimId must equal the owning slide id. Each id is stamped into the rendered HTML as data-evidence-id for auditability.",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["id", "claimId", "status", "label"],
+              "properties": {
+                "id": { "type": "string", "minLength": 1 },
+                "claimId": { "type": "string", "minLength": 1 },
+                "status": { "enum": ["verified", "user-provided", "illustrative", "needs-source"] },
+                "label": { "type": "string", "minLength": 1 },
+                "note": { "type": "string", "minLength": 1 },
+                "source": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["url", "locator", "checkedAt"],
+                  "properties": {
+                    "url": { "type": "string", "pattern": "^https?://" },
+                    "locator": { "type": "string", "minLength": 1 },
+                    "checkedAt": { "type": "string", "format": "date" }
+                  }
+                }
+              }
+            }
+          },
           "motionIntent": { "enum": ["none", "fragment", "loop", "count-in", "draw", "grow"] }
         }
       }

@@ -96,6 +96,26 @@ node scripts/test-reference-contract.js                 # 种子模板对象契�
 node scripts/lint-reference-docs.js                     # 参考文档代码示例自查（禁止负 tracking/vw-vh/Tailwind indigo）
 ```
 
+## 证据分级与可追溯（Evidence levels）
+
+每条精确事实主张在 `deck.manifest.json` 的 `slides[].evidence[]` 里声明级别。`scripts/deck-manifest.js`（`validateDeckManifest`）强制语义校验，`scripts/test-evidence-ledger.js --manifest` 在验收时再核一遍并比对 HTML `data-evidence-id` 映射。
+
+- **`verified`**：需要 `source.url`（`^https?://`）+ `source.locator` + `source.checkedAt`（YYYY-MM-DD）；表示来源确实被核对过。
+- **`user-provided`**：需要 `note`；系统原样保留用户给的数据，不独立核验。
+- **`illustrative`**：合成/示例内容；**禁止**携带真实 `source` 对象。
+- **`needs-source`**：任何精确事实主张的交付阻塞态——还没找到来源。
+
+约束：`claimId` 必须等于所属 slide 的 `id`；每个 `evidence[].id` 会被 `generate-archetype-deck.js` 盖成 HTML 的 `data-evidence-id="<id>" data-evidence-status="<status>"`，使精确数字页的证据可审计、可追溯，而非「幻灯片任意位置冒出一个 verified 词」。
+
+## 视觉签字的持久化（生产 vs 测试）
+
+感官层（`visual-verdict.js`）在无 `OPENAI_API_KEY` + `VISUAL_VERDICT_OPT_IN=1` 时是 **UNSKIPPABLE-BLOCKED**——不能让 G1-G14 全绿的 deck 蒙混交付。放行方式分两档：
+
+- **生产**：`qa.js --visual-signoff-file signoff.json`。签字文件是可审计的持久证据，必须含 `reviewer`（谁复核）、`reviewedAt`（ISO 8601）、`screenshotsManifestSha256`（所审截图清单的 SHA-256）、`decision: "pass"`。`scripts/run-manifest.js` 的 `validateVisualSignoff` 校验字段；若同目录有 `screenshots-manifest.json` 还会核验哈希是否匹配（防止签字被挪用到别的 deck 截图）。校验通过后复制进 `--out`，路径写入 `<deck>-qa-summary.json` 的 `artifacts.visualSignoff`。
+- **测试**：`--visual-signoff` / `VISUAL_VERDICT_SIGNOFF=1` 仅在 `NODE_ENV=test` 下可用，只记一个 stub，**不构成生产证据**。生产环境传这两个会被 `qa.js` 拒绝（exit 2）。
+
+每次 `qa.js` 还会写一份结构化 `<deck>-qa-summary.json`（`version/deck/passed/state/qualityScore/gates/artifacts`）：`state` 映射 run 状态——任一地板/天花板门禁 fail → `blocked`；视觉由模型通过或人工签字 → `ready`；否则 → `needs-visual-signoff`。`passed` 仅在 `ready` 时为真。
+
 ## 视觉能力自检协议（dry-run fallback 必读 · 防谎报通过）
 
 无 vision key 时 `visual-verdict.js --dry-run` 生成截图+prompt。**仅当会话模型有真实视觉能力时**可 Read 截图按 rubric 判定 blocker/warning/note，写入 `/tmp/manual-visual-verdict.json`。但「会话模型有视觉能力」必须严格自检——这是历次谎报的高发点。

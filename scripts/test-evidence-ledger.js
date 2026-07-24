@@ -11,6 +11,8 @@
  *
  * Usage:
  *   node scripts/test-evidence-ledger.js <file.html> [<file2.html> ...]
+ *   node scripts/test-evidence-ledger.js <rendered.html> --manifest deck.manifest.json
+ *                                                     # 严格模式:证据来源校验 + data-evidence-id 映射
  *
  * Exit codes:
  *   0 — all numbers backed by evidence (or no metrics detected)
@@ -20,13 +22,80 @@
 
 const fs = require('fs');
 const path = require('path');
+const { validateDeckManifest } = require('./deck-manifest'); // --manifest 严格模式:证据来源校验
 
 const args = process.argv.slice(2);
-const files = args.filter(a => !a.startsWith('--'));
+
+// --manifest <path>:严格模式。校验 manifest 证据来源(verified→url/locator/checkedAt 等),
+// 并核对生成的 HTML 是否盖了对应 data-evidence-id(可追溯,而非"幻灯片上有个 verified 词")。
+const manifestIndex = args.findIndex((a) => a === '--manifest');
+const manifestPath = manifestIndex >= 0 ? args[manifestIndex + 1] : null;
+if (manifestIndex >= 0 && (!manifestPath || manifestPath.startsWith('--'))) {
+  console.error('Usage: --manifest 需要一个 deck.manifest.json 路径');
+  process.exit(2);
+}
+const files = args.filter((a, i) => {
+  if (a.startsWith('--')) return false;
+  if (manifestIndex >= 0 && i === manifestIndex + 1) return false; // --manifest 的值不是待检文件
+  return true;
+});
 
 if (!files.length) {
-  console.error('Usage: node scripts/test-evidence-ledger.js <file.html> [<file2.html> ...]');
+  console.error('Usage: node scripts/test-evidence-ledger.js <file.html> [...] [--manifest deck.manifest.json]');
   process.exit(2);
+}
+
+// ─── Strict manifest mode ─────────────────────────────────────
+// 旧 HTML 继续做标签检查(下方 legacy 路径);提供 --manifest 时升级为严格来源校验:先跑
+// validateDeckManifest(verified 须 url/locator/checkedAt 等),再核对每个证据 id 是否盖到 HTML
+// 的 data-evidence-id —— 精确数字页必须带可映射的 id,而非幻灯片任意位置冒出一个标签词。
+if (manifestPath) {
+  const absManifest = path.resolve(manifestPath);
+  if (!fs.existsSync(absManifest)) {
+    console.error(`  ✗  manifest not found: ${manifestPath}`);
+    process.exit(2);
+  }
+  let manifest;
+  try {
+    manifest = JSON.parse(fs.readFileSync(absManifest, 'utf8'));
+  } catch (e) {
+    console.error(`  ✗  manifest JSON parse error: ${e.message}`);
+    process.exit(2);
+  }
+  const vr = validateDeckManifest(manifest);
+  if (!vr.ok) {
+    console.error(`  ✗  manifest evidence validation failed (${path.basename(manifestPath)}):`);
+    for (const e of vr.errors) console.error(`     ${e}`);
+    process.exit(1);
+  }
+  const evidenceIds = [];
+  for (const slide of manifest.slides || []) {
+    for (const ev of slide.evidence || []) {
+      if (ev && ev.id) evidenceIds.push(ev.id);
+    }
+  }
+  let missing = 0;
+  for (const file of files) {
+    const abs = path.resolve(file);
+    if (!fs.existsSync(abs)) {
+      console.error(`  ✗  not found: ${file}`);
+      missing++;
+      continue;
+    }
+    const html = fs.readFileSync(abs, 'utf8');
+    for (const id of evidenceIds) {
+      if (!html.includes(`data-evidence-id="${id}"`)) {
+        console.error(`  ✗  ${path.basename(file)}: evidence id "${id}" 未盖到 HTML(缺 data-evidence-id)`);
+        missing++;
+      }
+    }
+  }
+  if (missing > 0) {
+    console.error(`\nFAIL: ${missing} evidence id(s) not mapped to HTML data-evidence-id.`);
+    process.exit(1);
+  }
+  console.log(`\nOK: manifest evidence valid; ${evidenceIds.length} evidence id(s) mapped to HTML data-evidence-id.`);
+  process.exit(0);
 }
 
 // ─── Helpers ──────────────────────────────────────────────────
