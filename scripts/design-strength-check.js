@@ -8,11 +8,17 @@
  * 两者互补：合规不可绕过，设计强度要主动够。见 references/design-fundamentals.md §5。
  *
  * 四维（静态分析，无需浏览器）：
- *   1. scaleContrast  最大 display 字号 / 正文基线 比（目标 ≥ 3:1）
- *   2. tension        满版色块面板页数 + 非对称分割数（构图张力）
- *   3. colorCommit    满版 ink/accent 面板承担视觉的页数占比
+ *   1. scaleContrast  最大 display 字号 / 正文基线 比（目标 ≥ 3:1）；巨数锚点之外另认
+ *      极端留白路径与满版单句路径（2026-07 手法菜单化，保底 3.0 达标线）
+ *   2. tension        满版色块面板页数 + 非对称分割数 + 阅读顺序张力（竖排/非左主轴/对角锚定）
+ *   3. colorCommit    满版 ink/accent 面板承担视觉的页数占比；commit 不足时单色墨路径
+ *      （accent 仅 1 色 + ≥4 级同族明度阶）给 60 分保底
  *   4. metaphor       布局多样性（distinct section 骨架数）+ 主题原生形式（masthead/stamp/anchor-numeral 等信号）
+ *      + 叙述弧线信号（track-listing/act-program/ledger-seal/field-note/cross-exam 等，呼应 references/narrative-arcs.md）
  *   + contentSpecificity  硬数字 vs 软化词（约/示意/持平）比
+ *
+ * 手法菜单化原则（2026-07）：只扩命中表、不改公式与阈值——旧规则全部保留，
+ * 新路径与旧规则并列取 max（分数只可能不变或升高，不会因扩充而压低旧 deck）。
  *
  * 用法：
  *   node scripts/design-strength-check.js <file.html>
@@ -126,6 +132,27 @@ function allFontSizes(html) {
   return sizes;
 }
 
+// 单页字号集合（复用 parseSize，供尺度对比"留白/单句"路径按页归属判定）
+function fontSizesIn(fragment, cssVars) {
+  const sizes = [];
+  const re = /font-size\s*:\s*([^;"']+)/gi;
+  let m;
+  while ((m = re.exec(fragment)) !== null) {
+    const v = parseSize(m[1], cssVars);
+    if (v && v > 0) sizes.push(v);
+  }
+  return sizes;
+}
+
+// 页面可读字数（去标签/实体/空白）：静态代理"内容区占比"——字数极少 ≈ 内容区占比低
+function textLenOf(fragment) {
+  return fragment
+    .replace(/<style[\s\S]*?<\/style>/gi, '')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&[a-z]+;/gi, '')
+    .replace(/\s+/g, '').length;
+}
+
 // 顶层 section 提取（标签计数，处理嵌套）
 function extractTopSections(html) {
   const re = /<section[^>]*>|<\/section>/gi;
@@ -163,7 +190,6 @@ function measure(file) {
   // 1. 尺度对比：全 deck 最大字号（display 候选 ≥2em）/ 1em 基线
   const sizes = allFontSizes(html);
   const maxDisplay = sizes.length ? Math.max(...sizes) : 0;
-  const scaleContrast = maxDisplay; // vs 1em 基线；≥3 为达标
 
   // 2 & 3. 用色投入 + 非对称分割（扫全 deck CSS：<style> 块 + inline style）
   // ── 架构修正（2026-06）：原实现逐 section 扫 section.innerHTML 内联样式，但 95%+ 的
@@ -176,6 +202,42 @@ function measure(file) {
   const styleBlocks = [...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/gi)].map(m => m[1]).join('\n');
   const inlineStyles = [...html.matchAll(/style\s*=\s*"([^"]+)"/g)].map(m => m[1]).join('\n');
   const cssText = styleBlocks + '\n' + inlineStyles;
+
+  // 1b. 尺度对比手法扩充（2026-07 手法菜单化）：巨数锚点之外再认两条尺度路径——
+  //   (a) 极端留白路径：≥2 页内容稀疏（可读字数 ≤60，静态代理"内容区占比 <35%"）且页内有 ≥4em 展示字
+  //   (b) 满版单句路径：≥2 页正文 ≤15 字且页内有 ≥2.5em 字号
+  //   命中任一 → 尺度对比有"巨数"之外的成立证据，保底 3.0 达标线（公式不变，只扩命中表，取 max）。
+  //   字号按页归属：section 内联样式 + section 用到的 class 在样式块里声明的字号。
+  const cssVars = resolveCssVars(html);
+  const classFontSize = {};
+  {
+    const ruleRe = /([^{}]+)\{([^}]*)\}/g;
+    let m;
+    while ((m = ruleRe.exec(styleBlocks)) !== null) {
+      const fsDecl = m[2].match(/font-size\s*:\s*([^;]+)/i);
+      if (!fsDecl) continue;
+      const v = parseSize(fsDecl[1], cssVars);
+      if (!v) continue;
+      for (const cm of m[1].matchAll(/\.([\w-]+)/g)) {
+        classFontSize[cm[1]] = Math.max(classFontSize[cm[1]] || 0, v);
+      }
+    }
+  }
+  let sparseDisplayPages = 0, singleLinePages = 0;
+  for (const s of sections) {
+    const len = textLenOf(s.html);
+    const sSizes = fontSizesIn(s.html, cssVars);
+    for (const cls of s.html.matchAll(/class\s*=\s*"([^"]+)"/g)) {
+      for (const tok of cls[1].split(/\s+/)) if (classFontSize[tok]) sSizes.push(classFontSize[tok]);
+    }
+    const sMax = sSizes.length ? Math.max(...sSizes) : 0;
+    if (len <= 60 && sMax >= 4) sparseDisplayPages++;
+    if (len <= 15 && sMax >= 2.5) singleLinePages++;
+  }
+  const scaleAltPath = sparseDisplayPages >= 2 ? 'extreme-whitespace'
+    : singleLinePages >= 2 ? 'full-bleed-sentence' : null;
+  const scaleContrast = Math.max(maxDisplay, scaleAltPath ? 3.0 : 0); // vs 1em 基线；≥3 为达标
+
   // commit background：深色 / 强调 token / 渐变；排除默认浅底（--c-bg/--c-surface/--c-paper）
   const commitBg = (val) => {
     if (/var\(--c-(?:bg|surface|paper)\b|var\(--bg\b/i.test(val)) return false;
@@ -207,6 +269,25 @@ function measure(file) {
   asymSplits += wPct.filter(w => !/:50%/.test(w)).length;
   //   (c) 负 margin 错位（brutalist/memphis 散落手法）
   asymSplits += (cssText.match(/margin-(?:left|right)\s*:\s*-\d/i) || []).length;
+  //   (d) 阅读顺序张力（2026-07 手法菜单化）：非对称分割之外的构图张力来源——
+  //       竖排文本 / 非左对齐主轴 / z 型对角布局（画廊漫步/田野笔记等弧线不用 2fr 1fr 也有张力）
+  asymSplits += (cssText.match(/writing-mode\s*:\s*vertical/gi) || []).length;
+  asymSplits += (cssText.match(/text-align\s*:\s*right\b/gi) || []).length;
+  //   z 型对角：absolute 单元同时存在 top+right（右上锚）与 bottom+left（左下锚）→ 对角阅读路径成立。
+  //   页面家具（pin/pptx 导出入口/导航/页码）不算对角构图，按选择器剔除防系统性假阳性。
+  let diagUR = 0, diagBL = 0;
+  const absUnits = [
+    ...[...styleBlocks.matchAll(/([^{}]+)\{([^}]*)\}/g)]
+      .filter(m => !/\.pin\b|pptx|export|navigate|slide-number|progress\b|controls/i.test(m[1]))
+      .map(m => m[2]),
+    ...inlineStyles.split('\n'),
+  ];
+  for (const u of absUnits) {
+    if (!/position\s*:\s*absolute/i.test(u)) continue;
+    if (/top\s*:/i.test(u) && /right\s*:/i.test(u)) diagUR++;
+    if (/bottom\s*:/i.test(u) && /left\s*:/i.test(u)) diagBL++;
+  }
+  if (diagUR >= 1 && diagBL >= 1) asymSplits += 2;
   // colorCommitPct：每页平均 commit background 数映射到 0-100。
   // 风格族校准（iteration-1 乡愁水墨 deck 教训）：committed 美学每页 ≥1.5 = 满分；
   // 但克制风格（ink-wash / minimal / editorial-quiet）哲学是少而精，统一 1.5 会系统性误判"用色偏平"。
@@ -214,7 +295,33 @@ function measure(file) {
   const avgCommitPerPage = sections.length ? commitBgs.length / sections.length : 0;
   const restrainedStyle = /chinese-ink-wash|ink-wash|editorial-quiet|\bminimal\b|克制美学|water-?ink/i.test(html);
   const commitBaseline = restrainedStyle ? 0.8 : 1.5;
-  const colorCommitPct = Math.min(100, Math.round(avgCommitPerPage / commitBaseline * 100));
+  const commitDensityPct = Math.min(100, Math.round(avgCommitPerPage / commitBaseline * 100));
+  // 单色墨路径（2026-07 手法菜单化）：accent 仅 1 色（彩色色相族 ≤1）且以深浅明度阶制造层次
+  // （任一色族 ≥4 级明度桶）→ 用色投入同样成立。满版色块不是唯一的 committed 用色——
+  // 水墨/单色印相靠明度阶出层次（画廊漫步/田野笔记弧线）。commit 背景不足时给 60 分保底，
+  // 仍低于满版密度满分（鼓励单色墨，不替代色块）；公式与基线不动，只取 max。
+  const hexes = [...cssText.matchAll(/#([0-9a-f]{6})\b/gi)].map(m => m[1].toLowerCase());
+  const hueFamilies = new Set();
+  const famLightBuckets = {}; // 色族 → 明度桶集合
+  for (const h of hexes) {
+    const n = parseInt(h, 16);
+    const r = ((n >> 16) & 255) / 255, g = ((n >> 8) & 255) / 255, b = (n & 255) / 255;
+    const mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn;
+    const lum = (mx + mn) / 2;
+    let hue = 0;
+    if (d > 0) {
+      if (mx === r) hue = 60 * (((g - b) / d) % 6);
+      else if (mx === g) hue = 60 * ((b - r) / d + 2);
+      else hue = 60 * ((r - g) / d + 4);
+    }
+    if (hue < 0) hue += 360;
+    const sat = d === 0 ? 0 : d / (1 - Math.abs(2 * lum - 1) || 1);
+    const fam = sat < 0.15 ? 'neutral' : `hue${Math.round(hue / 30) % 12}`;
+    if (fam !== 'neutral') hueFamilies.add(fam);
+    (famLightBuckets[fam] = famLightBuckets[fam] || new Set()).add(Math.min(7, Math.floor(lum * 8)));
+  }
+  const monoInkPath = hueFamilies.size <= 1 && Object.values(famLightBuckets).some(set => set.size >= 4);
+  const colorCommitPct = Math.min(100, Math.max(commitDensityPct, monoInkPath ? 60 : 0));
   const fullBleedSlides = Math.min(sections.length, commitBgs.length); // 等效页数（显示用）
 
   // 4. 隐喻贯彻：布局多样性 + 主题原生形式信号
@@ -253,6 +360,27 @@ function measure(file) {
     isoBlueprint: /class\s*=\s*"(?:[^"]*[\s"-])?iso-[\w-]*|\.[\w-]*iso-[\w-]*|(?:rotate|skew[XY]?)\(\s*-?30deg|class\s*=\s*"[^"]*\b(?:blueprint|axonometric)[\w-]*/i.test(html),
     // film 原语:class/类选择器含 film-leader/countdown/clapper/clapboard/letterbox 词根
     filmLeader: /class\s*=\s*"[^"]*\b(?:film-leader|countdown|clapper|clapboard|letterbox)[\w-]*|\.(?:film-leader|countdown|clapper|clapboard|letterbox)\b/i.test(html),
+    // ── 叙述弧线原语（2026-07 手法菜单化，呼应 references/narrative-arcs.md 8 条弧线）──
+    // 弧线特有页面语法的 class 词根/类选择器（同上方约定：只认 class/CSS 结构模式，不认散文词汇），
+    // 让走非默认节拍的 deck（曲目制/编年日志/剖面逐层…）也能拿隐喻分，不必回塞巨数锚点+对峙页。
+    // N6 专辑聆听：track-listing/track/liner-note/side-a|b
+    trackListing: /class\s*=\s*"[^"]*\b(?:track-listing|tracklist|track-item|liner-note|side-[ab])\b|\.(?:track-listing|tracklist|track-item|liner-note)\b/i.test(html),
+    // N3 质证对决（戏剧分幕）：act-program/act-N/scene-N/interlude
+    actProgram: /class\s*=\s*"[^"]*\b(?:act-program|act-\d|scene-\d|interlude)\b|\.(?:act-program|interlude)\b/i.test(html),
+    // N1 账本审计：ledger-seal/ledger-entry/audit-trail/voucher
+    ledgerSeal: /class\s*=\s*"[^"]*\b(?:ledger-seal|ledger-entry|audit-trail|voucher|seal-page)\b|\.(?:ledger-seal|ledger-entry|audit-trail|voucher)\b/i.test(html),
+    // N7 田野笔记：field-note/specimen/observation/field-tag
+    fieldNote: /class\s*=\s*"[^"]*\b(?:field-note|fieldnote|specimen|observation|field-tag)\b|\.(?:field-note|fieldnote|specimen|field-tag)\b/i.test(html),
+    // N3 质证对决（呈证）：cross-exam/exhibit-N/witness/verdict/objection
+    crossExam: /class\s*=\s*"[^"]*\b(?:cross-exam|exhibit-[a-z0-9]|witness|verdict|objection|prosecution|defense)\b|\.(?:cross-exam|verdict)\b/i.test(html),
+    // N5 标尺之旅：scale-station/scale-journey/powers-of-ten/magnitude
+    scaleStation: /class\s*=\s*"[^"]*\b(?:scale-station|scale-journey|powers-of-ten|magnitude)\b|\.(?:scale-station|scale-journey|powers-of-ten)\b/i.test(html),
+    // N2 值班夜航：watch-log/night-watch/shift-handover/log-entry
+    watchLog: /class\s*=\s*"[^"]*\b(?:watch-log|night-watch|shift-handover|log-entry)\b|\.(?:watch-log|night-watch|shift-handover)\b/i.test(html),
+    // N8 工程剖面：cutaway/cross-section/layer-stack/exploded
+    cutawayLayer: /class\s*=\s*"[^"]*\b(?:cutaway|cross-section|layer-stack|exploded|section-view)\b|\.(?:cutaway|cross-section|layer-stack)\b/i.test(html),
+    // N4 画廊漫步：gallery-walk/artwork/exhibit-label/museum-label
+    galleryGaze: /class\s*=\s*"[^"]*\b(?:gallery-walk|artwork|exhibit-label|museum-label|gaze)\b|\.(?:gallery-walk|exhibit-label|museum-label)\b/i.test(html),
   };
   const nativeCount = Object.values(nativeSignals).filter(Boolean).length;
 
@@ -396,9 +524,12 @@ function measure(file) {
   return {
     file: path.basename(abs),
     slides: sections.length,
-    scaleContrast: +maxDisplay.toFixed(2),
+    scaleContrast: +scaleContrast.toFixed(2),
+    maxDisplay: +maxDisplay.toFixed(2),
+    scaleAltPath,
     fullBleedSlides,
     colorCommitPct,
+    monoInkPath,
     restrainedStyle,
     avgCommitPerPage: +avgCommitPerPage.toFixed(2),
     asymSplits,
@@ -455,8 +586,13 @@ function report(m) {
   const s = score(m);
   const signals = Object.entries(m.nativeSignals).filter(([, v]) => v).map(([k]) => k).join(', ') || '—';
   console.log(`\n  ${m.file}  (${m.slides} slides)`);
-  console.log(`    尺度对比 scaleContrast : ${m.scaleContrast}:1   (${s.sScale}/100)  ${m.scaleContrast >= 3 ? '✓' : '⚠ <3:1 太平'}`);
-  const commitNote = m.restrainedStyle ? '克制风格族·基线 0.8/页校准' : (s.sCommit >= 60 ? '✓' : '⚠ 用色偏平');
+  const scaleNote = m.scaleAltPath && m.maxDisplay < 3
+    ? `✓ 经${m.scaleAltPath === 'extreme-whitespace' ? '极端留白路径' : '满版单句路径'}保底(实测最大字号 ${m.maxDisplay}:1)`
+    : m.scaleContrast >= 3 ? '✓' : '⚠ <3:1 太平';
+  console.log(`    尺度对比 scaleContrast : ${m.scaleContrast}:1   (${s.sScale}/100)  ${scaleNote}`);
+  const commitNote = m.monoInkPath && m.avgCommitPerPage < (m.restrainedStyle ? 0.8 : 1.5)
+    ? '✓ 单色墨路径保底(≥4 级同族明度阶)'
+    : m.restrainedStyle ? '克制风格族·基线 0.8/页校准' : (s.sCommit >= 60 ? '✓' : '⚠ 用色偏平');
   console.log(`    用色投入 colorCommit    : 每页均 ${m.avgCommitPerPage} 个色块 (${m.fullBleedSlides} 处)  (${s.sCommit}/100)  ${commitNote}`);
   console.log(`    构图张力 tension        : ${m.asymSplits} 处非对称分割  (${s.sTension}/100)  ${m.asymSplits >= 2 ? '✓' : '⚠ 全对称'}`);
   console.log(`    隐喻贯彻 metaphor       : ${m.nativePrimitives} 原语 / ${m.distinctLayouts} 种布局  (${s.sMetaphor}/100)${s.metaphorPenalty ? `  ⚠ 节奏惩罚 -${s.metaphorPenalty}` : ''}`);

@@ -11,10 +11,12 @@
  * 本脚本提供机器手段验证真的改了骨架:
  *
  *   1. 骨架签名:每页 section 提取「结构签名」= 规范化后的 DOM 形状
- *      (直接子元素的标签 + 首 class 序列;忽略文本内容/内联样式/颜色类属性)。
- *   2. 对齐:section 顺序按 role 对齐——cover(首页)↔ cover、收尾 ↔ 收尾、
- *      中间页按顺序对位;种子页数不足时对不上的页记为不同构。
- *   3. 相似度 = 结构签名相同的 section 占比(0-100%),>70% 判换皮嫌疑。
+ *      (直接子元素的标签 + 全部 class 序列;class 排序后拼接保证确定性,
+ *      调 class 顺序不再逃逸;忽略文本内容/内联样式/颜色类属性)。
+ *   2. 相似度(防稀释,种子视角):对种子中每一页,取它与 deck 所有页的
+ *      最大匹配度(签名同构 = 1,否则 0),求种子页平均——即「种子被复制了
+ *      多少」而非「deck 有多少像种子」。抄 10 页再自加 5 页稀释不再逃逸。
+ *   3. 平均最大匹配度 >70% 判换皮嫌疑。
  *
  * 用法:
  *   node scripts/skeleton-diff.js <deck.html> --seed examples/template-XX.html [--gate] [--json]
@@ -43,14 +45,16 @@ function stripNoise(html) {
 }
 
 // ── 极简 DOM 解析(无外部依赖;本仓 deck 均为规整 HTML)────────────────────
-// 节点:{ tag, cls(首 class,小写), children[] }。文本节点不进树——签名只看元素形状。
+// 节点:{ tag, cls(全部 class,小写+排序后拼接,保证确定性), children[] }。
+// 文本节点不进树——签名只看元素形状。
 const TAG_RE = /<(\/?)([a-zA-Z][a-zA-Z0-9]*)((?:"[^"]*"|'[^']*'|[^"'<>])*)(\/?)>/g;
 
-function firstClass(attrStr) {
+function allClasses(attrStr) {
   const m = attrStr.match(/\bclass\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/i);
   if (!m) return '';
   const v = (m[1] || m[2] || m[3] || '').trim();
-  return (v.split(/\s+/)[0] || '').toLowerCase();
+  // 取全部 class(不只首个),排序后拼接:调 class 顺序/在尾部追加 class 不再改变签名
+  return v.split(/\s+/).filter(Boolean).map(c => c.toLowerCase()).sort().join(' ');
 }
 
 function parseTree(html) {
@@ -67,7 +71,7 @@ function parseTree(html) {
       }
       continue;
     }
-    const el = { tag, cls: firstClass(m[3] || ''), children: [] };
+    const el = { tag, cls: allClasses(m[3] || ''), children: [] };
     stack[stack.length - 1].children.push(el);
     if (m[4] !== '/' && !VOID_TAGS.has(tag)) stack.push(el);
   }
@@ -87,41 +91,38 @@ function collectTopSections(root) {
   return out;
 }
 
-// ── 结构签名:直接子元素的「标签 + 首 class」序列 ─────────────────────────
+// ── 结构签名:直接子元素的「标签 + 全部 class(排序)」序列 ────────────────
 // 忽略文本内容/内联样式/颜色类属性(data-background/style 等根本不读);
 // 子元素无 class 时只记标签。
 function sectionSignature(sec) {
-  return sec.children.map(c => c.tag + (c.cls ? '.' + c.cls : '')).join('>');
-}
-
-// ── role 对齐:cover ↔ cover,收尾 ↔ 收尾,中间页按顺序对位 ────────────────
-function alignPairs(deckSecs, seedSecs) {
-  const n = deckSecs.length, m = seedSecs.length;
-  const pairs = [];
-  for (let i = 0; i < n; i++) {
-    let j, role;
-    if (i === 0) { j = 0; role = 'cover'; }
-    else if (i === n - 1) { j = m - 1; role = 'close'; }
-    else { j = i; role = 'middle'; }
-    const deckSig = sectionSignature(deckSecs[i]);
-    if (j >= m || j < 0) { // 种子页数不足,对不上 = 不同构
-      pairs.push({ deckPage: i + 1, seedPage: null, role, match: false, deckSig, seedSig: null });
-      continue;
-    }
-    const seedSig = sectionSignature(seedSecs[j]);
-    pairs.push({ deckPage: i + 1, seedPage: j + 1, role, match: deckSig === seedSig, deckSig, seedSig });
-  }
-  return pairs;
+  return sec.children.map(c => c.tag + (c.cls ? '.' + c.cls.replace(/ /g, '.') : '')).join('>');
 }
 
 /**
- * 核心对比。相似度 = 结构签名相同的 section 占 deck 页数比例(0-100)。
+ * 核心对比(防稀释,种子视角)。
+ * 对种子每一页,取它与 deck 所有页的最大匹配度(签名同构 = 1,否则 0);
+ * 相似度 = 种子页平均最大匹配度(0-100)——量的是「种子被复制了多少」,
+ * deck 自加新页稀释分母不再影响判定。
  * @returns {{similarity:number, matched:number, total:number, pairs:object[], deckSections:number, seedSections:number}}
  */
 function diffHtml(deckHtml, seedHtml) {
   const deckSecs = collectTopSections(parseTree(stripNoise(deckHtml)));
   const seedSecs = collectTopSections(parseTree(stripNoise(seedHtml)));
-  const pairs = alignPairs(deckSecs, seedSecs);
+  const deckSigs = deckSecs.map(sectionSignature);
+  const pairs = seedSecs.map((sec, j) => {
+    const seedSig = sectionSignature(sec);
+    // 该种子页与 deck 所有页的最大匹配:取第一个同构页作代表
+    const hit = deckSigs.findIndex(sig => sig === seedSig);
+    const role = j === 0 ? 'cover' : (j === seedSecs.length - 1 ? 'close' : 'middle');
+    return {
+      seedPage: j + 1,
+      deckPage: hit >= 0 ? hit + 1 : null,
+      role,
+      match: hit >= 0,
+      seedSig,
+      deckSig: hit >= 0 ? deckSigs[hit] : null,
+    };
+  });
   const matched = pairs.filter(p => p.match).length;
   const similarity = pairs.length ? Math.round(matched / pairs.length * 100) : 0;
   return { similarity, matched, total: pairs.length, pairs, deckSections: deckSecs.length, seedSections: seedSecs.length };
@@ -148,20 +149,16 @@ function truncate(s, max = 96) {
 function report(deckPath, seedPath, r) {
   console.log('═══ skeleton-diff:输出 vs 种子骨架相似度 ═══');
   console.log(`deck: ${path.relative(ROOT, deckPath)}(${r.deckSections} 页)  seed: ${path.relative(ROOT, seedPath)}(${r.seedSections} 页)`);
-  console.log('逐页对比(✓ = 骨架与种子同构):');
+  console.log('逐页对比(种子视角:✓ = 该种子页骨架被 deck 复制):');
   for (const p of r.pairs) {
     const role = { cover: 'cover', close: 'close', middle: 'mid  ' }[p.role];
     if (p.match) {
-      console.log(`  ✓ p${p.deckPage} ${role} ↔ seed p${p.seedPage}  ${truncate(p.deckSig)}`);
-    } else if (p.seedPage === null) {
-      console.log(`  ✗ p${p.deckPage} ${role} ↔ (种子无对位页)  ${truncate(p.deckSig)}`);
+      console.log(`  ✓ seed p${p.seedPage} ${role} ↔ deck p${p.deckPage}  ${truncate(p.seedSig)}`);
     } else {
-      console.log(`  ✗ p${p.deckPage} ${role} ↔ seed p${p.seedPage}`);
-      console.log(`      deck: ${truncate(p.deckSig, 90)}`);
-      console.log(`      seed: ${truncate(p.seedSig, 90)}`);
+      console.log(`  ✗ seed p${p.seedPage} ${role} ↔ (deck 无同构页)  ${truncate(p.seedSig)}`);
     }
   }
-  console.log(`\n总相似度: ${r.similarity}%(${r.matched}/${r.total} 页骨架同构,门槛 >${THRESHOLD}%)`);
+  console.log(`\n总相似度: ${r.similarity}%(${r.matched}/${r.total} 种子页骨架被复制,门槛 >${THRESHOLD}%,防稀释:取种子页平均最大匹配)`);
   if (r.similarity > THRESHOLD) {
     console.log('判定: ❌ 换皮嫌疑(失败门禁 #9)— 需重写 cover/proof/mechanism/close 中 ≥2 个 role 骨架(结构/版式级,不是换文字/配色)');
   } else {
@@ -173,6 +170,8 @@ function report(deckPath, seedPath, r) {
 // ① 种子 vs 它自己 = 100%,--gate exit 1
 // ② generate-deck --demo 产物 vs 全部 10 种子 < 70%(抽 template-01 端到端验证 exit 0)
 // ③ 只改文字/颜色的种子副本 → 判换皮(--gate exit 1)
+// ④ 只调 class 顺序的种子副本 → 签名不变,仍判换皮(旧「首 class」签名会逃逸)
+// ⑤ 整抄种子 + 自加 5 页稀释 → 种子视角仍 100%,判换皮(旧 deck 占比会被稀释到 67% 逃逸)
 function selftest() {
   console.log('═══ skeleton-diff SELFTEST · 负向验证 ═══\n');
   let failed = 0;
@@ -222,6 +221,35 @@ function selftest() {
   fs.unlinkSync(tmp);
   check(r4.status === 1, `文字/颜色副本 --gate exit 1(实际 exit=${r4.status})`);
 
+  // ④ 只调 class 顺序(每个 class 属性内 token 逆序)→ 排序签名不变,仍判换皮
+  const shuffled = seedHtml.replace(/\bclass\s*=\s*("([^"]*)"|'([^']*)')/gi, (m, q, d, s) => {
+    const tokens = (d !== undefined ? d : s).trim().split(/\s+/).filter(Boolean).reverse();
+    const quote = q[0];
+    return `class=${quote}${tokens.join(' ')}${quote}`;
+  });
+  check(shuffled !== seedHtml, 'class 顺序副本确实发生了 token 重排(前置断言)');
+  const r5 = diffHtml(shuffled, seedHtml);
+  check(r5.similarity === 100, `class 顺序副本相似度 ${r5.similarity}% = 100%(排序签名防逃逸)`);
+  const tmp4 = path.join(os.tmpdir(), 'skeleton-diff-selftest-classswap.html');
+  fs.writeFileSync(tmp4, shuffled);
+  const r6 = run([tmp4, '--seed', seed1, '--gate']);
+  fs.unlinkSync(tmp4);
+  check(r6.status === 1, `class 顺序副本 --gate exit 1(实际 exit=${r6.status})`);
+
+  // ⑤ 整抄种子 + 自加 5 页稀释 → 种子视角仍 100%(旧 deck 占比口径会被稀释逃逸)
+  const filler = Array.from({ length: 5 }, (_, i) =>
+    `<section><aside class="filler-a${i}"></aside><footer class="filler-b${i}"></footer></section>`).join('\n');
+  const diluted = seedHtml.replace('</body>', `${filler}\n</body>`);
+  check(diluted !== seedHtml, '稀释副本确实追加了 5 页(前置断言)');
+  const r7 = diffHtml(diluted, seedHtml);
+  check(r7.similarity === 100 && r7.matched === r7.total,
+    `稀释副本种子视角相似度 ${r7.similarity}% = 100%(${r7.matched}/${r7.total} 种子页被复制,防稀释)`);
+  const tmp5 = path.join(os.tmpdir(), 'skeleton-diff-selftest-diluted.html');
+  fs.writeFileSync(tmp5, diluted);
+  const r8 = run([tmp5, '--seed', seed1, '--gate']);
+  fs.unlinkSync(tmp5);
+  check(r8.status === 1, `稀释副本 --gate exit 1(实际 exit=${r8.status})`);
+
   console.log(`\n  ${failed === 0 ? '全部通过' : failed + ' 条断言失败'}`);
   if (failed) process.exit(1);
 }
@@ -246,7 +274,7 @@ function main() {
   if (!a.deck || !a.seed) {
     console.log('用法: node scripts/skeleton-diff.js <deck.html> --seed examples/template-XX.html [--gate] [--json]');
     console.log('      node scripts/skeleton-diff.js --selftest');
-    console.log('逐页对比 deck 与种子的「结构签名」(直接子元素标签+首 class),>70% 同构 = 换皮嫌疑(失败门禁 #9),--gate 时 exit 1。');
+    console.log('对种子每一页取与 deck 所有页的最大匹配(结构签名 = 直接子元素标签+全部 class 排序),种子页平均 >70% = 换皮嫌疑(失败门禁 #9,防稀释),--gate 时 exit 1。');
     return;
   }
   const deckAbs = path.resolve(a.deck);

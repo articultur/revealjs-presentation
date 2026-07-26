@@ -16,12 +16,13 @@ description: |
 2. **确认 4 要素**：主题 · 观众 · 页数 · 语言（缺省：通用观众 / 8-12 页 / 中文）。页数是硬约束——用户给 N 页时最终偏差 ≤1（见 §8）
 3. **判断双条件 + 搭骨架**（防"方向完全错了"大返工——跑 `node scripts/generate-ghost-deck.js --json '{...}'` 可机器判）：
    - **路径决策（A/B/C，机器辅助）**：先跑 `node scripts/route-deck.js --topic "<主题>" [--style "<风格词>"] [--wow] [--json]`——seed 命中→A（返回 `seed`）、命中具体 voice→B（返回 `voice`）、`--wow`/命中 `caseRef`/兜底→C，并输出 `reasons` + `acceptance`。**route-deck 只是机器辅助，最终仍按「路径选择」表人工确认**（惊艳轴对机器不可见，要惊艳显式 `--wow`）
+   - **弧线路由（机器辅助）**：路径定了接着跑 `node scripts/route-arc.js "<主题>" [--json]`——命中返回 N1-N8 库内弧线（含节奏曲线/禁用节拍摘要，直接喂七行「叙事弧线」行与 brief 三字段）；未命中返回 `invent: true` + 四件套要求 → 走 `references/narrative-arcs.md`「新弧线发明流程」（启发→生成→检验→沉淀），不许默认回落默认节拍
    - **AUTO（一键自动,不确认）**：明确需求（主题+页数+观众+要点 全给）**且**指定模板/风格（"参照 xxx" / template-0X / 或任意风格词如"赛博朋克/和风/金融"——`scripts/voice-router.js` 自动路由到 14 voice 库之一）→ 直接生成 HTML
-   - **GHOST（轻骨架预览,5 秒可扫能喊停）**：双条件任一不满足 → 先生成 ghost deck（每页 role + action title + proof object）+ Theme-to-Design Router 六行说明,等用户"继续 / 改 X"才生成 HTML。**Ghost Deck Test**：只读 action titles 应能讲完整故事——读不通先改论证,不进视觉设计
+   - **GHOST（轻骨架预览,5 秒可扫能喊停）**：双条件任一不满足 → 先生成 ghost deck（每页 role + action title + proof object）+ Theme-to-Design Router 七行说明,等用户"继续 / 改 X"才生成 HTML。**Ghost Deck Test**：只读 action titles 应能讲完整故事——读不通先改论证,不进视觉设计
 
    **图像驱动主题**（城市/旅游/美食/产品实拍,见主题形状表 09 行）骨架前先按 `references/image-driven-deck.md` §4 工作流:列关键词清单 → Wikimedia Commons 搜图 → 选图,再搭骨架（每页绑一张 CC-BY 图）
 4. **生成单个 HTML**：内联 CSS+JS、Reveal.js 4.6.0 CDN、1280×720 画布
-5. **自检（统一验收入口 `node scripts/qa.js <file>`）**：qa.js 一次跑完全量验收——`grade-gate.js` 十四门禁地板全绿（含溢出、对比度、pin、空间完整性）+ `design-strength-check.js` 品质总分 ≥75（天花板：尺度≥3:1、有满版色块面板、有非对称分割、有主题原生形式）+ `element-quality-check.js` 元素子分 + 图像驱动 deck 自动触发 `audit-image-assets.js`（断图、低清/放大满版图、超宽低高图、封面/章节重复、背景主题漂移）+ `visual-verdict.js` 视觉语义评审（G1–G14 兜不住的感官类问题只能视觉抓：图示不清 / 标签不可读 / 图表不解释主张 / 图片廉价错配 / 重复大图 / 主题割裂 / 装饰盒压 page furniture）。**visual 层无 key / 未 opt-in = UNSKIPPABLE-BLOCKED，不静默降级**——人工视觉复核后 `--visual-signoff`（或 `VISUAL_VERDICT_SIGNOFF=1`）签字放行。`grade-gate.js` 仍是地板；`generate-deck.js --gates` 只跑地板+design-strength，**不等于全量验收**。**任何视觉调整后必须重跑**。机制（dry-run、Claude 读图、无视觉 fallback）统一见 §验证；路径 × 模式验收矩阵见 `references/validation.md`。路径 A scaffold 改写后的验收加 `--seed`：`node scripts/qa.js <file> --seed examples/<seed>.html`（加跑 skeleton-diff 换皮门禁：骨架与种子结构相似度 >70% = 硬失败）。
+5. **自检（统一验收入口 `node scripts/qa.js <file>`）**：qa.js 一次跑完全量验收——`grade-gate.js` 十四门禁地板全绿（含溢出、对比度、pin、空间完整性）+ `design-strength-check.js` 品质总分 ≥75（天花板：尺度≥3:1、有满版色块面板、有非对称分割、有主题原生形式）+ `element-quality-check.js` 元素子分 + 图像驱动自动 `audit-image-assets.js` + `visual-verdict.js` 视觉语义评审（G1–G14 兜不住的感官类问题：图示不清 / 标签不可读 / 图表不解释主张 / 图片廉价 / 主题割裂）。**无 key / 未 opt-in = UNSKIPPABLE-BLOCKED**（不静默降级）；`generate-deck.js --gates` 只跑地板+design-strength **≠ 全量验收**，完整机制（dry-run / signoff / 路径 × 模式验收矩阵）见 §验证 与 `references/validation.md`，**任何视觉调整后必须重跑**。路径 A scaffold 改写后验收加 `--seed`：`node scripts/qa.js <file> --seed examples/<seed>.html`（skeleton-diff 换皮门禁：骨架相似度 >70% = 硬失败）。
 6. **交付**：HTML 路径 + 运行/导出说明 + 验证状态
 
 **模板库外主题**（voice-router 兜底 editorial,如天文学/航空/古典乐/蒸汽波…,不在 10 种子形状也不在 14 voice）**或要求"惊艳/设计感/发布会级"** → 走**路径 C B 解法**（[`references/design-generation-workflow.md`](references/design-generation-workflow.md):审美意图先行 + 外部大师参考禁 template + 审美推导 + 减法 + impeccable 打磨,见下文「路径选择」）。不套种子/voice,从主题现实视觉文化推导生成。
@@ -75,7 +76,7 @@ CDN 加载 reveal.js + Google Fonts，用户**无需安装任何东西**。
 | 专业模式 Phase | 名称 | 类型 | 核心任务 |
 |:-----:|------|:----:|------|
 | P0 | 设计上下文 | ● | 风格(先翻 [`references/inspiration/`](references/inspiration/) 选 1-2 个 → 查 [`tokens/`](tokens/) 有无对应 primitive;若风格/内容不在覆盖范围,按 [`references/off-template-style-gap.md`](references/off-template-style-gap.md) 补齐 case + token + content rewrite + layout variant)、色彩、字体方向 |
-| P1 | 需求+设计语法 | ● | 场景/时长/听众 + ghost deck + Theme-to-Design Router 六行说明 + **内容-版式贴合度预检**（内容形状 / 主 proof object / 版式为何服务它）+ **元素语义策略**（每页元素清单 / 动画解释任务 / 必须或禁用的元素族）+ **动效决策**（按 §动效决策清单,定每页动效类型:无 / fragment 逐步 / CSS 循环 / CSS 进场;循环 ≤3 处/deck,fragment ≤30% 页面;过"关掉测试"）。**⚠ 输出后必须 STOP，等用户"继续 / 进 P4 / 改 X"才能生成 HTML——擅自生成 = 违规** |
+| P1 | 需求+设计语法 | ● | 场景/时长/听众 + ghost deck + Theme-to-Design Router 七行说明 + **内容-版式贴合度预检**（内容形状 / 主 proof object / 版式为何服务它）+ **元素语义策略**（每页元素清单 / 动画解释任务 / 必须或禁用的元素族）+ **动效决策**（按 §动效决策清单,定每页动效类型:无 / fragment 逐步 / CSS 循环 / CSS 进场;循环 ≤3 处/deck,fragment ≤30% 页面;过"关掉测试"）。**⚠ 输出后必须 STOP，等用户"继续 / 进 P4 / 改 X"才能生成 HTML——擅自生成 = 违规** |
 | P2 | 输出方案 | ◐ | 内容结构、视觉方向 |
 | P3 | 设计评审 | ● | 反模式检查 + **内容-版式贴合度评审**（proof object 是否解释主张 / 是否内容被硬塞进模板 / 版式不解释主张）+ **内容-元素贴合度评审**（元素是否解释 action title / 动画是否解释机制而非装饰 / 图标、表格、图片、代码是否抢主 proof object）+ 优化方向。**⚠ Gate 模式下输出后必须 STOP，等用户确认优化方向** |
 | P4 | 生成初稿 | ● | 先读 `references/element-semantics.md` 做元素语义路由,显式分派 13 类元素: proof object / motion / icon / table / data-viz / diagram / image / code / metric / quote-evidence / annotation / page furniture / whitespace,再加载对应专项文件。**按 P1 动效决策**给适当页面加动效(加载 `references/motion-delight.md` 对应 recipe:fragment 逐步揭示工艺/堆叠、CSS 循环 flow/pulse/glow 给持续传输/传导页、CSS 进场 grow 给对比条;封面/void-page/精确数据页不加;SVG 元素 fragment 用纯 opacity 禁 transform)。**两条路径**:**内容在 10 template 覆盖** → 套 template 但重写 proof object 和页面骨架;**不在覆盖** → 先声明 style gap → `scripts/content-router.js` 路由 archetype(A1-A12 + 主题变体)→ `scripts/generate-archetype-deck.js`（或统一入口 `scripts/generate-deck.js`，voice 缺省时 `voice-router.js` 自动推断）生成(四层架构闭合,见 [tokens/README.md](tokens/README.md) 与 [`references/off-template-style-gap.md`](references/off-template-style-gap.md))。两种都过 **十四门禁**(`grade-gate.js` 全绿 = G1-G14 全过;机器判 verdict,不可手动放行) |
@@ -90,7 +91,7 @@ CDN 加载 reveal.js + Google Fonts，用户**无需安装任何东西**。
 
 **硬约束**——Gate 模式下：
 
-- **P1 输出设计语法（六行 + 契约 + ghost）后必须 STOP**，等用户显式确认（"继续 / 进 P4 / OK / 改 X"）才能进 P4 生成 HTML
+- **P1 输出设计语法（七行 + 契约 + ghost）后必须 STOP**，等用户显式确认（"继续 / 进 P4 / OK / 改 X"）才能进 P4 生成 HTML
 - **P3 设计评审后必须 STOP**，等用户确认优化方向
 - **擅自生成 HTML 或一口气跑完 P0-P6 = 违规失败**，无论 deck 质量多高
 - 快速模式（默认）不 STOP，一次产出
@@ -106,7 +107,7 @@ CDN 加载 reveal.js + Google Fonts，用户**无需安装任何东西**。
 ### 1. 输出形态硬约束
 
 - **单个自包含 HTML 文件**，不拆分 CSS/JS
-- **Reveal.js 4.6.0 CDN**：`cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.{css,js}`。**CDN SRI 策略见 `references/technical-specs.md`「CDN SRI 策略」**：reveal.js(JS) 加固定 SRI、reveal.css(CSS) **不加** SRI（与种子一致）；被 hook 提示缺 integrity 时别盲目给 CSS 补 SRI——hash 算错会触发 CSP 拦截致视觉崩坏，门禁还可能误判通过
+- **Reveal.js 4.6.0 CDN**：`cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.{css,js}`。SRI 策略（JS 加固定 SRI、**CSS 不加**——被 hook 提示缺 integrity 时别盲目给 CSS 补，hash 错触发 CSP 拦截致视觉崩坏）详见 `references/technical-specs.md`「CDN SRI 策略」
 - **Google Fonts**：按设计语法选择，`<link>` 引入
 - **CSS 全部内联**在 `<style>` 中，用 `--c-*` / `--f-*` token；骨架见 `references/css-skeleton.md`
 - **每页一个 `<section>`**；section 级 flex/grid 必须用 `class="deck-flex"` / `class="deck-grid"`——reveal 会把 present section 的 inline `display` 改成 `block`，**写在 stylesheet 里的 `display:flex` 会被静默覆盖成 dead code，你以为在居中其实没有**；只有 `deck-flex`/`deck-grid` 类才能在 reveal override 后重新生效
@@ -116,11 +117,11 @@ CDN 加载 reveal.js + Google Fonts，用户**无需安装任何东西**。
 - **Reveal 配置**：`{ width: 1280, height: 720, margin: 0.04, hash: true, slideNumber: 'c/t', transition: 'fade' }`
 - **页面过渡只用 `fade`/`slide`，禁 `convex`/`concave`/`zoom`**：3D 过渡给页面套透视，扭曲 `getBoundingClientRect` → `visual-check.js` 报画布尺寸混杂。所有页画布尺寸必须一致（**G8** `test-canvas-fill.js` 机器查）。要"活泼"用 fragment 动效，别换过渡（详见 `references/visual-check.md`、`references/motion-delight.md`）
 - **交付前必须过十四门禁**：`grade-gate.js <file>` 全绿（见 §验证）。P4 生成后立刻跑，任一红灯 = 回 §2 拆页/降文字/重绑坐标系
-- **切勿破坏 reveal 的 section 堆叠/隐藏**：弱选择器 `.reveal section{position:relative}` 无害（被 reveal.css 覆盖 = dead fallback）；**真正危险的是 `!important` 或加强选择器强覆盖 `position`** → section 进文档流垂直堆叠 → overflow:hidden 截断 → 除首页外全空白。给 present 垂直居中用 `.reveal section.present{display:flex!important}`，别 blanket-force（详见 `references/css-skeleton.md`）
+- **切勿 `!important`/强选择器覆盖 section `position`** → section 进文档流垂直堆叠、被 overflow:hidden 截断、除首页外全空白；present 垂直居中用 `.reveal section.present{display:flex!important}`，别 blanket-force（机理详见 `references/css-skeleton.md`）
 - **Pin 定位上下文**：pin 相对最近 positioned 祖先（reveal 的 absolute section）；若 section 退回 static，pin 相对 BODY 全叠视口左下角 → `test-label-overlap` 报泄露
-- **字体 fallback 防 FOUT 重叠**：所有 `font-family` 栈**在 generic fallback（`sans-serif`/`serif`）前**带窄体 fallback（`'Arial Narrow'` / `'Helvetica Neue Condensed'`）；大字（logo/标题/大数字 ≥3em）与角元素（stamp/pin/photo-credit/角标）水平间距 **≥ 50px**。字体未加载时 fallback 到窄体而非默认宽体,防加载前/后布局跳变致重叠。`scripts/test-font-loading.js` 机器检测（宽度差 >15% 或间距 <50px = warning；仅 0px 实质重叠 = blocker）,`scripts/auto-fix.js` 兜底注入窄体 fallback（**默认 dry-run 只报告不落盘,G003**；需 `--write` 落盘 + `--inject-font-fallback` 启用字体注入,默认关因改全部 font-family 影响 voice）
-- **section reset 吞 margin-top（静默无报错）**：若模板含 `.reveal section > *:not(svg):not(.deco){margin-top:0 !important}` 这类通配 reset（特异性 0,2,2），section 直接子元素写在 class 里的 `margin-top` 会被静默清零——无报错、无 lint 拦截，直接表现为标题压内容、内容压 nav。section 直接子元素的垂直间距**必须用 inline `style="margin-top:Xpx !important"` 或 padding**，不要写在 class 里（机理与 memphis 封面 `THINGS.` 下沉案例详见 `references/layout-patterns.md`「文字防碰撞规则」）
-- **文字断行（G11 · 用户最痛「一个词/句号变两行」）**：标题 h1-h3 默认 `word-break:keep-all; overflow-wrap:anywhere; text-wrap:balance; line-break:strict`（keep-all 防 CJK 拆字、anywhere 兜底防溢出、balance 均衡行宽）；**标题末尾标点「。」「，」用 `<span style="white-space:nowrap">词。</span>` 绑定前词**——防「单独的句号」甩下行（widow/runt punctuation，slide 真实痛点）；数字+单位、inline 高亮短语 `<em>`/标签 `white-space:nowrap`；**避坑** `break-word/break-all`（肢解英文词，拆词主因）。⚠ `text-wrap:pretty`/`line-break:strict` 实测**不能**解决中文孤标点行——孤标点必须 `nowrap` 绑定。G11 五层机器检测（L1 数字/英文 + L2 孤字/孤标点 + L3a 中文词 + L4 避头尾），详见 `references/failure-gates.md` §19
+- **字体 fallback 防 FOUT 重叠**：`font-family` 栈在 generic fallback（`sans-serif`/`serif`）前带窄体 fallback（`'Arial Narrow'`/`'Helvetica Neue Condensed'`）；大字（≥3em）与角元素（stamp/pin/photo-credit/角标）水平间距 **≥50px**。`test-font-loading.js` 检测（宽度差 >15% 或间距 <50px = warning；0px 实质重叠 = blocker），`auto-fix.js` 兜底注入（默认 dry-run 只报告，`--write --inject-font-fallback` 落盘，默认关因改全部 font-family 影响 voice）
+- **section reset 吞 margin-top（静默无报错）**：模板通配 reset（如 `.reveal section > *:not(svg):not(.deco){margin-top:0!important}`）会清零 section 直系子元素 class 里的 `margin-top`——无报错、无 lint 拦截，直接标题压内容/内容压 nav。直系子元素垂直间距**必须 inline `style="margin-top:Xpx!important"` 或 padding**，不写在 class 里（机理 + 案例见 `references/layout-patterns.md`「文字防碰撞规则」）
+- **文字断行（G11 · 用户最痛「一个词/句号变两行」）**：标题 h1-h3 默认 `word-break:keep-all; overflow-wrap:anywhere; text-wrap:balance`（keep-all 防 CJK 拆字、anywhere 兜底防溢出、balance 均衡行宽）；**末尾标点「。」「，」用 `<span style="white-space:nowrap">词。</span>` 绑定前词**防孤标点甩下行；数字+单位、`<em>`/标签 `white-space:nowrap`；**避坑** `break-word/break-all`（肢解英文词）。⚠ `text-wrap:pretty` 实测**不能**解决中文孤标点——必须 `nowrap` 绑定。G11 五层检测（L1 数字/英文 + L2 孤字/孤标点 + L3a 中文词 + L4 避头尾）见 `references/failure-gates.md` §19
 
 ### 2. 内容预算（生成 section 前先算）
 
@@ -228,7 +229,7 @@ Style gap 必须补齐四件套:
 | Content rewrite | action title、标签、proof object 必须改成该内容的主题语言 |
 | Layout archetype variant | 使用 ≥3 种 A1-A12 archetype,且至少 1 个为本主题发明变体 |
 
-Style-gap Router 除六行说明外,必须额外写明:
+Style-gap Router 除七行说明外,必须额外写明:
 
 ```text
 Style gap: 是/否;原因:____。
@@ -261,7 +262,7 @@ Layout 变体:____。
 
 选模板看主题的**形状/动作**，不是行业关键词——同行业的两个主题可能要不同模板（"AI 历史"是历程→01，"AI 系统"是系统→02）。先走下表，命中后**种子只提供 voice（配色/字体/语气 token），布局来自 archetype 引擎库**（见下「voice / layout 解耦」）。
 
-**voice / layout 解耦（表达能力的核心）**：种子 = voice（配色+字体+语气），archetype = layout（构图+张力+节奏）。两者解耦组合，表达空间从"8 套死模板"炸开成"N 声音 × M 版式"。**禁止把种子的布局原语原样当骨架填充**（如直接套 folio-grid/plate-grid 不改结构 = 失败门禁 #9 换皮）。主骨架必须由 `references/layout-archetypes.md` 的 ≥3 种 archetype 组合，其中 ≥1 种是**为本主题发明的变体**（调过参数/改过结构）。**与 scaffold 复制模式的关系**：`generate-deck.js` 的种子 scaffold 模式（route-deck seed 命中后 seed 短路，复制种子 HTML 作起点）与"禁止原样填充"不矛盾——scaffold 只提供 voice/签名原语起点（配色/字体/签名组件的精致底子），**不是交付物**；输出标 **`requiresRewrite: true`**，必须重写 cover/proof/mechanism/close 中 **≥2 个 role 骨架**（只换文字/配色 = 换皮，即失败门禁 #9 的「重写 2/4 骨架」，互指 `references/failure-gates.md` §9），重写完成后才进验收。机器验证：改完后跑 `node scripts/skeleton-diff.js <deck> --seed examples/<seed>.html --gate`（逐页结构签名对比，骨架相似度 >70% = 换皮嫌疑 exit 1）。
+**voice / layout 解耦（表达能力的核心）**：种子 = voice（配色+字体+语气），archetype = layout（构图+张力+节奏）。两者解耦组合，表达空间从"死模板"炸开成"N 声音 × M 版式"。**禁止把种子的布局原语原样当骨架填充**（直接套 folio-grid/plate-grid 不改结构 = 门禁 #9 换皮）；主骨架必须由 `references/layout-archetypes.md` 的 ≥3 种 archetype 组合，其中 ≥1 种是**为本主题发明的变体**。**与 scaffold 复制模式的关系**：`generate-deck.js` 的种子 scaffold 模式（复制种子 HTML 作起点）与"禁止原样填充"不矛盾——scaffold 只提供 voice/签名原语起点（配色/字体/签名组件的精致底子），**不是交付物**；输出标 **`requiresRewrite: true`**，必须重写 cover/proof/mechanism/close 中 **≥2 个 role 骨架**（只换文字/配色 = 换皮，即门禁 #9「重写 2/4 骨架」，见 `references/failure-gates.md` §9）。机器验证：`node scripts/skeleton-diff.js <deck> --seed examples/<seed>.html --gate`（骨架相似度 >70% = 换皮嫌疑 exit 1）。
 
 | 主题形状（看主干动词） | 种子 |
 |---|---|
@@ -282,12 +283,13 @@ Layout 变体:____。
 
 **不硬套（硬约束）**：10 个形状都不沾（如纯金融台账、法律案卷、天文学科普——临床实验报告已由 template-10 覆盖，不算），或命中形状但视觉隐喻会讲偏,就进入 Style Gap 路径（见上）。说清"为什么现有种子都不行",再新建一次性语法或 archetype 变体。把内容塞进不合适的种子比新建更糟——硬套是比"发明癖"更大的失败。
 
-### 必填六行（P1 结束前完成）
+### 必填七行（P1 结束前完成）
 
 ```text
 主题本质：这不是在讲 ____，而是在讲 ____。
 观众张力：观众当前相信/担心 ____，演示要让他们 ____。
 设计隐喻：本 deck 像一个 ____，而不是一个普通 slide deck。
+叙事弧线：本 deck 走 ____ 弧线（references/narrative-arcs.md 8 条之一或自定义；机器入口 `node scripts/route-arc.js "<主题>"`，未命中走「新弧线发明流程」），节奏曲线 ____，禁用节拍 ____。
 页面骨架：[目标 N 页] · 主要使用 ____ / ____ / ____ / ____ 这些页面动作（N 页数见 §8）。
 Proof object：必须可视化证明 ____，不能只写成 bullet。
 禁止套路：不能使用 ____，因为它会把主题讲偏或变成通用模板。
@@ -295,9 +297,9 @@ Proof object：必须可视化证明 ____，不能只写成 bullet。
 
 **生成方法**：抽主题本质（动作/冲突，不是名词）→ 找观众张力（怀疑/疲劳/陌生/兴奋/需决策）→ 选设计隐喻（控制室/档案馆/舞台/实验台/地图/交易大厅/导演分镜/工坊白板）→ 定义 4-6 种页面原语 → 绑定 proof object → 派生视觉系统（颜色/字体最后才决定）。完整说明：`references/design-polish.md`。
 
-### 设计契约（必填，P1 结束前与六行一起产出）
+### 设计契约（必填，P1 结束前与七行一起产出）
 
-六行说明定"讲什么"，设计契约定"长多大胆"。把野心写成可承诺、可度量的决策，避免"边写边默认最保险的值"（这正是合规 deck 退化为平庸的根因，见 `references/design-fundamentals.md` §0）。四项必填：
+七行说明定"讲什么"，设计契约定"长多大胆"。把野心写成可承诺、可度量的决策，避免"边写边默认最保险的值"（这正是合规 deck 退化为平庸的根因，见 `references/design-fundamentals.md` §0）。四项必填：
 
 ```text
 尺度预设：newspaper-dramatic(≥5:1) / launch-bold(~4:1) / editorial-quiet(~3:1)
@@ -321,6 +323,19 @@ archetype 序列：每页分配一个 archetype（A1-A12，见 layout-archetypes
 | 内容跨多个语境 | 选一个主隐喻，其他作为局部页面动作 |
 
 **新语法最低要求**：1 个清晰隐喻 + 4 种页面原语 + 1 个签名时刻 + 1 套颜色/字体 token + 3 个禁用套路 + 1 条验证问题（把颜色字体拿掉后，这页是否仍属于这个主题？）。若这是 style gap,还必须有 inspiration case、content rewrite 和 layout variant 记录,不能只新增 token。
+
+### 反 editorial 收敛（设计从主题生长，不是 template-01 换皮）
+
+template-01（editorial-serif）是旗舰，base.css / 共享骨架 / archetype 库 / design-polish 配方都偏 editorial——它是**引力中心**。最大退化：任意主题都套 editorial 外衣（serif + 左对齐 + kicker 眉标 + 报头/印章/角标/登记轴 + 档案馆气质），只换颜色和主题文字。这就是"**颜色和主题是贴上去的、不是长出来的**"——失败门禁 #9 的**审美语言维度**（skeleton-diff 只查 HTML 结构相似度，查不到审美语言恒为 editorial）。
+
+**硬约束**：
+
+- **editorial-archive 构件**（`plate` / `folio` / `ledger` / `stamp` / `masthead` / `register-axis` / `colophon` / `signoff` / `poster-wall` / `lede` / `catalogue`）**只在 editorial 原生主题**（历程 / 历史 / 档案 / 复盘 / 编年 / 展览 / 策展）用。非 editorial 主题（天文 / 融资 pitch / 金融 / 医疗 / 产品…）用这些构件 = 设计没从主题生长。
+- **共享骨架 page-furniture**（`kicker` 眉标 / `pin` 角标 / `evidence-label` 源标）是 editorial 排版惯例——非 editorial 主题别三件套全上。
+- **"去色去字体后仍属本主题"是硬契约**（不再是 advisory）：去掉颜色字体，页面结构仍要属于本主题——JWST 该有望远镜/蜂窝镜/光谱构件，pitch 该有终端/漏斗/数据构件，不能仍属 editorial 档案馆。
+- **路径 C 必斩共享骨架**：模板库外 / 惊艳主题禁用 assembleDeck 共享基底类，必须 bespoke HTML，结构从外部大师推导（不只换色字）。
+
+**机器门禁**：`node scripts/qa.js <file> --topic "<主题>"` 跑 `check-editorial-contamination.js`——非 editorial 主题污染超阈（archive 构件 ≥2，或 editorial 骨架三件套齐全，或 serif 展示字+构件）= **FAIL，与 grade-gate 红灯同级**。editorial 原生主题用 `--editorial-topic` 豁免；传 `--topic` 不传则读 `<title>` 兜底。
 
 ### 设计强度三拨盘（density / variance / motion）
 
@@ -412,32 +427,18 @@ archetype 序列：每页分配一个 archetype（A1-A12，见 layout-archetypes
 
 **核心心法**：动效服务讲解，不服务装饰。**默认零动效**，每个加入的动效要按内容动词论证。**关掉测试**：禁用所有动效 deck 还能讲清吗？不能 = 内容缺陷，先修内容，别用动效补救。
 
-**两套机制（按场景选，不混用）**：
+**机制选择（按内容动词，P1 设计时定；不混用）**：
 
-| 机制 | 触发 | 适合场景 | 内容动词 |
-|---|---|---|---|
-| **fragment**（按 → 揭示） | 演讲者按方向键 | 现场演讲、步步讲解、教学 | "逐步造/一步步" |
-| **CSS 循环**（`infinite`） | 进入页自动播放 | 自学/分享、持续过程可见 | "持续流/一直在跑" |
-| **CSS 进场**（`forwards` 一次性） | 进入页自动 | 对比/增长冲击力 | "从 0 长到 X" |
-| **不动效** | — | 宣言/口号、一次性看清的结构、封面主标题、精确读数 | "喊口号/一次看清" |
+| 机制 | 触发 | 适合场景 / 内容动词 |
+|---|---|---|
+| **fragment**（按→揭示） | 演讲者按键 | 工艺/流程/步骤「逐步造」、堆叠/层级「逐层」（逐层 OR CSS 进场 rise） |
+| **CSS 循环**（`infinite`） | 进页自动播 | 信号传输/能量传导「持续流」（flow 蚂蚁线 / pulse 呼吸 / glow 发光） |
+| **CSS 进场**（`forwards`） | 进页自动 | 数据对比/增长「从 0 长到 X」（grow scaleX 0→1） |
+| **不动效** | — | 宣言/口号、封面主标题、精确读数「一次看清」；拿不准 → 不动效（克制优先） |
 
-**决策清单（P1 设计时过一遍）**：
+**克制上限（硬规则，P4 后必查）**：循环动效 **≤3 应用点/deck**（一个应用点 = 一种独立用法，"互连线 flow"算 1 点不论几条线；同动效跨页每页计 1）、每页 **≤2 个 `infinite`**（互相干扰）、fragment **≤30% 页面**（"惊喜"仅 1-2 页）；生成后 `grep 'animation:[^;}]*infinite'` 数应用点（类型 + 页面去重），>3 必删到 ≤3。
 
-- 工艺/流程/步骤 → fragment 逐步揭示
-- 信号传输/能量传导/活跃状态 → CSS 循环（flow 蚂蚁线 / pulse 呼吸 / glow 发光）
-- 数据对比/增长 → CSS 进场 grow（scaleX 0→1）
-- 堆叠/层级 → fragment 逐层 OR CSS 进场 rise
-- 宣言（void-page）/封面主标题/精确数据页 → **不动效**
-- 拿不准 → 不动效（克制优先）
-
-**克制上限（硬规则，P4 生成后必查）**：
-
-- 循环动效 ≤3 个**应用点**/deck —— 一个应用点 = 一个独立的循环动效用法（"互连线 flow"算 1 点，不论几条线；"铜柱 pulse"算 1 点；"发光 glow"算 1 点）。同一动效跨多页用算多个应用点（每页 1 点）。
-- 每页 ≤2 个 `infinite` 元素（互相干扰）
-- fragment ≤30% 页面 · "惊喜"效果仅 1-2 页
-- **生成后 grep `animation:[^;}]*infinite`，数应用点（按动效类型 + 页面去重），>3 必删到 ≤3**
-
-**实现规则**：fragment `fade-up` stagger ≤150ms/项；进场 400-650ms；循环 1.4-2.4s（太短急躁，太长拖沓）；用 `cubic-bezier(0.22,1,0.36,1)`，`linear` 只给持续流动；**禁 bounce/elastic**（廉价 AI tell，PPTX 导出丢）；页面过渡只用 `fade`/`slide`（禁 3D 过渡，理由见 §1）；必兼容 `prefers-reduced-motion`（显示终态，不隐藏信息）。**SVG 元素加 fragment 用纯 opacity，禁 transform**（viewBox 坐标系下 translateY/rotate 会失真）。
+**实现规则**：fragment `fade-up` stagger ≤150ms/项；进场 400-650ms；循环 1.4-2.4s；用 `cubic-bezier(0.22,1,0.36,1)`（`linear` 只给持续流动）；**禁 bounce/elastic**（PPTX 导出丢）；页面过渡只用 `fade`/`slide`（禁 3D，理由见 §1）；必兼容 `prefers-reduced-motion`（显示终态）；**SVG fragment 用纯 opacity，禁 transform**（viewBox 下失真）。
 
 **导出兼容（硬约束）**：fragment + CSS 动效在 PPTX/PDF 导出**都会丢**。设计时必须保证**静态快照可读**——动效是 HTML 演示的加值，不是信息载体。关掉动效的 PPTX 也要能独立讲清。
 
@@ -445,20 +446,22 @@ archetype 序列：每页分配一个 archetype（A1-A12，见 layout-archetypes
 
 ## 验证
 
-三层模型 + **统一验收入口 `node scripts/qa.js <file>`**（一次跑完：grade-gate 十四门禁地板 + design-strength 品质总分 ≥75 + element-quality + 图像驱动自动 audit + visual-verdict 三态 pass/blocked/signoff；`grade-gate.js` 仍是地板，`generate-deck.js --gates` 只跑地板+design-strength ≠ 全量验收），**完整脚本清单、阻断条件表、十四门禁对照、路径 × 模式验收矩阵、impeccable 覆盖映射、G6/G7 分工、评估集成**见 `references/validation.md`：
+三层模型 + **统一验收入口 `node scripts/qa.js <file>`**（一次跑完：grade-gate 十四门禁地板 + design-strength 品质总分 ≥75 + element-quality + 图像驱动自动 audit + visual-verdict 三态 pass/blocked/signoff + **design-brief 契约门禁**——交付 HTML 必须内嵌 `<script type="application/json" id="design-brief">`，`aestheticAnchor`/`externalRefs`/`signatureMoment`/`extremeContrast`/`bannedPatterns` + 叙事弧线三字段 `narrativeArc`/`pacingCurve`/`bannedBeats` 八必填字段缺失 = 硬失败，`examples/` 种子模板豁免，详见 `scripts/check-design-brief.js`；**弧线落实门禁**（`check-arc-adherence.js`：库内弧线须在 narrative-arcs.md 注册表、自定义弧线须 `arcDefinition` 四件套 + `bannedBeats` 已知节拍签名扫描命中 = 硬失败，种子同豁免，详见 `scripts/check-arc-adherence.js`）；换皮门禁默认对全部种子比对，`--no-skeleton-gate` 豁免；`grade-gate.js` 仍是地板，`generate-deck.js --gates` 只跑地板+design-strength ≠ 全量验收），**完整脚本清单、阻断条件表、十四门禁对照、路径 × 模式验收矩阵、impeccable 覆盖映射、G6/G7 分工、评估集成**见 `references/validation.md`：
 
 | 层 | 脚本 | 性质 |
 |---|---|---|
 | **地板（合规）** | `node scripts/grade-gate.js <file>` 全绿（十四门禁 G1-G14 合一） | 硬约束、**机器判 verdict，禁止人工放行**（案例见 `references/validation.md` G5 段） |
 | **天花板（设计强度）** | `node scripts/design-strength-check.js <file>` 四维达标 + `node scripts/element-quality-check.js <file>` 元素子分 ≥70 | advisory，任一维不达标 = **回炉重做骨架**，不是微调 |
 | **视觉评审** | `node scripts/visual-qa.js <file> --annotate-overflow --show-fragments` 逐页审阅 + `node scripts/visual-verdict.js <file>` LLM 视觉语义评审 | **P4 生成后必跑、任何视觉改动后必跑**（快速模式也跑）。**无 key / 未 opt-in = UNSKIPPABLE-BLOCKED（G001,非 dry-run 假通过）**：`visual-verdict.js` 需 `VISUAL_VERDICT_OPT_IN=1`（默认关防外发）才真实调用，dry-run 需显式 `--dry-run`，无 `OPENAI_API_KEY` 默认 exit 2 硬错误；签字放行走 `scripts/qa.js`（`--visual-signoff` / `VISUAL_VERDICT_SIGNOFF=1` 人工签字）；**视觉能力自检 + 反幻觉锚点（必做，防谎报通过）见 `references/validation.md`「视觉能力自检协议」**——无视觉能力必须记 `passed=null`，不得声称读图通过**L3b 创意短语断行**（`价格屠夫`/`终点裁决`/`客观缓解率` 等 jieba 切不准的整体短语被拆两行）也走视觉评审，判别规则（R1 残尾孤字 / R2 固定短语切割 + 豁免）见 `references/failure-gates.md` §19 |
+| **反 editorial 收敛** | `node scripts/check-editorial-contamination.js <file> --topic "<主题>"`（qa.js `--topic` 内置） | 非 editorial 主题穿档案馆外衣（archive 构件 / editorial 骨架三件套 / serif 展示）= FAIL；Goodhart 补丁——门禁 #9 的审美语言维度 |
+| **弧线落实** | `node scripts/check-arc-adherence.js <file>`（qa.js 内置，种子豁免） | brief 声明的弧线真的落实：库内弧线须在注册表、自定义弧线须 `arcDefinition` 四件套；`bannedBeats` 已知节拍（anchor-numeral/face-off/kpi-wall/table 系/data-chart）签名扫描，命中 = FAIL 并指出页码/选择器；未知节拍 key 与 pacingCurve 拍数偏差仅 warning |
 | **图片资产门禁** | `node scripts/audit-image-assets.js <file>` | 图像驱动 deck 必跑；阻断断图、满版图被放大、满版图低于画布、超宽低高图硬塞 hero、封面/章节/结尾重复大图；警告支撑图重复与背景主题漂移 |
 
 **关键认知**：门禁（地板）与设计强度（天花板）不可互替——合规但四维全默认 = 平庸；通过门禁要削弱设计时，找"既大胆又合规"的解（深化专色到 AA / 反相面板），不是改弱求合规。详见 `references/validation.md`、`references/design-fundamentals.md` §6。
 
 调垂直平衡另跑 `node scripts/visual-check.js <file>`（启发式、非阻断，与 visual-qa 冲突时信 visual-qa）。视觉语义问题（图示不清、标签不可读、图表不解释主张）信 `visual-verdict.js`，机制见上表。评估框架用 `grade-gate.js --json` 的 `passed` 字段作客观断言。如果未执行验证，在最终回复中**明确说明**。
 
-图像驱动 deck 的设计问题不能只靠固定脚本：`audit-image-assets.js` 先拦硬伤，`visual-verdict.js` 再用视觉模型判断照片是否讲清楚页面主张、是否重复、是否廉价、是否主题割裂、是否缺乏视觉冲击。两者都要跑；一个抓事实，一个抓感受和语义。
+图像驱动 deck 的设计问题除 `audit-image-assets.js` 拦硬伤外，`visual-verdict.js` 还按照片专属 rubric 判：是否讲清页面主张 / 是否重复 / 是否廉价 / 是否主题割裂 / 是否有视觉冲击。
 
 **内容-版式贴合度不是机器 QA 的替代项，而是路由与验收项**：P1 先判断内容形状、主 proof object 与版式服务关系；P3 评审 proof object 是否解释主张、是否内容被硬塞进模板、是否版式不解释主张；P6 用 `visual-verdict` 或人工审阅确认视觉语义无 blocker。若失败，优先回 P1/P3 重写 content rewrite 或 layout variant，不靠换色/换字体补救。
 
@@ -489,6 +492,7 @@ bash scripts/setup.sh          # 仅环境检查
 | **生成设计语法** | `references/design-polish.md` | Theme-to-Design Router、页面原语、种子模板 token、签名时刻配方 |
 | **扎设计根（必读）** | `references/design-fundamentals.md` | 设计四维：字体尺度系统、构图张力、专色用色、隐喻→形式生成法。禁令的反面——教怎么长出设计感 |
 | **选布局引擎（必读）** | `references/layout-archetypes.md` | 12 个 voice 无关、可组合、带参数的布局 archetype（满版分割/锚点数字/报头封面/对峙对比/机制图…）+ deck 级节奏编排 |
+| **选叙事弧线（必读）** | `references/narrative-arcs.md` | 8 条跨页叙事弧线（账本审计/值班夜航/质证对决/画廊漫步/标尺之旅/专辑聆听/田野笔记/工程剖面）：节奏曲线、页面语法、禁用节拍——七行「叙事弧线」行与 brief `narrativeArc`/`pacingCurve`/`bannedBeats` 的取值来源 |
 | **选配色字体** | `references/design-principles.md` | 配色方案、字体系统、反模式、文案规则 |
 | **处理模板外内容 / 风格缺口** | `references/off-template-style-gap.md` | Style gap 判定、四件套扩展、PPT 服务内容的验收线 |
 | **选风格 / 适配任意主题** | `references/style-space.md` | 风格 6 维坐标系、关键词→voice 速查表、voice×archetype 组合空间、加新 voice 流程（`voice-router.js` 自动路由 + `build-voice-tokens.js` 编译 `tokens/voices.json` 单一真相源） |
@@ -516,12 +520,14 @@ bash scripts/setup.sh          # 仅环境检查
 
 - [ ] **Gate 模式守门（元规则）**：若用户指定专业/发布会模式，P1 设计语法输出后**已停下等确认**（没停 = 违规失败，无论 deck 质量多高；规则见 §流程「Gate 模式硬约束」）
 - [ ] 第一眼就是经过**设计意图**的（不是 AI 模板感）
-- [ ] P1 产出了 Theme-to-Design Router 六行说明 + **设计契约**（尺度预设/用色投入/archetype 序列/本主题发明变体），且不是直接套模板
+- [ ] P1 产出了 Theme-to-Design Router 七行说明 + **设计契约**（尺度预设/用色投入/archetype 序列/本主题发明变体），且不是直接套模板
+- [ ] **叙事弧线已声明且落实**：七行「叙事弧线」行与 design-brief 的 `narrativeArc`/`pacingCurve`/`bannedBeats` 一致（references/narrative-arcs.md 8 条之一或自定义），声明禁用的默认节拍（如 anchor-numeral/face-off/kpi-wall）确实没有出现在 deck 里（`check-arc-adherence.js` 机器扫描，qa.js 硬门禁）
 - [ ] **内容-版式贴合度**已通过：内容形状、主 proof object、版式为何服务它都明确；去掉颜色和字体后，页面结构仍属于这个主题
 - [ ] **元素语义**已通过：每页元素清单、主 proof object、辅助元素族、动画解释任务明确；每个元素都服务 action title,不是模板装饰
 - [ ] 主骨架由 ≥3 种 archetype 组合（非种子原语原样填充），含 ≥1 个本主题发明变体
 - [ ] 物理表面型 proof object 与承载面共享坐标系；SVG 文字不靠裁切隐藏、不继承描边；数据趋势线不用 `T`
 - [ ] `design-strength-check.js` 四维达标（尺度≥3:1 / 有满版色块面板 / 有非对称分割 / 有主题原生形式）；数字未被软化成"约/持平"
+- [ ] **未穿 editorial 皮**（`check-editorial-contamination.js` 过）：非 editorial 主题的构件/骨架/排版从主题生长，去色去字体后仍属本主题而非 template-01 档案馆；路径 C 用 bespoke 骨架非共享基底
 - [ ] `element-quality-check.js` 元素子分达标（动画/图标/表格/流程图均 ≥70）；emoji 不当图标、图标 inline 且主题跟随、表格符合 data-ink
 - [ ] **动效关掉测试**：禁用所有动效 deck 还能讲清（动效是 HTML 加值不是信息载体）；循环动效 ≤3 处/deck、fragment ≤30% 页面；`prefers-reduced-motion` 显示终态不隐藏；PPTX 导出（动效丢失）静态快照可读
 - [ ] 发布会级任务通过了 `references/launch-grade.md` 的 golden-reference、截图和导出门禁
@@ -529,6 +535,6 @@ bash scripts/setup.sh          # 仅环境检查
 - [ ] reveal.js 运行无布局问题，逐页截图无残影/裁切/按钮污染
 - [ ] `test-pin-collision.js` 输出 `OK: all pin regions clear.`
 - [ ] 图像驱动 deck 已跑 `audit-image-assets.js`：无断图、无低清/放大满版图、无重复封面/章节大图、无非意图背景主题漂移
-- [ ] **`visual-verdict.js` 已跑且无 blocker**——感官类问题只能视觉抓，G1–G14 兜不住。无 vision key 时 dry-run 需显式 `--dry-run`（非自动降级，默认无 key 硬错误 exit 2）：**仅当会话模型 Read 截图返回像素视觉内容时**才能「Claude 读图判定」；Read 只回路径/URL = 无视觉能力，记 `passed=null dry-run`，**不得声称判定通过**
+- [ ] **`visual-verdict.js` 已跑且无 blocker**——感官类问题只能视觉抓，G1–G14 兜不住；无 key / 无视觉能力时记 `passed=null dry-run`，**不得声称判定通过**（opt-in / dry-run / Claude 读图反幻觉机制见 §验证）
 - [ ] **适配任意主题（含模板库外）**：① 在 10 种子形状 / 14 voice 内 → 路径 A 种子 / 路径 B voice 组合（`scripts/voice-router.js` + `scripts/generate-deck.js`）；② **模板库外**（不在 10 形状也不在 14 voice，如天文学/航空/古典乐/蒸汽波）**或要求"惊艳/设计感"** → **路径 C B 解法**（`references/design-generation-workflow.md`：审美意图先行 + 外部大师参考禁 template + 审美推导 + 减法 + impeccable 打磨；case 沉淀 `references/seed-gallery/`）。两条都过十四门禁 + `design-strength-check.js` 达标；未硬套模板（门禁 #9）。加新 voice 走 `tokens/voices.json` + `build-voice-tokens.js`（见 `references/style-space.md`）
 - [ ] 包含运行/导出说明和验证状态

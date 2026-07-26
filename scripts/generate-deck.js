@@ -162,6 +162,14 @@ function main() {
   }
 
   const result = generate(input);
+  if (result.seedScaffold) {
+    // 种子 scaffold 不是交付物:改写为 <name>.scaffold.html(不占用正式交付名),
+    // 并写入 requiresRewrite 标记注释——qa.js 检测到该标记 = 未重写直接交付,硬失败。
+    outFile = outFile.endsWith('.html')
+      ? outFile.replace(/\.html$/, '.scaffold.html')
+      : outFile + '.scaffold.html';
+    result.html = `<!-- generate-deck seed-scaffold: requiresRewrite=true seed=${result.preferSeed} — 未重写 scaffold,非交付物(SEED_REWRITE_CONTRACT: cover/proof/mechanism/close ≥2 个 role 骨架重写后才可交付) -->\n` + result.html;
+  }
   fs.mkdirSync(path.dirname(outFile), { recursive: true });
   fs.writeFileSync(outFile, result.html);
 
@@ -170,7 +178,7 @@ function main() {
   if (result.seedScaffold) {
     console.log('   🌱 种子 scaffold:', result.preferSeed, `[${result.voiceInfo.matchType}]`);
     console.log('      ', result.voiceInfo.reason);
-    console.log('   ⚠ requiresRewrite: true — 复制了精致种子 HTML(完整签名),必须改写内容(保留签名原语 + 6 维),别只换文字/配色。');
+    console.log('   ⚠ requiresRewrite: true — 复制了精致种子 HTML(完整签名),已改写为 .scaffold.html(不占用正式交付名);必须改写内容(保留签名原语 + 6 维),别只换文字/配色。');
     const c = result.rewriteChecklist;
     console.log(`      重写清单:${c.roles.join(' / ')} 四个 role 中至少重写 ${c.minRewrite} 个骨架`);
     console.log('     ', c.note);

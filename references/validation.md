@@ -47,7 +47,7 @@
 
 ```bash
 # 统一验收入口 —— 生成后验收一次跑完（地板 + 天花板 + 元素 + 图像 + 视觉）
-node scripts/qa.js <file>                             # 全量: grade-gate 十四门禁 + design-strength 品质总分 ≥75 + element-quality + 图像驱动自动 audit + visual-verdict 三态(pass/blocked/signoff)
+node scripts/qa.js <file>                             # 全量: grade-gate 十四门禁 + design-strength 品质总分 ≥75 + element-quality + 图像驱动自动 audit + visual-verdict 三态(pass/blocked/signoff) + design-brief 契约门禁(内嵌 <script id="design-brief"> 八必填字段——aestheticAnchor/externalRefs/signatureMoment/extremeContrast/bannedPatterns + 叙事弧线三字段 narrativeArc/pacingCurve/bannedBeats,缺失=硬失败,examples/ 种子豁免) + 弧线落实门禁(check-arc-adherence.js:库内弧线须在 narrative-arcs.md 注册表、自定义弧线须 arcDefinition 四件套,bannedBeats 已知节拍签名扫描命中=硬失败,种子同豁免) + 换皮门禁(默认对全部种子比对取最大相似度 >70%=硬失败,--seed 只比指定种子,--no-skeleton-gate 豁免,种子自身跳过)
 node scripts/qa.js --visual-signoff <file>            # visual 层无 key/未 opt-in = BLOCKED, 人工视觉复核后签字放行
 
 # 地板（合规）—— 交付前必跑，全绿才放行

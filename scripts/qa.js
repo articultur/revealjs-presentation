@@ -13,7 +13,21 @@
  *   node scripts/qa.js --image-audit deck.html
  *   node scripts/qa.js --visual-signoff-file signoff.json deck.html   # 生产:持久人工视觉签字(放行 BLOCKED 感官层)
  *   node scripts/qa.js --visual-signoff deck.html                    # 测试专用(NODE_ENV=test)布尔签字逃生口
- *   node scripts/qa.js --seed examples/template-01-editorial-serif.html deck.html   # 路径 A scaffold 改写后验收(换皮门禁)
+ *   node scripts/qa.js --seed examples/template-01-editorial-serif.html deck.html   # 路径 A scaffold 改写后验收(换皮门禁,只比指定种子)
+ *   node scripts/qa.js --no-skeleton-gate deck.html            # 显式豁免换皮门禁(仅种子自身维护时用)
+ *
+ * 默认硬门禁(无需任何 flag):
+ *   - 换皮门禁:未传 --seed 时自动对 examples/ 全部种子做 skeleton-diff,最大相似度 >70% = 硬失败;
+ *     被检文件即 examples/ 种子自身时跳过(防自我命中);检测到 generate-deck seed-scaffold
+ *     requiresRewrite 标记 = 未重写 scaffold 直接交付,硬失败。
+ *   - design-brief 契约:check-design-brief.js 校验内嵌 <script id="design-brief"> 必填字段
+ *     (aestheticAnchor/externalRefs/signatureMoment/extremeContrast/bannedPatterns
+ *     + 叙事弧线三字段 narrativeArc/pacingCurve/bannedBeats),缺失 = 硬失败;
+ *     examples/ 种子模板(历史产物)豁免。
+ *   - 弧线落实:check-arc-adherence.js 验证 brief 声明的弧线真的落实——narrativeArc
+ *     库内弧线须在 narrative-arcs.md 注册表、自定义弧线须 arcDefinition 四件套;
+ *     bannedBeats 已知节拍签名扫描(anchor-numeral/face-off/kpi-wall/table 系/data-chart),
+ *     命中 = 硬失败;examples/ 种子模板同样豁免。
  *
  * Visual verdict gating: real model review requires OPENAI_API_KEY + VISUAL_VERDICT_OPT_IN=1
  * (default off). Without both, visual-verdict is UNSKIPPABLE-BLOCKED — sign off with a durable
@@ -31,7 +45,7 @@
 const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
-const { THRESHOLD: SKELETON_THRESHOLD } = require('./skeleton-diff.js'); // 换皮判定门槛(相似度 >70%)
+const { THRESHOLD: SKELETON_THRESHOLD, diffFiles: skeletonDiffFiles } = require('./skeleton-diff.js'); // 换皮判定门槛(相似度 >70%)+ 直接比对函数(默认全种子模式用)
 const { validateVisualSignoff } = require('./run-manifest.js'); // 持久签字校验(reviewer/时间/截图哈希/decision)
 
 const ROOT = path.resolve(__dirname, '..');
@@ -87,10 +101,12 @@ const outArgIndex = optionIndex(['--out', '--output']);
 const outRoot = outArgIndex >= 0 && args[outArgIndex + 1]
   ? path.resolve(args[outArgIndex + 1])
   : path.join(ROOT, 'qa-output');
-// --seed:路径 A scaffold 改写后的验收——提供时在视觉层之后加跑 skeleton-diff 换皮门禁
-// (骨架与种子结构相似度 >70% = 硬失败);不提供时行为完全不变。
+// --seed:路径 A scaffold 改写后的验收——提供时只对指定种子跑 skeleton-diff 换皮门禁
+// (骨架与种子结构相似度 >70% = 硬失败);不提供时默认对 examples/ 全部种子比对取最大值。
 const seedArgIndex = optionIndex(['--seed']);
 const seedArg = seedArgIndex >= 0 ? args[seedArgIndex + 1] : null;
+// --no-skeleton-gate:显式豁免换皮门禁(仅 examples/ 种子自身维护等场景;常规交付不应使用)
+const noSkeletonGate = args.includes('--no-skeleton-gate');
 // --visual-signoff-file:生产级人工视觉签字(JSON:reviewer/reviewedAt/screenshotsManifestSha256/
 // decision)。校验通过后复制进 --out,并把可审计路径写进 qa-summary。这是感官层 BLOCKED 时唯一
 // 的生产放行方式。
@@ -109,6 +125,7 @@ const knownFlags = new Set([
   '--out',
   '--output',
   '--seed',
+  '--no-skeleton-gate',
   '--topic',
   '--editorial-topic',
   '--no-editorial-check',
@@ -141,7 +158,7 @@ if (process.env.VISUAL_VERDICT_SIGNOFF === '1' && !isTestEnv) {
 }
 
 if (!files.length) {
-  console.error('Usage: node scripts/qa.js [--no-visual|--visual|--visual-dry-run] [--image-audit|--no-image-audit] [--seed seed.html] [--visual-signoff-file signoff.json] [--out dir] <deck.html> [deck2.html]');
+  console.error('Usage: node scripts/qa.js [--no-visual|--visual|--visual-dry-run] [--image-audit|--no-image-audit] [--seed seed.html|--no-skeleton-gate] [--visual-signoff-file signoff.json] [--out dir] <deck.html> [deck2.html]');
   process.exit(2);
 }
 
@@ -180,6 +197,15 @@ function readTitle(filePath) {
   const html = fs.readFileSync(filePath, 'utf8');
   const m = html.match(/<title>([^<]*)<\/title>/i);
   return m ? m[1].trim() : '';
+}
+
+// examples/ 种子清单与「被检文件即种子自身」判定(换皮门禁防自我命中 + design-brief 历史豁免)
+const EXAMPLES_DIR = path.join(ROOT, 'examples');
+function seedFileList() {
+  return fs.readdirSync(EXAMPLES_DIR).filter(f => f.endsWith('.html')).map(f => path.join(EXAMPLES_DIR, f));
+}
+function isSeedFile(absPath) {
+  return seedFileList().includes(absPath);
 }
 
 function isImageDriven(filePath) {
@@ -231,7 +257,7 @@ function record(ok, label, details = '', gateKey = null) {
 // needs visual signoff and is not delivery-ready.
 function writeQaSummary(file) {
   if (!summary) return;
-  const floorKeys = ['grade', 'designStrength', 'elementQuality', 'editorialContamination', 'imageAudit'];
+  const floorKeys = ['grade', 'designStrength', 'elementQuality', 'editorialContamination', 'imageAudit', 'skeleton', 'designBrief', 'arcAdherence'];
   const floorFailed = summary.fileMissing === true || floorKeys.some((k) => summary.gates[k] === 'fail');
   const visualReady = summary.gates.visual === 'human-signoff' || summary.gates.visual === 'model';
   summary.state = floorFailed ? 'blocked' : (visualReady ? 'ready' : 'needs-visual-signoff');
@@ -270,6 +296,9 @@ for (const file of files) {
       editorialContamination: null,
       imageAudit: null,
       visual: null,
+      skeleton: null,
+      designBrief: null,
+      arcAdherence: null,
     },
     artifacts: {},
   };
@@ -313,6 +342,63 @@ for (const file of files) {
     summarizeOutput(element),
     'elementQuality',
   );
+
+  // design-brief 契约(设计感 B 解法的机器抓手):单文件 HTML 内嵌
+  // <script type="application/json" id="design-brief">,必填 aestheticAnchor /
+  // externalRefs(≥1,含 url+visualNote)/ signatureMoment / extremeContrast /
+  // bannedPatterns(≥1) + 叙事弧线三字段 narrativeArc / pacingCurve / bannedBeats(≥1)。
+  // 缺 script 或字段不达标 = 硬失败,与 grade-gate 红灯同级。
+  // examples/ 种子模板是历史产物,验收其自身时豁免。
+  if (isSeedFile(abs)) {
+    summary.gates.designBrief = 'skipped';
+    console.log('  - design-brief skipped (examples/ 种子模板自身,历史产物豁免)');
+  } else {
+    const brief = runNode('design-brief', 'check-design-brief.js', [abs, '--json']);
+    let briefJson = null;
+    try {
+      briefJson = JSON.parse(brief.stdout);
+    } catch {
+      // handled by record below
+    }
+    const briefPass = brief.status === 0 && !brief.error && briefJson && briefJson.pass === true;
+    record(
+      briefPass,
+      briefPass
+        ? 'design-brief 契约齐全(aestheticAnchor/externalRefs/signatureMoment/extremeContrast/bannedPatterns/narrativeArc/pacingCurve/bannedBeats)'
+        : `design-brief 契约不达标${briefJson?.missing?.length ? ':缺 ' + briefJson.missing.join('; ') : ''}`,
+      summarizeOutput(brief),
+      'designBrief',
+    );
+  }
+
+  // 弧线落实(叙事弧线的机器验证,与 design-brief 同策略:examples/ 种子模板豁免):
+  // check-arc-adherence.js 从 brief 读叙事声明——narrativeArc 库内弧线须在
+  // references/narrative-arcs.md 注册表(自定义弧线须 arcDefinition 四件套:
+  // realWorldRef/pacingGrammar/rationale);bannedBeats 已知节拍签名扫描
+  // (anchor-numeral/face-off/kpi-wall/data-table/ledger-table/neutral-data-table/
+  // data-chart),命中被禁节拍 = 硬失败并指出页码/选择器;未知节拍 key 与
+  // pacingCurve 拍数偏差只 warning 不 FAIL。
+  if (isSeedFile(abs)) {
+    summary.gates.arcAdherence = 'skipped';
+    console.log('  - arc-adherence skipped (examples/ 种子模板自身,历史产物豁免)');
+  } else {
+    const arc = runNode('arc-adherence', 'check-arc-adherence.js', [abs, '--json']);
+    let arcJson = null;
+    try {
+      arcJson = JSON.parse(arc.stdout);
+    } catch {
+      // handled by record below
+    }
+    const arcPass = arc.status === 0 && !arc.error && arcJson && arcJson.pass === true;
+    record(
+      arcPass,
+      arcPass
+        ? `弧线落实达标(${arcJson.arcType === 'custom' ? '自定义弧线 + arcDefinition 四件套' : `库内弧线 ${arcJson.arcId}`};bannedBeats 机器缺席扫描无命中${arcJson.warnings?.length ? `;${arcJson.warnings.length} 条 warning` : ''})`
+        : `弧线落实不达标${arcJson?.failures?.length ? ':' + arcJson.failures.join('; ') : ''}`,
+      summarizeOutput(arc),
+      'arcAdherence',
+    );
+  }
 
   // editorial-contamination(反 template-01 收敛 / Goodhart 补丁):非 editorial 主题穿档案馆
   // 外衣(archive 构件 / editorial 骨架三件套 / serif 展示字)= 设计非从主题生长,颜色与主题
@@ -449,15 +535,47 @@ for (const file of files) {
     }
   }
 
-  // 换皮门禁(仅提供 --seed 时加跑):路径 A scaffold 改写验收——骨架与种子结构相似度
-  // >70% = 换皮嫌疑(失败门禁 #9),硬失败,与 grade-gate 红灯同级。
-  if (seedArg) {
+  // 换皮门禁(失败门禁 #9,硬失败,与 grade-gate 红灯同级):
+  //   - generate-deck 种子 scaffold 产物带 requiresRewrite 标记:未重写直接交付,直接硬失败;
+  //   - 提供 --seed 时:只对指定种子跑 skeleton-diff(路径 A scaffold 改写后验收,原语义);
+  //   - 未提供 --seed 时(默认):自动对 examples/ 全部种子比对,取最大相似度,>70% = 硬失败;
+  //   - 被检文件即 examples/ 种子自身时跳过(防自我命中);--no-skeleton-gate 显式豁免(种子维护用)。
+  const deckHtml = fs.readFileSync(abs, 'utf8');
+  if (/<!--\s*generate-deck seed-scaffold:\s*requiresRewrite=true/.test(deckHtml)) {
+    record(
+      false,
+      '检测到 generate-deck seed-scaffold requiresRewrite 标记:这是未重写的种子 scaffold 产物(.scaffold.html),不是交付物——需重写 cover/proof/mechanism/close 中 ≥2 个 role 骨架并以正式文件名重新生成后再验收',
+      '',
+      'skeleton',
+    );
+  } else if (noSkeletonGate) {
+    summary.gates.skeleton = 'skipped';
+    console.log('  - skeleton-diff skipped by --no-skeleton-gate(显式豁免,仅种子自身维护场景)');
+  } else if (isSeedFile(abs)) {
+    summary.gates.skeleton = 'skipped';
+    console.log('  - skeleton-diff skipped (被检文件即 examples/ 种子自身,防自我命中)');
+  } else if (seedArg) {
     const diff = runNode('skeleton-diff', 'skeleton-diff.js', [abs, '--seed', seedArg, '--gate']);
     const similarity = parseSkeletonSimilarity(diff.stdout);
     record(
       diff.status === 0 && !diff.error,
       `skeleton-diff vs 种子骨架相似度 ${similarity ?? 'unknown'}% <= ${SKELETON_THRESHOLD}%`,
       summarizeOutput(diff),
+      'skeleton',
+    );
+  } else {
+    // 默认全种子比对:进程内直接调 diffFiles,取最大相似度(防稀释口径见 skeleton-diff.js)
+    let maxSim = -1;
+    let maxSeed = '';
+    for (const seedPath of seedFileList()) {
+      const r = skeletonDiffFiles(abs, seedPath);
+      if (r.similarity > maxSim) { maxSim = r.similarity; maxSeed = path.basename(seedPath); }
+    }
+    record(
+      maxSim <= SKELETON_THRESHOLD,
+      `skeleton-diff vs 全部种子最大骨架相似度 ${maxSim}% <= ${SKELETON_THRESHOLD}%(最高 @ ${maxSeed})`,
+      '',
+      'skeleton',
     );
   }
 
