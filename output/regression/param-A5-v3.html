@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>A5 · anchor huge(6em)</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Source+Serif+4:opsz,wght@8..60,400&family=Noto+Serif+SC:wght@400;600&family=Noto+Sans+SC:wght@400&family=Courier+Prime:wght@400&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   base.css — Design Token 契约层(所有风格共享)
+   ============================================================
+   这一层定义「语义映射」——把 primitive(--c-* 与 --f-*,由各风格
+   token 文件提供)映射到统一的语义名(--bg / --text / --accent)。
+
+   换风格 = 换 primitive token 文件,semantic 契约不变。
+   风格空白时新增主题 = 加一个 tokens/<style>.css,无需新 template。
+   详见 tokens/README.md 与 references/inspiration/
+   ============================================================ */
+
+:root {
+  /* ── 颜色语义映射(primitive → semantic)──────────────
+     每个风格 token 文件必须提供这些 primitive:
+     --c-bg / --c-fg / --c-fg-2 / --c-fg-3 / --c-accent / --c-border
+  ──────────────────────────────────────────────────────── */
+  --bg:          var(--c-bg);
+  --text:        var(--c-fg);
+  --text-muted:  var(--c-fg-2);
+  --text-subtle: var(--c-fg-3);
+  --accent:      var(--c-accent);
+  --divider:     var(--c-border);
+
+  /* ── 扩展 primitive fallback(voice 未显式定义时降级,防 var 未定义→样式静默消失)──
+     generate-archetype-deck 引用 --c-bg-paper(A7 KPI 卡背景)/--c-rule(A5/A6/A9 细
+     分隔线)/--c-stamp(A1 印章)。registry voice 只定义 6 个核心 primitive;这 3 个
+     在此 fallback。voice 想自定义(如 editorial-serif 纸色 #fbf6e6)在 primitive 覆盖。 */
+  --c-bg-paper: var(--c-bg);     /* 次背景:未定义时同主背景 */
+  --c-rule:     var(--c-border); /* 细分隔线:未定义时同 border */
+  --c-stamp:    var(--c-accent); /* 印章色:未定义时同 accent */
+
+  /* ── 字体语义映射 ──────────────────────────────────
+     每个风格 token 文件必须提供:--f-display / --f-body / --f-mono
+  ──────────────────────────────────────────────────────── */
+  --font-display: var(--f-display);
+  --font-body:    var(--f-body);
+  --font-mono:    var(--f-mono);
+
+  /* ── 通用设计 token(跨风格共享的设计语言)────────────
+     风格可在自己的 primitive 文件里覆盖这些值。
+  ──────────────────────────────────────────────────────── */
+  --space-1: 0.25em;
+  --space-2: 0.5em;
+  --space-3: 1em;
+  --space-4: 1.5em;
+  --space-5: 2.5em;
+
+  --rule-w: 1px;          /* 分隔线粗细 */
+  --ease:   cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ============================================================
+   editorial-serif.css — Editorial / Magazine 风格 primitive
+   ============================================================
+   对应 references/inspiration/ 风格表「Editorial / Magazine」行
+   与 02-stripe-press-editorial.md 案例。
+
+   primitive 定义这个风格的原始色值与字体栈。
+   semantic 映射由 tokens/base.css 提供(--bg:var(--c-bg) 等)。
+
+   我们的实现:template-01 editorial-serif
+   ============================================================ */
+
+:root {
+  /* ── 颜色(primitive)────────────────────────────── */
+  --c-bg:       #f3ecd9;
+  --c-bg-paper: #fbf6e6;
+  --c-fg:       #1d1a14;
+  --c-fg-2:     rgba(29, 26, 20, 0.66);
+  --c-fg-3:     rgba(29, 26, 20, 0.34);
+  --c-accent:   #6e2a18;
+  --c-stamp:    #8a2b1d;
+  --c-border:   rgba(29, 26, 20, 0.22);
+  --c-rule:     rgba(29, 26, 20, 0.14);
+
+  /* ── 字体(primitive)──────────────────────────────
+     字体 fallback 安全约束见 references/technical-specs.md
+     「字体 fallback 安全清单」(大字需窄体 fallback + ≥50px 间距)。
+  ──────────────────────────────────────────────────────── */
+  --f-display: "Cormorant Garamond", "Noto Serif SC", 'Arial Narrow', Georgia, serif;
+  --f-body:    "Source Serif 4", "Noto Serif SC", 'Arial Narrow', serif;
+  --f-mono:    "Courier Prime", 'Courier New', monospace;
+  --f-sans:    "Noto Sans SC", 'Arial Narrow', system-ui, sans-serif;
+}
+
+.reveal{font-family:var(--f-body),'Arial Narrow',serif;font-size:28px;color:var(--c-fg);background:var(--c-bg);}
+.reveal .slides{text-align:left;}
+.reveal section{padding:2.6em 3em;height:100%;box-sizing:border-box;overflow:hidden;background:var(--c-bg);position:relative;}
+.reveal section>*{max-width:100%;box-sizing:border-box;}
+.reveal h1,.reveal h2,.reveal h3{font-family:var(--f-display);color:var(--c-fg);line-height:1.1;margin:0;}
+.reveal p{margin:0;}
+.kicker{font-family:var(--f-mono);font-size:0.5em;letter-spacing:0.16em;text-transform:uppercase;color:var(--c-fg-3);display:inline-block;}
+.pin{position:absolute;left:2.5em;bottom:1.2em;font-family:var(--f-mono);font-size:0.46em;letter-spacing:0.08em;color:var(--c-fg-3);}
+.evidence-label{position:absolute;right:2.5em;top:1.2em;z-index:2;font-family:var(--f-mono);font-size:0.44em;letter-spacing:0.12em;text-transform:uppercase;color:var(--c-fg-3);}
+.deck-flex{display:flex !important;}
+.deck-grid{display:grid !important;}
+.reveal .progress{color:var(--c-accent);}
+#pptx-export-btn{position:fixed;top:14px;right:14px;z-index:1000;opacity:0;pointer-events:none;border:1px solid var(--c-border);background:var(--c-bg);color:var(--c-fg);font-family:var(--f-mono);font-size:11px;letter-spacing:0.12em;padding:6px 10px;}
+#pptx-export-btn:focus,#pptx-export-btn:hover,body:hover #pptx-export-btn{opacity:1;pointer-events:auto;}
+@media (prefers-reduced-motion:reduce){.reveal *{transition:none!important;animation:none!important;}}
+</style>
+</head>
+<body class="voice-editorial-serif">
+<div class="reveal"><div class="slides">
+<section class="deck-flex axis-left density-normal" data-archetype="A5" data-variant="anchor_scale:6" data-slide-id="" data-background="var(--c-bg)" style="--split-ratio:42/58;--align-axis:left;--density-tier:normal;align-items:center;padding:2.6em 3.2em;height:100%;"><!-- variant:参数化变体 {"anchor_scale":6} --><div class="evidence-label" data-evidence-id="" data-evidence-status="illustrative">illustrative</div><div class="anchor-block anchor-s6" style="display:flex;gap:3.00em;align-items:flex-start;width:100%;">
+      <div style="flex:1;">
+        <div class="kpi-label" style="color:var(--c-fg-3);font-family:var(--f-mono);font-size:0.5em;letter-spacing:0.16em;text-transform:uppercase;">PRIMARY ENDPOINT · OS</div>
+        <div style="font-family:var(--f-display);font-size:clamp(4em,6em,6.8em);font-weight:600;font-style:italic;line-height:1;margin:0.15em 0;color:var(--c-accent);">67%</div>
+        <div style="font-family:var(--f-display);font-style:italic;font-size:1.2em;margin-top:0.4em;">试验组 5 年生存率</div>
+        <p style="font-size:0.78em;margin-top:0.5em;color:var(--c-fg-2);">vs 对照组 42% · HR=0.52</p>
+        <div style="font-family:var(--f-mono);font-size:0.5em;color:var(--c-fg-3);margin-top:0.6em;letter-spacing:0.1em;text-transform:uppercase;">III 期 · 主要终点</div>
+      </div>
+      <div style="flex:1.1;border-left:1px solid var(--c-border);padding-left:2em;">
+        <div class="kpi-label" style="font-family:var(--f-mono);font-size:0.5em;letter-spacing:0.16em;text-transform:uppercase;color:var(--c-fg-2);">证据</div>
+        <div style="display:flex;justify-content:space-between;padding:0.4em 0;border-bottom:1px solid var(--c-rule);font-size:0.7em;"><span style="color:var(--c-fg-2);">对照组 OS</span><b style="font-family:var(--f-mono);color:var(--c-fg);">42%</b></div><div style="display:flex;justify-content:space-between;padding:0.4em 0;border-bottom:1px solid var(--c-rule);font-size:0.7em;"><span style="color:var(--c-fg-2);">HR</span><b style="font-family:var(--f-mono);color:var(--c-fg);">0.52</b></div><div style="display:flex;justify-content:space-between;padding:0.4em 0;border-bottom:1px solid var(--c-rule);font-size:0.7em;"><span style="color:var(--c-fg-2);">p 值</span><b style="font-family:var(--f-mono);color:var(--c-fg);">&lt; 0.001</b></div>
+      </div></div><div class="pin">01 / data-anchor</div></section>
+</div></div>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pptxgenjs@4.0.1/dist/pptxgen.bundle.js"></script>
+<script>
+/**
+ * Reveal.js PPTX 导出按钮（客户端）v2
+ *
+ * 保留配色、排版和布局的 PPTX 导出。
+ * 通过 CSS 变量读取调色板，按 slide 类型还原视觉风格。
+ *
+ * 使用方式：
+ *   <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@4.0.1/dist/pptxgen.bundle.js"><\/script>
+ *   <script src="scripts/export-pptx-client.js"><\/script>
+ *   或将内容内联到 HTML 的 <script> 标签中。
+ */
+
+(function () {
+  'use strict';
+
+  var BTN_TEXT = 'PPTX';
+
+  // ─── 颜色工具 ─────────────────────────────────────────
+
+  function rgbToHex(r, g, b) {
+    return [r, g, b].map(function (c) { return Math.round(c).toString(16).padStart(2, '0').toUpperCase(); }).join('');
+  }
+
+  function parseRgb(str) {
+    if (!str) return null;
+    var m = str.match(/rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)/);
+    return m ? rgbToHex(+m[1], +m[2], +m[3]) : null;
+  }
+
+  function cbrt(x) {
+    return x >= 0 ? Math.pow(x, 1 / 3) : -Math.pow(-x, 1 / 3);
+  }
+
+  function linearToSrgb(c) {
+    c = Math.max(0, Math.min(1, c));
+    return c <= 0.0031308 ? 12.92 * c : 1.055 * Math.pow(c, 1 / 2.4) - 0.055;
+  }
+
+  function oklchToHex(str) {
+    if (!str) return null;
+    var m = str.match(/oklch\(\s*([\d.]+)(%)?\s+([\d.]+)\s+([\d.]+)/);
+    if (!m) return null;
+    var L = m[2] === '%' ? +m[1] / 100 : +m[1];
+    var C = +m[3];
+    var H = +m[4];
+
+    // OKLCH → OKLAB
+    var a = C * Math.cos(H * Math.PI / 180);
+    var b = C * Math.sin(H * Math.PI / 180);
+
+    // OKLAB → LMS' (nonlinear)
+    var l_ = L + 0.3963377774 * a + 0.2158037573 * b;
+    var m_ = L - 0.1055613458 * a - 0.0638541728 * b;
+    var s_ = L - 0.0894841775 * a - 1.2914855480 * b;
+
+    // LMS' → LMS (cube, not cube-root — this is the inverse direction)
+    var l3 = l_ * l_ * l_;
+    var m3 = m_ * m_ * m_;
+    var s3 = s_ * s_ * s_;
+
+    // LMS → linear sRGB
+    var rl = +4.0767416621 * l3 - 3.3077115913 * m3 + 0.2309699292 * s3;
+    var gl = -1.2684380046 * l3 + 2.6097574011 * m3 - 0.3413193965 * s3;
+    var bl = -0.0041960863 * l3 - 0.7034186147 * m3 + 1.7076147010 * s3;
+
+    // Linear sRGB → sRGB (gamma encode)
+    var r = Math.round(Math.min(255, Math.max(0, linearToSrgb(rl) * 255)));
+    var g = Math.round(Math.min(255, Math.max(0, linearToSrgb(gl) * 255)));
+    var bv = Math.round(Math.min(255, Math.max(0, linearToSrgb(bl) * 255)));
+    return rgbToHex(r, g, bv);
+  }
+
+  function anyColorToHex(str) {
+    if (!str) return null;
+    if (str.startsWith('#')) return str.replace('#', '').substring(0, 6).toUpperCase();
+    if (str.startsWith('oklch')) return oklchToHex(str);
+    if (str.startsWith('rgb')) return parseRgb(str);
+    return parseRgb(str);
+  }
+
+  function resolveColor(val, vars) {
+    if (!val) return null;
+    if (val.startsWith('#') && val.length >= 4) return val.replace('#', '').substring(0, 6).toUpperCase();
+    if (val.startsWith('oklch')) return oklchToHex(val);
+    if (val.startsWith('rgb')) return parseRgb(val);
+    var varMatch = val.match(/var\(\s*(--[\w-]+)\s*\)/);
+    if (varMatch && vars[varMatch[1]]) return resolveColor(vars[varMatch[1]], vars);
+    return parseRgb(val);
+  }
+
+  function getElColor(el) {
+    return anyColorToHex(getComputedStyle(el).color) || '000000';
+  }
+
+  function getElBg(el) {
+    var bg = getComputedStyle(el).backgroundColor;
+    if (bg && bg !== 'rgba(0, 0, 0, 0)' && bg !== 'transparent') return anyColorToHex(bg);
+    return null;
+  }
+
+  // ─── CSS 变量解析 ────────────────────────────────────
+
+  function getCssVars() {
+    var vars = {};
+    document.querySelectorAll('style').forEach(function (s) {
+      var rootMatch = s.textContent.match(/:root\s*\{([^}]+)\}/);
+      if (rootMatch) {
+        var re = /(--[\w-]+)\s*:\s*([^;]+)/g;
+        var m;
+        while ((m = re.exec(rootMatch[1]))) vars[m[1]] = m[2].trim();
+      }
+    });
+    applyCssVarAliases(vars);
+    return vars;
+  }
+
+  function applyCssVarAliases(vars) {
+    var aliases = {
+      '--bg': '--c-bg',
+      '--text': '--c-fg',
+      '--text-muted': '--c-fg-2',
+      '--text-subtle': '--c-fg-3',
+      '--accent': '--c-accent',
+      '--divider': '--c-border',
+      '--font-display': '--f-display',
+      '--font-body': '--f-body',
+      '--font-mono': '--f-mono',
+    };
+    Object.keys(aliases).forEach(function (legacy) {
+      var canonical = aliases[legacy];
+      if (!vars[legacy] && vars[canonical]) vars[legacy] = vars[canonical];
+      if (!vars[canonical] && vars[legacy]) vars[canonical] = vars[legacy];
+    });
+  }
+
+  // ─── 文本工具 ─────────────────────────────────────────
+
+  function pxToPt(px) { return parseFloat(px) * 0.75; }
+
+  function mapFont(family) {
+    var first = (family || '').split(',')[0].replace(/['"]/g, '').trim().toLowerCase();
+    var map = {
+      'noto sans sc': 'Microsoft YaHei',
+      'noto serif sc': 'SimSun',
+      'outfit': 'Calibri',
+      'inter': 'Calibri',
+      'jetbrains mono': 'Consolas',
+      'sf mono': 'Consolas',
+    };
+    return map[first] || map[first] || 'Calibri';
+  }
+
+  function slideFont(sec) {
+    // 从 slide 主导元素(h1/h2/h3/p/kicker)拿 voice 字体,经 mapFont 映射到 PowerPoint 可用字体;
+    // 替代 29 处硬编码 Calibri(审查 P0:导出丢 voice 字体)。sec 在每个 export* 函数参数 scope 内。
+    var el = sec && sec.querySelector('h1, h2, h3, p, .kicker');
+    return el ? mapFont(getComputedStyle(el).fontFamily) : 'Calibri';
+  }
+
+  function isBold(el) { return parseInt(getComputedStyle(el).fontWeight) >= 600; }
+
+  function textOf(el) { return (el.textContent || '').trim(); }
+
+  // ─── Slide 分类 ──────────────────────────────────────
+
+  function isCenterSlide(sec) { return sec.classList.contains('center-slide'); }
+
+  function getSlideType(sec) {
+    var byArch = { A1: 'hero', A9: 'table', A7: 'grid', A11: 'grid', A4: 'split' };
+    var arch = sec.getAttribute('data-archetype');
+    if (arch && byArch[arch]) return byArch[arch];
+    if (sec.querySelector('.price-duo')) return 'price';
+    if (sec.querySelector('.bar-group')) return 'bars';
+    if (sec.querySelector('.min-table')) return 'table';
+    if (sec.querySelector('.split')) return 'split';
+    if (sec.querySelector('.case-grid')) return 'grid';
+    if (isCenterSlide(sec)) return 'hero';
+    return 'content';
+  }
+
+  // ─── 提取背景色 ──────────────────────────────────────
+
+  function extractBg(sec, vars) {
+    var bgAttr = sec.getAttribute('data-background-color');
+    if (bgAttr) { var h = resolveColor(bgAttr, vars); if (h) return h; }
+
+    var style = sec.getAttribute('style') || '';
+    var m = style.match(/background(?:-color)?:\s*([^;]+)/);
+    if (m) { var h = resolveColor(m[1].trim(), vars); if (h) return h; }
+
+    var bgVar = vars['--bg'];
+    if (bgVar) { var h = resolveColor(bgVar, vars); if (h) return h; }
+
+    return 'FFFFFF';
+  }
+
+  // ─── 各类型 Slide 导出 ───────────────────────────────
+
+  function exportHero(slide, sec, vars) {
+    var bg = extractBg(sec, vars);
+    slide.background = { color: bg };
+
+    var h1 = sec.querySelector('h1');
+    if (h1) {
+      var text = textOf(h1);
+      var fs = pxToPt(getComputedStyle(h1).fontSize);
+      var color = getElColor(h1);
+      var align = isCenterSlide(sec) ? 'center' : 'left';
+      slide.addText(text, {
+        x: 0.6, y: 1.2, w: 12.8, h: 3,
+        fontSize: Math.min(44, fs), fontFace: slideFont(sec),
+        color: color, bold: true, align: align, valign: 'middle',
+        lineSpacingMultiple: 1.1, paraSpaceAfter: 0,
+      });
+    }
+
+    var ps = sec.querySelectorAll('p, .subtitle, .big-quote');
+    ps.forEach(function (p, i) {
+      var text = textOf(p);
+      if (!text) return;
+      var color = getElColor(p);
+      var fs = pxToPt(getComputedStyle(p).fontSize);
+      var isQuote = p.classList.contains('big-quote');
+      slide.addText(text, {
+        x: 0.6, y: isQuote ? 1.8 : 4.2 + i * 0.6,
+        w: 12.8, h: isQuote ? 2.5 : 0.6,
+        fontSize: isQuote ? 22 : Math.min(16, fs),
+        fontFace: slideFont(sec), color: color,
+        align: isCenterSlide(sec) ? 'center' : 'left',
+        valign: isQuote ? 'middle' : 'top',
+        lineSpacingMultiple: 1.5,
+      });
+    });
+  }
+
+  function exportTable(slide, sec, vars) {
+    var bg = extractBg(sec, vars);
+    slide.background = { color: bg };
+    var textMuted = resolveColor(vars['--text-muted'], vars) || '999999';
+    var divider = resolveColor(vars['--divider'], vars) || 'E0E0E0';
+    var y = 0.6;
+
+    // Kicker
+    var kicker = sec.querySelector('.kicker');
+    if (kicker) {
+      slide.addText(textOf(kicker), {
+        x: 0.6, y: y, w: 12, h: 0.35,
+        fontSize: 9, color: textMuted, fontFace: slideFont(sec),
+        align: 'left', bold: false,
+      });
+      y += 0.45;
+    }
+
+    // Title
+    var h2 = sec.querySelector('h2');
+    if (h2) {
+      slide.addText(textOf(h2), {
+        x: 0.6, y: y, w: 12, h: 0.7,
+        fontSize: 24, color: getElColor(h2), fontFace: slideFont(sec),
+        bold: true, align: 'left',
+      });
+      y += 0.9;
+    }
+
+    // Table
+    var table = sec.querySelector('table');
+    if (!table) return;
+    var rows = table.querySelectorAll('tr');
+    var tableData = [];
+    var colW = [3.5, 4.5, 4.5];
+
+    rows.forEach(function (row) {
+      var cells = row.querySelectorAll('th, td');
+      var rowData = [];
+      cells.forEach(function (cell, ci) {
+        var text = textOf(cell);
+        var isHeader = cell.tagName.toLowerCase() === 'th';
+        var isHighlight = cell.classList.contains('highlight');
+        var color = isHeader ? textMuted : (isHighlight ? resolveColor(vars['--accent'], vars) || getElColor(cell) : getElColor(cell));
+        rowData.push({
+          text: text,
+          options: {
+            fontSize: isHeader ? 9 : 10,
+            bold: isHeader || isHighlight,
+            color: color,
+            fontFace: slideFont(sec),
+            align: ci === 0 ? 'left' : 'left',
+            valign: 'middle',
+            border: { pt: 0.5, color: divider },
+            fill: { color: bg },
+          }
+        });
+      });
+      if (rowData.length) tableData.push(rowData);
+    });
+
+    if (tableData.length) {
+      slide.addTable(tableData, {
+        x: 0.6, y: y, w: 12.5,
+        colW: colW,
+        rowH: 0.4,
+        border: { pt: 0.5, color: divider },
+        autoPage: false,
+      });
+    }
+  }
+
+  function exportBars(slide, sec, vars) {
+    var bg = extractBg(sec, vars);
+    slide.background = { color: bg };
+    var textMuted = resolveColor(vars['--text-muted'], vars) || '999999';
+    var gptColor = resolveColor(vars['--gpt'], vars) || '1A9956';
+    var claudeColor = resolveColor(vars['--claude'], vars) || '7C3AED';
+    var y = 0.6;
+
+    var kicker = sec.querySelector('.kicker');
+    if (kicker) {
+      slide.addText(textOf(kicker), { x: 0.6, y: y, w: 12, h: 0.35, fontSize: 9, color: textMuted, fontFace: slideFont(sec) });
+      y += 0.45;
+    }
+
+    var h2 = sec.querySelector('h2');
+    if (h2) {
+      slide.addText(textOf(h2), { x: 0.6, y: y, w: 12, h: 0.7, fontSize: 24, color: getElColor(h2), fontFace: slideFont(sec), bold: true });
+      y += 1.0;
+    }
+
+    // Legend
+    slide.addText([
+      { text: '  ', options: { fontSize: 8, color: gptColor } },
+      { text: 'GPT 5.5    ', options: { fontSize: 9, color: textMuted, bold: true } },
+      { text: '  ', options: { fontSize: 8, color: claudeColor } },
+      { text: 'Opus 4.8', options: { fontSize: 9, color: textMuted, bold: true } },
+    ], { x: 0.6, y: y, w: 6, h: 0.3 });
+    y += 0.5;
+
+    // Bars
+    var barRows = sec.querySelectorAll('.bar-row');
+    barRows.forEach(function (row) {
+      var label = row.querySelector('.bar-label');
+      if (label) {
+        slide.addText(textOf(label), { x: 0.6, y: y, w: 12, h: 0.25, fontSize: 8, color: textMuted, fontFace: slideFont(sec), bold: true });
+        y += 0.3;
+      }
+
+      var pairs = row.querySelectorAll('.bar-pair');
+      pairs.forEach(function (pair) {
+        var val = pair.querySelector('.bar-val');
+        var fill = pair.querySelector('.bar-fill');
+        if (!val || !fill) return;
+        var isGpt = fill.classList.contains('gpt');
+        var color = isGpt ? gptColor : claudeColor;
+        var numVal = parseFloat(textOf(val));
+        var barW = (numVal / 100) * 10;
+
+        slide.addShape(pptx.shapes.RECTANGLE, {
+          x: 1.5, y: y, w: barW, h: 0.18,
+          fill: { color: color },
+          rectRadius: 0.05,
+        });
+        slide.addText(textOf(val), {
+          x: 0.6, y: y - 0.05, w: 0.8, h: 0.28,
+          fontSize: 9, color: color, fontFace: slideFont(sec), bold: true, align: 'right',
+        });
+        y += 0.28;
+      });
+      y += 0.25;
+    });
+  }
+
+  function exportSplit(slide, sec, vars) {
+    var bg = extractBg(sec, vars);
+    slide.background = { color: bg };
+    var textMuted = resolveColor(vars['--text-muted'], vars) || '999999';
+    var y = 0.6;
+
+    var kicker = sec.querySelector('.kicker');
+    if (kicker) {
+      slide.addText(textOf(kicker), { x: 0.6, y: y, w: 12, h: 0.35, fontSize: 9, color: textMuted, fontFace: slideFont(sec) });
+      y += 0.45;
+    }
+
+    var h2 = sec.querySelector('h2');
+    if (h2) {
+      slide.addText(textOf(h2), { x: 0.6, y: y, w: 12, h: 0.7, fontSize: 24, color: getElColor(h2), fontFace: slideFont(sec), bold: true });
+      y += 1.0;
+    }
+
+    var cols = sec.querySelectorAll('.split-col');
+    if (cols.length < 2) return;
+
+    var colW = 6.0;
+    var gap = 0.6;
+
+    cols.forEach(function (col, ci) {
+      var x = 0.6 + ci * (colW + gap);
+
+      var h3 = col.querySelector('h3');
+      if (h3) {
+        slide.addText(textOf(h3), {
+          x: x, y: y, w: colW, h: 0.4,
+          fontSize: 13, color: getElColor(h3), fontFace: slideFont(sec), bold: true,
+        });
+      }
+
+      var ul = col.querySelector('ul, ol');
+      if (ul) {
+        var items = ul.querySelectorAll('li');
+        var bullets = [];
+        items.forEach(function (li) {
+          var t = textOf(li);
+          if (t) bullets.push({ text: t, options: { bullet: true, color: textMuted, fontSize: 10, fontFace: slideFont(sec) } });
+        });
+        if (bullets.length) {
+          slide.addText(bullets, {
+            x: x, y: y + 0.45, w: colW, h: 3.5,
+            fontSize: 10, fontFace: slideFont(sec), color: textMuted,
+            valign: 'top', wrap: true, lineSpacingMultiple: 1.6,
+          });
+        }
+      }
+    });
+  }
+
+  function exportPrice(slide, sec, vars) {
+    var bg = extractBg(sec, vars);
+    slide.background = { color: bg };
+    var textMuted = resolveColor(vars['--text-muted'], vars) || '999999';
+    var y = 0.8;
+
+    var kicker = sec.querySelector('.kicker');
+    if (kicker) {
+      slide.addText(textOf(kicker), { x: 0.6, y: y, w: 12, h: 0.35, fontSize: 9, color: textMuted, fontFace: slideFont(sec), align: 'center' });
+      y += 0.5;
+    }
+
+    var h2 = sec.querySelector('h2');
+    if (h2) {
+      slide.addText(textOf(h2), { x: 0.6, y: y, w: 12, h: 0.7, fontSize: 24, color: getElColor(h2), fontFace: slideFont(sec), bold: true, align: 'center' });
+      y += 1.2;
+    }
+
+    var blocks = sec.querySelectorAll('.price-block');
+    var blockW = 4;
+    var totalW = blocks.length * blockW + (blocks.length - 1) * 1;
+    var startX = (13.33 - totalW) / 2;
+
+    blocks.forEach(function (block, bi) {
+      var x = startX + bi * (blockW + 1);
+      var nameEl = block.querySelector('.price-name');
+      var numEl = block.querySelector('.price-num');
+      var unitEl = block.querySelector('.price-unit');
+
+      if (nameEl) {
+        slide.addText(textOf(nameEl), { x: x, y: y, w: blockW, h: 0.35, fontSize: 9, color: getElColor(nameEl), fontFace: slideFont(sec), bold: true, align: 'center', letterSpacing: 3 });
+      }
+      if (numEl) {
+        slide.addText(textOf(numEl), { x: x, y: y + 0.4, w: blockW, h: 1.2, fontSize: 48, color: getElColor(numEl), fontFace: slideFont(sec), bold: true, align: 'center', valign: 'middle' });
+      }
+      if (unitEl) {
+        slide.addText(textOf(unitEl), { x: x, y: y + 1.7, w: blockW, h: 0.3, fontSize: 9, color: textMuted, fontFace: slideFont(sec), align: 'center' });
+      }
+    });
+
+    var note = sec.querySelector('.price-duo + p, p:last-child');
+    if (note) {
+      slide.addText(textOf(note), { x: 1.5, y: y + 2.5, w: 10, h: 0.5, fontSize: 9, color: textMuted, fontFace: slideFont(sec), align: 'center' });
+    }
+  }
+
+  function exportGrid(slide, sec, vars) {
+    var bg = extractBg(sec, vars);
+    slide.background = { color: bg };
+    var textMuted = resolveColor(vars['--text-muted'], vars) || '999999';
+    var divider = resolveColor(vars['--divider'], vars) || 'E0E0E0';
+    var y = 0.6;
+
+    var kicker = sec.querySelector('.kicker');
+    if (kicker) {
+      slide.addText(textOf(kicker), { x: 0.6, y: y, w: 12, h: 0.35, fontSize: 9, color: textMuted, fontFace: slideFont(sec) });
+      y += 0.45;
+    }
+
+    var h2 = sec.querySelector('h2');
+    if (h2) {
+      slide.addText(textOf(h2), { x: 0.6, y: y, w: 12, h: 0.7, fontSize: 24, color: getElColor(h2), fontFace: slideFont(sec), bold: true });
+      y += 1.0;
+    }
+
+    var items = sec.querySelectorAll('.case-item');
+    var colW = 6.0;
+    var gap = 0.6;
+
+    items.forEach(function (item, i) {
+      var col = i % 2;
+      var row = Math.floor(i / 2);
+      var x = 0.6 + col * (colW + gap);
+      var iy = y + row * 1.4;
+
+      var tag = item.querySelector('.case-tag');
+      var h4 = item.querySelector('h4');
+      var p = item.querySelector('p');
+
+      if (tag) {
+        slide.addText(textOf(tag), { x: x, y: iy, w: colW, h: 0.25, fontSize: 8, color: getElColor(tag), fontFace: slideFont(sec), bold: true, letterSpacing: 2 });
+      }
+      if (h4) {
+        slide.addText(textOf(h4), { x: x, y: iy + 0.3, w: colW, h: 0.3, fontSize: 12, color: getElColor(h4), fontFace: slideFont(sec), bold: true });
+      }
+      if (p) {
+        slide.addText(textOf(p), { x: x, y: iy + 0.65, w: colW, h: 0.35, fontSize: 9, color: textMuted, fontFace: slideFont(sec) });
+      }
+
+      // Divider line
+      slide.addShape(pptx.shapes.RECTANGLE, {
+        x: x, y: iy + 1.15, w: colW, h: 0.01,
+        fill: { color: divider },
+      });
+    });
+  }
+
+  function exportProofText(slide, sec, startY) {
+    var selector = [
+      '.metric-value', '.metric-unit', '.metric-label', '.metric-note',
+      '.year', '.event strong', '.event span',
+      '.pill', '.bubble', '.totem h3', '.totem p',
+      '.engine-list span', '.engine-list b',
+      '.tag', '.bar-row span',
+      '.tech-node b', '.tech-node span',
+      '.big-word span', '.revenue-step h3', '.revenue-step p',
+      '.quote-card p', '.speaker', '.manifesto-list div',
+    ].join(',');
+    var y = startY;
+    var exported = new Set();
+    sec.querySelectorAll(selector).forEach(function (el) {
+      if (y > 6.65) return;
+      var text = textOf(el).replace(/\s+/g, ' ');
+      if (!text || exported.has(text)) return;
+      exported.add(text);
+      var cs = getComputedStyle(el);
+      var isMetric = el.classList.contains('metric-value');
+      slide.addText(text, {
+        x: 0.6, y: y, w: 12, h: isMetric ? 0.52 : 0.35,
+        fontSize: isMetric ? 28 : 11,
+        color: getElColor(el),
+        fontFace: mapFont(cs.fontFamily),
+        bold: isBold(el),
+        wrap: true,
+        fit: 'shrink',
+      });
+      y += isMetric ? 0.58 : 0.38;
+    });
+  }
+
+  function exportContent(slide, sec, vars) {
+    // Fallback for unknown layouts
+    var bg = extractBg(sec, vars);
+    slide.background = { color: bg };
+    var textMuted = resolveColor(vars['--text-muted'], vars) || '999999';
+    var y = 0.6;
+
+    var children = sec.querySelectorAll(':scope > .kicker, :scope > h2, :scope > h1, :scope > p, :scope > ul, :scope > ol, :scope > table');
+    children.forEach(function (el) {
+      var tag = el.tagName.toLowerCase();
+      var text = textOf(el);
+      if (!text) return;
+
+      if (tag === 'h1') {
+        slide.addText(text, { x: 0.6, y: y, w: 12, h: 1.5, fontSize: 36, color: getElColor(el), fontFace: slideFont(sec), bold: true, align: 'center', valign: 'middle' });
+        y += 1.7;
+      } else if (tag === 'h2') {
+        slide.addText(text, { x: 0.6, y: y, w: 12, h: 0.7, fontSize: 24, color: getElColor(el), fontFace: slideFont(sec), bold: true });
+        y += 0.9;
+      } else if (tag === 'p') {
+        var lines = Math.ceil(text.length / 60);
+        slide.addText(text, { x: 0.6, y: y, w: 12, h: lines * 0.3, fontSize: 12, color: getElColor(el), fontFace: slideFont(sec), wrap: true });
+        y += lines * 0.3 + 0.15;
+      } else if (tag === 'ul' || tag === 'ol') {
+        var items = el.querySelectorAll('li');
+        var bullets = [];
+        items.forEach(function (li) { var t = textOf(li); if (t) bullets.push({ text: t, options: { bullet: true } }); });
+        slide.addText(bullets, { x: 0.6, y: y, w: 12, h: 2, fontSize: 10, color: textMuted, fontFace: slideFont(sec), wrap: true });
+        y += 2.2;
+      }
+    });
+
+    exportProofText(slide, sec, Math.max(y, 2.0));
+  }
+
+  // ─── 主导出 ──────────────────────────────────────────
+
+  var pptx;
+
+  function doExport() {
+    if (typeof PptxGenJS === 'undefined') { alert('PptxGenJS 未加载，请检查网络连接。'); return; }
+
+    var btn = document.getElementById('pptx-export-btn');
+    if (btn) { btn.textContent = '导出中...'; btn.disabled = true; }
+
+    try {
+      pptx = new PptxGenJS();
+      pptx.layout = 'LAYOUT_WIDE';
+      pptx.author = 'revealjs-presentation';
+
+      var vars = getCssVars();
+      var sections = document.querySelectorAll('.reveal .slides > section');
+
+      sections.forEach(function (sec) {
+        var nested = sec.querySelectorAll(':scope > section');
+        var slideSections = nested.length > 0 ? Array.from(nested) : [sec];
+
+        slideSections.forEach(function (s) {
+          var slide = pptx.addSlide();
+          var type = getSlideType(s);
+
+          switch (type) {
+            case 'hero': exportHero(slide, s, vars); break;
+            case 'table': exportTable(slide, s, vars); break;
+            case 'bars': exportBars(slide, s, vars); break;
+            case 'split': exportSplit(slide, s, vars); break;
+            case 'price': exportPrice(slide, s, vars); break;
+            case 'grid': exportGrid(slide, s, vars); break;
+            default: exportContent(slide, s, vars); break;
+          }
+
+          // Page number
+          slide.addText('' + pptx.slides.length, {
+            x: 12.3, y: 7.0, w: 0.8, h: 0.3,
+            fontSize: 8, color: resolveColor(vars['--text-muted'], vars) || '999999',
+            align: 'right',
+          });
+
+          // Speaker notes
+          var notes = s.querySelector('aside.notes');
+          if (notes) slide.addNotes(notes.textContent.trim());
+        });
+      });
+
+      var name = (document.title || 'presentation').replace(/[^\w一-鿿-]/g, '_');
+      pptx.writeFile({ fileName: name + '.pptx' }).then(function () {
+        if (btn) { btn.textContent = '已导出'; setTimeout(function () { btn.textContent = BTN_TEXT; btn.disabled = false; }, 2000); }
+      });
+    } catch (err) {
+      console.error('PPTX export error:', err);
+      alert('导出失败: ' + err.message);
+      if (btn) { btn.textContent = BTN_TEXT; btn.disabled = false; }
+    }
+  }
+
+  // ─── 初始化按钮 ──────────────────────────────────────
+
+  function init() {
+    var vars = getCssVars();
+    var textColor = resolveColor(vars['--text'], vars) || '333333';
+    var bgColor = resolveColor(vars['--bg'], vars) || 'FFFFFF';
+
+    var btn = document.createElement('button');
+    btn.id = 'pptx-export-btn';
+    btn.textContent = BTN_TEXT;
+    btn.setAttribute('aria-label', '导出 PPTX');
+    btn.setAttribute('title', '导出 PPTX');
+    btn.setAttribute('style', [
+      'position:fixed', 'top:16px', 'right:16px', 'z-index:9999',
+      'padding:6px 12px', 'background:#' + bgColor, 'color:#' + textColor,
+      'border:1px solid rgba(0,0,0,0.12)', 'border-radius:6px',
+      'cursor:pointer', 'font-size:12px', 'opacity:0', 'transition:opacity 0.2s',
+      'font-family:system-ui,sans-serif',
+    ].join(';'));
+    btn.onclick = doExport;
+
+    btn.onmouseenter = function () { btn.style.opacity = '1'; };
+    btn.onfocus = function () { btn.style.opacity = '1'; };
+    btn.onmouseleave = function () { btn.style.opacity = '0'; };
+    btn.onblur = function () { btn.style.opacity = '0'; };
+
+    document.body.appendChild(btn);
+
+    document.addEventListener('mousemove', function (e) {
+      var show = e.clientY < 76 && e.clientX > window.innerWidth - 110;
+      btn.style.opacity = show ? '0.9' : '0';
+    });
+
+    document.addEventListener('fullscreenchange', function () {
+      btn.style.display = document.fullscreenElement ? 'none' : '';
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+
+</script>
+<script>
+Reveal.initialize({width:1280,height:720,margin:0.04,hash:true,slideNumber:'c/t',progress:true,center:false,controls:true,controlsTutorial:false,transition:'fade',backgroundTransition:'fade'});
+</script>
+<script type="application/json" id="design-brief">{"aestheticAnchor":"编辑设计语汇:满版分割 + 衬线展示字 + 留白节奏","externalRefs":[{"url":"https://example.com/master-ref","visualNote":"极端留白 + 单点霓虹的孤独感"}],"signatureMoment":"锚点数字 6em 满版巨字","extremeContrast":"尺度 6:1,深满版 vs 浅留白","bannedPatterns":["side-stripe","gradient text"],"narrativeArc":"N1 账本审计(见 references/narrative-arcs.md)","pacingCurve":"密-密-收","bannedBeats":["kpi-wall:本页不是指标墙","data-chart:本页无图表"]}</script>
+</body></html>

@@ -111,7 +111,7 @@ node scripts/lint-reference-docs.js                     # 参考文档代码示�
 
 感官层（`visual-verdict.js`）在无 `OPENAI_API_KEY` + `VISUAL_VERDICT_OPT_IN=1` 时是 **UNSKIPPABLE-BLOCKED**——不能让 G1-G14 全绿的 deck 蒙混交付。放行方式分两档：
 
-- **生产**：`qa.js --visual-signoff-file signoff.json`。签字文件是可审计的持久证据，必须含 `reviewer`（谁复核）、`reviewedAt`（ISO 8601）、`screenshotsManifestSha256`（所审截图清单的 SHA-256）、`decision: "pass"`。`scripts/run-manifest.js` 的 `validateVisualSignoff` 校验字段；若同目录有 `screenshots-manifest.json` 还会核验哈希是否匹配（防止签字被挪用到别的 deck 截图）。校验通过后复制进 `--out`，路径写入 `<deck>-qa-summary.json` 的 `artifacts.visualSignoff`。
+- **生产**：`qa.js --visual-signoff-file signoff.json`。签字文件是可审计的持久证据，必须含 `reviewer`（谁复核）、`reviewedAt`（ISO 8601）、`screenshotsManifestSha256`（所审截图清单的 SHA-256）、`decision: "pass"`。`scripts/run-manifest.js` 的 `validateVisualSignoff` 校验字段；若同目录有 `screenshots-manifest.json` 还会核验哈希是否匹配（防止签字被挪用到别的 deck 截图）。**`reviewer` 强校验为独立人工复核**——`qa.js` 会扫描 reviewer 值（大小写不敏感）是否含 `agent`/`self`/`auto`/`ai`/`bot`/`机器`/`自动`/`代理`/`自审` 等表明「AI/自动化自审」的词，命中即 exit 1（诊断：`signoff reviewer 含 self-review 标记，不得作为独立视觉评审放行`）。合法值是真实人工名（如 `张三`、`Jane Doe`）或显式声明独立第三方的格式（如 `independent:reviewer-name`、`third-party:org`）；操作者写 `agent visual self-review` 之类伪名不再能放行。校验通过后复制进 `--out`，路径写入 `<deck>-qa-summary.json` 的 `artifacts.visualSignoff`。
 - **测试**：`--visual-signoff` / `VISUAL_VERDICT_SIGNOFF=1` 仅在 `NODE_ENV=test` 下可用，只记一个 stub，**不构成生产证据**。生产环境传这两个会被 `qa.js` 拒绝（exit 2）。
 
 每次 `qa.js` 还会写一份结构化 `<deck>-qa-summary.json`（`version/deck/passed/state/qualityScore/gates/artifacts`）：`state` 映射 run 状态——任一地板/天花板门禁 fail → `blocked`；视觉由模型通过或人工签字 → `ready`；否则 → `needs-visual-signoff`。`passed` 仅在 `ready` 时为真。

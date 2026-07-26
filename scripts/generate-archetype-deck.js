@@ -424,6 +424,116 @@ function dataVariantAttr(route) {
   return ` data-variant="${esc(s)}"`;
 }
 
+// ── 参数化版式层(Wave 3,破「同 archetype 不同 deck 几何逐字节相同」)──
+// Wave 2 末诊断:13 个 archetype 各一段写死 inline-style HTML,同 archetype 不同
+// deck 的几何结构(paddng/字号 clamp/网格列数)逐字节相同;5 个旧旋钮
+// (node_density/anchor_scale/verdict_scale/panel_ratio/highlight_col)只覆盖 5 个
+// archetype 的单点,且只改 CSS 值不改 DOM 结构——skeleton-diff 签名(class+标签)
+// 不变,无法证明「真改了几何」。本层统一暴露三组参数(所有 archetype 都能读):
+//   --split-ratio   主分割比(满版分割左右比/横轴节点间距比/对峙双方面积比),
+//                   值如 "38/62" / "1fr 2fr" / "40%"
+//   --align-axis    主对齐轴(left/center/right,或 grid 轴序),影响内容主轴对齐
+//   --density-tier  密度档(compact/normal/airy),影响 padding/字号 clamp/行距
+// 注入:section 级 inline style 声明三组变量(默认值 = 现有硬编码值,不传参时产出
+// 不变 —— 回归保护);消费:各 case 用 var(--x, <现有默认>) 取值。
+// 关键:三组参数除改 CSS 值外,还落一个结构 class token(如 split-30-70 /
+// density-compact / axis-left),让 skeleton-diff 的签名(直接子元素标签+全部
+// class 排序)真分叉 —— 参数不同 = DOM 结构不同构,不只是颜色/字号微调。
+
+// 三组参数的默认值(= 各 archetype 现有硬编码值;不传参时产出不变)
+const DEFAULT_SPLIT = '42/58';   // A4 满版分割左 42% / 右 58%(现有硬编码)
+const DEFAULT_AXIS = 'left';     // 现有内容主轴对齐
+const DEFAULT_DENSITY = 'normal';// 现有 padding/clamp 档
+
+// 密度档 → 具体几何映射(compact:padding 收紧 + clamp 收紧;airy:相反)
+// 各 archetype 消费时取档 → 映射到 padding/em 值;normal = 现有硬编码。
+function densityMap(tier) {
+  switch (tier) {
+    case 'compact': return { padMul: 0.72, gapMul: 0.78, clampTighten: 0.88, lineTighten: 1.04 };
+    case 'airy':    return { padMul: 1.28, gapMul: 1.22, clampTighten: 1.12, lineTighten: 0.94 };
+    case 'normal':
+    default:        return { padMul: 1.0, gapMul: 1.0, clampTighten: 1.0, lineTighten: 1.0 };
+  }
+}
+
+// split_ratio 字符串 → 结构化(支持 "30/70" / "1fr 2fr" / "40%" 三种写法)
+// 返回 { left, right, leftClass, rightClass }:left/right 是宽度/flex 值,
+// leftClass/rightClass 是落 class 的 token(skeleton-diff 看得到结构分叉)。
+function parseSplitRatio(raw) {
+  const s = String(raw || '').trim();
+  // "30/70" 或 "30:70"
+  const slash = s.match(/^(\d+(?:\.\d+)?)\s*[/:：]\s*(\d+(?:\.\d+)?)$/);
+  if (slash) {
+    const a = parseFloat(slash[1]), b = parseFloat(slash[2]);
+    const la = Math.round(a), lb = Math.round(b);
+    return {
+      left: `${a}%`, right: `${b}%`,
+      leftClass: `split-l${la}`, rightClass: `split-r${lb}`,
+      a, b,
+    };
+  }
+  // "1fr 2fr" / "1fr 2fr 1fr"(grid 模板;取前两段作左右)
+  const fr = s.match(/^(\d+(?:\.\d+)?)fr\s+(\d+(?:\.\d+)?)fr/);
+  if (fr) {
+    const a = parseFloat(fr[1]), b = parseFloat(fr[2]);
+    return {
+      left: `${a}fr`, right: `${b}fr`,
+      leftClass: `split-fr${a}`, rightClass: `split-fr${b}`,
+      a, b,
+    };
+  }
+  // "40%"(单值 → 左 40% 右 60%)
+  const pct = s.match(/^(\d+(?:\.\d+)?)%$/);
+  if (pct) {
+    const a = parseFloat(pct[1]), b = 100 - a;
+    return {
+      left: `${a}%`, right: `${b}%`,
+      leftClass: `split-l${Math.round(a)}`, rightClass: `split-r${Math.round(b)}`,
+      a, b,
+    };
+  }
+  return null; // 无法解析
+}
+
+// align_axis → 结构 class token(落子元素 class,让签名分叉)
+function axisClass(axis) {
+  switch (String(axis || '').trim()) {
+    case 'center': return 'axis-center';
+    case 'right':  return 'axis-right';
+    case 'left':
+    default:       return 'axis-left';
+  }
+}
+
+// 从 route 解析三组参数(含默认值回退);同时保留旧 5 旋钮向后兼容。
+// @returns {{ splitRatio:string, axis:string, density:string, split:object|null,
+//            axisCls:string, densityCls:string, dm:object, splitCls:string }}
+function resolveVariantParams(route) {
+  const p = (route && route.variant_params) || {};
+  const splitRatio = p.split_ratio || DEFAULT_SPLIT;
+  const axis = p.align_axis || DEFAULT_AXIS;
+  const density = p.density_tier || DEFAULT_DENSITY;
+  const split = parseSplitRatio(splitRatio);
+  const axisCls = axisClass(axis);
+  const densityCls = `density-${density}`;
+  const dm = densityMap(density);
+  const splitCls = split ? `${split.leftClass} ${split.rightClass}` : '';
+  return { splitRatio, axis, density, split, axisCls, densityCls, dm, splitCls };
+}
+
+// section 级 CSS 变量声明(注入 wrap 的 style 头;默认值 = 现有硬编码,不传参不变)
+function paramCssVars(route) {
+  const P = resolveVariantParams(route);
+  return `--split-ratio:${P.splitRatio};--align-axis:${P.axis};--density-tier:${P.density};`;
+}
+
+// 参数结构 class(拼进 section 或关键子元素的 class,让 skeleton-diff 签名分叉)
+// 落 section 级:axis + density(split 落具体子元素,见各 case)
+function paramSectionClass(route) {
+  const P = resolveVariantParams(route);
+  return ` ${P.axisCls} ${P.densityCls}`;
+}
+
 // ── 12 archetype fill(对齐 references/layout-archetypes.md 骨架,token 化)──
 function fillArchetype(route, s, idx, total, input = {}) {
   const num = String(idx + 1).padStart(2, '0');
@@ -454,8 +564,9 @@ function fillArchetype(route, s, idx, total, input = {}) {
   const evidence = evFirst
     ? `<div class="evidence-label" data-evidence-id="${esc(evFirst.id || '')}" data-evidence-status="${esc(evStatus)}">${esc(evStatus)}</div>`
     : `<div class="evidence-label">${esc(evStatus)}</div>`;
+  const P = resolveVariantParams(route); // 三组参数(默认值 = 现有硬编码,不传参产出不变)
   const wrap = (inner, cls = 'deck-flex', style = 'height:100%;') =>
-    `<section class="${cls}${sigCls}" data-archetype="${route.archetype}"${vAttr} data-slide-id="${esc(s.id || '')}" data-background="var(--c-bg)" style="${style}">${v}${evidence}${inner}<div class="pin">${num} / ${esc(route.content_type)}</div></section>`;
+    `<section class="${cls}${sigCls}${paramSectionClass(route)}" data-archetype="${route.archetype}"${vAttr} data-slide-id="${esc(s.id || '')}" data-background="var(--c-bg)" style="${paramCssVars(route)}${style}">${v}${evidence}${inner}<div class="pin">${num} / ${esc(route.content_type)}</div></section>`;
 
   switch (route.archetype) {
     // A1 Masthead Cover
@@ -505,20 +616,29 @@ function fillArchetype(route, s, idx, total, input = {}) {
     }
 
     // A4 Full-Bleed Split(body 按行/分号拆段消费,自由文本也能读)
-    case 'A4': return `<section class="deck-flex${sigCls}" data-archetype="A4"${vAttr} data-slide-id="${esc(s.id || '')}" data-background="var(--c-bg)" style="height:100%;padding:0;">${v}${evidence}
-      <div style="width:42%;background:var(--c-fg);color:var(--c-bg);display:flex;flex-direction:column;justify-content:space-between;padding:2.2em 2em;">
+    // 参数:--split-ratio 驱动左右栏宽度 + 落结构 class(split-lN/split-rN),
+    // 让 skeleton-diff 签名按比例分叉(30/70 ≠ 50/50 ≠ 70/30)。
+    case 'A4': {
+      const sp = P.split || parseSplitRatio(DEFAULT_SPLIT); // 默认 42/58
+      return `<section class="deck-flex${sigCls}${paramSectionClass(route)}" data-archetype="A4"${vAttr} data-slide-id="${esc(s.id || '')}" data-background="var(--c-bg)" style="${paramCssVars(route)}height:100%;padding:0;">${v}${evidence}
+      <div class="${sp.leftClass}" style="width:${sp.left};background:var(--c-fg);color:var(--c-bg);display:flex;flex-direction:column;justify-content:space-between;padding:${(2.2 * P.dm.padMul).toFixed(2)}em 2em;">
         <div><div class="kicker" style="color:var(--c-bg);opacity:0.82;">${esc(s.title)}</div>
         <h2 style="color:var(--c-bg);margin:0.5em 0 0;">${esc(s.panel_title||s.title)}</h2></div>
         <div style="font-family:var(--f-display);font-style:italic;color:var(--c-bg);font-size:1.1em;">${esc(s.panel_quote||'')}</div>
       </div>
-      <div style="width:58%;display:flex;flex-direction:column;justify-content:center;padding:2.2em 2.6em;gap:0.55em;">${bodyLines(s.body).map(l => `<p style="font-size:0.82em;line-height:1.5;color:var(--c-fg-2);">${esc(l)}</p>`).join('')}</div>
+      <div class="${sp.rightClass}" style="width:${sp.right};display:flex;flex-direction:column;justify-content:center;padding:${(2.2 * P.dm.padMul).toFixed(2)}em 2.6em;gap:${(0.55 * P.dm.gapMul).toFixed(2)}em;">${bodyLines(s.body).map(l => `<p style="font-size:0.82em;line-height:1.5;color:var(--c-fg-2);">${esc(l)}</p>`).join('')}</div>
       <div class="pin" style="color:rgba(240,233,216,0.6);">${num} / ${esc(route.content_type)}</div></section>`;
+    }
 
-    // A5 Anchor Numeral(variant:anchor_scale → 锚点字号上限,显著数据放大)
+    // A5 Anchor Numeral(variant:anchor_scale → 锚点字号上限;--density-tier 影响排版密度)
+    // 参数:anchor_scale 驱动字号 + 落结构 class(anchor-sN),density 驱动间距,
+    // 让不同 scale 档的签名分叉(small 2em ≠ normal 4em ≠ huge 6em)。
     case 'A5': {
       const as = route.variant_params && route.variant_params.anchor_scale;
       const numSize = as ? `clamp(4em,${as}em,${(as + 0.8).toFixed(1)}em)` : 'clamp(3.6em,5em,5.6em)';
-      return wrap(`<div style="display:flex;gap:3em;align-items:flex-start;width:100%;">
+      // anchor 结构 class(skeleton-diff 签名分叉):small/normal/huge → anchor-s2/s4/s6
+      const anchorCls = as ? `anchor-s${Math.round(parseFloat(as))}` : 'anchor-default';
+      return wrap(`<div class="anchor-block ${anchorCls}" style="display:flex;gap:${(3 * P.dm.gapMul).toFixed(2)}em;align-items:flex-start;width:100%;">
       <div style="flex:1;">
         <div class="kpi-label" style="color:var(--c-fg-3);font-family:var(--f-mono);font-size:0.5em;letter-spacing:0.16em;text-transform:uppercase;">${esc(s.label||'')}</div>
         <div style="font-family:var(--f-display);font-size:${numSize};font-weight:600;font-style:italic;line-height:1;margin:0.15em 0;color:var(--c-accent);">${esc(s.number||'')}</div>
@@ -532,17 +652,20 @@ function fillArchetype(route, s, idx, total, input = {}) {
       </div></div>`, 'deck-flex', 'align-items:center;padding:2.6em 3.2em;height:100%;');
     }
 
-    // A6 Face-Off Compare(variant:verdict_scale → 裁决字号;无变体时收 2.2em,对峙变体才放大)
+    // A6 Face-Off Compare(variant:verdict_scale → 裁决字号;--split-ratio 驱动对峙双方面积比)
+    // 参数:split_ratio 驱动左右面板宽度 + 落结构 class(face-lN/face-rN),
+    // 让不同对峙比的签名分叉(52/48 ≠ 60/40 ≠ 70/30)。
     case 'A6': {
       const vscale = route.variant_params && route.variant_params.verdict_scale;
-      return `<section class="deck-flex${sigCls}" data-archetype="A6"${vAttr} data-slide-id="${esc(s.id || '')}" data-background="var(--c-bg)" style="height:100%;padding:0;">${v}${evidence}
-      <div style="width:52%;background:var(--c-accent);color:var(--c-bg);display:flex;flex-direction:column;justify-content:space-between;padding:1.9em 2.4em;">
+      const sp = P.split || parseSplitRatio('52/48'); // A6 现有默认左 52% / 右 48%
+      return `<section class="deck-flex${sigCls}${paramSectionClass(route)}" data-archetype="A6"${vAttr} data-slide-id="${esc(s.id || '')}" data-background="var(--c-bg)" style="${paramCssVars(route)}height:100%;padding:0;">${v}${evidence}
+      <div class="face-left ${sp.leftClass}" style="width:${sp.left};background:var(--c-accent);color:var(--c-bg);display:flex;flex-direction:column;justify-content:space-between;padding:1.9em 2.4em;">
         <div><div style="font-family:var(--f-mono);font-size:0.5em;letter-spacing:0.16em;text-transform:uppercase;color:var(--c-bg);opacity:0.8;">${esc(s.a_label||'A')}</div>
         <div style="font-family:var(--f-display);font-size:clamp(3.4em,4.6em,5.2em);font-style:italic;font-weight:600;color:var(--c-bg);line-height:1;">${esc(s.a_value||'')}</div>
         <div style="font-family:var(--f-mono);font-size:0.5em;opacity:0.8;color:var(--c-bg);">${esc(s.a_unit||'')}</div></div>
         ${(s.a_details||[]).map(d=>`<div style="font-size:0.62em;color:var(--c-bg);opacity:0.92;border-top:1px solid rgba(255,255,255,0.2);padding-top:0.3em;margin-top:0.3em;">${esc(d)}</div>`).join('')}
       </div>
-      <div style="width:48%;display:flex;flex-direction:column;justify-content:center;padding:2.2em 2.5em;">
+      <div class="face-right ${sp.rightClass}" style="width:${sp.right};display:flex;flex-direction:column;justify-content:center;padding:2.2em 2.5em;">
         <div style="font-family:var(--f-mono);font-size:0.5em;letter-spacing:0.16em;text-transform:uppercase;color:var(--c-fg-2);">${esc(s.b_label||'B')}</div>
         <div style="font-family:var(--f-display);font-size:clamp(2.8em,3.4em,4em);font-style:italic;font-weight:600;color:var(--c-fg);line-height:1;">${esc(s.b_value||'')}</div>
         <div style="font-family:var(--f-mono);font-size:0.5em;color:var(--c-fg-2);">${esc(s.b_unit||'')}</div>
@@ -564,23 +687,45 @@ function fillArchetype(route, s, idx, total, input = {}) {
 
     // A8 Mechanism(items 文字标签 + 衰减条,绝不丢内容;A8 仅适合量化前后对比;
     // variant:panel_ratio → 后栏占比(0.38 → 前栏 flex 1.63 / 后栏 1))
+    // 参数:--density-tier(compact/normal/airy)驱动结构真分叉 ——
+    //   compact:前/后/箭头三元素堆叠成单栏(meccol-stack),箭头变分隔条;
+    //   normal: 现有左右双面板 + 中间箭头(meccol-pair);
+    //   airy:   前/中(箭头)/后三栏分离 + 额外 gap 包装(meccol-trio)。
+    // 不同密度档 = 不同 DOM 子元素 class + 不同子元素数,skeleton-diff 签名分叉。
     case 'A8': {
       const pr = route.variant_params && route.variant_params.panel_ratio;
       const beforeFlex = pr ? Math.round(((1 - pr) / pr) * 100) / 100 : 1;
+      const beforeItems = (s.before_items||[]).map((it,i)=>`<div style="margin:${(0.5*P.dm.gapMul).toFixed(2)}em 0;"><div style="font-size:0.62em;color:var(--c-fg-2);margin-bottom:0.25em;">${esc(it)}</div><div style="height:0.5em;background:var(--c-fg);opacity:${0.85-i*0.13};"></div></div>`).join('');
+      const afterItems = (s.after_items||[]).map(it=>`<div style="margin:${(0.5*P.dm.gapMul).toFixed(2)}em 0;"><div style="font-size:0.62em;color:var(--c-bg);margin-bottom:0.25em;">${esc(it)}</div><div style="height:0.4em;background:var(--c-bg);opacity:0.85;"></div></div>`).join('');
+      const beforeLabel = `<div style="font-family:var(--f-mono);font-size:0.48em;letter-spacing:0.12em;text-transform:uppercase;color:var(--c-fg-3);margin-bottom:0.5em;">${esc(s.before_label||'前')}</div>`;
+      const afterLabel = `<div style="font-family:var(--f-mono);font-size:0.48em;letter-spacing:0.12em;text-transform:uppercase;opacity:0.85;margin-bottom:0.5em;">${esc(s.after_label||'后')}</div>`;
+      const reduction = `<div style="font-family:var(--f-mono);font-size:0.52em;margin-top:0.6em;">${esc(s.reduction||'')}</div>`;
+      let mechInner;
+      if (P.density === 'compact') {
+        // 紧凑:单栏堆叠(前→条→后),子元素结构 = meccol-stack + 3 div
+        mechInner = `<div class="meccol-stack" style="display:flex;flex-direction:column;gap:${(0.6*P.dm.gapMul).toFixed(2)}em;">
+          <div style="border:1px solid var(--c-border);padding:${(1*P.dm.padMul).toFixed(2)}em;">${beforeLabel}${beforeItems}</div>
+          <div class="mech-arrow" style="height:3px;background:var(--c-accent);"></div>
+          <div style="border:2px solid var(--c-accent);background:var(--c-accent);color:var(--c-bg);padding:${(1*P.dm.padMul).toFixed(2)}em;">${afterLabel}${afterItems}${reduction}</div>
+        </div>`;
+      } else if (P.density === 'airy') {
+        // 宽松:三栏分离(前/箭头列/后),子元素结构 = meccol-trio + 3 div + 额外 gap 容器
+        mechInner = `<div class="meccol-trio" style="display:grid;grid-template-columns:1fr 0.3fr 1fr;gap:${(1.8*P.dm.gapMul).toFixed(2)}em;align-items:stretch;">
+          <div style="border:1px solid var(--c-border);padding:${(1.2*P.dm.padMul).toFixed(2)}em;">${beforeLabel}${beforeItems}</div>
+          <div class="mech-arrow" style="display:flex;align-items:center;justify-content:center;font-size:2em;color:var(--c-accent);font-family:var(--f-display);font-style:italic;">→</div>
+          <div style="border:2px solid var(--c-accent);background:var(--c-accent);color:var(--c-bg);padding:${(1.2*P.dm.padMul).toFixed(2)}em;">${afterLabel}${afterItems}${reduction}</div>
+        </div>`;
+      } else {
+        // normal:现有左右双面板 + 中间箭头(meccol-pair)
+        mechInner = `<div class="meccol-pair" style="display:flex;gap:${(1.2*P.dm.gapMul).toFixed(2)}em;align-items:stretch;">
+          <div style="flex:${beforeFlex};border:1px solid var(--c-border);padding:1em;">${beforeLabel}${beforeItems}</div>
+          <div class="mech-arrow" style="display:flex;align-items:center;font-size:2em;color:var(--c-accent);font-family:var(--f-display);font-style:italic;">→</div>
+          <div style="flex:1;border:2px solid var(--c-accent);background:var(--c-accent);color:var(--c-bg);padding:1em;">${afterLabel}${afterItems}${reduction}</div>
+        </div>`;
+      }
       return wrap(`<div class="kicker">${esc(s.title||'机制')}</div>
       <h2 style="font-family:var(--f-display);font-size:1.8em;margin:0.3em 0 1em;">${esc(s.subtitle||s.title||'')}</h2>
-      <div style="display:flex;gap:1.2em;align-items:stretch;">
-        <div style="flex:${beforeFlex};border:1px solid var(--c-border);padding:1em;">
-          <div style="font-family:var(--f-mono);font-size:0.48em;letter-spacing:0.12em;text-transform:uppercase;color:var(--c-fg-3);margin-bottom:0.5em;">${esc(s.before_label||'前')}</div>
-          ${(s.before_items||[]).map((it,i)=>`<div style="margin:0.5em 0;"><div style="font-size:0.62em;color:var(--c-fg-2);margin-bottom:0.25em;">${esc(it)}</div><div style="height:0.5em;background:var(--c-fg);opacity:${0.85-i*0.13};"></div></div>`).join('')}
-        </div>
-        <div style="display:flex;align-items:center;font-size:2em;color:var(--c-accent);font-family:var(--f-display);font-style:italic;">→</div>
-        <div style="flex:1;border:2px solid var(--c-accent);background:var(--c-accent);color:var(--c-bg);padding:1em;">
-          <div style="font-family:var(--f-mono);font-size:0.48em;letter-spacing:0.12em;text-transform:uppercase;opacity:0.85;margin-bottom:0.5em;">${esc(s.after_label||'后')}</div>
-          ${(s.after_items||[]).map(it=>`<div style="margin:0.5em 0;"><div style="font-size:0.62em;color:var(--c-bg);margin-bottom:0.25em;">${esc(it)}</div><div style="height:0.4em;background:var(--c-bg);opacity:0.85;"></div></div>`).join('')}
-          <div style="font-family:var(--f-mono);font-size:0.52em;margin-top:0.6em;">${esc(s.reduction||'')}</div>
-        </div>
-      </div>`, 'deck-flex', 'flex-direction:column;justify-content:center;padding:2.6em 3em;height:100%;');
+      ${mechInner}`, 'deck-flex', 'flex-direction:column;justify-content:center;padding:2.6em 3em;height:100%;');
     }
 
     // A9 Evidence Table(variant:highlight_col 参数优先于字段,主角列 accent 高亮)
@@ -786,4 +931,4 @@ function main() {
 }
 
 if (require.main === module) main();
-module.exports = { fillArchetype, assembleDeck, extractFields, listImplicitFallbacks, routeReportLines, MEDICAL, VOICE_SIGNATURES, buildVoiceSignature };
+module.exports = { fillArchetype, assembleDeck, extractFields, listImplicitFallbacks, routeReportLines, MEDICAL, VOICE_SIGNATURES, buildVoiceSignature, resolveVariantParams, parseSplitRatio, densityMap, paramCssVars, paramSectionClass };

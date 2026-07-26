@@ -18,7 +18,10 @@ revealjs-presentation-workspace/*/screenshots/
 revealjs-presentation-workspace/**/skill-snapshot/
 revealjs-presentation-workspace/*/*/
 # 临时输出目录,不入库
-output/
+output/*
+# 例外:参数化版式回归产物(output/regression/)入库,供 skeleton-diff 两两对比与回归基线
+!output/regression/
+!output/regression/**
 
 # inspiration 本地对照截图缓存(见 references/inspiration/README.md 版权约束)
 .cache/

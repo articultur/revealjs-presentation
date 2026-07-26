@@ -47,6 +47,7 @@ const path = require('path');
 const { spawnSync } = require('child_process');
 const { THRESHOLD: SKELETON_THRESHOLD, diffFiles: skeletonDiffFiles } = require('./skeleton-diff.js'); // 换皮判定门槛(相似度 >70%)+ 直接比对函数(默认全种子模式用)
 const { validateVisualSignoff } = require('./run-manifest.js'); // 持久签字校验(reviewer/时间/截图哈希/decision)
+const { verifyDeck } = require('./verify-artifacts.js'); // 产物落地兜底(防"已交付"与磁盘事实背离)
 
 const ROOT = path.resolve(__dirname, '..');
 const SCRIPTS = __dirname;
@@ -249,6 +250,28 @@ function record(ok, label, details = '', gateKey = null) {
   fileFailed = true;
   console.error(`  ✗ ${label}`);
   if (details) console.error(details);
+}
+
+// detectSelfReviewReviewer — 堵 self-review 漏洞:生产 signoff 的 reviewer 不得是 AI/自动化自审标记。
+// 操作者写 "agent visual self-review" 即可伪造放行,故强校验:命中禁用词 → 返回诊断字符串(调用方并入 errs → exit 1)。
+// 合法值是人工名("张三"/"Jane Doe")或显式独立第三方("independent:reviewer-name"/"third-party:org")。
+function detectSelfReviewReviewer(reviewer) {
+  const value = String(reviewer || '').toLowerCase();
+  // 英文禁用词(词边界匹配,避免误伤含 ai/bot/auto 子串的真实人名)
+  const enBanned = ['agent', 'self', 'auto', 'automated', 'autopilot', 'ai', 'bot', 'llm', 'gpt', 'claude', 'copilot', 'machine', 'script'];
+  for (const w of enBanned) {
+    if (new RegExp(`\\b${w}\\b`).test(value)) {
+      return `signoff reviewer 含 self-review 标记 "${w}",不得作为独立视觉评审放行 (必须是人工名如 "张三"/"Jane Doe" 或显式独立第三方如 "independent:reviewer-name"/"third-party:org")`;
+    }
+  }
+  // 中文禁用词(子串匹配)
+  const zhBanned = ['机器', '自动', '代理', '自审', '机审', '模型', '智能体'];
+  for (const w of zhBanned) {
+    if (value.includes(w)) {
+      return `signoff reviewer 含 self-review 标记 "${w}",不得作为独立视觉评审放行 (必须是人工名如 "张三"/"Jane Doe" 或显式独立第三方如 "independent:reviewer-name"/"third-party:org")`;
+    }
+  }
+  return null;
 }
 
 // writeQaSummary — derive a per-deck state and persist the structured summary so readiness is
@@ -470,6 +493,9 @@ for (const file of files) {
         } else {
           const manifestSibling = path.join(path.dirname(path.resolve(visualSignoffFile)), 'screenshots-manifest.json');
           const errs = validateVisualSignoff(signoff, { manifestFile: manifestSibling });
+          // 防 self-review 漏洞:reviewer 不得是 AI/自动化自审标记,必须是人工或显式独立第三方。
+          const selfReviewErr = detectSelfReviewReviewer(signoff.reviewer);
+          if (selfReviewErr) errs.push(selfReviewErr);
           if (errs.length) {
             summary.gates.visual = 'blocked';
             record(false, `visual-signoff-file 校验失败: ${errs.join('; ')}`);
@@ -580,6 +606,31 @@ for (const file of files) {
   }
 
   writeQaSummary(file);
+}
+
+// ── 产物落地兜底(verify-artifacts.js 复用,不 spawn 子进程)────────────────────
+// qa.js 全绿只代表 gate 通过,不保证磁盘上真有可交付物。真实事故:上一轮 6 个 deck
+// 报告"已交付"后从磁盘消失(文件飘空)。这里在 exit 0 前对每个被验收 deck 复核:
+//   ① 文件存在且 >1KB(防"qa 跑完文件被外部进程删");② design-brief 内嵌成功;
+//   ③ qa-summary 写盘成功且 passed === true(防"qa-summary 写失败")。
+// 注意:qa.js 跑自身时 deck 文件必然存在(它刚校验过),本兜底主要防隐性飘空——
+// qa-summary 写失败、design-brief 内嵌失败、文件被外部进程删等。
+// examples/ 种子历史产物已豁免 design-brief 门禁,此处同步 skipDesignBrief。
+// 任一 deck 落地复核失败 → 降为 blocked,failed=true,在退出前打印明确诊断
+// ("qa 通过但产物飘空"),由下方既有 `if (failed)` 降级为 exit 1。
+if (!failed) {
+  for (const file of files) {
+    const abs = path.resolve(file);
+    const isSeed = isSeedFile(abs);
+    const va = verifyDeck(abs, { outRoot, skipDesignBrief: isSeed, allowNotReady: true });
+    if (!va.pass) {
+      failed = true;
+      console.error(`\n  ⚠ 产物落地兜底失败 [qa 通过但产物飘空] — ${file}`);
+      for (const [check, res] of Object.entries(va.checks)) {
+        if (!res.ok) console.error(`    ✗ ${check}: ${res.detail}`);
+      }
+    }
+  }
 }
 
 if (failed) {
