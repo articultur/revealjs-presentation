@@ -106,7 +106,7 @@ deck.manifest.json  ──►  run-deck-pipeline.js  ──►  run.json(state=r
 
 **证据分级**(manifest `slides[].evidence[]`,`validation.md` 详述):`verified`(须 url+locator+checkedAt)/ `user-provided`(须 note)/ `illustrative`(禁 source)/ `needs-source`(交付阻塞)。
 
-**视觉签字**:生产用 `qa.js --visual-signoff-file signoff.json`(须 reviewer/reviewedAt/screenshotsManifestSha256/decision=pass,可审计);`--visual-signoff`/`VISUAL_VERDICT_SIGNOFF=1` 仅 `NODE_ENV=test` 可用。
+**视觉签字**:生产用 `qa.js --visual-signoff-file signoff.json`(须 reviewer/reviewedAt/screenshotsManifestSha256/deckSha256/decision=pass,两哈希均核验真实文件,签字绑定所审 deck 不可复用);`--visual-signoff`/`VISUAL_VERDICT_SIGNOFF=1` 仅 `NODE_ENV=test` 可用。
 
 **端到端证明**:`npm run test:authoring-e2e` 用 `tests/fixtures/workbench-e2e.manifest.json`(8 页/8 archetype/媒体槽/verified+user-provided 证据/hybrid PPTX/动效/收尾)跑完整链路,断言 `run.json.state===ready` 且每个 artifact 落盘。
 

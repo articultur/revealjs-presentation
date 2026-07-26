@@ -9,9 +9,15 @@ const RUN_STATES = new Set(['draft', 'rendered', 'needs-visual-signoff', 'ready'
 
 // validateVisualSignoff — the durable contract for a human visual review that promotes a run to
 // `ready`. A bare boolean flag is not auditable evidence; a signoff file must name who reviewed,
-// when, which screenshot set (SHA-256 of the screenshots manifest), and a pass decision. When the
-// screenshots manifest is co-located we verify the recorded hash actually matches it, so the
-// signoff cannot be replayed against a different deck's screenshots.
+// when, which screenshot set (SHA-256 of the screenshots manifest), which deck (SHA-256 of the
+// deck file), and a pass decision. When the caller supplies the co-located screenshots manifest
+// (opts.manifestFile) or the deck under review (opts.deckFile), the recorded hashes are verified
+// against the actual files — a missing file is an error, never a silent skip — so the signoff
+// cannot be replayed against a different deck or a different screenshot set.
+function sha256File(file) {
+  return crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
+}
+
 function validateVisualSignoff(signoff, opts = {}) {
   const errors = [];
   if (!signoff || typeof signoff !== 'object' || Array.isArray(signoff)) {
@@ -26,13 +32,28 @@ function validateVisualSignoff(signoff, opts = {}) {
   if (!signoff.screenshotsManifestSha256 || !/^[0-9a-f]{64}$/.test(signoff.screenshotsManifestSha256)) {
     errors.push('screenshotsManifestSha256 is required (64 hex chars identifying the reviewed screenshots)');
   }
+  if (!signoff.deckSha256 || !/^[0-9a-f]{64}$/.test(signoff.deckSha256)) {
+    errors.push('deckSha256 is required (64 hex chars binding this signoff to the reviewed deck file)');
+  }
   if (signoff.decision !== 'pass') {
     errors.push('decision must be "pass" to promote a run to ready');
   }
-  if (opts.manifestFile && fs.existsSync(opts.manifestFile) && signoff.screenshotsManifestSha256) {
-    const actual = crypto.createHash('sha256').update(fs.readFileSync(opts.manifestFile)).digest('hex');
-    if (actual !== signoff.screenshotsManifestSha256) {
-      errors.push(`screenshotsManifestSha256 does not match ${opts.manifestFile}`);
+  if (opts.manifestFile) {
+    if (!fs.existsSync(opts.manifestFile)) {
+      errors.push(`screenshots manifest not found: ${opts.manifestFile} (签字必须附截图清单,无法核验的哈希不放行)`);
+    } else if (signoff.screenshotsManifestSha256 && /^[0-9a-f]{64}$/.test(signoff.screenshotsManifestSha256)) {
+      if (sha256File(opts.manifestFile) !== signoff.screenshotsManifestSha256) {
+        errors.push(`screenshotsManifestSha256 does not match ${opts.manifestFile}`);
+      }
+    }
+  }
+  if (opts.deckFile) {
+    if (!fs.existsSync(opts.deckFile)) {
+      errors.push(`deck file not found: ${opts.deckFile}`);
+    } else if (signoff.deckSha256 && /^[0-9a-f]{64}$/.test(signoff.deckSha256)) {
+      if (sha256File(opts.deckFile) !== signoff.deckSha256) {
+        errors.push(`deckSha256 does not match ${opts.deckFile} (签字未绑定该 deck,疑似复用)`);
+      }
     }
   }
   return errors;

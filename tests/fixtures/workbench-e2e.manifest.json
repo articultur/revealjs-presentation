@@ -187,5 +187,26 @@
       "evidence": [],
       "motionIntent": "none"
     }
-  ]
+  ],
+  "designBrief": {
+    "aestheticAnchor": "社区田野调研的克制纪实:数据来自街道,版式服务证据",
+    "externalRefs": [
+      {
+        "url": "https://www.pentagram.com/work",
+        "visualNote": "编辑化数据版式:大留白 + 单一强调色的克制"
+      }
+    ],
+    "signatureMoment": "出行分担率锚点页:一个数字概括全年建设成效",
+    "extremeContrast": "尺度 6:1,关键读数满版 vs 居民引语小字号密集排布",
+    "bannedPatterns": [
+      "side-stripe",
+      "gradient text"
+    ],
+    "narrativeArc": "N7 田野笔记(见 references/narrative-arcs.md)",
+    "pacingCurve": "疏-密-密-疏-密-密-疏-收",
+    "bannedBeats": [
+      "anchor-numeral",
+      "kpi-wall"
+    ]
+  }
 }

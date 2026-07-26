@@ -27,6 +27,7 @@
 - `slides[].proofObject.claim`: 每页主命题,空 = 验证失败。
 - `slides[].evidence[]`: 精确数字的证据链;`status` 分级见 `references/validation.md`(Task 9 升级为严格来源)。
 - `slides[].motionIntent`: `none | fragment | loop | count-in | draw | grow`,对应 `references/motion-delight.md`。
+- `designBrief`(可选): 设计契约,人/LLM 在 authoring 期写;存在时八字段必须齐全(`scripts/check-design-brief.js::validateBrief`),生成器 pass-through 内嵌进 HTML(`<script id="design-brief">`),供 qa.js 的 design-brief / arc-adherence 门禁校验。缺省 = 机器路径产物无 brief,QA 设计门禁会 fail(交付级 deck 应始终携带)。
 
 ## 迁移
 

@@ -58,18 +58,39 @@ console.log(`Authoring E2E · run root: ${runRoot}`);
 const vr = validateDeckManifest(manifest);
 assert(vr.ok, `manifest validates strictly${vr.ok ? '' : ': ' + vr.errors.join('; ')}`);
 
-// ── 7. Create a test-only signed visual review artifact (valid per validateVisualSignoff) ──
+// ── 7a. Phase 1: run the pipeline without signoff — it must render the deck, pass the QA floor,
+// then stop at needs-visual-signoff (visual review is fail-closed by default). ──
+const pipePending = run('run-deck-pipeline.js', [
+  '--manifest', manifestPath,
+  '--out', runRoot,
+]);
+assert(!pipePending.ok, 'pipeline without visual evidence stops short of ready (fail-closed)');
+const htmlRel = manifest.output.html;
+const htmlPath = path.join(runRoot, htmlRel);
+assert(fs.existsSync(htmlPath), `phase-1 rendered HTML exists (${htmlRel})`);
+const pendingRun = JSON.parse(fs.readFileSync(path.join(runRoot, 'run.json'), 'utf8'));
+assert(pendingRun.state === 'needs-visual-signoff', `phase-1 run.json.state === needs-visual-signoff (got "${pendingRun.state}")`);
+
+// ── 7b. Create a test-only signed visual review artifact bound to THIS deck: deckSha256 must be
+// the SHA-256 of the rendered deck, and the screenshots manifest must exist with a matching hash
+// (validateVisualSignoff rejects missing files and hash mismatches — no silent skips). ──
+const crypto = require('crypto');
+const sha256File = (f) => crypto.createHash('sha256').update(fs.readFileSync(f)).digest('hex');
+const shotsManifestPath = path.join(runRoot, 'screenshots-manifest.json');
+fs.writeFileSync(shotsManifestPath, `${JSON.stringify({ deck: htmlRel, screenshots: ['slide-1.png'], note: 'test-only manifest' }, null, 2)}\n`);
 const signoffPath = path.join(runRoot, 'signoff.json');
 fs.writeFileSync(signoffPath, `${JSON.stringify({
   version: 1,
   reviewer: 'human:e2e',
   reviewedAt: '2026-07-24T10:00:00+08:00',
-  screenshotsManifestSha256: 'a'.repeat(64),
+  screenshotsManifestSha256: sha256File(shotsManifestPath),
+  deckSha256: sha256File(htmlPath),
   decision: 'pass',
   notes: 'Test-only signoff driving the pipeline to ready; not a real human review.',
 }, null, 2)}\n`);
 
-// ── 2,4,6,10. Drive the real pipeline: stage media → render → QA floor → signed signoff → ready ──
+// ── 2,4,6,10. Phase 2: re-drive the real pipeline with the bound signoff → ready ──
+// Render is deterministic (same manifest → same bytes), so the deckSha256 computed above matches.
 const pipe = run('run-deck-pipeline.js', [
   '--manifest', manifestPath,
   '--out', runRoot,
@@ -90,9 +111,7 @@ const runJson = JSON.parse(fs.readFileSync(runJsonPath, 'utf8'));
 assert(runJson.state === 'ready', `run.json.state === ready (got "${runJson.state}")`);
 
 // ── 5. Assert eight sections, each stamped with its manifest data-slide-id ──
-const htmlRel = manifest.output.html;
-const htmlPath = path.join(runRoot, htmlRel);
-assert(fs.existsSync(htmlPath), `rendered HTML exists (${htmlRel})`);
+// (htmlRel/htmlPath already resolved in phase 1 above.)
 const html = fs.readFileSync(htmlPath, 'utf8');
 const sectionCount = (html.match(/<section /g) || []).length;
 assert(sectionCount === SECTIONS_EXPECTED, `rendered deck has ${SECTIONS_EXPECTED} sections (got ${sectionCount})`);

@@ -3,6 +3,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { validateBrief } = require('./check-design-brief.js');
 
 const CONTENT_TYPES = new Set([
   'cover', 'thesis', 'chronology', 'chapter', 'data-anchor', 'comparison',
@@ -41,6 +42,13 @@ function validateDeckManifest(manifest) {
   }
   if (!manifest.output || typeof manifest.output.html !== 'string' || !manifest.output.html.trim()) {
     errors.push('output.html must be a non-empty string');
+  }
+  // designBrief 可选:存在时必须是完整八字段契约(人/LLM 在 authoring 期写的设计决策,
+  // 生成器只 pass-through 内嵌进 HTML;半个 brief 比没有更糟——会让 QA 在交付末端才爆)
+  if (manifest.designBrief != null) {
+    for (const e of validateBrief(manifest.designBrief)) {
+      errors.push(`designBrief: ${e}`);
+    }
   }
   if (!Array.isArray(manifest.slides) || manifest.slides.length === 0) {
     errors.push('slides must contain at least one slide');
@@ -94,6 +102,7 @@ function manifestToGeneratorInput(manifest) {
   return {
     topic: manifest.topic,
     voice: manifest.voice,
+    designBrief: manifest.designBrief,
     sections: manifest.slides.map((slide) => ({
       ...slide.props,
       id: slide.id,

@@ -7,7 +7,7 @@
  * ====================================================================
  * 把散落的路由 + 生成 + 门禁接成一条命令:
  *   主题/风格 → voice-router 选 voice → content-router 选 archetype 序列
- *   → generate-archetype-deck 生成 HTML → grade-gate + design-strength 验证
+ *   → generate-archetype-deck 生成 HTML → --gates 时跑 qa.js 全量门禁(仅豁免视觉层,失败 exit 1)
  *
  * 核心增量(相对 generate-archetype-deck):
  *   - voice 缺省或 'auto' 时,voice-router 从主题/风格词自动推断(不再靠人工指定)
@@ -50,6 +50,17 @@ const DEMO = {
     { title: '问题与对策', body: '老城区断面不足、路权被侵占;对策是压缩机动车道、增设停放区、完善地铁接驳' },
     { title: '下一步', body: '下一步:2027 年启动二期建设,重点覆盖外围组团,谢谢' },
   ],
+  // 设计契约(人写,生成器 pass-through 内嵌):年度报告 = 账目式审视,禁默认数据套路
+  designBrief: {
+    aestheticAnchor: '城市体检报告的克制秩序:版式让位于读数,年度审视而非成果炫耀',
+    externalRefs: [{ url: 'https://www.pentagram.com/work', visualNote: '编辑化数据版式:大留白 + 单一强调色的克制' }],
+    signatureMoment: '分担率 38% 作为年度账目的关键一笔,置于整页视觉中心',
+    extremeContrast: '尺度 6:1,关键读数满版 vs 说明文字小字号密集排布',
+    bannedPatterns: ['side-stripe', 'gradient text'],
+    narrativeArc: 'N1 账本审计(见 references/narrative-arcs.md)',
+    pacingCurve: '疏-密-密-疏-密-收',
+    bannedBeats: ['anchor-numeral', 'kpi-wall'],
+  },
 };
 
 // ── 种子 scaffold 重写契约(失败门禁 #9)──
@@ -109,17 +120,41 @@ function generate(input) {
   return { html, voice: input.voice, voiceInfo, routed };
 }
 
-function runGate(script, file) {
-  const r = spawnSync('node', [path.join(ROOT, 'scripts', script), file], { encoding: 'utf8' });
-  return { ok: r.status === 0, stdout: (r.stdout || '').trim(), stderr: (r.stderr || (r.error && r.error.message) || '').trim() };
-}
-
-function runGatesOn(file) {
+function runGatesOn(file, topic) {
+  // 全量门禁(qa.js --no-visual):grade-gate + design-strength + element-quality + design-brief +
+  // arc-adherence + editorial-contamination + skeleton 一次跑完,不再只做"两道地板"的半验收。
+  // 唯一豁免的是视觉层(需 vision key 或人工签字)——因此 --gates 全绿 ≠ 可交付,只是"除视觉外全绿"。
+  // topic 传给 editorial-contamination(不传则 qa.js 读 <title> 兜底,标题措辞偏 editorial 会误判)。
+  const os = require('os');
+  const outDir = fs.mkdtempSync(path.join(os.tmpdir(), 'generate-deck-gates-'));
+  const qaArgs = [path.join(ROOT, 'scripts', 'qa.js'), '--no-visual', '--out', outDir];
+  if (topic) qaArgs.push('--topic', topic);
+  qaArgs.push(file);
+  const r = spawnSync('node', qaArgs, { encoding: 'utf8', timeout: 420000 });
+  const stdout = (r.stdout || '').trim();
+  const stderr = (r.stderr || (r.error && r.error.message) || '').trim();
+  const summaryPath = path.join(outDir, `${path.basename(file, '.html')}-qa-summary.json`);
+  let gates = null;
+  try {
+    gates = JSON.parse(fs.readFileSync(summaryPath, 'utf8')).gates;
+  } catch {
+    // qa.js 自身失败(参数/环境)时无 summary——按整体失败上报
+  }
+  if (!gates) {
+    return [{ gate: 'qa.js 全量门禁 (--no-visual)', ok: false, detail: (stderr || stdout).split('\n').slice(0, 10).join('\n') }];
+  }
   const out = [];
-  const g1 = runGate('grade-gate.js', file);
-  out.push({ gate: 'grade-gate (G1-G14 地板)', ok: g1.ok, detail: g1.ok ? '全绿' : (g1.stdout || g1.stderr).split('\n').slice(0, 6).join('\n') });
-  const g2 = runGate('design-strength-check.js', file);
-  out.push({ gate: 'design-strength (天花板, advisory)', ok: g2.ok, detail: (g2.stdout || g2.stderr || '').split('\n').slice(0, 8).join('\n') });
+  for (const [name, state] of Object.entries(gates)) {
+    if (name === 'visual') continue; // 视觉层由 --no-visual 显式豁免,单独提示
+    const ok = state === 'pass' || state === 'skipped' || state === 'human-signoff' || state === 'model';
+    out.push({ gate: `qa:${name}`, ok, detail: ok ? state : `${state} — 详见 qa.js 输出` });
+  }
+  out.push({ gate: 'qa:visual (感官层)', ok: true, detail: 'skipped by --no-visual — 交付前必须另行跑完整 qa.js 或附人工签字' });
+  // 整体失败(如 design-brief 缺失)时附 qa.js 诊断摘录
+  if (r.status !== 0) {
+    const diag = (stderr || stdout).split('\n').filter((l) => l.includes('✗')).slice(0, 6).join('\n');
+    if (diag) out.push({ gate: 'qa.js 诊断', ok: false, detail: diag });
+  }
   return out;
 }
 
@@ -191,12 +226,18 @@ function main() {
   }
 
   if (a.gates) {
-    console.log('\n── 门禁 ──');
-    const results = runGatesOn(outFile);
+    console.log('\n── 门禁(qa.js 全量,仅豁免视觉层) ──');
+    const results = runGatesOn(outFile, input.topic);
     for (const r of results) {
       console.log(`\n[${r.ok ? '✅' : '❌'}] ${r.gate}`);
       if (r.detail) console.log(r.detail);
     }
+    const failed = results.filter((r) => !r.ok);
+    if (failed.length) {
+      console.error(`\n❌ --gates: ${failed.length} 项门禁未过 — 该 deck 距可交付还有硬失败,勿当"全绿"上报`);
+      process.exit(1);
+    }
+    console.log('\n✅ --gates 全绿(视觉层除外) — 交付前仍须跑完整 qa.js 过视觉层(或附人工签字)');
   }
 }
 

@@ -47,7 +47,7 @@
 
 ```bash
 # 统一验收入口 —— 生成后验收一次跑完（地板 + 天花板 + 元素 + 图像 + 视觉）
-node scripts/qa.js <file>                             # 全量: grade-gate 十四门禁 + design-strength 品质总分 ≥75 + element-quality + 图像驱动自动 audit + visual-verdict 三态(pass/blocked/signoff) + design-brief 契约门禁(内嵌 <script id="design-brief"> 八必填字段——aestheticAnchor/externalRefs/signatureMoment/extremeContrast/bannedPatterns + 叙事弧线三字段 narrativeArc/pacingCurve/bannedBeats,缺失=硬失败,examples/ 种子豁免) + 弧线落实门禁(check-arc-adherence.js:库内弧线须在 narrative-arcs.md 注册表、自定义弧线须 arcDefinition 四件套,bannedBeats 已知节拍签名扫描命中=硬失败,种子同豁免) + 换皮门禁(默认对全部种子比对取最大相似度 >70%=硬失败,--seed 只比指定种子,--no-skeleton-gate 豁免,种子自身跳过)
+node scripts/qa.js <file>                             # 全量: grade-gate 十四门禁 + design-strength 品质总分 ≥75 + element-quality + 图像驱动自动 audit + visual-verdict 三态(pass/blocked/signoff) + design-brief 契约门禁(内嵌 <script id="design-brief"> 八必填字段——aestheticAnchor/externalRefs/signatureMoment/extremeContrast/bannedPatterns + 叙事弧线三字段 narrativeArc/pacingCurve/bannedBeats,缺失=硬失败,examples/ 种子豁免;signatureMoment/extremeContrast 中反引号锚点须真实存在于 DOM,写了锚点但 DOM 没有=硬失败,无锚点记 warning) + 弧线落实门禁(check-arc-adherence.js:库内弧线须在 narrative-arcs.md 注册表、自定义弧线须 arcDefinition 四件套,bannedBeats 已知节拍签名扫描命中=硬失败,种子同豁免) + 换皮门禁(默认对全部种子比对取最大相似度 >70%=硬失败,--seed 只比指定种子,--no-skeleton-gate 豁免,种子自身跳过)
 node scripts/qa.js --visual-signoff <file>            # visual 层无 key/未 opt-in = BLOCKED, 人工视觉复核后签字放行
 
 # 地板（合规）—— 交付前必跑，全绿才放行
@@ -111,10 +111,10 @@ node scripts/lint-reference-docs.js                     # 参考文档代码示�
 
 感官层（`visual-verdict.js`）在无 `OPENAI_API_KEY` + `VISUAL_VERDICT_OPT_IN=1` 时是 **UNSKIPPABLE-BLOCKED**——不能让 G1-G14 全绿的 deck 蒙混交付。放行方式分两档：
 
-- **生产**：`qa.js --visual-signoff-file signoff.json`。签字文件是可审计的持久证据，必须含 `reviewer`（谁复核）、`reviewedAt`（ISO 8601）、`screenshotsManifestSha256`（所审截图清单的 SHA-256）、`decision: "pass"`。`scripts/run-manifest.js` 的 `validateVisualSignoff` 校验字段；若同目录有 `screenshots-manifest.json` 还会核验哈希是否匹配（防止签字被挪用到别的 deck 截图）。**`reviewer` 强校验为独立人工复核**——`qa.js` 会扫描 reviewer 值（大小写不敏感）是否含 `agent`/`self`/`auto`/`ai`/`bot`/`机器`/`自动`/`代理`/`自审` 等表明「AI/自动化自审」的词，命中即 exit 1（诊断：`signoff reviewer 含 self-review 标记，不得作为独立视觉评审放行`）。合法值是真实人工名（如 `张三`、`Jane Doe`）或显式声明独立第三方的格式（如 `independent:reviewer-name`、`third-party:org`）；操作者写 `agent visual self-review` 之类伪名不再能放行。校验通过后复制进 `--out`，路径写入 `<deck>-qa-summary.json` 的 `artifacts.visualSignoff`。
+- **生产**：`qa.js --visual-signoff-file signoff.json`。签字文件是可审计的持久证据，必须含 `reviewer`（谁复核）、`reviewedAt`（ISO 8601）、`screenshotsManifestSha256`（所审截图清单的 SHA-256）、`deckSha256`（所审 deck 文件的 SHA-256）、`decision: "pass"`。`scripts/run-manifest.js` 的 `validateVisualSignoff` 强校验两个哈希都绑定真实文件：同目录的 `screenshots-manifest.json` **必须存在**且哈希匹配（缺失即拒绝，不再静默跳过——空哈希签字不放行）；`deckSha256` 必须与所审 deck 的实际 SHA-256 一致（防止同一签字跨 deck 复用）。**`reviewer` 强校验为独立人工复核**——`qa.js` 会扫描 reviewer 值（大小写不敏感）是否含 `agent`/`self`/`auto`/`ai`/`bot`/`机器`/`自动`/`代理`/`自审` 等表明「AI/自动化自审」的词，命中即 exit 1（诊断：`signoff reviewer 含 self-review 标记，不得作为独立视觉评审放行`）。合法值是真实人工名（如 `张三`、`Jane Doe`）或显式声明独立第三方的格式（如 `independent:reviewer-name`、`third-party:org`）；操作者写 `agent visual self-review` 之类伪名不再能放行。校验通过后复制进 `--out`，路径写入 `<deck>-qa-summary.json` 的 `artifacts.visualSignoff`。
 - **测试**：`--visual-signoff` / `VISUAL_VERDICT_SIGNOFF=1` 仅在 `NODE_ENV=test` 下可用，只记一个 stub，**不构成生产证据**。生产环境传这两个会被 `qa.js` 拒绝（exit 2）。
 
-每次 `qa.js` 还会写一份结构化 `<deck>-qa-summary.json`（`version/deck/passed/state/qualityScore/gates/artifacts`）：`state` 映射 run 状态——任一地板/天花板门禁 fail → `blocked`；视觉由模型通过或人工签字 → `ready`；否则 → `needs-visual-signoff`。`passed` 仅在 `ready` 时为真。
+每次 `qa.js` 还会写一份结构化 `<deck>-qa-summary.json`（`version/deck/passed/state/qualityScore/gates/exemptions/artifacts`）：`state` 映射 run 状态——任一地板/天花板门禁 fail → `blocked`；视觉由模型通过或人工签字 → `ready`；否则 → `needs-visual-signoff`。`passed` 仅在 `ready` 时为真。**豁免可审计**：任何放宽 flag（`--no-visual`/`--no-skeleton-gate`/`--no-editorial-check`/`--no-image-audit`/`--allow-visual-pending`）都会记入 summary 的 `exemptions` 数组，且带豁免的运行 `state` 封顶 `needs-visual-signoff`（即使门禁全绿 + 视觉签字也不得判 `ready`）——旁路必须可见，不可静默冒充 clean pass。
 
 ## 视觉能力自检协议（dry-run fallback 必读 · 防谎报通过）
 

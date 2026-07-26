@@ -151,7 +151,7 @@ async function main() {
       try {
         const signoff = JSON.parse(fs.readFileSync(src, 'utf8'));
         const manifestSibling = path.join(path.dirname(src), 'screenshots-manifest.json');
-        const errs = validateVisualSignoff(signoff, { manifestFile: manifestSibling });
+        const errs = validateVisualSignoff(signoff, { manifestFile: manifestSibling, deckFile: htmlAbs });
         if (errs.length) {
           signoffErr = errs.join('; ');
         } else {

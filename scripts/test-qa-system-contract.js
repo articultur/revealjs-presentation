@@ -81,7 +81,7 @@ if (!exists('scripts/qa.js')) {
   requireToken(qa, /NODE_ENV\s*===\s*['"]test['"]/, 'scripts/qa.js NODE_ENV=test restriction for boolean signoff');
   requireToken(qa, /visual-signoff.*test|test.*visual-signoff|NODE_ENV=test 专用/, 'scripts/qa.js must label --visual-signoff as test-only');
   requireToken(qa, 'qa-summary', 'scripts/qa.js structured qa-summary output');
-  ['reviewer', 'reviewedAt', 'screenshotsManifestSha256', 'decision'].forEach((field) => {
+  ['reviewer', 'reviewedAt', 'screenshotsManifestSha256', 'deckSha256', 'decision'].forEach((field) => {
     requireToken(qa, field, `scripts/qa.js signoff field ${field}`);
   });
 }
@@ -97,22 +97,53 @@ if (!fs.existsSync(runManifestPath)) {
     fail('run-manifest.js must export validateVisualSignoff.');
   } else {
     const incomplete = validateVisualSignoff({ reviewer: 'human:x' });
-    if (incomplete.length === 0) fail('validateVisualSignoff must reject a signoff missing reviewedAt/screenshotsManifestSha256/decision.');
+    if (incomplete.length === 0) fail('validateVisualSignoff must reject a signoff missing reviewedAt/screenshotsManifestSha256/deckSha256/decision.');
     const wrongDecision = validateVisualSignoff({
       reviewer: 'human:x', reviewedAt: '2026-07-24T10:00:00+08:00',
-      screenshotsManifestSha256: 'a'.repeat(64), decision: 'fail',
+      screenshotsManifestSha256: 'a'.repeat(64), deckSha256: 'b'.repeat(64), decision: 'fail',
     });
     if (wrongDecision.length === 0) fail('validateVisualSignoff must reject decision !== "pass".');
     const valid = validateVisualSignoff({
       reviewer: 'human:x', reviewedAt: '2026-07-24T10:00:00+08:00',
-      screenshotsManifestSha256: 'a'.repeat(64), decision: 'pass',
+      screenshotsManifestSha256: 'a'.repeat(64), deckSha256: 'b'.repeat(64), decision: 'pass',
     });
     if (valid.length !== 0) fail(`validateVisualSignoff must accept a well-formed signoff (got: ${valid.join('; ')}).`);
     const badHash = validateVisualSignoff({
       reviewer: 'human:x', reviewedAt: '2026-07-24T10:00:00+08:00',
-      screenshotsManifestSha256: 'not-hex', decision: 'pass',
+      screenshotsManifestSha256: 'not-hex', deckSha256: 'b'.repeat(64), decision: 'pass',
     });
     if (badHash.length === 0) fail('validateVisualSignoff must reject a non-64-hex screenshotsManifestSha256.');
+    const noDeckHash = validateVisualSignoff({
+      reviewer: 'human:x', reviewedAt: '2026-07-24T10:00:00+08:00',
+      screenshotsManifestSha256: 'a'.repeat(64), decision: 'pass',
+    });
+    if (noDeckHash.length === 0) fail('validateVisualSignoff must reject a signoff missing deckSha256 (签字必须绑定 deck).');
+
+    // File-binding proofs: a signoff is only valid against the exact deck + screenshots manifest
+    // it names. Missing files must error (never silently skip), mismatches must error, and the
+    // same signoff reused against a different deck must fail.
+    const crypto = require('crypto');
+    const os = require('os');
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'qa-contract-signoff-'));
+    const deckA = path.join(tmp, 'deck-a.html');
+    const deckB = path.join(tmp, 'deck-b.html');
+    const shots = path.join(tmp, 'screenshots-manifest.json');
+    fs.writeFileSync(deckA, '<html>deck A</html>');
+    fs.writeFileSync(deckB, '<html>deck B — different bytes</html>');
+    fs.writeFileSync(shots, JSON.stringify({ screenshots: ['p1.png'] }));
+    const sha = (f) => crypto.createHash('sha256').update(fs.readFileSync(f)).digest('hex');
+    const boundSignoff = {
+      reviewer: 'human:x', reviewedAt: '2026-07-24T10:00:00+08:00',
+      screenshotsManifestSha256: sha(shots), deckSha256: sha(deckA), decision: 'pass',
+    };
+    const boundOk = validateVisualSignoff(boundSignoff, { manifestFile: shots, deckFile: deckA });
+    if (boundOk.length !== 0) fail(`validateVisualSignoff must accept a correctly file-bound signoff (got: ${boundOk.join('; ')}).`);
+    const missingManifest = validateVisualSignoff(boundSignoff, { manifestFile: path.join(tmp, 'no-such-manifest.json'), deckFile: deckA });
+    if (missingManifest.length === 0) fail('validateVisualSignoff must reject when the screenshots manifest file is missing (no silent skip).');
+    const wrongManifestHash = validateVisualSignoff({ ...boundSignoff, screenshotsManifestSha256: 'c'.repeat(64) }, { manifestFile: shots, deckFile: deckA });
+    if (wrongManifestHash.length === 0) fail('validateVisualSignoff must reject a screenshots-manifest hash mismatch.');
+    const replayed = validateVisualSignoff(boundSignoff, { manifestFile: shots, deckFile: deckB });
+    if (replayed.length === 0) fail('validateVisualSignoff must reject a signoff replayed against a different deck (deckSha256 mismatch).');
   }
 }
 

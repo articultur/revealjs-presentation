@@ -22,6 +22,10 @@
  *   bannedBeats      禁用节拍(数组 ≥1,每项非空字符串;声明本 deck 禁用的默认节拍,
  *                    如 anchor-numeral / face-off / kpi-wall——防所有 deck 收敛到同一条默认节拍)
  *
+ * 可证伪化(声明→DOM 弱交叉验证):signatureMoment / extremeContrast 中用反引号包裹的
+ * token(如 `hero-cover`)是机器锚点,必须作为 class/id/data-* 真实存在于 deck DOM,
+ * 写了锚点但 DOM 没有 = fail 并点名;不写锚点不 fail(兼容存量),但记 warning(声明不可机器证伪)。
+ *
  * 用法:
  *   node scripts/check-design-brief.js <deck.html> [--json]
  *   node scripts/check-design-brief.js --selftest   内置正/负向验证,失败 exit 1
@@ -85,12 +89,53 @@ function validateBrief(brief) {
   return missing;
 }
 
-// ── 单文件检查。@returns {{pass:boolean, missing:string[], error:string|null}} ──
+// ── 声明→DOM 弱交叉验证(可证伪化)────────────────────────────────────────
+// signatureMoment / extremeContrast 是自由文本,只验"非空"=填表合规(写 "x" 也达标)。
+// 约定:声明中用反引号包裹的 token(如 `hero-cover`)是机器可证伪锚点——必须作为
+// class/id/data-* 属性值真实存在于 deck DOM;写了锚点但 DOM 没有 = 声明与落实不符,fail 并点名。
+// 不写锚点不 fail(兼容存量 deck),但记 warning:该声明不可机器证伪。
+function extractAnchorTokens(brief) {
+  const anchors = [];
+  for (const field of ['signatureMoment', 'extremeContrast']) {
+    const text = typeof brief[field] === 'string' ? brief[field] : '';
+    const re = /`([^`]+)`/g;
+    let m;
+    while ((m = re.exec(text)) !== null) {
+      const token = m[1].trim();
+      if (token) anchors.push({ field, token });
+    }
+  }
+  return anchors;
+}
+
+function escapeRegExp(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+function tokenInDom(html, token) {
+  const t = escapeRegExp(token.replace(/^[.#]/, ''));
+  return new RegExp(`\\b(?:class|id|data-[a-z0-9-]+)\\s*=\\s*"[^"]*\\b${t}\\b`, 'i').test(html)
+      || new RegExp(`\\b(?:class|id|data-[a-z0-9-]+)\\s*=\\s*'[^']*\\b${t}\\b`, 'i').test(html);
+}
+
+// ── 单文件检查。@returns {{pass:boolean, missing:string[], error:string|null, warnings:string[]}} ──
 function checkHtml(html) {
   const { brief, error } = extractBrief(html);
-  if (error) return { pass: false, missing: [error], error };
+  if (error) return { pass: false, missing: [error], error, warnings: [] };
   const missing = validateBrief(brief);
-  return { pass: missing.length === 0, missing, error: null };
+  const warnings = [];
+  if (missing.length === 0) {
+    const anchors = extractAnchorTokens(brief);
+    for (const a of anchors) {
+      if (!tokenInDom(html, a.token)) {
+        missing.push(`${a.field} 声明的锚点 \`${a.token}\` 在 DOM 中不存在(声明→落实不符;锚点须作为 class/id/data-* 真实落进 deck)`);
+      }
+    }
+    for (const field of ['signatureMoment', 'extremeContrast']) {
+      if (!anchors.some((a) => a.field === field)) {
+        warnings.push(`${field} 未含反引号锚点,声明不可机器证伪(建议把落实处 class 写进声明,如 \`hero-cover\`)`);
+      }
+    }
+  }
+  return { pass: missing.length === 0, missing, error: null, warnings };
 }
 
 function checkFile(filePath) {
@@ -176,6 +221,29 @@ function selftest() {
   check(r5d.pass === false && r5d.missing.length === 1 && /bannedBeats/.test(r5d.missing[0]),
     `bannedBeats 项为空字符串 → fail 且点名 bannedBeats(实际 ${r5d.missing.join(';') || 'none'})`);
 
+  // ⑥ 声明→DOM 弱交叉验证(可证伪化)
+  const pageDom = (briefJson, extraDom) =>
+    `<!doctype html><html><head><title>t</title></head><body>` +
+    `<script type="application/json" id="design-brief">${JSON.stringify(briefJson)}</script>` +
+    `<div class="reveal"><div class="slides">${extraDom}</div></div></body></html>`;
+  const anchoredBrief = {
+    ...goodBrief,
+    signatureMoment: '满版巨字封面 `hero-cover`,标题占页高 60%',
+    extremeContrast: '尺度 8:1,`deep-panel` vs 浅留白',
+  };
+  // 锚点真实落进 DOM → pass 且无 warning
+  const r6a = checkHtml(pageDom(anchoredBrief, '<section class="hero-cover"><h1>x</h1><div class="deep-panel">y</div></section>'));
+  check(r6a.pass === true && r6a.warnings.length === 0,
+    `锚点 \`hero-cover\`/\`deep-panel\` 落实进 DOM → pass 且无 warning(实际 pass=${r6a.pass}, warnings=${r6a.warnings.length})`);
+  // 声明了锚点但 DOM 没有 → fail 并点名
+  const r6b = checkHtml(pageDom(anchoredBrief, '<section><h1>x</h1></section>'));
+  check(r6b.pass === false && r6b.missing.some((m) => m.includes('hero-cover')) && r6b.missing.some((m) => m.includes('deep-panel')),
+    `锚点未落实 → fail 且逐一点名(实际 ${r6b.missing.join(';') || 'none'})`);
+  // 无锚点声明 → pass 但带"不可证伪" warning
+  const r6c = checkHtml(page(goodBrief));
+  check(r6c.pass === true && r6c.warnings.length === 2,
+    `无锚点 brief → pass 但 signatureMoment/extremeContrast 各记 1 条 warning(实际 warnings=${r6c.warnings.length})`);
+
   console.log(`\n  ${failed === 0 ? '全部通过' : failed + ' 条断言失败'}`);
   if (failed) process.exit(1);
 }
@@ -206,9 +274,10 @@ function main() {
 
   const r = checkFile(abs);
   if (a.json) {
-    console.log(JSON.stringify({ deck: path.relative(ROOT, abs), pass: r.pass, missing: r.missing }, null, 2));
+    console.log(JSON.stringify({ deck: path.relative(ROOT, abs), pass: r.pass, missing: r.missing, warnings: r.warnings }, null, 2));
   } else if (r.pass) {
     console.log(`✅ design-brief 契约达标: ${path.relative(ROOT, abs)}`);
+    for (const w of r.warnings || []) console.log(`   ⚠ ${w}`);
   } else {
     console.log(`❌ design-brief 契约不达标: ${path.relative(ROOT, abs)}`);
     for (const item of r.missing) console.log(`   ✗ ${item}`);

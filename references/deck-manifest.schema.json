@@ -17,29 +17,73 @@
     "slides"
   ],
   "properties": {
-    "manifestVersion": { "const": "1.0" },
-    "deckId": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]{2,63}$" },
-    "title": { "type": "string", "minLength": 1, "maxLength": 120 },
-    "topic": { "type": "string", "minLength": 1, "maxLength": 160 },
-    "audience": { "type": "string", "minLength": 1, "maxLength": 160 },
-    "language": { "enum": ["zh-CN", "en"] },
-    "voice": { "type": "string", "minLength": 1 },
+    "manifestVersion": {
+      "const": "1.0"
+    },
+    "deckId": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]{2,63}$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120
+    },
+    "topic": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 160
+    },
+    "audience": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 160
+    },
+    "language": {
+      "enum": [
+        "zh-CN",
+        "en"
+      ]
+    },
+    "voice": {
+      "type": "string",
+      "minLength": 1
+    },
     "route": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["path", "wow"],
+      "required": [
+        "path",
+        "wow"
+      ],
       "properties": {
-        "path": { "enum": ["A", "B", "C"] },
-        "wow": { "type": "boolean" }
+        "path": {
+          "enum": [
+            "A",
+            "B",
+            "C"
+          ]
+        },
+        "wow": {
+          "type": "boolean"
+        }
       }
     },
     "output": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["html"],
+      "required": [
+        "html"
+      ],
       "properties": {
-        "html": { "type": "string", "minLength": 1 },
-        "pptx": { "type": "string", "minLength": 1 }
+        "html": {
+          "type": "string",
+          "minLength": 1
+        },
+        "pptx": {
+          "type": "string",
+          "minLength": 1
+        }
       }
     },
     "slides": {
@@ -61,8 +105,20 @@
           "motionIntent"
         ],
         "properties": {
-          "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]{1,63}$" },
-          "role": { "enum": ["cover", "context", "proof", "mechanism", "decision", "close"] },
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]{1,63}$"
+          },
+          "role": {
+            "enum": [
+              "cover",
+              "context",
+              "proof",
+              "mechanism",
+              "decision",
+              "close"
+            ]
+          },
           "contentType": {
             "enum": [
               "cover",
@@ -81,49 +137,135 @@
             ]
           },
           "archetype": {
-            "enum": ["A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8", "A9", "A10", "A11", "A12", "IMG"]
+            "enum": [
+              "A1",
+              "A2",
+              "A3",
+              "A4",
+              "A5",
+              "A6",
+              "A7",
+              "A8",
+              "A9",
+              "A10",
+              "A11",
+              "A12",
+              "IMG"
+            ]
           },
-          "variantParams": { "type": "object" },
-          "props": { "type": "object" },
+          "variantParams": {
+            "type": "object"
+          },
+          "props": {
+            "type": "object"
+          },
           "proofObject": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["type", "claim"],
+            "required": [
+              "type",
+              "claim"
+            ],
             "properties": {
-              "type": { "enum": ["statement", "metric", "table", "diagram", "image", "quote", "code"] },
-              "claim": { "type": "string", "minLength": 1 }
+              "type": {
+                "enum": [
+                  "statement",
+                  "metric",
+                  "table",
+                  "diagram",
+                  "image",
+                  "quote",
+                  "code"
+                ]
+              },
+              "claim": {
+                "type": "string",
+                "minLength": 1
+              }
             }
           },
-          "mediaSlots": { "type": "array" },
+          "mediaSlots": {
+            "type": "array"
+          },
           "evidence": {
             "type": "array",
             "description": "Per-claim evidence sources. Semantic rules (enforced by scripts/deck-manifest.js validateDeckManifest): verified requires source.{url,locator,checkedAt}; user-provided requires note; illustrative forbids source; claimId must equal the owning slide id. Each id is stamped into the rendered HTML as data-evidence-id for auditability.",
             "items": {
               "type": "object",
               "additionalProperties": false,
-              "required": ["id", "claimId", "status", "label"],
+              "required": [
+                "id",
+                "claimId",
+                "status",
+                "label"
+              ],
               "properties": {
-                "id": { "type": "string", "minLength": 1 },
-                "claimId": { "type": "string", "minLength": 1 },
-                "status": { "enum": ["verified", "user-provided", "illustrative", "needs-source"] },
-                "label": { "type": "string", "minLength": 1 },
-                "note": { "type": "string", "minLength": 1 },
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "claimId": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "status": {
+                  "enum": [
+                    "verified",
+                    "user-provided",
+                    "illustrative",
+                    "needs-source"
+                  ]
+                },
+                "label": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "note": {
+                  "type": "string",
+                  "minLength": 1
+                },
                 "source": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": ["url", "locator", "checkedAt"],
+                  "required": [
+                    "url",
+                    "locator",
+                    "checkedAt"
+                  ],
                   "properties": {
-                    "url": { "type": "string", "pattern": "^https?://" },
-                    "locator": { "type": "string", "minLength": 1 },
-                    "checkedAt": { "type": "string", "format": "date" }
+                    "url": {
+                      "type": "string",
+                      "pattern": "^https?://"
+                    },
+                    "locator": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "checkedAt": {
+                      "type": "string",
+                      "format": "date"
+                    }
                   }
                 }
               }
             }
           },
-          "motionIntent": { "enum": ["none", "fragment", "loop", "count-in", "draw", "grow"] }
+          "motionIntent": {
+            "enum": [
+              "none",
+              "fragment",
+              "loop",
+              "count-in",
+              "draw",
+              "grow"
+            ]
+          }
         }
       }
+    },
+    "designBrief": {
+      "type": "object",
+      "description": "可选。设计契约(人/LLM 在 authoring 期写),八字段齐全才合法(aestheticAnchor/externalRefs/signatureMoment/extremeContrast/bannedPatterns/narrativeArc/pacingCurve/bannedBeats,见 scripts/check-design-brief.js);生成器 pass-through 内嵌进 HTML 供 qa.js design-brief/arc-adherence 门禁校验。"
     }
   }
 }

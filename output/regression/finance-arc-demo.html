@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400;7..72,600;7..72,700&family=Afacad:wght@400;500;600;700&family=Chivo+Mono:wght@400;500;600&family=Noto+Serif+SC:wght@500;700&family=Noto+Sans+SC:wght@400;500;700" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Afacad:wght@400;500;600;700&family=Chivo+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700" rel="stylesheet">
 <style>
 /* ============================================================
    base.css — Design Token 契约层(所有风格共享)
@@ -60,7 +60,7 @@
   --ease:   cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* voice: consulting — Business Consulting
+/* voice: data — Data Storytelling
  * AUTO-GENERATED from tokens/voices.json by scripts/build-voice-tokens.js — do not edit by hand.
  * 改风格改 voices.json 后重跑: node scripts/build-voice-tokens.js
  * primitive 契约见 tokens/README.md (semantic 映射层在 base.css)。
@@ -68,15 +68,15 @@
  */
 :root {
   /* 颜色 primitive */
-  --c-bg: oklch(96% 0.01 240);
-  --c-fg: oklch(18% 0.018 248);
-  --c-fg-2: oklch(45% 0.03 248);
-  --c-fg-3: oklch(62% 0.025 248);
-  --c-accent: oklch(48% 0.12 22);
-  --c-border: oklch(76% 0.02 248);
+  --c-bg: oklch(14% 0.026 253);
+  --c-fg: oklch(94% 0.014 248);
+  --c-fg-2: oklch(74% 0.04 230);
+  --c-fg-3: oklch(55% 0.04 230);
+  --c-accent: oklch(74% 0.12 204);
+  --c-border: oklch(35% 0.03 253);
 
   /* 字体 primitive */
-  --f-display: 'Literata', 'Noto Serif SC', Georgia, 'Arial Narrow', serif;
+  --f-display: 'Afacad', 'Noto Sans SC', 'Arial Narrow', system-ui, sans-serif;
   --f-body: 'Afacad', 'Noto Sans SC', 'Arial Narrow', system-ui, sans-serif;
   --f-mono: 'Chivo Mono', ui-monospace, 'Courier New', monospace;
 }
@@ -97,74 +97,71 @@
 #pptx-export-btn:focus,#pptx-export-btn:hover,body:hover #pptx-export-btn{opacity:1;pointer-events:auto;}
 @media (prefers-reduced-motion:reduce){.reveal *{transition:none!important;animation:none!important;}}
 
-.voice-consulting .memo-head{box-shadow:inset 0 3px 0 var(--c-fg),inset 0 5px 0 var(--c-bg),inset 0 6px 0 var(--c-fg);}
-.voice-consulting .archive-stamp .stamp{border-color:var(--c-stamp) !important;color:var(--c-stamp) !important;border-radius:50%;padding:0.9em !important;transform:rotate(-4deg);}
-.voice-consulting .kicker{letter-spacing:0.22em;}
-.voice-consulting h1,.voice-consulting h2,.voice-consulting h3{font-weight:600;}
+.voice-data .terminal-readout{outline:1px solid var(--c-border);outline-offset:-0.5em;}
+.voice-data .pin,.voice-data .evidence-label{border:1px solid var(--c-border);background:var(--c-bg-paper);padding:0.3em 0.65em;}
+.voice-data .sig-grid>div{border-top:3px solid var(--c-accent) !important;}
+.voice-data table{border:1px solid var(--c-border);}
+.voice-data th{border-bottom-width:3px !important;}
 </style>
 </head>
-<body class="voice-consulting">
+<body class="voice-data">
 <div class="reveal"><div class="slides">
-<section class="deck-flex memo-head axis-left density-normal" data-archetype="A1" data-slide-id="" data-background="var(--c-bg)" style="--split-ratio:42/58;--align-axis:left;--density-tier:normal;flex-direction:column;padding:0;height:100%;"><div class="evidence-label">verified</div><div style="padding:1.1em 2.4em 0.6em;">
+<section class="deck-flex axis-left density-normal" data-archetype="A1" data-slide-id="" data-background="var(--c-bg)" style="--split-ratio:42/58;--align-axis:left;--density-tier:normal;flex-direction:column;padding:0;height:100%;"><div class="evidence-label">illustrative</div><div style="padding:1.1em 2.4em 0.6em;">
       <div style="border-top:3px double var(--c-fg);border-bottom:1px solid var(--c-fg);padding:0.5em 0 0.35em;display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:0.52em;letter-spacing:0.16em;text-transform:uppercase;color:var(--c-fg-2);">
-        <span>VOL. 02</span><span>2026</span><span>SECTOR REPORT</span>
+        <span>VOL. 01</span><span>2026</span><span>REPORT</span>
       </div>
       <div style="font-family:var(--f-display);font-size:clamp(2.4em,4.6em,5.6em);font-weight:600;font-style:italic;line-height:1;color:var(--c-fg);margin-top:0.26em;">新能源板块年报</div>
-      <div style="font-family:var(--f-mono);font-size:0.68em;letter-spacing:0.28em;color:var(--c-accent);margin-top:0.35em;text-transform:uppercase;">2026 · 行业全景</div>
+      
     </div>
     <div style="height:4px;background:var(--c-fg);"></div>
     <div style="padding:1em 2.4em;display:flex;gap:2em;flex:1;align-items:flex-start;">
-      <div style="flex:1.5;font-family:var(--f-display);font-size:1.3em;font-style:italic;line-height:1.32;color:var(--c-fg-2);">新能源板块 2025 年营收增长 42%,集中度提升。</div>
+      <div style="flex:1.5;font-family:var(--f-display);font-size:1.3em;font-style:italic;line-height:1.32;color:var(--c-fg-2);">2026 · 行业全景。新能源板块 2025 年营收增长 42%,集中度提升。关键事实:营收 +42%,CR5 68%。</div>
       <div style="flex:1;border-left:1px solid var(--c-border);padding-left:1.4em;">
         <div style="font-family:var(--f-mono);font-size:0.52em;letter-spacing:0.12em;text-transform:uppercase;color:var(--c-fg-2);margin-bottom:0.5em;">关键事实</div>
-        <div style="font-size:0.68em;margin:0.28em 0;color:var(--c-fg-2);"><b style="color:var(--c-fg);font-family:var(--f-mono);">营收</b> +42%</div><div style="font-size:0.68em;margin:0.28em 0;color:var(--c-fg-2);"><b style="color:var(--c-fg);font-family:var(--f-mono);">CR5</b> 68%</div>
+        
       </div>
     </div><div class="pin">01 / cover</div></section>
-<section class="deck-flex memo-head axis-left density-normal" data-archetype="A2" data-slide-id="" data-background="var(--c-bg)" style="--split-ratio:42/58;--align-axis:left;--density-tier:normal;flex-direction:column;justify-content:center;padding:0 5em;height:100%;"><div class="evidence-label">verified</div><div class="kicker">核心结论</div>
+<section class="deck-flex axis-left density-normal" data-archetype="A2" data-slide-id="" data-background="var(--c-bg)" style="--split-ratio:42/58;--align-axis:left;--density-tier:normal;flex-direction:column;justify-content:center;padding:0 5em;height:100%;"><div class="evidence-label">illustrative</div><div class="kicker">核心结论</div>
       <h1 style="margin:0.4em 0 0;font-family:var(--f-display);font-size:clamp(2.4em,3.6em,4.4em);font-weight:500;line-height:1.12;color:var(--c-fg);">
-        <em style="color:var(--c-accent);">42%</em> —— 板块营收增速创五年新高。
+        42% —— 板块营收增速创五年新高。Top5 龙头集中度达 68%,规模效应兑现。
       </h1>
       <div style="height:1px;background:var(--c-border);margin:1.1em 0;"></div>
-      <p style="font-size:0.9em;max-width:50ch;color:var(--c-fg-2);">Top5 龙头集中度达 68%,规模效应兑现。</p><div class="pin">02 / thesis</div></section>
-<section class="deck-flex memo-head axis-left density-normal" data-archetype="A5" data-slide-id="" data-background="var(--c-bg)" style="--split-ratio:42/58;--align-axis:left;--density-tier:normal;align-items:center;padding:2.6em 3.2em;height:100%;"><div class="evidence-label" data-evidence-id="" data-evidence-status="verified">verified</div><div class="anchor-block anchor-default" style="display:flex;gap:3.00em;align-items:flex-start;width:100%;">
-      <div style="flex:1;">
-        <div class="kpi-label" style="color:var(--c-fg-3);font-family:var(--f-mono);font-size:0.5em;letter-spacing:0.16em;text-transform:uppercase;">REVENUE GROWTH</div>
-        <div style="font-family:var(--f-display);font-size:clamp(3.6em,5em,5.6em);font-weight:600;font-style:italic;line-height:1;margin:0.15em 0;color:var(--c-accent);">42%</div>
-        <div style="font-family:var(--f-display);font-style:italic;font-size:1.2em;margin-top:0.4em;">2025 年板块营收增速</div>
-        <p style="font-size:0.78em;margin-top:0.5em;color:var(--c-fg-2);">vs 2024 年 28%</p>
-        <div style="font-family:var(--f-mono);font-size:0.5em;color:var(--c-fg-3);margin-top:0.6em;letter-spacing:0.1em;text-transform:uppercase;">年报 · verified</div>
-      </div>
-      <div style="flex:1.1;border-left:1px solid var(--c-border);padding-left:2em;">
-        <div class="kpi-label" style="font-family:var(--f-mono);font-size:0.5em;letter-spacing:0.16em;text-transform:uppercase;color:var(--c-fg-2);">证据</div>
-        <div style="display:flex;justify-content:space-between;padding:0.4em 0;border-bottom:1px solid var(--c-rule);font-size:0.7em;"><span style="color:var(--c-fg-2);">2024 增速</span><b style="font-family:var(--f-mono);color:var(--c-fg);">28%</b></div><div style="display:flex;justify-content:space-between;padding:0.4em 0;border-bottom:1px solid var(--c-rule);font-size:0.7em;"><span style="color:var(--c-fg-2);">Top5 集中度</span><b style="font-family:var(--f-mono);color:var(--c-fg);">68%</b></div><div style="display:flex;justify-content:space-between;padding:0.4em 0;border-bottom:1px solid var(--c-rule);font-size:0.7em;"><span style="color:var(--c-fg-2);">板块市值</span><b style="font-family:var(--f-mono);color:var(--c-fg);">3.2 万亿</b></div>
-      </div></div><div class="pin">03 / data-anchor</div></section>
-<section class="deck-flex memo-head axis-left density-normal" data-archetype="A6" data-slide-id="" data-background="var(--c-bg)" style="--split-ratio:42/58;--align-axis:left;--density-tier:normal;height:100%;padding:0;"><div class="evidence-label">verified</div>
+      <p style="font-size:0.9em;max-width:50ch;color:var(--c-fg-2);"></p><div class="pin">02 / thesis</div></section>
+<section class="deck-flex axis-left density-normal" data-archetype="A6" data-slide-id="" data-background="var(--c-bg)" style="--split-ratio:42/58;--align-axis:left;--density-tier:normal;height:100%;padding:0;"><div class="evidence-label">illustrative</div>
       <div class="face-left split-l42" style="width:42%;background:var(--c-accent);color:var(--c-bg);display:flex;flex-direction:column;justify-content:space-between;padding:1.9em 2.4em;">
-        <div><div style="font-family:var(--f-mono);font-size:0.5em;letter-spacing:0.16em;text-transform:uppercase;color:var(--c-bg);opacity:0.8;">A 公司</div>
-        <div style="font-family:var(--f-display);font-size:clamp(3.4em,4.6em,5.2em);font-style:italic;font-weight:600;color:var(--c-bg);line-height:1;">38%</div>
-        <div style="font-family:var(--f-mono);font-size:0.5em;opacity:0.8;color:var(--c-bg);">市占率</div></div>
-        <div style="font-size:0.62em;color:var(--c-bg);opacity:0.92;border-top:1px solid rgba(255,255,255,0.2);padding-top:0.3em;margin-top:0.3em;">营收 1.2 万亿</div>
+        <div><div style="font-family:var(--f-mono);font-size:0.5em;letter-spacing:0.16em;text-transform:uppercase;color:var(--c-bg);opacity:0.8;">年板块营收增速 42</div>
+        <div style="font-family:var(--f-display);font-size:clamp(3.4em,4.6em,5.2em);font-style:italic;font-weight:600;color:var(--c-bg);line-height:1;">2025</div>
+        <div style="font-family:var(--f-mono);font-size:0.5em;opacity:0.8;color:var(--c-bg);"></div></div>
+        
       </div>
       <div class="face-right split-r58" style="width:58%;display:flex;flex-direction:column;justify-content:center;padding:2.2em 2.5em;">
-        <div style="font-family:var(--f-mono);font-size:0.5em;letter-spacing:0.16em;text-transform:uppercase;color:var(--c-fg-2);">B 公司</div>
-        <div style="font-family:var(--f-display);font-size:clamp(2.8em,3.4em,4em);font-style:italic;font-weight:600;color:var(--c-fg);line-height:1;">22%</div>
-        <div style="font-family:var(--f-mono);font-size:0.5em;color:var(--c-fg-2);">市占率</div>
-        <div style="font-size:0.62em;color:var(--c-fg-2);border-top:1px solid var(--c-rule);padding-top:0.3em;margin-top:0.3em;">营收 0.7 万亿</div>
+        <div style="font-family:var(--f-mono);font-size:0.5em;letter-spacing:0.16em;text-transform:uppercase;color:var(--c-fg-2);">年 28%。证据:2</div>
+        <div style="font-family:var(--f-display);font-size:clamp(2.8em,3.4em,4em);font-style:italic;font-weight:600;color:var(--c-fg);line-height:1;">2024</div>
+        <div style="font-family:var(--f-mono);font-size:0.5em;color:var(--c-fg-2);"></div>
+        
         <div style="height:1px;background:var(--c-fg);margin:1.2em 0 0.8em;"></div>
-        <div style="font-family:var(--f-display);font-style:italic;font-size:2.2em;color:var(--c-accent);line-height:1;">+16pp</div>
-        <div style="font-family:var(--f-mono);font-size:0.5em;color:var(--c-fg-2);letter-spacing:0.12em;text-transform:uppercase;">龙头集中度差距</div>
-      </div><div class="pin">04 / comparison</div></section>
-<section class="deck-flex memo-head axis-left density-normal" data-archetype="A9" data-slide-id="" data-background="var(--c-bg)" style="--split-ratio:42/58;--align-axis:left;--density-tier:normal;flex-direction:column;padding:2.6em 3em;height:100%;"><div class="evidence-label">verified</div><div class="kicker">估值台账</div>
+        <div style="font-family:var(--f-display);font-style:italic;font-size:2.2em;color:var(--c-accent);line-height:1;">1.0×</div>
+        <div style="font-family:var(--f-mono);font-size:0.5em;color:var(--c-fg-2);letter-spacing:0.12em;text-transform:uppercase;"></div>
+      </div><div class="pin">03 / comparison</div></section>
+<section class="deck-flex axis-left density-normal" data-archetype="A4" data-slide-id="" data-background="var(--c-bg)" style="--split-ratio:42/58;--align-axis:left;--density-tier:normal;height:100%;padding:0;"><div class="evidence-label">illustrative</div>
+      <div class="split-l42" style="width:42%;background:var(--c-fg);color:var(--c-bg);display:flex;flex-direction:column;justify-content:space-between;padding:2.20em 2em;">
+        <div><div class="kicker" style="color:var(--c-bg);opacity:0.82;">龙头对比</div>
+        <h2 style="color:var(--c-bg);margin:0.5em 0 0;">龙头对比</h2></div>
+        <div style="font-family:var(--f-display);font-style:italic;color:var(--c-bg);font-size:1.1em;"></div>
+      </div>
+      <div class="split-r58" style="width:58%;display:flex;flex-direction:column;justify-content:center;padding:2.20em 2.6em;gap:0.55em;"><p style="font-size:0.82em;line-height:1.5;color:var(--c-fg-2);">A 公司市占率 38%,营收 1.2 万亿</p><p style="font-size:0.82em;line-height:1.5;color:var(--c-fg-2);">B 公司市占率 22%,营收 0.7 万亿。龙头集中度差距 +16pp。</p></div>
+      <div class="pin" style="color:rgba(240,233,216,0.6);">04 / comparison</div></section>
+<section class="deck-flex terminal-readout axis-left density-normal" data-archetype="A9" data-variant="highlight_col:1;align:right" data-slide-id="" data-background="var(--c-bg)" style="--split-ratio:42/58;--align-axis:left;--density-tier:normal;flex-direction:column;padding:2.6em 3em;height:100%;"><!-- variant:主角列 accent 高亮 + 数据列右对齐(台账变体) --><div class="evidence-label">illustrative</div><div class="kicker">板块估值矩阵</div>
       <h2 style="font-family:var(--f-display);font-size:1.6em;margin:0.3em 0 0.8em;">板块估值矩阵</h2>
       <table style="width:100%;border-collapse:collapse;font-family:var(--f-body);font-size:0.66em;">
-        <thead><tr><th style="text-align:left;padding:0.5em;font-family:var(--f-mono);font-size:0.85em;letter-spacing:0.12em;text-transform:uppercase;color:var(--c-fg-3);border-bottom:2px solid var(--c-fg);">公司</th><th style="text-align:right;padding:0.5em;font-family:var(--f-mono);font-size:0.85em;letter-spacing:0.12em;text-transform:uppercase;color:var(--c-accent);border-bottom:2px solid var(--c-fg);">PE</th><th style="text-align:right;padding:0.5em;font-family:var(--f-mono);font-size:0.85em;letter-spacing:0.12em;text-transform:uppercase;color:var(--c-fg-3);border-bottom:2px solid var(--c-fg);">PB</th><th style="text-align:right;padding:0.5em;font-family:var(--f-mono);font-size:0.85em;letter-spacing:0.12em;text-transform:uppercase;color:var(--c-fg-3);border-bottom:2px solid var(--c-fg);">ROE</th></tr></thead>
-        <tbody><tr><td style="padding:0.55em 0.5em;border-bottom:1px solid var(--c-rule);text-align:left;color:var(--c-fg-2);font-weight:400;">A公司</td><td style="padding:0.55em 0.5em;border-bottom:1px solid var(--c-rule);text-align:right;color:var(--c-accent);font-weight:600;font-family:var(--f-mono);">18</td><td style="padding:0.55em 0.5em;border-bottom:1px solid var(--c-rule);text-align:right;color:var(--c-fg-2);font-weight:400;font-family:var(--f-mono);">3.2</td><td style="padding:0.55em 0.5em;border-bottom:1px solid var(--c-rule);text-align:right;color:var(--c-fg-2);font-weight:400;font-family:var(--f-mono);">22%</td></tr><tr><td style="padding:0.55em 0.5em;border-bottom:1px solid var(--c-rule);text-align:left;color:var(--c-fg-2);font-weight:400;">B公司</td><td style="padding:0.55em 0.5em;border-bottom:1px solid var(--c-rule);text-align:right;color:var(--c-accent);font-weight:600;font-family:var(--f-mono);">24</td><td style="padding:0.55em 0.5em;border-bottom:1px solid var(--c-rule);text-align:right;color:var(--c-fg-2);font-weight:400;font-family:var(--f-mono);">4.1</td><td style="padding:0.55em 0.5em;border-bottom:1px solid var(--c-rule);text-align:right;color:var(--c-fg-2);font-weight:400;font-family:var(--f-mono);">18%</td></tr><tr><td style="padding:0.55em 0.5em;border-bottom:1px solid var(--c-rule);text-align:left;color:var(--c-fg-2);font-weight:400;">C公司</td><td style="padding:0.55em 0.5em;border-bottom:1px solid var(--c-rule);text-align:right;color:var(--c-accent);font-weight:600;font-family:var(--f-mono);">15</td><td style="padding:0.55em 0.5em;border-bottom:1px solid var(--c-rule);text-align:right;color:var(--c-fg-2);font-weight:400;font-family:var(--f-mono);">2.5</td><td style="padding:0.55em 0.5em;border-bottom:1px solid var(--c-rule);text-align:right;color:var(--c-fg-2);font-weight:400;font-family:var(--f-mono);">15%</td></tr></tbody>
+        <thead><tr><th style="text-align:left;padding:0.5em;font-family:var(--f-mono);font-size:0.85em;letter-spacing:0.12em;text-transform:uppercase;color:var(--c-fg-3);border-bottom:2px solid var(--c-fg);">项目</th><th style="text-align:right;padding:0.5em;font-family:var(--f-mono);font-size:0.85em;letter-spacing:0.12em;text-transform:uppercase;color:var(--c-accent);border-bottom:2px solid var(--c-fg);">数值 1</th></tr></thead>
+        <tbody><tr><td style="padding:0.55em 0.5em;border-bottom:1px solid var(--c-rule);text-align:left;color:var(--c-fg-2);font-weight:400;">估值台账:A公司PE</td><td style="padding:0.55em 0.5em;border-bottom:1px solid var(--c-rule);text-align:right;color:var(--c-accent);font-weight:600;font-family:var(--f-mono);">18</td></tr><tr><td style="padding:0.55em 0.5em;border-bottom:1px solid var(--c-rule);text-align:left;color:var(--c-fg-2);font-weight:400;">B公司PE/PB/R</td><td style="padding:0.55em 0.5em;border-bottom:1px solid var(--c-rule);text-align:right;color:var(--c-accent);font-weight:600;font-family:var(--f-mono);">24</td></tr><tr><td style="padding:0.55em 0.5em;border-bottom:1px solid var(--c-rule);text-align:left;color:var(--c-fg-2);font-weight:400;">C公司PE/PB/R</td><td style="padding:0.55em 0.5em;border-bottom:1px solid var(--c-rule);text-align:right;color:var(--c-accent);font-weight:600;font-family:var(--f-mono);">15</td></tr></tbody>
       </table><div class="pin">05 / evidence-table</div></section>
-<section class="deck-flex memo-head archive-stamp axis-left density-normal" data-archetype="A12" data-slide-id="" data-background="var(--c-bg)" style="--split-ratio:42/58;--align-axis:left;--density-tier:normal;flex-direction:column;justify-content:center;align-items:center;padding:2.6em 3em;height:100%;text-align:center;"><div class="evidence-label">verified</div><div style="text-align:center;">
-        <div style="border-top:3px double var(--c-fg);border-bottom:1px solid var(--c-fg);padding:0.5em 0 0.35em;display:inline-block;font-family:var(--f-mono);font-size:0.52em;letter-spacing:0.16em;text-transform:uppercase;color:var(--c-fg-2);min-width:60%;">SECTOR · NEXT</div>
+<section class="deck-flex axis-left density-normal" data-archetype="A12" data-slide-id="" data-background="var(--c-bg)" style="--split-ratio:42/58;--align-axis:left;--density-tier:normal;flex-direction:column;justify-content:center;align-items:center;padding:2.6em 3em;height:100%;text-align:center;"><div class="evidence-label">illustrative</div><div style="text-align:center;">
+        <div style="border-top:3px double var(--c-fg);border-bottom:1px solid var(--c-fg);padding:0.5em 0 0.35em;display:inline-block;font-family:var(--f-mono);font-size:0.52em;letter-spacing:0.16em;text-transform:uppercase;color:var(--c-fg-2);min-width:60%;">FIN</div>
         <h2 style="font-family:var(--f-display);font-style:italic;font-size:clamp(2.4em,3.6em,4.2em);font-weight:500;line-height:1.1;margin:0.5em 0;color:var(--c-fg);">下一步</h2>
-        <p style="font-size:0.85em;max-width:50ch;margin:0.8em auto;color:var(--c-fg-2);font-style:italic;">建议关注龙头集中度提升带来的估值修复机会。</p>
-        <div style="margin-top:1.2em;display:inline-flex;gap:0.6em;"><span class="stamp" style="border:2px solid var(--c-accent);color:var(--c-accent);padding:0.35em 0.8em;font-family:var(--f-mono);font-size:0.5em;letter-spacing:0.22em;text-transform:uppercase;">2026 · OUTLOOK</span></div>
+        <p style="font-size:0.85em;max-width:50ch;margin:0.8em auto;color:var(--c-fg-2);font-style:italic;">建议关注龙头集中度提升带来的估值修复机会。2026 · OUTLOOK,谢谢。</p>
+        <div style="margin-top:1.2em;display:inline-flex;gap:0.6em;"><span class="stamp" style="border:2px solid var(--c-accent);color:var(--c-accent);padding:0.35em 0.8em;font-family:var(--f-mono);font-size:0.5em;letter-spacing:0.22em;text-transform:uppercase;">CATALOGUED</span></div>
       </div><div class="pin">06 / closing</div></section>
 </div></div>
 <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.js"></script>
@@ -868,4 +865,5 @@
 <script>
 Reveal.initialize({width:1280,height:720,margin:0.04,hash:true,slideNumber:'c/t',progress:true,center:false,controls:true,controlsTutorial:false,transition:'fade',backgroundTransition:'fade'});
 </script>
-<script type="application/json" id="design-brief">{"aestheticAnchor":"咨询研报语汇:报头双线 + 档案章 + 数据矩阵","externalRefs":[{"url":"https://mckinsey.com/ref","visualNote":"决策 memo 双线 + 档案章"}],"signatureMoment":"营收锚点 42% 满版 + 估值矩阵台账","extremeContrast":"尺度 6:1,深色面板 vs 留白","bannedPatterns":["side-stripe","gradient text"],"narrativeArc":"N1 账本审计(见 references/narrative-arcs.md)","pacingCurve":"疏-密-密-密-密-收","bannedBeats":["kpi-wall:本 deck 无指标墙"]}</script></body></html>
+<script type="application/json" id="design-brief">{"aestheticAnchor":"终端读数式冷静:台账语法 + 等宽数字,让证据自己说话","externalRefs":[{"url":"https://mckinsey.com/ref","visualNote":"决策 memo 的数据密度与克制"}],"signatureMoment":"营收锚点 42% 满版读数 + 估值矩阵台账","extremeContrast":"尺度 6:1,终端读数 vs 留白","bannedPatterns":["side-stripe","gradient text"],"narrativeArc":"N1 账本审计(见 references/narrative-arcs.md)","pacingCurve":"疏-密-密-密-密-收","bannedBeats":["kpi-wall:本 deck 无指标墙"]}</script>
+</body></html>

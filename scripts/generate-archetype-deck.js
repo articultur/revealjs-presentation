@@ -41,6 +41,7 @@
 const fs = require('fs');
 const path = require('path');
 const { routeDeck } = require('./content-router');
+const { validateBrief } = require('./check-design-brief.js');
 
 const ROOT = path.resolve(__dirname, '..');
 const TOKENS_DIR = path.join(ROOT, 'tokens');
@@ -823,6 +824,17 @@ function assembleDeck(input, routed) {
   // 签名 CSS 注入 <style> 末尾(覆盖层,只覆盖不重建骨架;只用 token 变量)
   const sig = buildVoiceSignature(voice);
   const voiceCls = String(voice).replace(/[^a-z0-9-]/gi, '');
+  // design-brief 内嵌(pass-through):设计契约由人/LLM 在生成前写好(经 input 或 deck-manifest
+  // 传入),机器不代写——但做完整性 fail-fast(字段不齐 = 生成期抛错,不留到 QA 才发现),
+  // 并随单文件 HTML 交付(qa.js 的 design-brief/arc-adherence 门禁据此校验)。
+  let briefScript = '';
+  if (input.designBrief != null) {
+    const briefErrors = validateBrief(input.designBrief);
+    if (briefErrors.length) {
+      throw new Error(`designBrief 字段不完整(生成期 fail-fast): ${briefErrors.join('; ')}`);
+    }
+    briefScript = `\n<script type="application/json" id="design-brief">${JSON.stringify(input.designBrief).replace(/<\//g, '<\\/')}</script>`;
+  }
   return `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -863,7 +875,7 @@ ${pptxClient}
 </script>
 <script>
 Reveal.initialize({width:1280,height:720,margin:0.04,hash:true,slideNumber:'c/t',progress:true,center:false,controls:true,controlsTutorial:false,transition:'fade',backgroundTransition:'fade'});
-</script>
+</script>${briefScript}
 </body></html>`;
 }
 

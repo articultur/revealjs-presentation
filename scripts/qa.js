@@ -78,7 +78,8 @@ const visualDryRun = args.includes('--visual-dry-run');
 const allowVisualPending = args.includes('--allow-visual-pending');
 // 感官层(visual-verdict)无法自动审时的人工签字逃生口;授权截图外发到 vision 模型。
 // 生产环境必须用 --visual-signoff-file <签字文件>(reviewer/reviewedAt/screenshotsManifestSha256/
-// decision,可审计持久证据);--visual-signoff / VISUAL_VERDICT_SIGNOFF=1 仅 NODE_ENV=test 可用。
+// deckSha256/decision,可审计持久证据;签字通过 deckSha256 绑定所审 deck,不可跨 deck 复用);
+// --visual-signoff / VISUAL_VERDICT_SIGNOFF=1 仅 NODE_ENV=test 可用。
 const isTestEnv = process.env.NODE_ENV === 'test';
 const visualSignoffFlag = args.includes('--visual-signoff');
 const visualSignoff = visualSignoffFlag || (process.env.VISUAL_VERDICT_SIGNOFF === '1' && isTestEnv);
@@ -109,10 +110,20 @@ const seedArg = seedArgIndex >= 0 ? args[seedArgIndex + 1] : null;
 // --no-skeleton-gate:显式豁免换皮门禁(仅 examples/ 种子自身维护等场景;常规交付不应使用)
 const noSkeletonGate = args.includes('--no-skeleton-gate');
 // --visual-signoff-file:生产级人工视觉签字(JSON:reviewer/reviewedAt/screenshotsManifestSha256/
-// decision)。校验通过后复制进 --out,并把可审计路径写进 qa-summary。这是感官层 BLOCKED 时唯一
-// 的生产放行方式。
+// deckSha256/decision)。deckSha256 必须是所审 deck 文件的 SHA-256,同目录必须附 screenshots-manifest.json
+// 且哈希匹配(缺失即拒绝,不再静默跳过);两哈希任一不符 = 签字与该 deck/截图不绑定,拒绝放行。
+// 校验通过后复制进 --out,并把可审计路径写进 qa-summary。这是感官层 BLOCKED 时唯一的生产放行方式。
 const visualSignoffFileIndex = optionIndex(['--visual-signoff-file']);
 const visualSignoffFile = visualSignoffFileIndex >= 0 ? args[visualSignoffFileIndex + 1] : null;
+
+// 豁免 flag 审计:任何放宽/跳过 flag 都记入 qa-summary.exemptions,且带豁免的运行不得判 ready
+// (state 封顶 needs-visual-signoff, passed=false)——旁路必须可见,不可静默冒充 clean pass。
+const exemptionFlags = [];
+if (args.includes('--no-visual')) exemptionFlags.push('--no-visual');
+if (noSkeletonGate) exemptionFlags.push('--no-skeleton-gate');
+if (noEditorialCheck) exemptionFlags.push('--no-editorial-check');
+if (noImageAudit) exemptionFlags.push('--no-image-audit');
+if (allowVisualPending) exemptionFlags.push('--allow-visual-pending');
 
 const knownFlags = new Set([
   '--no-visual',
@@ -144,7 +155,7 @@ if (seedArgIndex >= 0 && (!seedArg || seedArg.startsWith('--'))) {
 }
 
 if (visualSignoffFileIndex >= 0 && (!visualSignoffFile || visualSignoffFile.startsWith('--'))) {
-  console.error('qa.js: --visual-signoff-file 需要一个签字文件路径(JSON: reviewer/reviewedAt/screenshotsManifestSha256/decision)');
+  console.error('qa.js: --visual-signoff-file 需要一个签字文件路径(JSON: reviewer/reviewedAt/screenshotsManifestSha256/deckSha256/decision)');
   process.exit(2);
 }
 
@@ -283,7 +294,10 @@ function writeQaSummary(file) {
   const floorKeys = ['grade', 'designStrength', 'elementQuality', 'editorialContamination', 'imageAudit', 'skeleton', 'designBrief', 'arcAdherence'];
   const floorFailed = summary.fileMissing === true || floorKeys.some((k) => summary.gates[k] === 'fail');
   const visualReady = summary.gates.visual === 'human-signoff' || summary.gates.visual === 'model';
-  summary.state = floorFailed ? 'blocked' : (visualReady ? 'ready' : 'needs-visual-signoff');
+  // 豁免封顶:带任何豁免 flag(--no-*/--allow-visual-pending)的运行即使门禁全绿+视觉签字,
+  // 也不得判 ready——exemptions 已随 summary 持久化,旁路可审计,不可静默计为 clean pass。
+  const exempted = Array.isArray(summary.exemptions) && summary.exemptions.length > 0;
+  summary.state = floorFailed ? 'blocked' : ((visualReady && !exempted) ? 'ready' : 'needs-visual-signoff');
   summary.passed = summary.state === 'ready';
   try {
     fs.mkdirSync(outRoot, { recursive: true });
@@ -323,6 +337,7 @@ for (const file of files) {
       designBrief: null,
       arcAdherence: null,
     },
+    exemptions: exemptionFlags,
     artifacts: {},
   };
 
@@ -492,7 +507,7 @@ for (const file of files) {
           record(false, `visual-signoff-file 无效: ${parseErr}`);
         } else {
           const manifestSibling = path.join(path.dirname(path.resolve(visualSignoffFile)), 'screenshots-manifest.json');
-          const errs = validateVisualSignoff(signoff, { manifestFile: manifestSibling });
+          const errs = validateVisualSignoff(signoff, { manifestFile: manifestSibling, deckFile: abs });
           // 防 self-review 漏洞:reviewer 不得是 AI/自动化自审标记,必须是人工或显式独立第三方。
           const selfReviewErr = detectSelfReviewReviewer(signoff.reviewer);
           if (selfReviewErr) errs.push(selfReviewErr);
