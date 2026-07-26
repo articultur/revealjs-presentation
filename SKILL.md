@@ -335,7 +335,7 @@ template-01（editorial-serif）是旗舰，base.css / 共享骨架 / archetype 
 - **"去色去字体后仍属本主题"是硬契约**（不再是 advisory）：去掉颜色字体，页面结构仍要属于本主题——JWST 该有望远镜/蜂窝镜/光谱构件，pitch 该有终端/漏斗/数据构件，不能仍属 editorial 档案馆。
 - **路径 C 必斩共享骨架**：模板库外 / 惊艳主题禁用 assembleDeck 共享基底类，必须 bespoke HTML，结构从外部大师推导（不只换色字）。
 
-**机器门禁**：`node scripts/qa.js <file> --topic "<主题>"` 跑 `check-editorial-contamination.js`——非 editorial 主题污染超阈（archive 构件 ≥2，或 editorial 骨架三件套齐全，或 serif 展示字+构件）= **FAIL，与 grade-gate 红灯同级**。editorial 原生主题用 `--editorial-topic` 豁免；传 `--topic` 不传则读 `<title>` 兜底。
+**机器门禁**：`node scripts/qa.js <file> --topic "<主题>"` 跑 `check-editorial-contamination.js`——非 editorial 主题污染超阈（archive 构件 ≥2，或 1 archive 构件 + serif 展示字佐证）= **FAIL，与 grade-gate 红灯同级**。计分语义：**editorial 皮 = archive 词汇**；serif 展示字与 furniture 三件套（kicker/pin/evidence-label,生成器给所有 voice 统一注入）不是 editorial 独有信号,只在 archive 命中时作佐证加分,archive=0 时不计入（合法 voice 如 consulting 的 serif/印签不被误杀,其签名类用 `memo-seal`/`seal` 词表外词汇）。editorial 原生主题用 `--editorial-topic` 豁免；传 `--topic` 不传则读 `<title>` 兜底。自检：`node scripts/check-editorial-contamination.js --selftest`。
 
 ### 设计强度三拨盘（density / variance / motion）
 
@@ -453,7 +453,7 @@ template-01（editorial-serif）是旗舰，base.css / 共享骨架 / archetype 
 | **地板（合规）** | `node scripts/grade-gate.js <file>` 全绿（十四门禁 G1-G14 合一） | 硬约束、**机器判 verdict，禁止人工放行**（案例见 `references/validation.md` G5 段） |
 | **天花板（设计强度）** | `node scripts/design-strength-check.js <file>` 四维达标 + `node scripts/element-quality-check.js <file>` 元素子分 ≥70 | advisory，任一维不达标 = **回炉重做骨架**，不是微调 |
 | **视觉评审** | `node scripts/visual-qa.js <file> --annotate-overflow --show-fragments` 逐页审阅 + `node scripts/visual-verdict.js <file>` LLM 视觉语义评审 | **P4 生成后必跑、任何视觉改动后必跑**（快速模式也跑）。**无 key / 未 opt-in = UNSKIPPABLE-BLOCKED（G001,非 dry-run 假通过）**：`visual-verdict.js` 需 `VISUAL_VERDICT_OPT_IN=1`（默认关防外发）才真实调用，dry-run 需显式 `--dry-run`，无 `OPENAI_API_KEY` 默认 exit 2 硬错误；签字放行走 `scripts/qa.js`（`--visual-signoff` / `VISUAL_VERDICT_SIGNOFF=1` 人工签字）；**视觉能力自检 + 反幻觉锚点（必做，防谎报通过）见 `references/validation.md`「视觉能力自检协议」**——无视觉能力必须记 `passed=null`，不得声称读图通过**L3b 创意短语断行**（`价格屠夫`/`终点裁决`/`客观缓解率` 等 jieba 切不准的整体短语被拆两行）也走视觉评审，判别规则（R1 残尾孤字 / R2 固定短语切割 + 豁免）见 `references/failure-gates.md` §19 |
-| **反 editorial 收敛** | `node scripts/check-editorial-contamination.js <file> --topic "<主题>"`（qa.js `--topic` 内置） | 非 editorial 主题穿档案馆外衣（archive 构件 / editorial 骨架三件套 / serif 展示）= FAIL；Goodhart 补丁——门禁 #9 的审美语言维度 |
+| **反 editorial 收敛** | `node scripts/check-editorial-contamination.js <file> --topic "<主题>"`（qa.js `--topic` 内置；`--selftest` 自检） | 非 editorial 主题穿档案馆外衣（archive 构件 ≥2,或 1 构件 + serif 佐证）= FAIL；Goodhart 补丁——门禁 #9 的审美语言维度 |
 | **弧线落实** | `node scripts/check-arc-adherence.js <file>`（qa.js 内置，种子豁免） | brief 声明的弧线真的落实：库内弧线须在注册表、自定义弧线须 `arcDefinition` 四件套；`bannedBeats` 已知节拍（anchor-numeral/face-off/kpi-wall/table 系/data-chart）签名扫描，命中 = FAIL 并指出页码/选择器；未知节拍 key 与 pacingCurve 拍数偏差仅 warning |
 | **图片资产门禁** | `node scripts/audit-image-assets.js <file>` | 图像驱动 deck 必跑；阻断断图、满版图被放大、满版图低于画布、超宽低高图硬塞 hero、封面/章节/结尾重复大图；警告支撑图重复与背景主题漂移 |
 

@@ -308,7 +308,7 @@ const VOICE_SIGNATURES = {
     sectionClass: { '*': 'memphis-grid', A12: 'ticket' },
     css: `.voice-retro .memphis-grid{background-image:repeating-linear-gradient(0deg,var(--c-rule) 0,var(--c-rule) 1px,transparent 1px,transparent 2.6em),repeating-linear-gradient(90deg,var(--c-rule) 0,var(--c-rule) 1px,transparent 1px,transparent 2.6em);}
 .voice-retro .sig-grid>div{box-shadow:0.22em 0.22em 0 var(--c-fg);}
-.voice-retro .ticket .stamp{border-width:3px !important;border-style:dashed !important;padding:0.5em 1em !important;box-shadow:0.25em 0.25em 0 var(--c-fg);}
+.voice-retro .ticket .seal{border-width:3px !important;border-style:dashed !important;padding:0.5em 1em !important;box-shadow:0.25em 0.25em 0 var(--c-fg);}
 .voice-retro h1,.voice-retro h2,.voice-retro h3{font-weight:700;}`,
   },
   // brutalist「裸露硬边框 + 荧光警示,uppercase」(weight 7 / motion 1)
@@ -328,11 +328,13 @@ const VOICE_SIGNATURES = {
 .voice-data table{border:1px solid var(--c-border);}
 .voice-data th{border-bottom-width:3px !important;}`,
   },
-  // consulting「决策 memo 气质」→ 报头双线 + 档案章(weight 4 / motion 1)
+  // consulting「决策 memo 气质」→ 报头双线 + 决策印签(weight 4 / motion 1)
+  // 注:类名用 memo-seal/seal 而非 archive-stamp/stamp——后者撞 editorial-contamination
+  // 门禁的 archive 词表,会让 consulting 的非 editorial 主题 deck 被自己的门禁误杀。
   consulting: {
-    sectionClass: { '*': 'memo-head', A12: 'archive-stamp' },
+    sectionClass: { '*': 'memo-head', A12: 'memo-seal' },
     css: `.voice-consulting .memo-head{box-shadow:inset 0 3px 0 var(--c-fg),inset 0 5px 0 var(--c-bg),inset 0 6px 0 var(--c-fg);}
-.voice-consulting .archive-stamp .stamp{border-color:var(--c-stamp) !important;color:var(--c-stamp) !important;border-radius:50%;padding:0.9em !important;transform:rotate(-4deg);}
+.voice-consulting .memo-seal .seal{border-color:var(--c-stamp) !important;color:var(--c-stamp) !important;border-radius:50%;padding:0.9em !important;transform:rotate(-4deg);}
 .voice-consulting .kicker{letter-spacing:0.22em;}
 .voice-consulting h1,.voice-consulting h2,.voice-consulting h3{font-weight:600;}`,
   },
@@ -767,7 +769,7 @@ function fillArchetype(route, s, idx, total, input = {}) {
         <div style="border-top:3px double var(--c-fg);border-bottom:1px solid var(--c-fg);padding:0.5em 0 0.35em;display:inline-block;font-family:var(--f-mono);font-size:0.52em;letter-spacing:0.16em;text-transform:uppercase;color:var(--c-fg-2);min-width:60%;">${esc(s.topic||'FIN')}</div>
         <h2 style="font-family:var(--f-display);font-style:italic;font-size:clamp(2.4em,3.6em,4.2em);font-weight:500;line-height:1.1;margin:0.5em 0;color:var(--c-fg);">${esc(s.title||'')}</h2>
         <p style="font-size:0.85em;max-width:50ch;margin:0.8em auto;color:var(--c-fg-2);font-style:italic;">${esc(s.body||'')}</p>
-        <div style="margin-top:1.2em;display:inline-flex;gap:0.6em;"><span class="stamp" style="border:2px solid var(--c-accent);color:var(--c-accent);padding:0.35em 0.8em;font-family:var(--f-mono);font-size:0.5em;letter-spacing:0.22em;text-transform:uppercase;">${esc(s.stamp||'CATALOGUED')}</span></div>
+        <div style="margin-top:1.2em;display:inline-flex;gap:0.6em;"><span class="seal" style="border:2px solid var(--c-accent);color:var(--c-accent);padding:0.35em 0.8em;font-family:var(--f-mono);font-size:0.5em;letter-spacing:0.22em;text-transform:uppercase;">${esc(s.stamp||'CATALOGUED')}</span></div>
       </div>`, 'deck-flex', 'flex-direction:column;justify-content:center;align-items:center;padding:2.6em 3em;height:100%;text-align:center;');
 
     // IMG · 图像对峙(顶部标题 + 双图并排对比 + 标签;图像驱动主题。proof 是图,非文字)
