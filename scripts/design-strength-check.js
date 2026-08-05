@@ -7,7 +7,7 @@
  * grade-gate.js 度量的是"合规"（地板）；本脚本度量的是"设计强度"（天花板）。
  * 两者互补：合规不可绕过，设计强度要主动够。见 references/design-fundamentals.md §5。
  *
- * 四维（静态分析，无需浏览器）：
+ * 五维（静态分析，无需浏览器）：
  *   1. scaleContrast  最大 display 字号 / 正文基线 比（目标 ≥ 3:1）；巨数锚点之外另认
  *      极端留白路径与满版单句路径（2026-07 手法菜单化，保底 3.0 达标线）
  *   2. tension        满版色块面板页数 + 非对称分割数 + 阅读顺序张力（竖排/非左主轴/对角锚定）
@@ -15,6 +15,10 @@
  *      （accent 仅 1 色 + ≥4 级同族明度阶）给 60 分保底
  *   4. metaphor       布局多样性（distinct section 骨架数）+ 主题原生形式（masthead/stamp/anchor-numeral 等信号）
  *      + 叙述弧线信号（track-listing/act-program/ledger-seal/field-note/cross-exam 等，呼应 references/narrative-arcs.md）
+ *   5. craftDensity   CSS 装饰工艺密度（2026-07 新增）：渐变层次（linear/radial/conic + stop 数）、
+ *      box-shadow 多层叠加、伪元素装饰（::before/::after 用于视觉而非 clearfix）、filter（blur/
+ *      drop-shadow/backdrop-filter）、clip-path 非矩形裁切。区分"结构合规但视觉扁平"与"有层次
+ *      深度的精致设计"——堵 qualityScore 95 但 0 渐变 0 阴影的盲区。
  *   + contentSpecificity  硬数字 vs 软化词（约/示意/持平）比
  *
  * 手法菜单化原则（2026-07）：只扩命中表、不改公式与阈值——旧规则全部保留，
@@ -112,7 +116,8 @@ function hasAnchorNumeral(html, styleBlocks) {
   while ((m = ruleRe.exec(styleBlocks)) !== null) {
     if (!BIG_NUM_SIZE.test(m[2])) continue;
     for (const cm of m[1].matchAll(/\.([\w-]+)/g)) {
-      const elRe = new RegExp(`<\\w+[^>]*class\\s*=\\s*"[^"]*\\b${cm[1]}\\b[^"]*"[^>]*>([\\s\\S]*?)<\\/\\w+>`, 'i');
+      const escaped = cm[1].replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const elRe = new RegExp(`<\\w+[^>]*class\\s*=\\s*"[^"]*\\b${escaped}\\b[^"]*"[^>]*>([\\s\\S]*?)<\\/\\w+>`, 'i');
       const el = html.match(elRe);
       if (el && isNumericContent(el[1])) return true;
     }
@@ -521,6 +526,73 @@ function measure(file) {
   const readableContrast = colorContrast == null ? 20 : (colorContrast >= 75 ? 40 : colorContrast >= 40 ? 25 : 5);
   const audience = Math.min(100, readableSize + readableContrast);
 
+  // 13. StructuralVariety（2026-07 新增）：section 级布局多样性
+  // 堵"每页同构"同质化——弧线定义的页面语法必须在 section 结构上落地。
+  // test2-03 全 deck-flex（9/9 同 class）、test2-04 全 abyss-panel（8/10 同 class）= 同质化。
+  // 度量：section 首个语义 class（排除 deck-flex/deck-grid/reveal 工具类）的唯一性。
+  // 泛容器 class（panel/page/slide/section-N/content）不算语义角色。
+  const GENERIC_SECTION_CLASSES = new Set([
+    'deck-flex', 'deck-grid', 'present', 'stack',
+    'panel', 'page', 'slide', 'section', 'content', 'container',
+  ]);
+  const sectionSemanticClasses = sections.map(s => {
+    const cls = classOf(s.attrs).split(/\s+/)
+      .filter(t => t && !GENERIC_SECTION_CLASSES.has(t));
+    return cls[0] || '';  // 首个语义 class
+  }).filter(Boolean);
+  const distinctSectionClasses = new Set(sectionSemanticClasses).size;
+  const maxSectionClassCount = sectionSemanticClasses.length === 0 ? 0
+    : Math.max(...Object.values(
+        sectionSemanticClasses.reduce((acc, c) => { acc[c] = (acc[c] || 0) + 1; return acc; }, {})
+      ));
+  const maxSectionShare = sections.length ? maxSectionClassCount / sections.length : 0;
+  // structuralVariety: 独特 class 占比映射到 0-100
+  // ≥60% 页面有独特 class = 及格（100）；全 deck 同一 class = 0
+  const varietyRatio = sections.length ? distinctSectionClasses / sections.length : 0;
+  const structuralVariety = Math.min(100, Math.round(varietyRatio / 0.6 * 100));
+  // 同质化标志：某一 class 占比 ≥ 70% = 硬失败信号
+  const homogeneous = maxSectionShare >= 0.7;
+
+  // 14. CraftDensity（2026-07 新增）：CSS 装饰工艺密度
+  // 堵"结构合规但视觉扁平"的盲区——qualityScore 95 但 0 渐变 0 阴影 0 伪元素的 deck
+  // 能通过四维检测，实际精致度远低于种子模板。本维度度量 CSS 工艺手法密度：
+  //   (a) 渐变层次：linear/radial/conic-gradient 声明数 + 多 stop（≥3 stops 说明有层次意图）
+  //   (b) box-shadow 多层叠加：≥2 层 shadow = 有深度意图，inset shadow 另算
+  //   (c) 伪元素装饰：::before/::after 用于视觉（content 非 '' clearfix），排除 .clearfix 工具类
+  //   (d) filter 视觉效果：blur / drop-shadow / backdrop-filter（排除 url() 滤镜引用）
+  //   (e) clip-path 非矩形裁切：polygon/ellipse 等（矩形 inset 不算）
+  // 归一化到 0-100，阈值参考种子模板实测：种子模板 craftScore 通常 40-80，扁平 deck <20。
+  const gradients = (cssText.match(/(?:linear|radial|conic)-gradient\s*\(/gi) || []).length;
+  // 多 stop 渐变：gradient 里逗号 >2 个说明至少 3 个色 stop（有层次意图）
+  // 修 P0:旧正则 [^)]* 在 rgba(R,G,B,A) 的第一个 ) 处截断,把 rgba 内逗号误计为 stop 分隔符。
+  // 正确做法:先用占位符保护 rgba()/hsla() 内部逗号,匹配完再还原。
+  const _cssTextProtected = cssText.replace(/rgba?\([^)]+\)/gi, '').replace(/hsla?\([^)]+\)/gi, '');
+  const multiStopGradients = (_cssTextProtected.match(/(?:linear|radial|conic)-gradient\s*\([^)]*(?:,[^)]*){2,}/gi) || []).length;
+  // box-shadow 声明总数（含多层）
+  const boxShadowRules = (cssText.match(/box-shadow\s*:[^;}]+/gi) || []);
+  const shadows = boxShadowRules.length;
+  // 多层 shadow：单个 box-shadow 值里有 ≥2 个偏移对（逗号分隔，rgba/hex 后跟偏移）
+  const multiLayerShadows = boxShadowRules.filter(s => (s.match(/(?:rgba?\(|#[0-9a-f]{3,8})\s+[-\d]/gi) || []).length >= 2).length;
+  const insetShadows = boxShadowRules.filter(s => /\binset\b/i.test(s)).length;
+  // 伪元素装饰：排除 clearfix（content:"" 或 content:'.' 且带 clear/clearfix class）
+  const beforeAfter = (styleBlocks.match(/::?(?:before|after)\s*\{/gi) || []).length;
+  const clearfixPseudos = (styleBlocks.match(/::?(?:before|after)\s*\{[^}]*(?:clear\s*:|content\s*:\s*['"]\s*['"])/gi) || []).length;
+  const decorativePseudos = Math.max(0, beforeAfter - clearfixPseudos);
+  // filter 视觉效果（排除 url() 引用）
+  const filterVisual = (cssText.match(/filter\s*:\s*(?!url)[^;}]*\b(?:blur|drop-shadow|backdrop-filter|brightness|contrast|saturate|hue-rotate)\b/gi) || []).length;
+  // clip-path 非矩形裁切（polygon/ellipse/circle，排除 inset 矩形）
+  const clipPathNonRect = (cssText.match(/clip-path\s*:\s*(?:polygon|ellipse|circle)/gi) || []).length;
+
+  // 归一化：每种手法独立贡献，取加权和后映射到 0-100
+  // 权重参考种子模板实测：渐变是最大的精致度区分器，伪元素和阴影次之
+  const craftRaw =
+    Math.min(40, gradients * 5 + multiStopGradients * 3) +     // 渐变最多贡献 40
+    Math.min(25, shadows * 5 + multiLayerShadows * 3 + insetShadows * 2) + // 阴影最多贡献 25
+    Math.min(20, decorativePseudos * 5) +                       // 伪元素最多贡献 20
+    Math.min(10, filterVisual * 5) +                            // 滤镜最多贡献 10
+    Math.min(5, clipPathNonRect * 5);                           // clip-path 最多贡献 5
+  const craftDensity = Math.min(100, Math.round(craftRaw));
+
   return {
     file: path.basename(abs),
     slides: sections.length,
@@ -557,6 +629,25 @@ function measure(file) {
     technicalCraft,
     audience,
     bodyPx: +bodyPx.toFixed(1),
+    craftDensity,
+    craftDetails: {
+      gradients,
+      multiStopGradients,
+      shadows,
+      multiLayerShadows,
+      insetShadows,
+      decorativePseudos,
+      filterVisual,
+      clipPathNonRect,
+    },
+    structuralVariety,
+    distinctSectionClasses,
+    maxSectionShare,
+    maxSectionClass: sectionSemanticClasses.length
+      ? Object.entries(sectionSemanticClasses.reduce((acc, c) => { acc[c] = (acc[c] || 0) + 1; return acc; }, {}))
+          .sort((a, b) => b[1] - a[1])[0]?.[0] || ''
+      : '',
+    homogeneous,
   };
 }
 
@@ -576,10 +667,15 @@ function score(m) {
   sMetaphor = Math.max(0, sMetaphor - metaphorPenalty);
   const overall = Math.round(sScale * 0.3 + sCommit * 0.25 + sTension * 0.2 + sMetaphor * 0.25);
   // 6 维 rubric(advisory,对标 Apple Design Awards / Awwwards / UX Design Awards)
-  const visualExcellence = Math.round((sScale + sCommit + sTension) / 3);
+  // craftDensity 修正（2026-07）：visualExcellence 原本是三组均分，对 0 渐变 0 阴影的扁平 deck
+  // 盲区。现在把 craftDensity 作为第四组纳入，visualExcellence 能反映"工艺精致度"。
+  const sCraft = m.craftDensity;
+  const visualExcellence = Math.round((sScale + sCommit + sTension + sCraft) / 4);
+  // structuralVariety 仅 advisory 参考,不进 cohesion/qualityScore。
+  // 深海 deck abyss-panel 统一 = 设计语言一致性,不是同质化——机械指标无法区分。
   const cohesion = Math.min(100, Math.round((m.layoutVariety * 100 + Math.max(0, 100 - metaphorPenalty) + (m.colorContrast ?? 50)) / 3));
   const qualityScore = Math.round((visualExcellence + cohesion + m.communication + m.audience + m.innovation + m.technicalCraft) / 6);
-  return { sScale: Math.round(sScale), sCommit: Math.round(sCommit), sTension: Math.round(sTension), sMetaphor: Math.round(sMetaphor), metaphorPenalty, overall, visualExcellence, cohesion, qualityScore };
+  return { sScale: Math.round(sScale), sCommit: Math.round(sCommit), sTension: Math.round(sTension), sMetaphor: Math.round(sMetaphor), sCraft, sStructure: m.structuralVariety, metaphorPenalty, overall, visualExcellence, cohesion, qualityScore };
 }
 
 function report(m) {
@@ -596,6 +692,12 @@ function report(m) {
   console.log(`    用色投入 colorCommit    : 每页均 ${m.avgCommitPerPage} 个色块 (${m.fullBleedSlides} 处)  (${s.sCommit}/100)  ${commitNote}`);
   console.log(`    构图张力 tension        : ${m.asymSplits} 处非对称分割  (${s.sTension}/100)  ${m.asymSplits >= 2 ? '✓' : '⚠ 全对称'}`);
   console.log(`    隐喻贯彻 metaphor       : ${m.nativePrimitives} 原语 / ${m.distinctLayouts} 种布局  (${s.sMetaphor}/100)${s.metaphorPenalty ? `  ⚠ 节奏惩罚 -${s.metaphorPenalty}` : ''}`);
+  const craftNote = m.craftDensity >= 50 ? '✓' : m.craftDensity >= 30 ? '◐ 够用' : '⚠ 装饰稀疏(无渐变/阴影/伪元素)';
+  console.log(`    工艺精致 craftDensity  : 渐变${m.craftDetails.gradients}·阴影${m.craftDetails.shadows}·伪元素${m.craftDetails.decorativePseudos}·滤镜${m.craftDetails.filterVisual}·clip${m.craftDetails.clipPathNonRect}  (${s.sCraft}/100)  ${craftNote}`);
+  const structNote = m.homogeneous
+    ? `⚠ "${m.maxSectionClass}" 占 ${Math.round(m.maxSectionShare * 100)}% — 若是有意统一视觉语言则 OK;若是偷懒同构需拆分(人工判断,不阻断)`
+    : m.structuralVariety >= 60 ? '✓' : `◐ ${m.distinctSectionClasses} 种/${m.slides} 页`;
+  console.log(`    结构多样 structureVar : ${m.distinctSectionClasses} 种 section class / ${m.slides} 页  (${s.sStructure}/100)  ${structNote}  [advisory]`);
   console.log(`      └ 原生形式: ${signals}`);
   if (m.maxArchetypeCount >= 3 && m.archetypeMaxShare >= 0.25) {
     console.log(`      ⚠ archetype 过度使用: "${m.maxArchetype}" ×${m.maxArchetypeCount} (${Math.round(m.archetypeMaxShare * 100)}%)  → -8  建议:该页型占比过高,用 A6/A2/A10 打断`);
@@ -627,7 +729,7 @@ function report(m) {
   console.log(`    ${'─'.repeat(48)}`);
   console.log(`    设计强度总分: ${s.overall}/100   (尺度 30% · 用色 25% · 张力 20% · 隐喻 25%)`);
   console.log(`    6 维 rubric(advisory,对标 Apple/Awwwards/UX Design Awards):`);
-  console.log(`      视觉卓越 visualExcellence : ${s.visualExcellence}/100  (尺度+用色+张力)`);
+  console.log(`      视觉卓越 visualExcellence : ${s.visualExcellence}/100  (尺度+用色+张力+工艺)`);
   console.log(`      一致连贯 cohesion         : ${s.cohesion}/100  (布局多样性+节奏呼吸+对比度)`);
   console.log(`      沟通清晰 communication     : ${m.communication}/100  (action-title 完整性)`);
   console.log(`      受众体验 audience          : ${m.audience}/100  (正文字号 ${m.bodyPx}px + 对比度)`);
@@ -655,12 +757,20 @@ for (const f of files) {
 if (goldenFile && fs.existsSync(path.resolve(goldenFile)) && results.length) {
   const g = measure(goldenFile);
   const gs = score(g);
-  console.log(`\n  金标准参考: ${g.file}  (${g.slides} slides)  总分 ${gs.overall}/100`);
+  console.log(`\n  金标准参考: ${g.file}  (${g.slides} slides)  总分 ${gs.overall}/100  craftDensity ${gs.sCraft}/100`);
   console.log(`  ${'─'.repeat(48)}`);
   for (const r of results) {
     const d = r.s.overall - gs.overall;
     const tag = d >= -5 ? '✓ 对齐金标准' : (d >= -15 ? '◐ 接近' : '✗ 低于金标准');
+    // craftDensity 种子比对（2026-07）：生成 deck 工艺精致度不应显著低于种子。
+    // 种子 template-01 editorial 只有 10 分（刻意克制），但生成 deck 借了种子后 0 渐变 0 阴影
+    // = 比种子还低 → 只借了 voice 没借装饰密度。阈值：≥种子的 50%。
+    const craftDelta = r.s.sCraft - gs.sCraft;
+    const craftFloor = Math.max(5, Math.round(gs.sCraft * 0.5));
+    const craftOk = r.s.sCraft >= craftFloor;
+    const craftTag = craftOk ? '✓' : `✗ 低于种子 50%(阈值 ${craftFloor})`;
     console.log(`  ${r.m.file}: ${r.s.overall} vs 金标准 ${gs.overall}  (Δ ${d > 0 ? '+' : ''}${d})  ${tag}`);
+    console.log(`    craftDensity: ${r.s.sCraft} vs 种子 ${gs.sCraft}  (Δ ${craftDelta > 0 ? '+' : ''}${craftDelta})  ${craftTag}`);
   }
 }
 
@@ -668,19 +778,26 @@ const gateMode = process.argv.includes('--gate');
 if (gateMode) {
   // G002-① 反 slop 地板:scaleContrast≥2.5(允许 dark-tech 驾驶舱合理低尺度,阻断 <2.5 真太平)
   // + metaphor≥1(至少一个主题原生形式,防无主题语法的纯模板)。扩词汇后 9 examples 全过。
-  // m 是 for 循环局部变量;这里遍历 results(单文件 grade-gate 调用时 length=1,多文件要求全过)。
+  // G002-③ craftDensity 反扁平地板(2026-07)：≥10 分(至少 2 个装饰元素)。
+  //   绝对阈值低(种子 template-01 editorial 也只有 10 分)——只挡完全裸奔的 deck，
+  //   精准约束靠 --golden 种子比对(≥种子 50%)。无 --golden 时这条是最低保底。
+  // 注:structuralVariety 仅作 advisory 度量,不做 --gate 硬门禁。
+  //   深海 deck 8/10 页 abyss-panel 被用户评为"最有设计感"——统一视觉语言 ≠ 同质化。
+  //   机械指标无法区分"有设计意图的统一"与"偷懒的同构",不应阻断交付。
   const failures = [];
   for (const r of results) {
     const nativeHit = Object.values(r.m.nativeSignals).filter(Boolean).length;
     const scaleOk = r.m.scaleContrast >= 2.5;
     const metaphorOk = nativeHit >= 1;
+    const craftOk = r.m.craftDensity >= 10;
     if (!scaleOk || !metaphorOk) failures.push(`${r.m.file}: scaleContrast ${r.m.scaleContrast}:1${scaleOk ? '' : '(✗<2.5)'}, metaphor ${nativeHit}${metaphorOk ? '' : '(✗<1)'}`);
+    if (!craftOk) failures.push(`${r.m.file}: craftDensity ${r.m.craftDensity}(✗<10, 装饰裸奔——渐变${r.m.craftDetails.gradients}/阴影${r.m.craftDetails.shadows}/伪元素${r.m.craftDetails.decorativePseudos})`);
   }
   const gateFail = failures.length > 0;
   if (gateFail) failures.forEach(msg => console.log(`  ✗ ${msg}`));
-  console.log(`\n  --gate 反 slop 地板 (${results.length} file(s), 阈值 scaleContrast≥2.5 & metaphor≥1) → ${gateFail ? 'FAIL' : 'PASS'}`);
+  console.log(`\n  --gate 反 slop 地板 (${results.length} file(s), 阈值 scaleContrast≥2.5 & metaphor≥1 & craftDensity≥10) → ${gateFail ? 'FAIL' : 'PASS'}`);
   process.exit(gateFail ? 1 : 0);
 }
-console.log('\n  注：本脚本是 advisory（默认退出码 0，除非 --gate）。设计强度是"要够的天花板"；--gate 把 scaleContrast≥2.5 且 metaphor≥1 作为反 slop 地板（防无主题形式的纯模板）。');
-console.log('  四维不达标 → 回 references/design-fundamentals.md §5 四维自检，重做而非微调。\n');
+console.log('\n  注：本脚本是 advisory（默认退出码 0，除非 --gate）。设计强度是"要够的天花板"；--gate 把 scaleContrast≥2.5 且 metaphor≥1 且 craftDensity≥10 且非同质化作为反 slop 地板。');
+console.log('  六维不达标 → 回 references/design-fundamentals.md §5 六维自检，重做而非微调。\n');
 process.exit(0);

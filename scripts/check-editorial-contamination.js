@@ -55,8 +55,13 @@ function isEditorialTopic(topic) {
 
 function extractClasses(html) {
   const set = new Set();
-  const re = /class="([^"]+)"/g; let m;
-  while ((m = re.exec(html))) m[1].split(/\s+/).forEach(c => { if (c) set.add(c); });
+  // 修 P1:旧正则只匹配双引号 class="..."。补单引号和无引号匹配,
+  // 防止手写 HTML 用 class='...' 的 archive token 逃过污染检测。
+  const re = /class\s*=\s*(?:"([^"]+)"|'([^']+)'|(\S+))/gi; let m;
+  while ((m = re.exec(html))) {
+    const val = m[1] || m[2] || m[3] || '';
+    val.split(/\s+/).forEach(c => { if (c) set.add(c); });
+  }
   return set;
 }
 

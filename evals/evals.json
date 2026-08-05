@@ -1,0 +1,40 @@
+{
+  "skill_name": "revealjs-presentation",
+  "evals": [
+    {
+      "id": 1,
+      "name": "quick-path-a-history",
+      "prompt": "做个 8 页的 AI 大模型发展史 PPT，给技术团队看的",
+      "expected_output": "8-section single HTML deck, editorial-serif voice (Path A seed), passes grade-gate, design-strength ≥75, action titles tell a complete story",
+      "files": []
+    },
+    {
+      "id": 2,
+      "name": "quick-path-b-data-report",
+      "prompt": "帮我做一个 10 页的季度销售数据汇报 deck，风格要简洁专业，数据是：Q2 营收 1.2亿（同比+23%），新客户 340 家，流失率降至 4.1%，TOP3 产品线占比 68%",
+      "expected_output": "10-section HTML deck, data/consulting voice (Path B), real numbers used as proof objects, evidence labels present, design-strength ≥75",
+      "files": []
+    },
+    {
+      "id": 3,
+      "name": "path-c-off-template-wow",
+      "prompt": "做一个关于詹姆斯韦伯太空望远镜(JWST)最新发现的科普 PPT，12 页，要惊艳那种，宇宙星云的照片可以当素材",
+      "expected_output": "12-section bespoke HTML deck (Path C), NOT using template-01 editorial skin, astronomy-specific visual language, passes editorial-contamination gate, design-strength ≥75",
+      "files": []
+    },
+    {
+      "id": 4,
+      "name": "english-pitch-deck",
+      "prompt": "Make a 12-slide Series A pitch deck for a fintech startup called PayFlow. We're a B2B payment orchestration platform. ARR $2M, growing 40% MoM, raising $8M.",
+      "expected_output": "12-section HTML deck in English, pitch/consulting voice, investor-friendly structure (problem→solution→traction→market→ask), real numbers with evidence labels",
+      "files": []
+    },
+    {
+      "id": 5,
+      "name": "fix-existing-deck",
+      "prompt": "我这个 PPT 文字被裁切了，投影仪上显示不全，帮我修一下",
+      "expected_output": "Reads existing HTML, diagnoses overflow via grade-gate/validate.js, fixes overflow issues, re-runs qa.js to verify, returns fixed HTML with explanation",
+      "files": []
+    }
+  ]
+}

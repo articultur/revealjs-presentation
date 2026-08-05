@@ -46,8 +46,14 @@ function hueSpan(hues) {
   return 360 - Math.max.apply(null, gaps);
 }
 
-/** 检查生成的 HTML 里所有 var(--c-*) 引用都有定义(防 P0:var 未定义→样式静默消失) */
-function verifyVarDefinitions(html) {
+/**
+ * 检查 HTML 里所有 var(--c-*) 引用都有定义(防 P0:var 未定义→样式静默消失)。
+ * 扫两类定义源:(1) HTML 内联 `--c-*:` 定义;(2) 本地 <link rel=stylesheet href> 指向的
+ * CSS 文件(http/CDN 跳过)。后者让用「外置 token CSS」的 deck(如 template-01 link
+ * ../tokens/*.css)不被误报——此前只扫内联,对 link 模式假阳性(误判 7 个核心 var 缺失)。
+ * options.basePath = deck 文件所在目录,用于解析相对 href;不传则只扫内联(向后兼容)。
+ */
+function verifyVarDefinitions(html, options = {}) {
   const refs = new Set();
   const refRe = /var\((--c-[a-z-]+)\)/g;
   let m;
@@ -55,8 +61,41 @@ function verifyVarDefinitions(html) {
   const defs = new Set();
   const defRe = /(--c-[a-z-]+)\s*:/g;
   while ((m = defRe.exec(html)) !== null) defs.add(m[1]);
+  let hasExternalSources = false;
+  if (options.basePath) {
+    const fs = require('fs');
+    const path = require('path');
+    // 顺序无关:匹配 <link> 标签中同时含 rel="stylesheet" 和 href="..."。
+    // 修 P0 bug:旧正则硬编码 rel 在 href 前,href-first 的合法 HTML(如
+    // <link href="..." rel="stylesheet">)永远不匹配 → 链接 CSS 被漏掉 → 误报 var 未定义。
+    const linkRe = /<link\b[^>]*\brel\s*=\s*["']stylesheet["'][^>]*>/gi;
+    let lm;
+    while ((lm = linkRe.exec(html)) !== null) {
+      const tag = lm[0];
+      const hrefMatch = tag.match(/\bhref\s*=\s*["']([^"'()]+)["']/i);
+      if (!hrefMatch) continue;
+      const href = hrefMatch[1];
+      if (/^(https?:)?\/\//.test(href)) {
+        // CDN/远程样式表:无法本地解析。标记存在外部源,使调用方(qa.js)能将
+        // "可能在外部 CSS 定义"的 var 从 missing 中排除——不因无法读取 CDN 而误杀。
+        hasExternalSources = true;
+        continue;
+      }
+      try {
+        const resolved = path.resolve(options.basePath, href);
+        const linked = fs.readFileSync(resolved, 'utf8');
+        defRe.lastIndex = 0;
+        let dm;
+        while ((dm = defRe.exec(linked)) !== null) defs.add(dm[1]);
+      } catch {
+        // 链接文件不可读:不注入定义;若该 var 真未定义会落到 missing(正确行为)。
+      }
+    }
+  }
+  // 有外部 CSS 源时,missing 里可能包含 CDN 定义的 var——无法本地验证,
+  // 不应误报为"未定义"。将 hasExternalSources 返回给调用方做软降级。
   const missing = [...refs].filter(r => !defs.has(r));
-  return { missing, refCount: refs.size };
+  return { missing, refCount: refs.size, hasExternalSources };
 }
 
 function main() {
@@ -65,6 +104,8 @@ function main() {
   console.log('─'.repeat(58));
 
   const results = [];
+  // output/ 被 .gitignore(仅 output/regression/ 入库);烟雾测试写 coverage-*.html 前确保目录在。
+  fs.mkdirSync(path.join(ROOT, 'output'), { recursive: true });
   for (const v of COVERAGE_VOICES) {
     const input = JSON.parse(JSON.stringify(MEDICAL));
     input.voice = v;
@@ -114,4 +155,5 @@ function main() {
 }
 
 if (require.main === module) main();
-module.exports = { COVERAGE_VOICES, hueSpan };
+// verifyVarDefinitions 导出供 qa.js var-resolution 门禁复用(此前孤儿:只在烟雾测试内跑,没接进交付路径)。
+module.exports = { COVERAGE_VOICES, hueSpan, verifyVarDefinitions };

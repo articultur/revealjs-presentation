@@ -60,7 +60,12 @@ function displayStack(pool, kind) {
 }
 
 function fontUrl(pool, kind) {
-  return kind === 'serif' ? pool.serifGoogleFonts : pool.sansGoogleFonts;
+  const fragment = kind === 'serif' ? pool.serifGoogleFonts : pool.sansGoogleFonts;
+  // fontPool 存的是 `family=...` 查询片段;emit <link href> 需完整 URL,这里补 base 前缀。
+  // idempotent:若 voices.json 某条已写完整 http(s) URL 则不重复加。
+  // 修 P1:fragment 为 undefined 时不要拼接 'css2?undefined'(生成 404 <link>),返回 undefined。
+  if (!fragment) return undefined;
+  return fragment.startsWith('http') ? fragment : 'https://fonts.googleapis.com/css2?' + fragment;
 }
 
 function renderCss(v, pool) {

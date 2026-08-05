@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "deck": "revealjs-presentation-workspace/iteration-1/eval-1-quick-path-a/with_skill/outputs/ai-llm-history.html",
+  "passed": false,
+  "state": "needs-visual-signoff",
+  "qualityScore": 92,
+  "gates": {
+    "grade": "pass",
+    "varResolution": "pass",
+    "designStrength": "pass",
+    "elementQuality": "pass",
+    "editorialContamination": "pass",
+    "imageAudit": "skipped",
+    "visual": "skipped",
+    "skeleton": "pass",
+    "designBrief": "pass",
+    "arcAdherence": "pass"
+  },
+  "exemptions": [
+    "--no-visual"
+  ],
+  "artifacts": {}
+}

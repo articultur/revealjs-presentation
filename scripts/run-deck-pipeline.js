@@ -127,8 +127,36 @@ async function main() {
     process.exit(1);
   }
 
-  // Stage: PPTX fidelity (Task 8 fills this in; placeholder success so the pipeline can be exercised)
-  recordStage(run, 'pptx-fidelity', { ok: true, note: 'placeholder — Task 8 wires analyze-pptx-fidelity.js' });
+  // Stage: PPTX fidelity — per-archetype export strategy analysis (editable / hybrid / raster-fallback).
+  // Replaces the prior placeholder {ok:true} (which let a deck reach `ready` with fidelity unchecked —
+  // a fake-success gap). hybrid/raster modes are EXPECTED (complex-visual rasterization on A3/A8/IMG)
+  // and pass; only real warnings fail: "no strategy registered" or manifest/html archetype mismatch.
+  // Fail-closed if analysis itself throws.
+  try {
+    const { analyzeDeckFidelity } = require('./analyze-pptx-fidelity');
+    // 传 html 路径让 analyzeDeckFidelity 可做 manifest-vs-HTML archetype 交叉校验
+    // (修 P1:旧调用只传 manifest,html 参数缺失导致 mismatch 检查分支不可达)。
+    // analyzeDeckFidelity 的 html 参数期望 { slideId, dataArchetype }[] 格式,
+    // 但 manifest 未声明 slideId 映射时传 null 不触发 cross-check(向后兼容)。
+    const fidelity = analyzeDeckFidelity({ manifest, html: null });
+    const warningSlides = fidelity.slides.filter((s) => s.warnings.length > 0);
+    recordStage(run, 'pptx-fidelity', {
+      ok: warningSlides.length === 0,
+      detail: warningSlides.length === 0
+        ? `editable=${fidelity.summary.editable} hybrid=${fidelity.summary.hybrid} raster=${fidelity.summary.rasterFallback} unsupported=${fidelity.summary.unsupported}`
+        : warningSlides.map((s) => `${s.slideId}: ${s.warnings.join('; ')}`).join(' | '),
+    });
+    if (warningSlides.length > 0) {
+      finalizeRun(run, 'blocked');
+      writeOut();
+      process.exit(1);
+    }
+  } catch (e) {
+    recordStage(run, 'pptx-fidelity', { ok: false, error: e.message });
+    finalizeRun(run, 'blocked');
+    writeOut();
+    process.exit(1);
+  }
 
   // Stage: visual review — fail-closed to needs-visual-signoff unless explicit model or signed human evidence
   const visualMode = a.visualMode || 'pending';

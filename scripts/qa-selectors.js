@@ -13,6 +13,7 @@ const LABEL_SELECTOR = [
   '.photo-credit',
   '.evidence-label',
   '.stamp',
+  '.seal',
   '.corner-mark',
   '.corner-tag',
   '[class~="kicker"]',

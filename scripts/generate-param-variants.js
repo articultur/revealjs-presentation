@@ -46,7 +46,10 @@ function minimalBrief(topic, signatureMoment, pacingCurve) {
 
 // 把 design-brief 内嵌进 assembleDeck 产出的 HTML(紧邻 </body> 前)
 function embedBrief(html, brief) {
-  const tag = `<script type="application/json" id="design-brief">${JSON.stringify(brief)}</script>`;
+  // 对齐 generate-archetype-deck.js:838 的转义:JSON.stringify 后 </ 需转义为 <\/
+  // 防 brief 文本含字面 </script> 导致 script 标签提前终止(check-design-brief 报 missing)。
+  const safe = JSON.stringify(brief).replace(/<\//g, '<\\/');
+  const tag = `<script type="application/json" id="design-brief">${safe}</script>`;
   return html.replace('</body>', `${tag}\n</body>`);
 }
 

@@ -288,20 +288,24 @@ const VOICE_SIGNATURES = {
   // technical「控制室 console,swimlane + failure rail」(weight 4 / motion 2)
   technical: {
     sectionClass: { '*': 'console-chrome', A3: 'swimlane' },
-    css: `.voice-technical .console-chrome{box-shadow:inset 4px 0 0 var(--c-border);}
+    css: `.voice-technical .console-chrome{box-shadow:inset 4px 0 0 var(--c-border),0 0.3em 0.5em rgba(0,0,0,0.15);}
+.voice-technical .console-chrome::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--c-accent),transparent);}
 .voice-technical .kicker{background:var(--c-fg);color:var(--c-bg);padding:0.28em 0.65em;}
 .voice-technical .pin{border-top:2px solid var(--c-accent);padding-top:0.35em;}
 .voice-technical .swimlane h4{border-left:2px solid var(--c-fg);padding-left:0.5em;}
 .voice-technical .swimlane p{border-left:2px solid var(--c-border);padding-left:0.5em;}
-.voice-technical table{border:1px solid var(--c-border);}`,
+.voice-technical table{border:1px solid var(--c-border);box-shadow:0 0.15em 0.3em rgba(0,0,0,0.1);}
+.voice-technical .sig-grid>div{box-shadow:0.12em 0.15em 0.3em rgba(0,0,0,0.1);}`,
   },
   // illustrated「暖色亲近感,sticker notes + 轻微错位」(weight 4 / motion 3)
   illustrated: {
     sectionClass: { A7: 'sticker-notes', A11: 'sticker-notes' },
-    css: `.voice-illustrated .sticker-notes .sig-grid>div{border:2px dashed var(--c-fg-3) !important;border-radius:0.6em;box-shadow:0.12em 0.14em 0 var(--c-border);padding:0.9em !important;}
+    css: `.voice-illustrated .sticker-notes .sig-grid>div{border:2px dashed var(--c-fg-3) !important;border-radius:0.6em;box-shadow:0.12em 0.14em 0 var(--c-border),0.3em 0.3em 0.5em rgba(0,0,0,0.06);padding:0.9em !important;}
 .voice-illustrated .sticker-notes .sig-grid>div:nth-child(odd){transform:rotate(-0.6deg);}
 .voice-illustrated .sticker-notes .sig-grid>div:nth-child(even){transform:rotate(0.5deg);}
-.voice-illustrated .kicker{border:1.5px dashed var(--c-accent);border-radius:1em;padding:0.25em 0.7em;align-self:flex-start;}`,
+.voice-illustrated .sticker-notes::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:radial-gradient(circle at 80% 10%,rgba(255,255,255,0.04),transparent 50%);pointer-events:none;}
+.voice-illustrated .kicker{border:1.5px dashed var(--c-accent);border-radius:1em;padding:0.25em 0.7em;align-self:flex-start;}
+.voice-illustrated .pin,.voice-illustrated .evidence-label{box-shadow:0.08em 0.1em 0 rgba(0,0,0,0.06);}`,
   },
   // retro「几何撞色,memphis grid + ticket」(weight 6 / motion 4)
   retro: {
@@ -322,8 +326,9 @@ const VOICE_SIGNATURES = {
   // data「深色仪表盘,图表墙 + 标注承载结论」→ 终端读数面板化(weight 4 / motion 2)
   data: {
     sectionClass: { A5: 'terminal-readout', A7: 'terminal-readout', A9: 'terminal-readout' },
-    css: `.voice-data .terminal-readout{outline:1px solid var(--c-border);outline-offset:-0.5em;}
-.voice-data .pin,.voice-data .evidence-label{border:1px solid var(--c-border);background:var(--c-bg-paper);padding:0.3em 0.65em;}
+    css: `.voice-data .terminal-readout{outline:1px solid var(--c-border);outline-offset:-0.5em;box-shadow:0 0.3em 0.6em rgba(0,0,0,0.12),inset 0 1px 0 rgba(255,255,255,0.06);}
+.voice-data .terminal-readout::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--c-accent),transparent);}
+.voice-data .pin,.voice-data .evidence-label{border:1px solid var(--c-border);background:var(--c-bg-paper);padding:0.3em 0.65em;box-shadow:0.12em 0.14em 0 rgba(0,0,0,0.08);}
 .voice-data .sig-grid>div{border-top:3px solid var(--c-accent) !important;}
 .voice-data table{border:1px solid var(--c-border);}
 .voice-data th{border-bottom-width:3px !important;}`,
@@ -369,13 +374,44 @@ const VOICE_SIGNATURES = {
 .voice-editorial section[data-archetype="A4"]>div:first-child{box-shadow:inset 0 0 0 0.45em var(--c-fg),inset 0 0 0 calc(0.45em + 1px) var(--c-bg);}
 .voice-editorial h1,.voice-editorial h2,.voice-editorial h3{font-weight:600;}`,
   },
+  // editorial-serif「档案馆/策展(seed template-01 voice)」→ 同 editorial 签名但选择器用 .voice-editorial-serif
+  'editorial-serif': {
+    sectionClass: { '*': 'feature-spread' },
+    css: `.voice-editorial-serif .kicker{font-family:var(--f-display);font-style:italic;text-transform:none;letter-spacing:0.06em;font-size:0.62em;}
+.voice-editorial-serif section[data-archetype="A2"] p::first-letter{font-family:var(--f-display);font-size:2.8em;line-height:0.9;float:left;padding-right:0.12em;color:var(--c-accent);}
+.voice-editorial-serif section[data-archetype="A4"]>div:first-child{box-shadow:inset 0 0 0 0.45em var(--c-fg),inset 0 0 0 calc(0.45em + 1px) var(--c-bg);}
+.voice-editorial-serif .sig-grid>div{box-shadow:0.15em 0.18em 0.3em rgba(0,0,0,0.08);}
+.voice-editorial-serif .pin,.voice-editorial-serif .evidence-label{box-shadow:0.1em 0.12em 0 rgba(0,0,0,0.06);}
+.voice-editorial-serif h1,.voice-editorial-serif h2,.voice-editorial-serif h3{font-weight:600;}`,
+  },
   // luxury「深底金调,plinth + material rail + lookbook 留白」→ 金字轨道 + 轻字重宽字距(weight 3 / motion 1)
   luxury: {
     sectionClass: { '*': 'plinth' },
-    css: `.voice-luxury .plinth{box-shadow:inset 1px 0 0 var(--c-accent);}
+    css: `.voice-luxury .plinth{box-shadow:inset 1px 0 0 var(--c-accent),0 0.4em 0.8em rgba(0,0,0,0.12);}
+.voice-luxury .plinth::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--c-accent),transparent);}
 .voice-luxury h1,.voice-luxury h2,.voice-luxury h3{font-weight:400;letter-spacing:0.06em;}
 .voice-luxury .kicker{letter-spacing:0.34em;}
-.voice-luxury .pin,.voice-luxury .evidence-label{letter-spacing:0.2em;}`,
+.voice-luxury .pin,.voice-luxury .evidence-label{letter-spacing:0.2em;box-shadow:0.1em 0.12em 0.2em rgba(0,0,0,0.08);}
+.voice-luxury .sig-grid>div{box-shadow:0.15em 0.2em 0.4em rgba(0,0,0,0.1);}`,
+  },
+  // medical-readout「临床读数面板,数据密集」→ 仪表盘阴影 + 读数面板深度(weight 4 / motion 2)
+  'medical-readout': {
+    sectionClass: { A5: 'clinical-readout', A9: 'clinical-readout' },
+    css: `.voice-medical-readout .clinical-readout{box-shadow:inset 0 0 0 1px var(--c-border),0 0.3em 0.6em rgba(0,0,0,0.1);}
+.voice-medical-readout .clinical-readout::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--c-accent),var(--c-border) 40%,transparent);}
+.voice-medical-readout .pin,.voice-medical-readout .evidence-label{box-shadow:0.1em 0.12em 0 rgba(0,0,0,0.08);}
+.voice-medical-readout .sig-grid>div{border-top:3px solid var(--c-accent) !important;box-shadow:0.15em 0.15em 0 rgba(0,0,0,0.06);}
+.voice-medical-readout table{box-shadow:0 0.2em 0.4em rgba(0,0,0,0.08);}
+.voice-medical-readout h1,.voice-medical-readout h2,.voice-medical-readout h3{font-weight:600;}`,
+  },
+  // chinese-ink-wash「水墨写意,留白意境」→ 宣纸底色渐变 + 墨痕伪元素(weight 3 / motion 1)
+  'chinese-ink-wash': {
+    sectionClass: { '*': 'ink-wash' },
+    css: `.voice-chinese-ink-wash .ink-wash::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:radial-gradient(ellipse at 30% 20%,rgba(0,0,0,0.03),transparent 60%);pointer-events:none;}
+.voice-chinese-ink-wash .kicker::after{content:'';display:inline-block;width:2em;height:1px;background:linear-gradient(90deg,var(--c-accent),transparent);margin-left:0.5em;vertical-align:middle;}
+.voice-chinese-ink-wash .sig-grid>div{box-shadow:0.1em 0.15em 0.3em rgba(0,0,0,0.06);}
+.voice-chinese-ink-wash .pin,.voice-chinese-ink-wash .evidence-label{box-shadow:0.08em 0.1em 0 rgba(0,0,0,0.05);}
+.voice-chinese-ink-wash h1,.voice-chinese-ink-wash h2,.voice-chinese-ink-wash h3{font-weight:500;}`,
   },
 };
 

@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "deck": "revealjs-presentation-workspace/iteration-1/eval-3-path-c-wow/with_skill/outputs/jwst-cosmic-witness.html",
+  "passed": false,
+  "state": "needs-visual-signoff",
+  "qualityScore": 83,
+  "gates": {
+    "grade": "pass",
+    "varResolution": "pass",
+    "designStrength": "pass",
+    "elementQuality": "pass",
+    "editorialContamination": "pass",
+    "imageAudit": "pass",
+    "visual": "skipped",
+    "skeleton": "pass",
+    "designBrief": "pass",
+    "arcAdherence": "pass"
+  },
+  "exemptions": [
+    "--no-visual"
+  ],
+  "artifacts": {}
+}

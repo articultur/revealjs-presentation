@@ -122,6 +122,11 @@ const exemptionFlags = [];
 if (args.includes('--no-visual')) exemptionFlags.push('--no-visual');
 if (noSkeletonGate) exemptionFlags.push('--no-skeleton-gate');
 if (noEditorialCheck) exemptionFlags.push('--no-editorial-check');
+// --editorial-topic 不进 exemptionFlags:它是主题声明(声明 deck 原生属 editorial),
+// 不是门禁旁路。声明后 editorial-contamination 门禁仍跑(走 --editorial-topic 路径
+// 判定),只是改为"archive 构件合规"模式而非"非 editorial 主题穿皮"判定。
+// 放入 exemptionFlags 会让 writeQaSummary 把 state 永久封顶 needs-visual-signoff,
+// 即使 deck 真的是 editorial 原生且视觉已签字——合法 editorial deck 永远无法 ready。
 if (noImageAudit) exemptionFlags.push('--no-image-audit');
 if (allowVisualPending) exemptionFlags.push('--allow-visual-pending');
 
@@ -291,7 +296,7 @@ function detectSelfReviewReviewer(reviewer) {
 // needs visual signoff and is not delivery-ready.
 function writeQaSummary(file) {
   if (!summary) return;
-  const floorKeys = ['grade', 'designStrength', 'elementQuality', 'editorialContamination', 'imageAudit', 'skeleton', 'designBrief', 'arcAdherence'];
+  const floorKeys = ['grade', 'varResolution', 'designStrength', 'elementQuality', 'editorialContamination', 'imageAudit', 'skeleton', 'designBrief', 'arcAdherence'];
   const floorFailed = summary.fileMissing === true || floorKeys.some((k) => summary.gates[k] === 'fail');
   const visualReady = summary.gates.visual === 'human-signoff' || summary.gates.visual === 'model';
   // 豁免封顶:带任何豁免 flag(--no-*/--allow-visual-pending)的运行即使门禁全绿+视觉签字,
@@ -328,6 +333,7 @@ for (const file of files) {
     qualityScore: null,
     gates: {
       grade: null,
+      varResolution: null,
       designStrength: null,
       elementQuality: null,
       editorialContamination: null,
@@ -351,6 +357,28 @@ for (const file of files) {
   const grade = runNode('grade-gate', 'grade-gate.js', [abs], 420_000);
   record(grade.status === 0 && !grade.error, 'grade-gate.js all green', summarizeOutput(grade), 'grade');
 
+  // var-resolution 硬门禁(防 P0:archetype 引用的 --c-* var 未定义 → 样式静默消失而门禁全绿)。
+  // verifyVarDefinitions 此前孤儿(只在 test-style-coverage 烟雾测试跑,没接进交付路径),现挂为 qa.js
+  // 硬门禁(floor),与 grade-gate 红灯同级。扫内联 + 本地 <link> CSS 的 var 定义(http/CDN 跳过)。
+  {
+    const { verifyVarDefinitions } = require('./test-style-coverage.js');
+    const htmlForVars = fs.readFileSync(abs, 'utf8');
+    const varCheck = verifyVarDefinitions(htmlForVars, { basePath: path.dirname(abs) });
+    // hasExternalSources = 存在 CDN/远程 <link> stylesheet,无法本地读取。
+    // 此时 missing 里的 var 可能定义在远程 CSS 中,不应硬判 FAIL(误杀合法 CDN deck)。
+    const varOk = varCheck.missing.length === 0 || varCheck.hasExternalSources;
+    record(
+      varOk,
+      varCheck.missing.length === 0
+        ? `var-resolution: ${varCheck.refCount} 个 --c-* 引用全部有定义(内联+链接 CSS)`
+        : varCheck.hasExternalSources
+          ? `var-resolution: ${varCheck.missing.length} 个 var 未在本地找到,但存在外部 CDN CSS(${varCheck.missing.slice(0, 3).join(', ')}${varCheck.missing.length > 3 ? '…' : ''})— 可能定义在远程,跳过硬判`
+          : `var-resolution: ${varCheck.missing.length} 个 var 未定义 → 样式会静默消失 (${varCheck.missing.slice(0, 5).join(', ')}${varCheck.missing.length > 5 ? '…' : ''})`,
+      '',
+      'varResolution',
+    );
+  }
+
   const strength = runNode('design-strength-check', 'design-strength-check.js', [abs]);
   const qualityScore = parseQualityScore(strength.stdout);
   summary.qualityScore = qualityScore ?? null;
@@ -360,8 +388,9 @@ for (const file of files) {
     summarizeOutput(strength),
     'designStrength',
   );
-  if (qualityScore < 75) {
-    // Explicit branch kept for contract tests and future reviewers: this is a hard QA failure.
+  if (qualityScore === null || qualityScore < 75) {
+    // qualityScore === null = parse failure (design-strength-check 输出不可读) → fail-closed。
+    // 旧代码依赖 null < 75 === true 的 JS 隐式转换,现在显式判 null 防退化。
     failed = true;
     fileFailed = true;
   }

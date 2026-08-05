@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "deck": "/var/folders/h1/20ms98_s5qg6q4ph1z_5hck80000gn/T/reveal-authoring-e2e-uSICms/ppt/index.html",
+  "passed": false,
+  "state": "needs-visual-signoff",
+  "qualityScore": 78,
+  "gates": {
+    "grade": "pass",
+    "varResolution": "pass",
+    "designStrength": "pass",
+    "elementQuality": "pass",
+    "editorialContamination": "pass",
+    "imageAudit": "skipped",
+    "visual": "skipped",
+    "skeleton": "pass",
+    "designBrief": "pass",
+    "arcAdherence": "pass"
+  },
+  "exemptions": [
+    "--no-visual"
+  ],
+  "artifacts": {}
+}

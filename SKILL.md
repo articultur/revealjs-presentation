@@ -21,9 +21,14 @@ description: |
    - **GHOST（轻骨架预览,5 秒可扫能喊停）**：双条件任一不满足 → 先生成 ghost deck（每页 role + action title + proof object）+ Theme-to-Design Router 七行说明,等用户"继续 / 改 X"才生成 HTML。**Ghost Deck Test**：只读 action titles 应能讲完整故事——读不通先改论证,不进视觉设计
 
    **图像驱动主题**（城市/旅游/美食/产品实拍,见主题形状表 09 行）骨架前先按 `references/image-driven-deck.md` §4 工作流:列关键词清单 → Wikimedia Commons 搜图 → 选图,再搭骨架（每页绑一张 CC-BY 图）
-4. **生成单个 HTML**：内联 CSS+JS、Reveal.js 4.6.0 CDN、1280×720 画布
-5. **自检（统一验收入口 `node scripts/qa.js <file>`）**：qa.js 一次跑完全量验收——`grade-gate.js` 十四门禁地板全绿（含溢出、对比度、pin、空间完整性）+ `design-strength-check.js` 品质总分 ≥75（天花板：尺度≥3:1、有满版色块面板、有非对称分割、有主题原生形式）+ `element-quality-check.js` 元素子分 + 图像驱动自动 `audit-image-assets.js` + `visual-verdict.js` 视觉语义评审（G1–G14 兜不住的感官类问题：图示不清 / 标签不可读 / 图表不解释主张 / 图片廉价 / 主题割裂）。**无 key / 未 opt-in = UNSKIPPABLE-BLOCKED**（不静默降级）；`generate-deck.js --gates` 只跑地板+design-strength **≠ 全量验收**，完整机制（dry-run / signoff / 路径 × 模式验收矩阵）见 §验证 与 `references/validation.md`，**任何视觉调整后必须重跑**。路径 A scaffold 改写后验收加 `--seed`：`node scripts/qa.js <file> --seed examples/<seed>.html`（skeleton-diff 换皮门禁：骨架相似度 >70% = 硬失败）。
-6. **交付**：HTML 路径 + 运行/导出说明 + 验证状态
+4. **生成单个 HTML**：内联 CSS+JS、Reveal.js 4.6.0 CDN、1280×720 画布。**弧线→结构映射（advisory，提升叙事质量）**：弧线不是标签——narrative-arcs.md 里每条弧线定义了不同的**页面语法清单**（如 N1 账本审计 = 立据页→对账页→裁决页→封账页；N4 画廊漫步 = 展签页→凝视页→转场页；N9 舞台揭幕 = 幕标页→暗场页→揭幕页→返场页）。生成前建议把弧线的页面语法映射到具体 section 结构：
+   - 读弧线定义的页面语法清单（`references/narrative-arcs.md` 对应 N 节，或自定义弧线的 `arcDefinition.pacingGrammar`）
+   - 每种页面语法可在 section 级体现不同结构——但**统一视觉语言（如深海全 abyss-panel）也是合法的设计模式**，关键是每页打开后有不同的视觉重心和 proof object，不是 class 名的多样性。统一基底 + 内部变体（如 abyss-panel + biolume-reveal 子组件）完全可接受
+   - 可为页面语法选 archetype（`references/layout-archetypes.md` A1-A12）或为本主题发明结构变体作为 section 骨架；也可用统一基底 class + 内部差异化组件
+   - **参考指标（不阻断）**：`design-strength-check.js` 的 `structuralVariety` 度量 section 级 class 分布，低于 60 分时检查是否每页真的有视觉区分（内部组件/布局/信息密度差异），而非机械地拆 class 名
+5. **Craft pass（工艺补强，防"结构合规但视觉扁平"）**：生成 HTML 后、自检前，检查 `design-strength-check.js` 的 `craftDensity` 子分。路径 A（种子 scaffold）读种子的 CSS 装饰手法（`grep -E 'linear-gradient|radial-gradient|box-shadow|::(?:before|after)' examples/<seed>.html`），给生成 deck 补齐**等量装饰密度**——种子有渐变光效/阴影层次/伪元素签名，生成 deck 也要有对应手法（不是照抄值，是继承装饰语言）。目标：`craftDensity ≥ 对应种子的 50%`（`design-strength-check.js <file> --golden examples/<seed>.html` 比对）。路径 B/C 无种子时要求 `craftDensity ≥ 30`（至少有渐变或阴影层次，不能全平涂）。**不达标的常见修复**：满版色块加 `linear-gradient` 替代纯色、面板加 `box-shadow` 深度、签名组件用 `::before/::after` 加装饰线/角标。
+6. **自检（统一验收入口 `node scripts/qa.js <file>`）**：qa.js 一次跑完全量验收——`grade-gate.js` 十四门禁地板全绿（含溢出、对比度、pin、空间完整性、**craftDensity≥10 反扁平地板**）+ `design-strength-check.js` 品质总分 ≥75（天花板：尺度≥3:1、有满版色块面板、有非对称分割、有主题原生形式、**craftDensity 工艺精致度**）+ `element-quality-check.js` 元素子分 + 图像驱动自动 `audit-image-assets.js` + `visual-verdict.js` 视觉语义评审（G1–G14 兜不住的感官类问题：图示不清 / 标签不可读 / 图表不解释主张 / 图片廉价 / 主题割裂）。**无 key / 未 opt-in = UNSKIPPABLE-BLOCKED**（不静默降级）；`generate-deck.js --gates` 只跑地板+design-strength **≠ 全量验收**，完整机制（dry-run / signoff / 路径 × 模式验收矩阵）见 §验证 与 `references/validation.md`，**任何视觉调整后必须重跑**。路径 A scaffold 改写后验收加 `--seed`：`node scripts/qa.js <file> --seed examples/<seed>.html`（skeleton-diff 换皮门禁：骨架相似度 >70% = 硬失败）。
+7. **交付**：HTML 路径 + 运行/导出说明 + 验证状态
 
 **模板库外主题**（voice-router 兜底 editorial,如天文学/航空/古典乐/蒸汽波…,不在 10 种子形状也不在 14 voice）**或要求"惊艳/设计感/发布会级"** → 走**路径 C B 解法**（[`references/design-generation-workflow.md`](references/design-generation-workflow.md):审美意图先行 + 外部大师参考禁 template + 审美推导 + 减法 + impeccable 打磨,见下文「路径选择」）。不套种子/voice,从主题现实视觉文化推导生成。
 
@@ -69,7 +74,7 @@ CDN 加载 reveal.js + Google Fonts，用户**无需安装任何东西**。
 
 | 模式 | 何时用 | 行为 |
 |------|--------|------|
-| **快速模式（默认）** | 用户只说"做个 PPT"或没具体要求 | 收集 4 要素 → 轻量 ghost deck + 设计语法 → 直接生成 HTML → `qa.js` 全量验收（含十四门禁地板）→ 交付说明；不强制 7 题访谈 |
+| **快速模式（默认）** | 用户只说"做个 PPT"或没具体要求 | 收集 4 要素 → 轻量 ghost deck + 设计语法 → 直接生成 HTML → **craft pass（补齐 CSS 装饰密度）** → `qa.js` 全量验收（含十四门禁地板 + craftDensity 反扁平地板）→ 交付说明；不强制 7 题访谈 |
 | **专业模式** | 用户要精细控制或明确要求评审 | 走 7 阶段 P0-P6，每段获 Gate 确认。详见 `references/pipeline-phases.md` |
 | **发布会级模式** | 用户说"发布会级"/Keynote/品牌开场/惊艳/顶级/public launch/产品发布，或要求接近品牌介绍页 / 发布会开场这种质量 | 先读 `references/launch-grade.md`。输出前必须完成：storyboard、golden-reference 对标、逐页截图审阅、PPTX 导出证明、`node scripts/test-launch-grade-contract.js` |
 
@@ -150,17 +155,7 @@ slide 画布 **1280×720px**，可用空间 ≈ 1120×580px，每页安全预算
 
 ### 6. Proof object 坐标系完整性
 
-有物理表面隐喻的页面（图纸、地图、仪表盘屏幕、白板、桌面、舞台屏幕）必须把**承载面**和**其上的 proof object**绑定到同一坐标系。不要让背景用一套 `top/right/bottom/left`，而图形、尺寸链、标注用另一套 section 百分比独立漂浮。
-
-优先级：
-
-1. 最稳：把 proof object、尺寸链、标注放进同一个表面容器内。
-2. 次稳：使用同一组 CSS 变量定义表面边界和内部对象边界。
-3. 禁止：表面是 absolute 背景，核心图形是 sibling 且用不相干的 `%` / `px` 混算定位。
-
-对于 SVG，所有 `<text>` 必须落在 SVG viewport 内；尺寸文字贴右边时用 `text-anchor="end"` 或扩大 viewBox，不要靠 `overflow:hidden` 截掉。SVG 根节点/父 `<g>` 带 `stroke` 时，必须给 `<text>` 取消描边：`.reveal svg text { stroke:none; paint-order:fill; }`。数据趋势线不要用 `T` 平滑二次贝塞尔，末端会继承上一段切线而上翘；用 `polyline` 或显式 `C` 三次贝塞尔。`scripts/test-spatial-integrity.js <file>` 会阻断：图形漂出承载面、SVG 文字被 viewBox 裁切/继承描边、数据图使用 `T` 曲线；对建筑图纸封面还会检查平面图比例未被拉伸、尺寸链左右端与外墙左右端对齐。
-
-维护种子模板时，把高风险物理版面写入 `references/template-invariants.json` 的 `physicalContract`，不要只写在 CSS 注释里。契约至少声明：surface owns what、哪些对象互斥、哪些边需要对齐、哪些标号/文字不得碰撞。`test-spatial-integrity.js` 会读取这些契约并阻断 surface drift、title-block intrusion、dimension drift、marker-label collision；同时阻断页标压 sheet-frame、north mark 压标题、pin 压图板/页脚信息。`test-reference-contract.js` 会阻断契约选择器失效或契约缺失。固定脚本无法判断“图示是否解释主张”时，必须补跑 `visual-verdict.js` 让视觉模型按 rubric 判定。
+有物理表面隐喻的页面（图纸/地图/仪表盘/白板）必须把**承载面**和 proof object 绑定到同一坐标系。优先级：同容器 > 同 CSS 变量 > 禁止 absolute 背景 + sibling `%`/`px` 混算。SVG `<text>` 须落在 viewport 内（`text-anchor="end"` 或扩 viewBox，不靠 overflow:hidden 截）；`<text>` 取消 `stroke`（`.reveal svg text { stroke:none; paint-order:fill; }`）；数据趋势线禁用 `T` 曲线（末端上翘），用 `polyline` 或 `C` 三次贝塞尔。`test-spatial-integrity.js` 阻断：图形漂出承载面、SVG 裁切/继承描边、T 曲线。种子物理版面契约写入 `references/template-invariants.json` 的 `physicalContract`。
 
 ### 7. 首稿配方速查（让一稿落地更近）
 
@@ -185,6 +180,10 @@ slide 画布 **1280×720px**，可用空间 ≈ 1120×580px，每页安全预算
 - **生成前**：在 Theme-to-Design Router「页面骨架」行写明 `[目标 N 页] + 页面原语清单`，按 N 原子化规划每页
 - **生成后**：`grep -c '<section>' <file>` 核对实际页数，偏差 >1 必须补页（章节分隔 / proof object / takeaway / 对比页是天然补页候选）或删页
 - **用户没给页数**：默认 8-12 页，按内容密度定，**不要默认压到下限**
+
+### 10. Section 级视觉差异（advisory · 2026-07）
+
+统一视觉语言（如深海全 abyss-panel）≠ 同质化——前者是有意图的一致性，后者是偷懒。`structuralVariety` 度量 section class 分布（不阻断）：判断标准不是 class 名多样性，而是每页打开后视觉重心/信息密度/proof object 是否可区分。统一基底 + 内部变体（abyss-panel + biolume-reveal）完全可接受。
 
 ## Argument-First Planning
 
@@ -218,31 +217,7 @@ slide 画布 **1280×720px**，可用空间 ≈ 1120×580px，每页安全预算
 
 ### Style Gap 硬约束:模板外内容不硬套
 
-当内容不符合现有 10 个 seed template 的范围,或最近模板会让主题错位时,必须进入 [`references/off-template-style-gap.md`](references/off-template-style-gap.md) 路径。**PPT 服务于内容,不是内容服务于模板**:不要把临床试验、法律案卷、金融台账、水墨叙事、品牌系统等内容硬塞进最近的 editorial/dark-tech/gradient 外观。
-
-Style gap 必须补齐四件套:
-
-| 件 | 最低要求 |
-|---|---|
-| Inspiration case | 从 `references/inspiration/` 选 1-2 个高质量风格 case;没有就新增文字拆解,不提交版权截图 |
-| Token primitive | 选择或新增 `tokens/<style>.css`,但 token 只负责色/字/背景,不能冒充完整风格 |
-| Content rewrite | action title、标签、proof object 必须改成该内容的主题语言 |
-| Layout archetype variant | 使用 ≥3 种 A1-A12 archetype,且至少 1 个为本主题发明变体 |
-
-Style-gap Router 除七行说明外,必须额外写明:
-
-```text
-Style gap: 是/否;原因:____。
-参考样片:____ / ____;借用技法:____。
-Token:使用 ____;如新建,说明 AA 配对和字体 fallback。
-内容-版式贴合度:内容形状____;主 proof object____;版式为何服务它____;去色去字体后是否仍属于本主题____。
-元素语义策略:主 proof object 类型____;必须出现的元素族____;禁用/少用的元素族____;动画承担的解释任务____;表格/图表/图片/代码的选择理由____。
-内容语义改写:____。
-Layout 变体:____。
-不和谐风险:____(重叠/超框/错配风险 + 验证命令)。
-```
-
-如果 visual-verdict 或人工审阅指出“风格冲突 / 内容被硬塞进模板 / 图像或版式不解释主张”,先回到四件套修 content rewrite 或 layout variant,不要只换颜色和字体。
+内容不在 10 seed 覆盖范围,或最近模板会让主题错位 → 进入 [`references/off-template-style-gap.md`](references/off-template-style-gap.md)。**PPT 服务于内容,不是内容服务于模板**。Style gap 须补齐四件套(inspiration case + token primitive + content rewrite + layout variant ≥3 archetype 含 ≥1 发明变体),并在七行说明外附 Style-gap Router 声明(模板见 off-template-style-gap.md)。如果 visual-verdict 指出”风格冲突/内容被硬塞进模板”,先回四件套修 content rewrite 或 layout variant,不要只换颜色和字体。
 
 ### 路径选择：种子快速 / 组合通用 / B 解法生成（模板库外或要求惊艳）
 
@@ -256,7 +231,7 @@ Layout 变体:____。
 
 > **惊艳轴对机器不可见**：route-deck 只从主题/风格词判径，"惊艳/设计感/发布会级"是审美要求不是主题信号，机器判不出——要求惊艳必须显式 `--wow` 声明，否则主题命中 seed/voice 时会落 A/B。
 
-**关键认知（B 解法是核心能力，种子/voice 是兜底）**：种子/voice 库（10 template + 14 voice）是**已覆盖兜底 + case 参考**，不是表达天花板。**真正"适配任意主题"靠 B 解法（设计能力）**——任意主题（含模板库外），从外部大师作品推导，不套用。路径 A/B 是已覆盖主题快速用；**路径 C 是模板库外或要求惊艳的核心能力**（风格任意时不要硬套最近模板/voice，走 C 从零生成）。voice（风格肤色：配色/字体）× archetype（版式构图：张力/节奏）**正交组合 = 14 × 12 表达空间**，且 voice 可任意扩展（加一条 JSON 即可）。"做个赛博朋克 PPT"不要硬套 dark-tech——走路径 B：voice-router 路由到 `technical` voice + archetype 组合，或新增 voice primitive。**PPT 服务于内容，不是内容服务于模板**——风格任意时硬套最近模板是比"发明新 voice"更大的失败（呼应失败门禁 #9）。
+**关键认知（B 解法是核心能力，种子/voice 是兜底）**：种子/voice 库（10 template + 14 voice）是**已覆盖兜底 + case 参考**，不是表达天花板。**真正"适配任意主题"靠 B 解法（设计能力）**——任意主题（含模板库外），从外部大师作品推导，不套用。路径 A/B 是已覆盖主题快速用；**路径 C 是模板库外或要求惊艳的核心能力**（风格任意时不要硬套最近模板/voice，走 C 从零生成）。voice（风格肤色：配色/字体）× archetype（版式构图：张力/节奏）**正交组合 = 14 × 12 表达空间**，且 voice 可任意扩展（加一条 JSON 即可）。"做个赛博朋克 PPT" 默认走路径 A（形状命中 dark-tech 种子；`route-deck.js` 返回 path A + seed template-02-dark-tech），要求惊艳则 `--wow` 走路径 C；只有纯风格主题（蒸汽波/金融台账等非种子形状）才走路径 B（voice-router 路由到对应 voice + archetype 组合，或新增 voice primitive）。**PPT 服务于内容，不是内容服务于模板**——风格任意时硬套最近模板是比"发明新 voice"更大的失败（呼应失败门禁 #9）。
 
 ### 第一步·选种子：按主题"形状"，不按行业关键词
 
@@ -289,7 +264,7 @@ Layout 变体:____。
 主题本质：这不是在讲 ____，而是在讲 ____。
 观众张力：观众当前相信/担心 ____，演示要让他们 ____。
 设计隐喻：本 deck 像一个 ____，而不是一个普通 slide deck。
-叙事弧线：本 deck 走 ____ 弧线（references/narrative-arcs.md 8 条之一或自定义；机器入口 `node scripts/route-arc.js "<主题>"`，未命中走「新弧线发明流程」），节奏曲线 ____，禁用节拍 ____。
+叙事弧线：本 deck 走 ____ 弧线（references/narrative-arcs.md 9 条之一或自定义；机器入口 `node scripts/route-arc.js "<主题>"`，未命中走「新弧线发明流程」），节奏曲线 ____，禁用节拍 ____。
 页面骨架：[目标 N 页] · 主要使用 ____ / ____ / ____ / ____ 这些页面动作（N 页数见 §8）。
 Proof object：必须可视化证明 ____，不能只写成 bullet。
 禁止套路：不能使用 ____，因为它会把主题讲偏或变成通用模板。
@@ -312,17 +287,7 @@ archetype 序列：每页分配一个 archetype（A1-A12，见 layout-archetypes
 
 ### 匹配规则
 
-（先用上面「第一步·选种子」判定主题形状属于本表哪一行。）
-
-| 情况 | 处理 |
-|------|------|
-| 主题自然落入现有语法 | 用对应种子模板，替换内容原语和 proof object |
-| 主题只部分匹配 | 借用最近模板作 scaffold，改写隐喻/骨架/命名 |
-| 主题完全不匹配 | 新建一次性设计语法，不要硬套 |
-| 用户给品牌/参考图 | 从品牌行为和语气抽隐喻，不只吸色或模仿字体 |
-| 内容跨多个语境 | 选一个主隐喻，其他作为局部页面动作 |
-
-**新语法最低要求**：1 个清晰隐喻 + 4 种页面原语 + 1 个签名时刻 + 1 套颜色/字体 token + 3 个禁用套路 + 1 条验证问题（把颜色字体拿掉后，这页是否仍属于这个主题？）。若这是 style gap,还必须有 inspiration case、content rewrite 和 layout variant 记录,不能只新增 token。
+按主题形状选种子后：自然落入 → 替换内容原语和 proof object；部分匹配 → 借 scaffold 改写隐喻/骨架；不匹配 → 新建语法别硬套；品牌/参考图 → 从行为和语气抽隐喻不只吸色。**新语法最低要求**：1 隐喻 + 4 页面原语 + 1 签名时刻 + 1 token 套 + 3 禁用套路 + 1 验证问题（去色去字体后仍属本主题？）。Style gap 还须有 inspiration case + content rewrite + layout variant。
 
 ### 反 editorial 收敛（设计从主题生长，不是 template-01 换皮）
 
@@ -364,6 +329,9 @@ template-01（editorial-serif）是旗舰，base.css / 共享骨架 / archetype 
 | 13 | **Pin 安全区** | 必须跑 `test-pin-collision.js`，OK 才能交付；详见上文「关键约束 §3」 |
 | 14 | **空间完整性** | proof object 必须和承载面共享坐标系；SVG 文字不得裁切/继承描边；数据趋势线禁用会反射上翘的 `T` |
 | 15 | **视觉语义评审** | 图示/图表页跑 `visual-verdict.js`；blocker 必须修，dry-run 不等于模型通过 |
+| 16 | **结构同质化（advisory）** | structuralVariety 度量 section 级 class 分布——**仅 advisory 参考，不阻断**。统一视觉语言（如深海全 abyss-panel）≠ 同质化，机械指标无法区分，需人工判断 |
+
+> 表速查 §1-15 阻断门禁 + #16 advisory；**完整 19 条**（§16 自愈边界 / §17 AI 味 / §18 字体闪烁 / §19 文字断行=G11）见 `references/failure-gates.md`。"19 条"= failure-gates.md 的 19 个阻断门禁总数。
 
 ## 种子模板（10 套已实现）
 
@@ -390,38 +358,11 @@ template-01（editorial-serif）是旗舰，base.css / 共享骨架 / archetype 
 
 ## 设计规则（lint 自动检查）
 
-### 硬规则（违反 = P0，必须修复）
+`lint-design.js` 自动检测 10 条硬规则（P0 必修）：每页 1 个视觉重心 · accent ≤3 次/页 · ALL CAPS 加 letter-spacing ≥0.06em · 大标题禁止负 tracking · 禁 Tailwind indigo · 禁 Emoji 当图标 · 禁紫蓝渐变 hero · 禁圆角卡片+侧边框 · 正文左对齐 · 中性色加 tint 不用纯灰。**Impeccable 绝对禁令**：side-stripe / ghost card / over-rounding(≥32px) / gradient text / hero-metric template。
 
-| # | 规则 | 原因 |
-|---|------|------|
-| 1 | 每页 **1 个视觉重心** | 一个标题、一个数字、一张图、或一个对比 |
-| 2 | accent **≤3 次/页** | 60-30-10 法则，不超过 10% 强调 |
-| 3 | ALL CAPS 加 `letter-spacing ≥0.06em` | AI 设计最可靠的"指纹" |
-| 4 | 大标题 `letter-spacing: 0`，**禁止负 tracking** | 投影/PPTX/中文混排会挤压变脏 |
-| 5 | 禁止 Tailwind indigo (`#6366f1` 等) 做 accent | AI 标志性指纹 |
-| 6 | 禁止 Emoji 做图标（✨🚀🎯⚡🔥💡） | 用 inline SVG（`references/icon-system.md`） |
-| 7 | 禁止紫→蓝双色调渐变做 hero | 扁平面 + 排版层级远胜装饰渐变 |
-| 8 | 禁止圆角卡片 + 左侧彩色边框 | 经典 AI dashboard 瓦片 |
-| 9 | 正文左对齐，居中**仅**标题/结尾页 | 居中 = 通用无设计感 |
-| 10 | 有 tint 的中性色，不用纯灰/纯黑 | 加微量 chroma（oklch ≥0.01） |
+**字体 Reflex-reject**（自定义时避开）：Fraunces · Newsreader · Crimson Pro · Playfair Display · Syne · Space Mono/Grotesk · Inter · DM Serif · Plus Jakarta Sans · Instrument Sans/Serif。种子模板已审查，直接使用。替代字体表见 `references/impeccable-integration.md`。
 
-**Impeccable 绝对禁令**：side-stripe border（>1px 左/右边框做强调）、ghost card（1px border + 16px+ radius + box-shadow）、over-rounding（border-radius ≥32px，上限 24px）、gradient text、hero-metric template（大数字 + 小标签 + 渐变背景）。`lint-design.js` 自动检测。
-
-### 字体 Reflex-reject（自定义非模板时避开）
-
-> Fraunces · Newsreader · Crimson Pro · Playfair Display · Syne · Space Mono/Grotesk · Inter · DM Serif · Plus Jakarta Sans · Instrument Sans/Serif
-
-10 套种子模板已审查过字体组合，**直接使用**。替代字体表见 `references/impeccable-integration.md`。
-
-### 设计精致度 & 容器处方 & 色彩策略
-
-详细配方移到 `references/design-polish.md`：
-
-- 精致度规则（设计隐喻决定 deck 人格、签名时刻、左对齐+偏移、间距 3 级节奏、微细节、颜色场背景）
-- 容器样式处方（数据用实色块、列表用淡底、对比用一侧实色、说明用无容器）
-- 色彩策略（Restrained / Committed / Committed+ / Drenched）自动匹配
-- 5 个高频"AI 模板感"问题及解法（封面太平、卡片千篇一律、排版无层次、色彩克制、布局重复）
-- 布局多样性清单（同一份演示必须含 ≥4 种布局）
+**精致度配方**（容器样式/色彩策略/布局多样性）→ `references/design-polish.md`。
 
 ## 动效
 
@@ -451,7 +392,7 @@ template-01（editorial-serif）是旗舰，base.css / 共享骨架 / archetype 
 | 层 | 脚本 | 性质 |
 |---|---|---|
 | **地板（合规）** | `node scripts/grade-gate.js <file>` 全绿（十四门禁 G1-G14 合一） | 硬约束、**机器判 verdict，禁止人工放行**（案例见 `references/validation.md` G5 段） |
-| **天花板（设计强度）** | `node scripts/design-strength-check.js <file>` 四维达标 + `node scripts/element-quality-check.js <file>` 元素子分 ≥70 | advisory，任一维不达标 = **回炉重做骨架**，不是微调 |
+| **天花板（设计强度）** | `node scripts/design-strength-check.js <file>` 五维达标（尺度/用色/张力/隐喻/工艺） + `node scripts/element-quality-check.js <file>` 元素子分 ≥70 | advisory，任一维不达标 = **回炉重做骨架**，不是微调 |
 | **视觉评审** | `node scripts/visual-qa.js <file> --annotate-overflow --show-fragments` 逐页审阅 + `node scripts/visual-verdict.js <file>` LLM 视觉语义评审 | **P4 生成后必跑、任何视觉改动后必跑**（快速模式也跑）。**无 key / 未 opt-in = UNSKIPPABLE-BLOCKED（G001,非 dry-run 假通过）**：`visual-verdict.js` 需 `VISUAL_VERDICT_OPT_IN=1`（默认关防外发）才真实调用，dry-run 需显式 `--dry-run`，无 `OPENAI_API_KEY` 默认 exit 2 硬错误；签字放行走 `scripts/qa.js`（`--visual-signoff` / `VISUAL_VERDICT_SIGNOFF=1` 人工签字）；**视觉能力自检 + 反幻觉锚点（必做，防谎报通过）见 `references/validation.md`「视觉能力自检协议」**——无视觉能力必须记 `passed=null`，不得声称读图通过**L3b 创意短语断行**（`价格屠夫`/`终点裁决`/`客观缓解率` 等 jieba 切不准的整体短语被拆两行）也走视觉评审，判别规则（R1 残尾孤字 / R2 固定短语切割 + 豁免）见 `references/failure-gates.md` §19 |
 | **反 editorial 收敛** | `node scripts/check-editorial-contamination.js <file> --topic "<主题>"`（qa.js `--topic` 内置；`--selftest` 自检） | 非 editorial 主题穿档案馆外衣（archive 构件 ≥2,或 1 构件 + serif 佐证）= FAIL；Goodhart 补丁——门禁 #9 的审美语言维度 |
 | **弧线落实** | `node scripts/check-arc-adherence.js <file>`（qa.js 内置，种子豁免） | brief 声明的弧线真的落实：库内弧线须在注册表、自定义弧线须 `arcDefinition` 四件套；`bannedBeats` 已知节拍（anchor-numeral/face-off/kpi-wall/table 系/data-chart）签名扫描，命中 = FAIL 并指出页码/选择器；未知节拍 key 与 pacingCurve 拍数偏差仅 warning |
@@ -467,7 +408,7 @@ template-01（editorial-serif）是旗舰，base.css / 共享骨架 / archetype 
 
 ## 导出
 
-- **PPTX**：HTML 内置按钮（每个标题/段落/列表项 = 独立文本框，完全可编辑）；CLI 备份：`node scripts/export-pptx.js <file>`
+- **PPTX**：HTML 内置按钮（每个标题/段落/列表项 = 独立文本框，文字层可编辑）；CLI 备份：`node scripts/export-pptx.js <file>`。**已知限制（非 100% 像素级可编辑）**：A3(timeline)/A8(mechanism)/IMG(image-compare) 三类 archetype 的复杂视觉走 **hybrid** 策略（栅格化 complex-visual 保真、文字仍独立可编辑，见 `references/pptx-export-strategies.json`）；voice 字体在 PPTX 端若 Office 未装会**回退 Calibri**（`export-pptx-client.js` mapFont 兜底）。即"文字层可编辑 + 复杂视觉栅格化保真"，非逐元素矢量可编辑。
 - **PDF**：Chrome 打开 `file.html?print-pdf` → `Ctrl/Cmd+P`
 - **投影/手机/屏幕共享**适配：`references/technical-specs.md`
 
@@ -492,7 +433,7 @@ bash scripts/setup.sh          # 仅环境检查
 | **生成设计语法** | `references/design-polish.md` | Theme-to-Design Router、页面原语、种子模板 token、签名时刻配方 |
 | **扎设计根（必读）** | `references/design-fundamentals.md` | 设计四维：字体尺度系统、构图张力、专色用色、隐喻→形式生成法。禁令的反面——教怎么长出设计感 |
 | **选布局引擎（必读）** | `references/layout-archetypes.md` | 12 个 voice 无关、可组合、带参数的布局 archetype（满版分割/锚点数字/报头封面/对峙对比/机制图…）+ deck 级节奏编排 |
-| **选叙事弧线（必读）** | `references/narrative-arcs.md` | 8 条跨页叙事弧线（账本审计/值班夜航/质证对决/画廊漫步/标尺之旅/专辑聆听/田野笔记/工程剖面）：节奏曲线、页面语法、禁用节拍——七行「叙事弧线」行与 brief `narrativeArc`/`pacingCurve`/`bannedBeats` 的取值来源 |
+| **选叙事弧线（必读）** | `references/narrative-arcs.md` | 9 条跨页叙事弧线（账本审计/值班夜航/质证对决/画廊漫步/标尺之旅/专辑聆听/田野笔记/工程剖面/舞台揭幕）：节奏曲线、页面语法、禁用节拍——七行「叙事弧线」行与 brief `narrativeArc`/`pacingCurve`/`bannedBeats` 的取值来源 |
 | **选配色字体** | `references/design-principles.md` | 配色方案、字体系统、反模式、文案规则 |
 | **处理模板外内容 / 风格缺口** | `references/off-template-style-gap.md` | Style gap 判定、四件套扩展、PPT 服务内容的验收线 |
 | **选风格 / 适配任意主题** | `references/style-space.md` | 风格 6 维坐标系、关键词→voice 速查表、voice×archetype 组合空间、加新 voice 流程（`voice-router.js` 自动路由 + `build-voice-tokens.js` 编译 `tokens/voices.json` 单一真相源） |
@@ -521,7 +462,7 @@ bash scripts/setup.sh          # 仅环境检查
 - [ ] **Gate 模式守门（元规则）**：若用户指定专业/发布会模式，P1 设计语法输出后**已停下等确认**（没停 = 违规失败，无论 deck 质量多高；规则见 §流程「Gate 模式硬约束」）
 - [ ] 第一眼就是经过**设计意图**的（不是 AI 模板感）
 - [ ] P1 产出了 Theme-to-Design Router 七行说明 + **设计契约**（尺度预设/用色投入/archetype 序列/本主题发明变体），且不是直接套模板
-- [ ] **叙事弧线已声明且落实**：七行「叙事弧线」行与 design-brief 的 `narrativeArc`/`pacingCurve`/`bannedBeats` 一致（references/narrative-arcs.md 8 条之一或自定义），声明禁用的默认节拍（如 anchor-numeral/face-off/kpi-wall）确实没有出现在 deck 里（`check-arc-adherence.js` 机器扫描，qa.js 硬门禁）
+- [ ] **叙事弧线已声明且落实**：七行「叙事弧线」行与 design-brief 的 `narrativeArc`/`pacingCurve`/`bannedBeats` 一致（references/narrative-arcs.md 9 条之一或自定义），声明禁用的默认节拍（如 anchor-numeral/face-off/kpi-wall）确实没有出现在 deck 里（`check-arc-adherence.js` 机器扫描，qa.js 硬门禁）
 - [ ] **内容-版式贴合度**已通过：内容形状、主 proof object、版式为何服务它都明确；去掉颜色和字体后，页面结构仍属于这个主题
 - [ ] **元素语义**已通过：每页元素清单、主 proof object、辅助元素族、动画解释任务明确；每个元素都服务 action title,不是模板装饰
 - [ ] 主骨架由 ≥3 种 archetype 组合（非种子原语原样填充），含 ≥1 个本主题发明变体

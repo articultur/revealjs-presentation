@@ -169,4 +169,4 @@
 | Router 七行 | 「叙事弧线：本 deck 走 \_\_\_\_ 弧线，节奏曲线 \_\_\_\_，禁用节拍 \_\_\_\_」（见 SKILL.md「必填七行」） |
 | design-brief | `narrativeArc`（弧线名或自定义弧线声明）+ `pacingCurve`（页级节奏描述）+ `bannedBeats`（禁用的默认节拍，≥1）——三必填，见 `scripts/check-design-brief.js` |
 | 机器信号 | 弧线页面语法的 class 词根（track-listing / act-program / ledger-seal / field-note / cross-exam 等）计入 `design-strength-check.js` metaphor 维 nativeSignals，让非默认节拍也能得隐喻分 |
-| 自定义弧线 | 8 条都不沾可发明新弧线：必须走「新弧线发明流程」四步——四件套定义（现实参考 + 节奏曲线 + 页面语法 + 禁用节拍）写进 brief 的 `arcDefinition` + `pacingCurve` + `bannedBeats`，`check-arc-adherence.js` 机器校验，验证通过后按 ④ 沉淀注册回库（N9+）。不能只写个名字 |
+| 自定义弧线 | 9 条都不沾可发明新弧线：必须走「新弧线发明流程」四步——四件套定义（现实参考 + 节奏曲线 + 页面语法 + 禁用节拍）写进 brief 的 `arcDefinition` + `pacingCurve` + `bannedBeats`，`check-arc-adherence.js` 机器校验，验证通过后按 ④ 沉淀注册回库（N9+）。不能只写个名字 |

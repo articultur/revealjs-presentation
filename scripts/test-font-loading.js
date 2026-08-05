@@ -51,7 +51,7 @@ const CLEARANCE_THRESHOLD = 50;        // 大字与角元素水平间距 < 50px 
 const SLIDE_TRANSITION_MS = 250;       // reveal fade 过渡 ~200ms,留余量等 present 切换
 
 const LARGE_SELECTOR = '.logo, h1, h2, .name-en, .big-num, .iya, .track, .kicker-large, .pullquote, .anchor-numeral, .display';
-const CORNER_SELECTOR = '.stamp, .cover-stamp, .close-stamp, .pin, .photo-credit, .source, .dots, .north-mark, .corner-tag';
+const CORNER_SELECTOR = '.stamp, .seal, .cover-stamp, .close-stamp, .pin, .photo-credit, .source, .dots, .north-mark, .corner-tag';
 
 async function getSlideCount(page) {
   return await page.evaluate(() => {

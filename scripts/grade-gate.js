@@ -27,7 +27,7 @@
  *   G9  check-overflow.js        issueCount = 0    (bbox overflow / overlap)
  *   G10 test-spatial-integrity.js exit 0           (surface drift / clipped SVG text)
  *   G11 test-text-break.js       exit 0            (词/数字跨行断裂)
- *   G12 design-strength-check.js --gate PASS       (反 slop 地板:scaleContrast≥2.5 & metaphor≥1)
+ *   G12 design-strength-check.js --gate PASS       (反 slop 地板:scaleContrast≥2.5 & metaphor≥1 & craftDensity≥10)
  *   G13 test-text-collision.js   exit 0            (margin-swallow / stack-occlude / shape-overflow)
  *   G14 test-pin-collision.js    exit 0            (.pin 辅助索引区不与内容重叠)
  *
@@ -317,22 +317,28 @@ function runTextBreak(filePath) {
   };
 }
 
-// ─── G12 · 反 slop 地板(design-strength --gate:scaleContrast≥2.5 且 metaphor≥1) ───
+// ─── G12 · 反 slop 地板(design-strength --gate:scaleContrast≥2.5 且 metaphor≥1 且 craftDensity≥10) ───
 function runDesignStrength(filePath) {
   const result = spawnSync('node', [path.join(SCRIPTS_DIR, 'design-strength-check.js'), filePath, '--gate'], {
     encoding: 'utf8', timeout: 180_000,
     env: { ...process.env, NODE_NO_WARNINGS: '1' },
   });
   if (result.error) return { passed: false, error: result.error.message };
+  const stderr = result.stderr?.trim() || '';
   const stdout = result.stdout || '';
   const m = stdout.match(/→ (PASS|FAIL)/);
   const gateResult = m ? m[1] : null;
+  // 对齐 G9-G11/G13-G14 的 fail-closed 模式:检测脚本内部 JS 错误。
+  const scriptBug = detectScriptBug(stderr);
   const parseFailed = gateResult === null;
   return {
-    passed: result.status === 0 && !parseFailed && gateResult === 'PASS',
+    passed: result.status === 0 && !parseFailed && !scriptBug && gateResult === 'PASS',
     gateResult,
+    scriptBug,
+    parseFailed,
     exitCode: result.status,
-    stdout: stdout.slice(-400),
+    stderr: stderr || null,
+    error: scriptBug ? 'design-strength internal script error' : (parseFailed ? 'design-strength gate result parse failed' : null),
   };
 }
 
@@ -463,7 +469,7 @@ for (const file of files) {
 
   const strength = runDesignStrength(abs);
   if (!jsonOnly) {
-    console.log(`  G12 design-strength: ${strength.passed ? '✓ scaleContrast≥2.5 & metaphor≥1' : fail(`✗ ${strength.gateResult || strength.error || '反 slop 地板未达'}`)}`);
+    console.log(`  G12 design-strength: ${strength.passed ? '✓ scaleContrast≥2.5 & metaphor≥1 & craftDensity≥10' : fail(`✗ ${strength.gateResult || strength.error || '反 slop 地板未达'}`)}`);
   }
 
   const textCollision = runTextCollision(abs);
